@@ -30,14 +30,19 @@ type TypeInfo struct {
 
 	// Uses maps identifiers to the symbols they reference
 	Uses map[*ast.Ident]*symbols.Symbol
+
+	// GenericCalls maps call expressions to their monomorphized function names
+	// This is used by the IR builder to call the correct specialized function
+	GenericCalls map[*ast.CallExpr]string
 }
 
 // NewTypeInfo creates a new TypeInfo.
 func NewTypeInfo() *TypeInfo {
 	return &TypeInfo{
-		Types: make(map[ast.Expr]types.Type),
-		Defs:  make(map[*ast.Ident]*symbols.Symbol),
-		Uses:  make(map[*ast.Ident]*symbols.Symbol),
+		Types:        make(map[ast.Expr]types.Type),
+		Defs:         make(map[*ast.Ident]*symbols.Symbol),
+		Uses:         make(map[*ast.Ident]*symbols.Symbol),
+		GenericCalls: make(map[*ast.CallExpr]string),
 	}
 }
 
@@ -437,6 +442,190 @@ func (a *Analyzer) resolveType(t ast.Type) types.Type {
 	}
 }
 
+// resolveTypeWithSubstitution resolves an AST type, directly substituting type parameter
+// names with concrete types from the provided map.
+func (a *Analyzer) resolveTypeWithSubstitution(t ast.Type, subst map[string]types.Type) types.Type {
+	if t == nil {
+		return types.Typ[types.Unit]
+	}
+
+	switch t := t.(type) {
+	case *ast.NamedType:
+		name := t.Name.Name
+
+		// Check if this is a type parameter to substitute
+		if concrete, ok := subst[name]; ok {
+			return concrete
+		}
+
+		// Check for builtin types
+		if basic := types.LookupBasicType(name); basic != nil {
+			return basic
+		}
+
+		// Handle generic types with type arguments (e.g., Option<T>)
+		if len(t.TypeArgs) > 0 {
+			// Resolve type arguments with substitution
+			typeArgs := make([]types.Type, len(t.TypeArgs))
+			for i, arg := range t.TypeArgs {
+				typeArgs[i] = a.resolveTypeWithSubstitution(arg, subst)
+			}
+
+			// Generate mangled name with concrete types
+			mangledName := types.MangledName(name, typeArgs)
+
+			// Check if already instantiated
+			if cached, ok := a.instantiations[mangledName]; ok {
+				return cached
+			}
+
+			// Instantiate the generic type
+			if enumDecl, ok := a.genericEnums[name]; ok {
+				return a.instantiateGenericEnumWithTypes(enumDecl, typeArgs, mangledName, t.Pos())
+			}
+			if structDecl, ok := a.genericStructs[name]; ok {
+				return a.instantiateGenericStructWithTypes(structDecl, typeArgs, mangledName, t.Pos())
+			}
+		}
+
+		// Look up user-defined type
+		sym := a.table.Resolve(name)
+		if sym == nil {
+			a.error(t.Pos(), "undefined type '%s'", name)
+			return types.Typ[types.Invalid]
+		}
+		if sym.Kind != symbols.TypeSymbol {
+			a.error(t.Pos(), "'%s' is not a type", name)
+			return types.Typ[types.Invalid]
+		}
+		return sym.Type
+
+	case *ast.UnitType:
+		return types.Typ[types.Unit]
+
+	case *ast.ArrayType:
+		elem := a.resolveTypeWithSubstitution(t.Element, subst)
+		var size int64 = 0
+		if lit, ok := t.Size.(*ast.IntLit); ok {
+			size = lit.Value
+		}
+		return types.NewArray(elem, size)
+
+	case *ast.SliceType:
+		elem := a.resolveTypeWithSubstitution(t.Element, subst)
+		return types.NewSlice(elem)
+
+	case *ast.RefType:
+		elem := a.resolveTypeWithSubstitution(t.Type, subst)
+		return types.NewPointer(elem, t.Mutable)
+
+	case *ast.TupleType:
+		elems := make([]types.Type, len(t.Elements))
+		for i, e := range t.Elements {
+			elems[i] = a.resolveTypeWithSubstitution(e, subst)
+		}
+		return types.NewTuple(elems)
+
+	case *ast.FnType:
+		params := make([]*types.Param, len(t.Params))
+		for i, p := range t.Params {
+			params[i] = &types.Param{Type: a.resolveTypeWithSubstitution(p, subst)}
+		}
+		var ret types.Type = types.Typ[types.Unit]
+		if t.ReturnType != nil {
+			ret = a.resolveTypeWithSubstitution(t.ReturnType, subst)
+		}
+		return types.NewFunction(params, ret)
+
+	case *ast.ChanType:
+		elem := a.resolveTypeWithSubstitution(t.Element, subst)
+		return types.NewChannel(elem)
+
+	default:
+		a.error(t.Pos(), "unsupported type")
+		return types.Typ[types.Invalid]
+	}
+}
+
+// instantiateGenericEnumWithTypes creates a specialized enum type given concrete type arguments.
+func (a *Analyzer) instantiateGenericEnumWithTypes(decl *ast.EnumDecl, typeArgs []types.Type, mangledName string, pos token.Position) types.Type {
+	// Verify type argument count
+	if len(typeArgs) != len(decl.TypeParams) {
+		a.error(pos, "wrong number of type arguments for '%s': expected %d, got %d",
+			decl.Name.Name, len(decl.TypeParams), len(typeArgs))
+		return types.Typ[types.Invalid]
+	}
+
+	// Create substitution map
+	subst := make(map[string]types.Type)
+	for i, tp := range decl.TypeParams {
+		subst[tp.Name.Name] = typeArgs[i]
+	}
+
+	// Build specialized variants
+	variants := make([]*types.Variant, len(decl.Variants))
+	for i, v := range decl.Variants {
+		fields := make([]*types.Field, len(v.Fields))
+		for j, f := range v.Fields {
+			fieldType := a.resolveTypeWithSubstitution(f.Type, subst)
+			fields[j] = &types.Field{
+				Name: f.Name.Name,
+				Type: fieldType,
+			}
+		}
+		variants[i] = &types.Variant{
+			Name:   v.Name.Name,
+			Fields: fields,
+		}
+	}
+
+	// Create the specialized enum type
+	enumType := types.NewEnum(mangledName, variants)
+
+	// Cache and register in symbol table
+	a.instantiations[mangledName] = enumType
+	sym := symbols.NewSymbol(mangledName, symbols.TypeSymbol, enumType, pos)
+	a.table.Global.Define(sym)
+
+	return enumType
+}
+
+// instantiateGenericStructWithTypes creates a specialized struct type given concrete type arguments.
+func (a *Analyzer) instantiateGenericStructWithTypes(decl *ast.StructDecl, typeArgs []types.Type, mangledName string, pos token.Position) types.Type {
+	// Verify type argument count
+	if len(typeArgs) != len(decl.TypeParams) {
+		a.error(pos, "wrong number of type arguments for '%s': expected %d, got %d",
+			decl.Name.Name, len(decl.TypeParams), len(typeArgs))
+		return types.Typ[types.Invalid]
+	}
+
+	// Create substitution map
+	subst := make(map[string]types.Type)
+	for i, tp := range decl.TypeParams {
+		subst[tp.Name.Name] = typeArgs[i]
+	}
+
+	// Build specialized fields
+	fields := make([]*types.Field, len(decl.Fields))
+	for i, f := range decl.Fields {
+		fieldType := a.resolveTypeWithSubstitution(f.Type, subst)
+		fields[i] = &types.Field{
+			Name: f.Name.Name,
+			Type: fieldType,
+		}
+	}
+
+	// Create the specialized struct type
+	structType := types.NewStruct(mangledName, fields)
+
+	// Cache and register in symbol table
+	a.instantiations[mangledName] = structType
+	sym := symbols.NewSymbol(mangledName, symbols.TypeSymbol, structType, pos)
+	a.table.Global.Define(sym)
+
+	return structType
+}
+
 // instantiateGenericType creates a specialized version of a generic type.
 func (a *Analyzer) instantiateGenericType(name string, astTypeArgs []ast.Type, pos token.Position) types.Type {
 	// Resolve all type arguments to concrete types
@@ -600,6 +789,14 @@ func (a *Analyzer) analyzeFnDecl(fn *ast.FnDecl) {
 	}
 
 	fnType := sym.Type.(*types.Function)
+	a.analyzeFnDeclWithType(fn, fnType)
+}
+
+// analyzeFnDeclWithType analyzes a function given its already-resolved type.
+// This is used for monomorphized functions where the type has been computed separately.
+func (a *Analyzer) analyzeFnDeclWithType(fn *ast.FnDecl, fnType *types.Function) {
+	// Save and restore currentFunc in case we're analyzing during another function
+	savedFunc := a.currentFunc
 	a.currentFunc = fnType
 
 	// Enter function scope
@@ -620,7 +817,7 @@ func (a *Analyzer) analyzeFnDecl(fn *ast.FnDecl) {
 	}
 
 	a.table.ExitScope()
-	a.currentFunc = nil
+	a.currentFunc = savedFunc
 }
 
 func (a *Analyzer) analyzeImplDecl(impl *ast.ImplDecl) {
@@ -1158,6 +1355,9 @@ func (a *Analyzer) analyzeGenericCall(genericFn *ast.FnDecl, call *ast.CallExpr)
 	// Generate mangled name and check cache
 	mangledName := types.MangledName(genericFn.Name.Name, typeArgs)
 
+	// Record the mangled name for the IR builder
+	a.info.GenericCalls[call] = mangledName
+
 	// Check if we already have this instantiation
 	if sym := a.table.Global.Lookup(mangledName); sym != nil {
 		if fnType, ok := sym.Type.(*types.Function); ok {
@@ -1265,7 +1465,35 @@ func (a *Analyzer) unifyTypes(paramType, argType types.Type, inferred map[int]ty
 
 	case *types.Enum:
 		if et, ok := argType.(*types.Enum); ok {
-			return pt.Name == et.Name
+			// Exact name match
+			if pt.Name == et.Name {
+				return true
+			}
+			// Check if arg is a monomorphized version of param (e.g., Option_int vs Option)
+			// If param has type parameters in its fields, try to unify with the arg's fields
+			if len(pt.Variants) == len(et.Variants) {
+				allMatch := true
+				for i, pv := range pt.Variants {
+					ev := et.Variants[i]
+					if pv.Name != ev.Name || len(pv.Fields) != len(ev.Fields) {
+						allMatch = false
+						break
+					}
+					for j, pf := range pv.Fields {
+						ef := ev.Fields[j]
+						if pf.Name != ef.Name || !a.unifyTypes(pf.Type, ef.Type, inferred) {
+							allMatch = false
+							break
+						}
+					}
+					if !allMatch {
+						break
+					}
+				}
+				if allMatch {
+					return true
+				}
+			}
 		}
 		return false
 
@@ -1310,26 +1538,17 @@ func (a *Analyzer) unifyTypes(paramType, argType types.Type, inferred map[int]ty
 func (a *Analyzer) instantiateGenericFunction(genericFn *ast.FnDecl, typeArgs []types.Type, argTypes []types.Type, call *ast.CallExpr) types.Type {
 	mangledName := types.MangledName(genericFn.Name.Name, typeArgs)
 
-	// Build type parameter map
-	typeParams := make([]*types.TypeParam, len(genericFn.TypeParams))
+	// Create a direct mapping from type param names to concrete types
+	// This avoids the intermediate TypeParam stage
+	concreteTypeMap := make(map[string]types.Type)
 	for i, tp := range genericFn.TypeParams {
-		typeParams[i] = types.NewTypeParam(tp.Name.Name, a.typeParamIDCounter)
-		a.typeParamIDCounter++
-	}
-	typeMap := types.BuildTypeMap(typeParams, typeArgs)
-
-	// Enter type param scope temporarily
-	oldScope := a.typeParamScope
-	a.typeParamScope = make(map[string]*types.TypeParam)
-	for i, tp := range genericFn.TypeParams {
-		a.typeParamScope[tp.Name.Name] = typeParams[i]
+		concreteTypeMap[tp.Name.Name] = typeArgs[i]
 	}
 
-	// Build the specialized function type
+	// Build the specialized function type using concrete type resolution
 	params := make([]*types.Param, len(genericFn.Params))
 	for i, p := range genericFn.Params {
-		paramType := a.resolveType(p.Type)
-		paramType = types.Substitute(paramType, typeMap)
+		paramType := a.resolveTypeWithSubstitution(p.Type, concreteTypeMap)
 		params[i] = &types.Param{
 			Name: p.Name.Name,
 			Type: paramType,
@@ -1338,11 +1557,8 @@ func (a *Analyzer) instantiateGenericFunction(genericFn *ast.FnDecl, typeArgs []
 
 	var retType types.Type = types.Typ[types.Unit]
 	if genericFn.ReturnType != nil {
-		retType = a.resolveType(genericFn.ReturnType)
-		retType = types.Substitute(retType, typeMap)
+		retType = a.resolveTypeWithSubstitution(genericFn.ReturnType, concreteTypeMap)
 	}
-
-	a.typeParamScope = oldScope
 
 	fnType := types.NewFunction(params, retType)
 
@@ -1350,15 +1566,24 @@ func (a *Analyzer) instantiateGenericFunction(genericFn *ast.FnDecl, typeArgs []
 	sym := symbols.NewSymbol(mangledName, symbols.FuncSymbol, fnType, genericFn.Pos())
 	a.table.Global.Define(sym)
 
-	// Store the declaration for later analysis
-	a.fnDecls[mangledName] = genericFn
+	// Clone the generic function with specialized types using the Monomorphizer
+	mono := NewMonomorphizer(a)
+	clonedFn := mono.CloneFunction(genericFn, typeArgs, mangledName)
+
+	// Add the cloned function to the program for IR generation
+	if a.prog != nil {
+		a.prog.Decls = append(a.prog.Decls, clonedFn)
+	}
+
+	// Store the cloned declaration and record that we defined it
+	a.fnDecls[mangledName] = clonedFn
+	a.info.Defs[clonedFn.Name] = sym
 
 	// Verify argument types
 	a.checkFunctionArgs(fnType, argTypes, call)
 
-	// Note: We don't analyze the body here to avoid complexity.
-	// The body will be analyzed if/when the function is actually called.
-	// For monomorphization at the IR level, we would clone the AST.
+	// Analyze the cloned function body
+	a.analyzeFnDeclWithType(clonedFn, fnType)
 
 	return fnType.Result
 }

@@ -17,15 +17,30 @@ type MonomorphizedFn struct {
 
 // Monomorphizer handles the creation of specialized generic type/function instances.
 type Monomorphizer struct {
-	analyzer *Analyzer
-	typeMap  types.TypeMap
+	analyzer    *Analyzer
+	typeMap     types.TypeMap
+	typeNameMap map[string]types.Type // Maps type param names to concrete types
 }
 
 // NewMonomorphizer creates a new Monomorphizer.
 func NewMonomorphizer(analyzer *Analyzer) *Monomorphizer {
 	return &Monomorphizer{
-		analyzer: analyzer,
+		analyzer:    analyzer,
+		typeNameMap: make(map[string]types.Type),
 	}
+}
+
+// lookupTypeParamID returns the ID for a type parameter name, or -1 if not found.
+func (m *Monomorphizer) lookupTypeParamID(name string) int {
+	if _, ok := m.typeNameMap[name]; ok {
+		// Find the ID by iterating through typeMap
+		for id, t := range m.typeMap {
+			if m.typeNameMap[name] == t {
+				return id
+			}
+		}
+	}
+	return -1
 }
 
 // CloneFunction creates a specialized copy of a generic function with type parameters replaced.
@@ -35,6 +50,8 @@ func (m *Monomorphizer) CloneFunction(fn *ast.FnDecl, typeArgs []types.Type, man
 	for i, tp := range fn.TypeParams {
 		typeParams[i] = types.NewTypeParam(tp.Name.Name, m.analyzer.typeParamIDCounter)
 		m.analyzer.typeParamIDCounter++
+		// Also store by name for easy lookup
+		m.typeNameMap[tp.Name.Name] = typeArgs[i]
 	}
 	m.typeMap = types.BuildTypeMap(typeParams, typeArgs)
 
@@ -79,18 +96,54 @@ func (m *Monomorphizer) cloneType(t ast.Type) ast.Type {
 
 	switch t := t.(type) {
 	case *ast.NamedType:
-		// Clone type arguments if present
-		var typeArgs []ast.Type
+		// Check if this is a type parameter that needs to be substituted
+		if len(t.TypeArgs) == 0 {
+			// Simple named type - might be a type parameter
+			if concreteType, ok := m.typeNameMap[t.Name.Name]; ok {
+				// Substitute with the concrete type name
+				return &ast.NamedType{
+					Name: &ast.Ident{
+						Token: t.Name.Token,
+						Name:  concreteType.String(),
+					},
+				}
+			}
+		}
+
+		// For generic types like Option<T>, we need to:
+		// 1. Substitute type arguments
+		// 2. Use the mangled name
 		if len(t.TypeArgs) > 0 {
-			typeArgs = make([]ast.Type, len(t.TypeArgs))
+			// Resolve type arguments to get concrete types
+			concreteTypeArgs := make([]types.Type, len(t.TypeArgs))
 			for i, ta := range t.TypeArgs {
-				typeArgs[i] = m.cloneType(ta)
+				// Recursively substitute and get the type
+				if namedTA, ok := ta.(*ast.NamedType); ok {
+					if concreteType, ok := m.typeNameMap[namedTA.Name.Name]; ok {
+						concreteTypeArgs[i] = concreteType
+					} else {
+						// Not a type parameter, use a placeholder
+						concreteTypeArgs[i] = types.Typ[types.Invalid]
+					}
+				} else {
+					concreteTypeArgs[i] = types.Typ[types.Invalid]
+				}
+			}
+
+			// Generate the mangled name
+			mangledName := types.MangledName(t.Name.Name, concreteTypeArgs)
+			return &ast.NamedType{
+				Name: &ast.Ident{
+					Token: t.Name.Token,
+					Name:  mangledName,
+				},
+				TypeArgs: nil, // Monomorphized type has no type args
 			}
 		}
 
 		return &ast.NamedType{
 			Name:     m.cloneIdent(t.Name),
-			TypeArgs: typeArgs,
+			TypeArgs: nil,
 		}
 
 	case *ast.UnitType:
@@ -429,14 +482,54 @@ func (m *Monomorphizer) clonePattern(pattern ast.Pattern) ast.Pattern {
 				Pattern: m.clonePattern(f.Pattern),
 			}
 		}
+		// Handle enum path - may need to substitute generic enum names
+		path := m.cloneEnumPath(p.Path)
 		return &ast.EnumPattern{
-			Path:   m.cloneExpr(p.Path),
+			Path:   path,
 			Fields: fields,
 		}
 
 	default:
 		return pattern
 	}
+}
+
+// cloneEnumPath handles the path in an enum pattern, substituting generic enum names
+// with their monomorphized versions (e.g., Option::Some -> Option_int::Some)
+func (m *Monomorphizer) cloneEnumPath(expr ast.Expr) ast.Expr {
+	pathExpr, ok := expr.(*ast.PathExpr)
+	if !ok || len(pathExpr.Parts) < 2 {
+		return m.cloneExpr(expr)
+	}
+
+	enumName := pathExpr.Parts[0].Name
+	variantName := pathExpr.Parts[1].Name
+
+	// Check if this enum is a generic enum that needs to be monomorphized
+	// We do this by checking if any of our type substitutions would apply to a generic
+	// enum of this name
+	if _, isGeneric := m.analyzer.genericEnums[enumName]; isGeneric {
+		// This is a generic enum - we need to figure out what type args to use
+		// Since we're in a generic function context, the type args should come from
+		// our typeNameMap
+		var typeArgs []types.Type
+		for _, concreteType := range m.typeNameMap {
+			typeArgs = append(typeArgs, concreteType)
+		}
+
+		if len(typeArgs) > 0 {
+			mangledName := types.MangledName(enumName, typeArgs)
+			return &ast.PathExpr{
+				Parts: []ast.Ident{
+					{Token: pathExpr.Parts[0].Token, Name: mangledName},
+					{Token: pathExpr.Parts[1].Token, Name: variantName},
+				},
+			}
+		}
+	}
+
+	// Not a generic enum or no substitution needed
+	return m.cloneExpr(expr)
 }
 
 func (m *Monomorphizer) cloneMatchArm(arm ast.MatchArm) ast.MatchArm {

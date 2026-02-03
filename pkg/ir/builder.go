@@ -42,8 +42,17 @@ func (b *Builder) Build(prog *ast.Program) *Program {
 }
 
 func (b *Builder) buildFnDecl(fn *ast.FnDecl) {
+	// Skip generic function declarations - they will be instantiated when called
+	if len(fn.TypeParams) > 0 {
+		return
+	}
+
 	// Get the function type from type info
 	sym := b.info.Defs[fn.Name]
+	if sym == nil {
+		// This function may be a monomorphized instantiation without a symbol
+		return
+	}
 	fnType := sym.Type.(*types.Function)
 
 	// Create IR function
@@ -872,8 +881,14 @@ func (b *Builder) buildCallExpr(e *ast.CallExpr) Operand {
 		}
 	}
 
-	// Build function operand
-	fn := b.buildExpr(e.Func)
+	// Check if this is a call to a monomorphized generic function
+	var fn Operand
+	if mangledName, ok := b.info.GenericCalls[e]; ok {
+		fn = FuncRef(mangledName, nil)
+	} else {
+		// Build function operand normally
+		fn = b.buildExpr(e.Func)
+	}
 
 	// Build arguments
 	args := make([]Operand, len(e.Args)+1)
