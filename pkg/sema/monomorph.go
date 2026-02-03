@@ -444,6 +444,11 @@ func (m *Monomorphizer) cloneExpr(expr ast.Expr) ast.Expr {
 			Inclusive: e.Inclusive,
 		}
 
+	case *ast.TryExpr:
+		return &ast.TryExpr{
+			Expr: m.cloneExpr(e.Expr),
+		}
+
 	default:
 		return expr
 	}

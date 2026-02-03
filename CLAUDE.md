@@ -123,6 +123,10 @@ ease test                    # Run tests (not yet implemented)
 ease version                 # Print version
 ```
 
+## Commits
+
+Never add information to commits that I used Claude
+
 ## Implementation Status
 
 ### Completed
@@ -210,3 +214,4 @@ test "config file not found returns error" {
     }
 }
 ```
+

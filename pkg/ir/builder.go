@@ -559,6 +559,8 @@ func (b *Builder) buildExpr(expr ast.Expr) Operand {
 		return b.buildPathExpr(e)
 	case *ast.MatchExpr:
 		return b.buildMatchExpr(e)
+	case *ast.TryExpr:
+		return b.buildTryExpr(e)
 	default:
 		return None()
 	}
@@ -1801,6 +1803,114 @@ func (b *Builder) buildMatchExpr(e *ast.MatchExpr) Operand {
 
 	b.block = endBlock
 	return result
+}
+
+// buildTryExpr builds the ? operator for Result types.
+// It checks if the Result is Ok (tag 0) and extracts the value,
+// or if it's Err (tag 1) it returns early with the error.
+func (b *Builder) buildTryExpr(e *ast.TryExpr) Operand {
+	// Get the inner expression's type (should be a Result enum)
+	innerType := b.info.Types[e.Expr]
+	enumType, ok := innerType.(*types.Enum)
+	if !ok {
+		return None()
+	}
+
+	// Get Ok and Err variants
+	okVariant := enumType.VariantByName("Ok")
+	errVariant := enumType.VariantByName("Err")
+	if okVariant == nil || errVariant == nil {
+		return None()
+	}
+
+	// Build the inner expression (the Result value)
+	resultValue := b.buildExpr(e.Expr)
+
+	// Load the tag from the result (at offset 0)
+	tag := b.fn.NewVReg(types.Typ[types.Int])
+	b.emit(&Instr{Op: OpLoad, Dest: tag, Args: []Operand{resultValue}})
+
+	// Create blocks for Ok and Err cases
+	okBlock := b.fn.NewBlock(b.newLabel("try.ok"))
+	errBlock := b.fn.NewBlock(b.newLabel("try.err"))
+	continueBlock := b.fn.NewBlock(b.newLabel("try.continue"))
+
+	// Compare tag with 0 (Ok variant)
+	cmp := b.fn.NewVReg(types.Typ[types.Bool])
+	b.emit(&Instr{Op: OpEq, Dest: cmp, Args: []Operand{tag, Imm(0, types.Typ[types.Int])}})
+	b.emit(&Instr{Op: OpBranch, Args: []Operand{cmp, Label(okBlock.Label), Label(errBlock.Label)}})
+
+	// Ok block: extract the value and continue
+	b.block = okBlock
+	var okValue Operand
+	if len(okVariant.Fields) > 0 {
+		// Load the value field (at offset 8, after the tag)
+		valueAddr := b.fn.NewVReg(types.NewPointer(okVariant.Fields[0].Type, false))
+		b.emit(&Instr{
+			Op:   OpIndexAddr,
+			Dest: valueAddr,
+			Args: []Operand{resultValue, Imm(8, types.Typ[types.Int])},
+		})
+		okValue = b.fn.NewVReg(okVariant.Fields[0].Type)
+		b.emit(&Instr{Op: OpLoad, Dest: okValue, Args: []Operand{valueAddr}})
+	} else {
+		okValue = Imm(0, types.Typ[types.Unit])
+	}
+	b.emit(&Instr{Op: OpJump, Args: []Operand{Label(continueBlock.Label)}})
+
+	// Err block: propagate the error by returning it
+	b.block = errBlock
+
+	// Get the function's return type (should also be a Result)
+	returnType := b.fn.Result
+	returnEnum, isResultReturn := returnType.(*types.Enum)
+
+	if isResultReturn {
+		// Build a new Result with the error value
+		// First, allocate space for the return Result
+		totalSize := 8 + returnEnum.MaxVariantSize()
+		returnResult := b.fn.NewVReg(returnType)
+		b.emit(&Instr{
+			Op:   OpAlloc,
+			Dest: returnResult,
+			Args: []Operand{Imm(int64(totalSize), types.Typ[types.Int])},
+		})
+
+		// Set the tag to 1 (Err)
+		b.emit(&Instr{Op: OpStore, Args: []Operand{Imm(1, types.Typ[types.Int]), returnResult}})
+
+		// Copy the error value from the input Result to the output Result
+		if len(errVariant.Fields) > 0 {
+			// Load the error value from the input
+			errAddr := b.fn.NewVReg(types.NewPointer(errVariant.Fields[0].Type, false))
+			b.emit(&Instr{
+				Op:   OpIndexAddr,
+				Dest: errAddr,
+				Args: []Operand{resultValue, Imm(8, types.Typ[types.Int])},
+			})
+			errValue := b.fn.NewVReg(errVariant.Fields[0].Type)
+			b.emit(&Instr{Op: OpLoad, Dest: errValue, Args: []Operand{errAddr}})
+
+			// Store the error value in the return Result
+			returnErrAddr := b.fn.NewVReg(types.NewPointer(errVariant.Fields[0].Type, false))
+			b.emit(&Instr{
+				Op:   OpIndexAddr,
+				Dest: returnErrAddr,
+				Args: []Operand{returnResult, Imm(8, types.Typ[types.Int])},
+			})
+			b.emit(&Instr{Op: OpStore, Args: []Operand{errValue, returnErrAddr}})
+		}
+
+		// Return the error Result
+		b.emit(&Instr{Op: OpReturn, Args: []Operand{returnResult}})
+	} else {
+		// If the function doesn't return Result, just return (shouldn't happen after sema)
+		b.emit(&Instr{Op: OpReturn})
+	}
+
+	// Continue block
+	b.block = continueBlock
+	return okValue
 }
 
 // buildPatternCheck emits code to check if a pattern matches.

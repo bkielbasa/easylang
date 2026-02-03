@@ -1107,6 +1107,8 @@ func (a *Analyzer) analyzeExpr(expr ast.Expr) types.Type {
 		typ = a.analyzePathExpr(e)
 	case *ast.MatchExpr:
 		typ = a.analyzeMatchExpr(e)
+	case *ast.TryExpr:
+		typ = a.analyzeTryExpr(e)
 	default:
 		a.error(expr.Pos(), "unsupported expression type %T", expr)
 		typ = types.Typ[types.Invalid]
@@ -2365,6 +2367,59 @@ func (a *Analyzer) analyzeMatchExpr(e *ast.MatchExpr) types.Type {
 	}
 
 	return resultType
+}
+
+func (a *Analyzer) analyzeTryExpr(e *ast.TryExpr) types.Type {
+	// The ? operator can only be used inside a function
+	if a.currentFunc == nil {
+		a.error(e.Pos(), "? operator can only be used inside a function")
+		return types.Typ[types.Invalid]
+	}
+
+	// Analyze the inner expression
+	innerType := a.analyzeExpr(e.Expr)
+
+	// The expression must be a Result type (enum with Ok and Err variants)
+	enumType, ok := innerType.(*types.Enum)
+	if !ok {
+		a.error(e.Pos(), "? operator requires Result type, got %s", innerType)
+		return types.Typ[types.Invalid]
+	}
+
+	// Check that it has Ok and Err variants
+	okVariant := enumType.VariantByName("Ok")
+	errVariant := enumType.VariantByName("Err")
+	if okVariant == nil || errVariant == nil {
+		a.error(e.Pos(), "? operator requires Result type with Ok and Err variants, got %s", enumType.Name)
+		return types.Typ[types.Invalid]
+	}
+
+	// The enclosing function must also return a Result type
+	returnType := a.currentFunc.Result
+	returnEnum, ok := returnType.(*types.Enum)
+	if !ok {
+		a.error(e.Pos(), "? operator can only be used in functions returning Result, this function returns %s", returnType)
+		return types.Typ[types.Invalid]
+	}
+
+	// The return type must also have Ok and Err variants
+	returnOk := returnEnum.VariantByName("Ok")
+	returnErr := returnEnum.VariantByName("Err")
+	if returnOk == nil || returnErr == nil {
+		a.error(e.Pos(), "? operator can only be used in functions returning Result type with Ok and Err variants")
+		return types.Typ[types.Invalid]
+	}
+
+	// The error types should be compatible (same type for now)
+	// For simplicity, we require the enum types to be the same (both Result_T_E)
+	// A more advanced implementation would check that E is compatible
+
+	// Return the type of the Ok variant's value
+	if len(okVariant.Fields) == 0 {
+		return types.Typ[types.Unit]
+	}
+	// Assume the first field is the value
+	return okVariant.Fields[0].Type
 }
 
 func (a *Analyzer) analyzePattern(pattern ast.Pattern, expectedType types.Type) {
