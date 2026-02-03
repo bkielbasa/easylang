@@ -467,6 +467,45 @@ func NewChannel(elem Type) *Channel {
 	return &Channel{Elem: elem}
 }
 
+// Map represents a map type.
+type Map struct {
+	Key   Type
+	Value Type
+}
+
+func (m *Map) String() string {
+	return fmt.Sprintf("map[%s]%s", m.Key, m.Value)
+}
+
+func (m *Map) Equals(other Type) bool {
+	om, ok := other.(*Map)
+	if !ok {
+		return false
+	}
+	return m.Key.Equals(om.Key) && m.Value.Equals(om.Value)
+}
+
+func (m *Map) Underlying() Type { return m }
+func (m *Map) isType()          {}
+
+// NewMap creates a new map type.
+func NewMap(key, value Type) *Map {
+	return &Map{Key: key, Value: value}
+}
+
+// IsValidMapKey reports whether the type is a valid map key type.
+// Only comparable types (int, string, bool) are valid map keys.
+func IsValidMapKey(t Type) bool {
+	switch typ := t.Underlying().(type) {
+	case *Basic:
+		return typ.Kind == Bool || typ.Kind == Int || typ.Kind == String ||
+			typ.Kind == Int8 || typ.Kind == Int16 || typ.Kind == Int32 || typ.Kind == Int64 ||
+			typ.Kind == Uint || typ.Kind == Uint8 || typ.Kind == Uint16 || typ.Kind == Uint32 || typ.Kind == Uint64
+	default:
+		return false
+	}
+}
+
 // TypeAlias represents a type alias.
 type TypeAlias struct {
 	Name       string
@@ -592,6 +631,8 @@ func TypeSize(t Type) int {
 		return size
 	case *Channel:
 		return 8 // channel handle
+	case *Map:
+		return 8 // pointer to map header
 	default:
 		return 8 // default to pointer size
 	}

@@ -334,6 +334,13 @@ func (a *Assembler) CSET(rd Reg, cond Cond) {
 	a.emit(instr)
 }
 
+// CSEL Xd, Xn, Xm, cond (conditional select: Xd = cond ? Xn : Xm)
+func (a *Assembler) CSEL(rd, rn, rm Reg, cond Cond) {
+	// sf=1, op=0, S=0, 11010100, Rm, cond, 00, Rn, Rd
+	instr := uint32(0x9A800000) | uint32(rm)<<16 | uint32(cond)<<12 | uint32(rn)<<5 | uint32(rd)
+	a.emit(instr)
+}
+
 // ============================================
 // Branches
 // ============================================
@@ -405,12 +412,24 @@ func (a *Assembler) CBZ(rn Reg, offset int32) {
 	a.emit(instr)
 }
 
+// CBZ_instr returns the encoding for CBZ without emitting it
+func (a *Assembler) CBZ_instr(rn Reg, imm19 int32) uint32 {
+	// sf=1, 011010 0, imm19, Rt
+	return uint32(0xB4000000) | uint32(imm19&0x7FFFF)<<5 | uint32(rn)
+}
+
 // CBNZ Xn, offset (compare and branch if not zero)
 func (a *Assembler) CBNZ(rn Reg, offset int32) {
 	// sf=1, 011010 1, imm19, Rt
 	imm19 := (offset >> 2) & 0x7FFFF
 	instr := uint32(0xB5000000) | uint32(imm19)<<5 | uint32(rn)
 	a.emit(instr)
+}
+
+// CBNZ_instr returns the encoding for CBNZ without emitting it
+func (a *Assembler) CBNZ_instr(rn Reg, imm19 int32) uint32 {
+	// sf=1, 011010 1, imm19, Rt
+	return uint32(0xB5000000) | uint32(imm19&0x7FFFF)<<5 | uint32(rn)
 }
 
 // ============================================

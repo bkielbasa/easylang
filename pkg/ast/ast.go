@@ -570,6 +570,21 @@ func (a *ArrayExpr) Pos() token.Position { return a.Token.Pos }
 func (a *ArrayExpr) node()               {}
 func (a *ArrayExpr) expr()               {}
 
+type MapExpr struct {
+	Token   token.Token // 'map'
+	MapType *MapType
+	Entries []MapEntry
+}
+
+type MapEntry struct {
+	Key   Expr
+	Value Expr
+}
+
+func (m *MapExpr) Pos() token.Position { return m.Token.Pos }
+func (m *MapExpr) node()               {}
+func (m *MapExpr) expr()               {}
+
 type TupleExpr struct {
 	Token    token.Token
 	Elements []Expr
@@ -713,6 +728,16 @@ type UnitType struct {
 func (u *UnitType) Pos() token.Position { return u.Token.Pos }
 func (u *UnitType) node()               {}
 func (u *UnitType) typeNode()           {}
+
+type MapType struct {
+	Token token.Token // 'map'
+	Key   Type
+	Value Type
+}
+
+func (m *MapType) Pos() token.Position { return m.Token.Pos }
+func (m *MapType) node()               {}
+func (m *MapType) typeNode()           {}
 
 // ============================================
 // Patterns

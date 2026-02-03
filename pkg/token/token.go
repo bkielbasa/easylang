@@ -94,6 +94,7 @@ const (
 	Chan
 	Select
 	Default
+	Map
 	True
 	False
 	None
@@ -196,6 +197,7 @@ var tokenNames = map[Type]string{
 	Chan:     "chan",
 	Select:   "select",
 	Default:  "default",
+	Map:      "map",
 	True:     "true",
 	False:    "false",
 	None:     "None",
@@ -238,6 +240,7 @@ var keywords = map[string]Type{
 	"chan":     Chan,
 	"select":   Select,
 	"default":  Default,
+	"map":      Map,
 	"true":     True,
 	"false":    False,
 	"None":     None,

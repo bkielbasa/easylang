@@ -436,6 +436,14 @@ func (a *Analyzer) resolveType(t ast.Type) types.Type {
 		elem := a.resolveType(t.Element)
 		return types.NewChannel(elem)
 
+	case *ast.MapType:
+		keyType := a.resolveType(t.Key)
+		if !types.IsValidMapKey(keyType) {
+			a.error(t.Pos(), "invalid map key type: %s", keyType)
+		}
+		valueType := a.resolveType(t.Value)
+		return types.NewMap(keyType, valueType)
+
 	default:
 		a.error(t.Pos(), "unsupported type")
 		return types.Typ[types.Invalid]
@@ -540,6 +548,11 @@ func (a *Analyzer) resolveTypeWithSubstitution(t ast.Type, subst map[string]type
 	case *ast.ChanType:
 		elem := a.resolveTypeWithSubstitution(t.Element, subst)
 		return types.NewChannel(elem)
+
+	case *ast.MapType:
+		keyType := a.resolveTypeWithSubstitution(t.Key, subst)
+		valueType := a.resolveTypeWithSubstitution(t.Value, subst)
+		return types.NewMap(keyType, valueType)
 
 	default:
 		a.error(t.Pos(), "unsupported type")
@@ -1099,6 +1112,8 @@ func (a *Analyzer) analyzeExpr(expr ast.Expr) types.Type {
 		typ = a.analyzeStructExpr(e)
 	case *ast.ArrayExpr:
 		typ = a.analyzeArrayExpr(e)
+	case *ast.MapExpr:
+		typ = a.analyzeMapExpr(e)
 	case *ast.TupleExpr:
 		typ = a.analyzeTupleExpr(e)
 	case *ast.MethodExpr:
@@ -1620,12 +1635,12 @@ func (a *Analyzer) analyzeLenBuiltin(e *ast.CallExpr) types.Type {
 	switch argType.Underlying().(type) {
 	case *types.Basic:
 		if argType.Underlying().(*types.Basic).Kind != types.String {
-			a.error(e.Args[0].Pos(), "len argument must be string, array, or slice; got %s", argType)
+			a.error(e.Args[0].Pos(), "len argument must be string, array, slice, or map; got %s", argType)
 		}
-	case *types.Array, *types.Slice:
+	case *types.Array, *types.Slice, *types.Map:
 		// OK
 	default:
-		a.error(e.Args[0].Pos(), "len argument must be string, array, or slice; got %s", argType)
+		a.error(e.Args[0].Pos(), "len argument must be string, array, slice, or map; got %s", argType)
 	}
 
 	return types.Typ[types.Int]
@@ -1859,17 +1874,27 @@ func (a *Analyzer) analyzeIndexExpr(e *ast.IndexExpr) types.Type {
 	exprType := a.analyzeExpr(e.Expr)
 	indexType := a.analyzeExpr(e.Index)
 
-	if !isInteger(indexType) {
-		a.error(e.Index.Pos(), "index must be integer, got %s", indexType)
-	}
-
 	switch t := exprType.Underlying().(type) {
 	case *types.Array:
+		if !isInteger(indexType) {
+			a.error(e.Index.Pos(), "index must be integer, got %s", indexType)
+		}
 		return t.Elem
 	case *types.Slice:
+		if !isInteger(indexType) {
+			a.error(e.Index.Pos(), "index must be integer, got %s", indexType)
+		}
 		return t.Elem
+	case *types.Map:
+		if !indexType.Equals(t.Key) {
+			a.error(e.Index.Pos(), "map key must be %s, got %s", t.Key, indexType)
+		}
+		return t.Value
 	case *types.Basic:
 		if t.Kind == types.String {
+			if !isInteger(indexType) {
+				a.error(e.Index.Pos(), "index must be integer, got %s", indexType)
+			}
 			return types.Typ[types.Int] // character as int for easier use with literals
 		}
 		a.error(e.Expr.Pos(), "cannot index %s", exprType)
@@ -2291,6 +2316,34 @@ func (a *Analyzer) analyzeArrayExpr(e *ast.ArrayExpr) types.Type {
 	}
 
 	return types.NewArray(elemType, int64(len(e.Elements)))
+}
+
+func (a *Analyzer) analyzeMapExpr(e *ast.MapExpr) types.Type {
+	// Resolve map type from the map type annotation
+	if e.MapType == nil {
+		a.error(e.Pos(), "map expression requires type annotation")
+		return types.Typ[types.Invalid]
+	}
+
+	keyType := a.resolveType(e.MapType.Key)
+	if !types.IsValidMapKey(keyType) {
+		a.error(e.MapType.Pos(), "invalid map key type: %s", keyType)
+	}
+	valueType := a.resolveType(e.MapType.Value)
+
+	// Check entry types
+	for _, entry := range e.Entries {
+		k := a.analyzeExpr(entry.Key)
+		if !types.IsAssignableTo(k, keyType) {
+			a.error(entry.Key.Pos(), "cannot use %s as map key type %s", k, keyType)
+		}
+		v := a.analyzeExpr(entry.Value)
+		if !types.IsAssignableTo(v, valueType) {
+			a.error(entry.Value.Pos(), "cannot use %s as map value type %s", v, valueType)
+		}
+	}
+
+	return types.NewMap(keyType, valueType)
 }
 
 func (a *Analyzer) analyzeTupleExpr(e *ast.TupleExpr) types.Type {

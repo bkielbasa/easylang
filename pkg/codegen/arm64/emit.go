@@ -395,6 +395,16 @@ func (e *Emitter) emitInstr(instr *ir.Instr) {
 		e.emitSyscallWrite(instr)
 	case ir.OpSyscallClose:
 		e.emitSyscallClose(instr)
+	case ir.OpMapNew:
+		e.emitMapNew(instr)
+	case ir.OpMapGet:
+		e.emitMapGet(instr)
+	case ir.OpMapSet:
+		e.emitMapSet(instr)
+	case ir.OpMapDelete:
+		e.emitMapDelete(instr)
+	case ir.OpMapLen:
+		e.emitMapLen(instr)
 	}
 }
 
@@ -2072,6 +2082,431 @@ func (e *Emitter) emitSyscallClose(instr *ir.Instr) {
 	e.asm.SVC(0x80)
 
 	// Result is in X0
+	e.storeToVReg(instr.Dest.VReg, X0)
+}
+
+// Map implementation constants
+const (
+	mapHeaderSize   = 40 // 5 * 8 bytes
+	mapBucketsOff   = 0  // offset to buckets pointer
+	mapCountOff     = 8  // offset to count
+	mapCapacityOff  = 16 // offset to capacity
+	mapKeySizeOff   = 24 // offset to key size
+	mapValSizeOff   = 32 // offset to value size
+	bucketStatusOff = 0  // status byte offset in bucket
+	bucketHashOff   = 8  // hash offset in bucket
+	bucketKeyOff    = 16 // key offset in bucket
+	bucketEmpty     = 0
+	bucketOccupied  = 1
+	bucketDeleted   = 2
+	initialMapCap   = 8 // initial number of buckets
+)
+
+// emitHeapAllocHelper allocates memory from the heap using mmap.
+// size: number of bytes to allocate
+// dstReg: register to store the result pointer
+func (e *Emitter) emitHeapAllocHelper(size int, dstReg Reg) {
+	// Use mmap syscall to allocate memory
+	// mmap(addr, len, prot, flags, fd, offset)
+	// addr = 0 (let kernel choose)
+	// len = size (round up to page size for efficiency)
+	// prot = PROT_READ | PROT_WRITE = 3
+	// flags = MAP_ANON | MAP_PRIVATE = 0x1002
+	// fd = -1
+	// offset = 0
+
+	e.asm.MOV(X0, XZR)           // addr = NULL
+	e.asm.MOVimm(X1, int64(size)) // len = size
+	e.asm.MOVimm(X2, 3)          // prot = PROT_READ | PROT_WRITE
+	e.asm.MOVimm(X3, 0x1002)     // flags = MAP_ANON | MAP_PRIVATE
+	e.asm.MOVimm(X4, -1)         // fd = -1
+	e.asm.MOV(X5, XZR)           // offset = 0
+	e.asm.MOVimm(X16, 0x20000C5) // mmap syscall number for macOS
+	e.asm.SVC(0x80)
+
+	if dstReg != X0 {
+		e.asm.MOV(dstReg, X0)
+	}
+}
+
+// emitMapNew creates a new empty map.
+// Args: keySize (imm), valSize (imm)
+// Returns: pointer to map header
+func (e *Emitter) emitMapNew(instr *ir.Instr) {
+	keySize := instr.Args[0].Imm
+	valSize := instr.Args[1].Imm
+	bucketSize := 16 + keySize + valSize // status(1) + padding(7) + hash(8) + key + value
+
+	// Allocate header (40 bytes)
+	e.emitHeapAllocHelper(mapHeaderSize, X19) // Use callee-saved to preserve across second mmap
+	// X19 = header ptr
+
+	// Allocate buckets array
+	totalBucketSize := bucketSize * initialMapCap
+	e.emitHeapAllocHelper(int(totalBucketSize), X1)
+	// X1 = buckets ptr
+
+	// Zero out the buckets (all status bytes = 0 means empty)
+	// Simple loop to zero memory
+	e.asm.MOV(X2, X1)                                     // current ptr
+	e.asm.MOVimm(X3, int64(totalBucketSize))              // size to zero
+	e.asm.ADD(X3, X1, X3)                                 // end ptr = buckets + size
+
+	// Loop: while (X2 < X3) { *X2 = 0; X2 += 8; }
+	zeroLoopOffset := e.asm.Offset()
+	e.asm.CMP(X2, X3)
+	endZeroOffset := e.asm.Offset()
+	e.asm.Bcond(CondGE, 0) // placeholder - branch if done
+	e.asm.STRx(XZR, X2)    // store 0
+	e.asm.ADDi(X2, X2, 8)  // advance by 8
+	loopBackOffset := e.asm.Offset() - zeroLoopOffset
+	e.asm.B(-int32(loopBackOffset)) // jump back to loop start
+
+	// Patch the exit branch
+	endZeroLabel := e.asm.Offset()
+	e.asm.Patch(endZeroOffset, e.asm.Bcond_instr(CondGE, int32(endZeroLabel-endZeroOffset)>>2))
+
+	// Initialize header (X19 = header, X1 = buckets)
+	e.asm.STR(X1, X19, mapBucketsOff)  // buckets_ptr
+	e.asm.STR(XZR, X19, mapCountOff)   // count = 0
+	e.asm.MOVimm(X4, initialMapCap)
+	e.asm.STR(X4, X19, mapCapacityOff) // capacity
+	e.asm.MOVimm(X4, keySize)
+	e.asm.STR(X4, X19, mapKeySizeOff)  // key_size
+	e.asm.MOVimm(X4, valSize)
+	e.asm.STR(X4, X19, mapValSizeOff)  // val_size
+
+	// Return header pointer
+	e.storeToVReg(instr.Dest.VReg, X19)
+}
+
+// emitHashInt computes hash of an integer value.
+// Input: value in srcReg
+// Output: hash in dstReg
+// Uses simple multiplication for hash distribution
+func (e *Emitter) emitHashInt(srcReg, dstReg Reg) {
+	// hash = value * 2654435769 (golden ratio * 2^32)
+	// Using a smaller constant that fits in 32 bits
+	e.asm.MOVimm(X9, 2654435769)
+	e.asm.MUL(dstReg, srcReg, X9)
+}
+
+// emitHashString computes hash of a null-terminated string using DJB2.
+// Input: string pointer in srcReg
+// Output: hash in dstReg
+func (e *Emitter) emitHashString(srcReg, dstReg Reg) {
+	// DJB2: hash = 5381; for each char: hash = hash * 33 + char
+	e.asm.MOVimm(dstReg, 5381)
+	e.asm.MOV(X10, srcReg) // current char ptr
+
+	loopStart := e.asm.Offset()
+	e.asm.LDRB(X11, X10, 0) // load byte
+	cbzOffset := e.asm.Offset()
+	e.asm.CBZ(X11, 0) // placeholder - if null, done
+
+	// hash = hash * 33 + char = hash * 32 + hash + char
+	e.asm.LSL(X12, dstReg, 5)      // hash * 32
+	e.asm.ADD(dstReg, X12, dstReg) // hash * 33
+	e.asm.ADD(dstReg, dstReg, X11) // + char
+	e.asm.ADDi(X10, X10, 1)        // advance ptr
+	loopBackDist := e.asm.Offset() - loopStart
+	e.asm.B(-int32(loopBackDist)) // jump back to loop start
+
+	// Patch CBZ to jump here (end of loop)
+	endLoop := e.asm.Offset()
+	e.asm.Patch(cbzOffset, e.asm.CBZ_instr(X11, int32(endLoop-cbzOffset)>>2))
+}
+
+// emitMapGet looks up a key in the map.
+// Args: map, key
+// Returns: value (or zero if not found)
+func (e *Emitter) emitMapGet(instr *ir.Instr) {
+	mapReg := e.loadOperand(instr.Args[0], X0)
+	keyReg := e.loadOperand(instr.Args[1], X1)
+
+	// Load map metadata
+	e.asm.LDR(X2, mapReg, mapBucketsOff)  // buckets_ptr
+	e.asm.LDR(X3, mapReg, mapCapacityOff) // capacity
+	e.asm.LDR(X4, mapReg, mapKeySizeOff)  // key_size
+	e.asm.LDR(X5, mapReg, mapValSizeOff)  // val_size
+
+	// Compute bucket size: 16 + key_size + val_size
+	e.asm.ADDi(X6, X4, 16)
+	e.asm.ADD(X6, X6, X5) // X6 = bucket_size
+
+	// Compute hash
+	keyType := instr.Args[1].Type
+	if keyType != nil && keyType.String() == "string" {
+		e.emitHashString(keyReg, X7)
+	} else {
+		e.emitHashInt(keyReg, X7)
+	}
+
+	// index = hash % capacity
+	e.asm.UDIV(X8, X7, X3)
+	e.asm.MSUB(X8, X8, X3, X7) // X8 = hash - (hash/cap)*cap = hash % cap
+
+	// Linear probe loop
+	e.asm.MOV(X9, X8) // X9 = current index, X8 = start index
+
+	probeLoopStart := e.asm.Offset()
+
+	// bucket_ptr = buckets + index * bucket_size
+	e.asm.MUL(X10, X9, X6)
+	e.asm.ADD(X10, X2, X10) // X10 = bucket_ptr
+
+	// Check status
+	e.asm.LDRB(X11, X10, bucketStatusOff)
+	e.asm.CMPi(X11, bucketEmpty)
+	notFoundBranchOffset := e.asm.Offset()
+	e.asm.Bcond(CondEQ, 0) // placeholder - empty = not found
+
+	// If deleted, continue probing
+	e.asm.CMPi(X11, bucketDeleted)
+	continueProbeBranchOffset := e.asm.Offset()
+	e.asm.Bcond(CondEQ, 0) // placeholder - jump to continue probe
+
+	// Compare key (integer keys only for now)
+	e.asm.LDR(X12, X10, bucketKeyOff)
+	e.asm.CMP(X12, keyReg)
+	keyNotEqualBranchOffset := e.asm.Offset()
+	e.asm.Bcond(CondNE, 0) // placeholder - key not equal, continue probing
+
+	// Found - load value
+	e.asm.ADDi(X0, X10, bucketKeyOff)
+	e.asm.ADD(X0, X0, X4) // value_ptr = bucket + 16 + key_size
+	e.asm.LDRx(X0, X0)    // load value
+	doneFromFoundOffset := e.asm.Offset()
+	e.asm.B(0) // placeholder - jump to done
+
+	// Not found - return 0
+	notFoundLabel := e.asm.Offset()
+	e.asm.MOV(X0, XZR)
+	doneFromNotFoundOffset := e.asm.Offset()
+	e.asm.B(0) // placeholder - jump to done
+
+	// Continue probing
+	continueProbeLabel := e.asm.Offset()
+	e.asm.ADDi(X9, X9, 1) // index++
+	// Wrap around: if index >= capacity, index = 0
+	e.asm.CMP(X9, X3)
+	e.asm.CSEL(X9, XZR, X9, CondGE)
+	// Check if we've wrapped around completely
+	e.asm.CMP(X9, X8)
+	wrapBranchOffset := e.asm.Offset()
+	e.asm.Bcond(CondNE, 0) // placeholder - not wrapped, continue loop
+	// Wrapped around = not found
+	e.asm.MOV(X0, XZR)
+
+	doneLabel := e.asm.Offset()
+
+	// Patch all branches
+	e.asm.Patch(notFoundBranchOffset, e.asm.Bcond_instr(CondEQ, int32(notFoundLabel-notFoundBranchOffset)>>2))
+	e.asm.Patch(continueProbeBranchOffset, e.asm.Bcond_instr(CondEQ, int32(continueProbeLabel-continueProbeBranchOffset)>>2))
+	e.asm.Patch(keyNotEqualBranchOffset, e.asm.Bcond_instr(CondNE, int32(continueProbeLabel-keyNotEqualBranchOffset)>>2))
+	e.asm.Patch(doneFromFoundOffset, e.asm.B_instr(int32(doneLabel-doneFromFoundOffset)>>2))
+	e.asm.Patch(doneFromNotFoundOffset, e.asm.B_instr(int32(doneLabel-doneFromNotFoundOffset)>>2))
+	e.asm.Patch(wrapBranchOffset, e.asm.Bcond_instr(CondNE, int32(probeLoopStart-wrapBranchOffset)>>2))
+
+	e.storeToVReg(instr.Dest.VReg, X0)
+}
+
+// emitMapSet inserts or updates a key-value pair in the map.
+// Args: map, key, value
+func (e *Emitter) emitMapSet(instr *ir.Instr) {
+	mapReg := e.loadOperand(instr.Args[0], X0)
+	keyReg := e.loadOperand(instr.Args[1], X1)
+	e.loadOperand(instr.Args[2], X19) // Load value into X19 (callee-saved)
+
+	// Save map ptr and key in callee-saved registers
+	e.asm.MOV(X20, mapReg)
+	e.asm.MOV(X21, keyReg)
+
+	// Load map metadata
+	e.asm.LDR(X2, mapReg, mapBucketsOff)  // buckets_ptr
+	e.asm.LDR(X3, mapReg, mapCapacityOff) // capacity
+	e.asm.LDR(X4, mapReg, mapKeySizeOff)  // key_size
+	e.asm.LDR(X5, mapReg, mapValSizeOff)  // val_size
+
+	// Compute bucket size
+	e.asm.ADDi(X6, X4, 16)
+	e.asm.ADD(X6, X6, X5)
+
+	// Compute hash
+	keyType := instr.Args[1].Type
+	if keyType != nil && keyType.String() == "string" {
+		e.emitHashString(keyReg, X7)
+	} else {
+		e.emitHashInt(keyReg, X7)
+	}
+	e.asm.MOV(X22, X7) // save hash in callee-saved
+
+	// index = hash % capacity
+	e.asm.UDIV(X8, X7, X3)
+	e.asm.MSUB(X8, X8, X3, X7)
+
+	// Linear probe to find slot
+	e.asm.MOV(X9, X8) // current index
+
+	probeLoopStart := e.asm.Offset()
+
+	// bucket_ptr = buckets + index * bucket_size
+	e.asm.MUL(X10, X9, X6)
+	e.asm.ADD(X10, X2, X10)
+
+	// Check status
+	e.asm.LDRB(X11, X10, bucketStatusOff)
+
+	// If empty, insert here
+	e.asm.CMPi(X11, bucketEmpty)
+	insertBranchOffset := e.asm.Offset()
+	e.asm.Bcond(CondEQ, 0) // placeholder
+
+	// If deleted, insert here
+	e.asm.CMPi(X11, bucketDeleted)
+	insertDeletedBranchOffset := e.asm.Offset()
+	e.asm.Bcond(CondEQ, 0) // placeholder
+
+	// Check if key matches (integer keys only)
+	e.asm.LDR(X12, X10, bucketKeyOff)
+	e.asm.CMP(X12, X21)
+	updateBranchOffset := e.asm.Offset()
+	e.asm.Bcond(CondEQ, 0) // placeholder - key matches, update
+
+	// Continue probing
+	e.asm.ADDi(X9, X9, 1)
+	e.asm.CMP(X9, X3)
+	e.asm.CSEL(X9, XZR, X9, CondGE)
+	e.asm.CMP(X9, X8)
+	loopBackBranchOffset := e.asm.Offset()
+	e.asm.Bcond(CondNE, 0) // placeholder - not wrapped, continue loop
+	// Table full - just exit (should resize but we don't)
+	doneFromFullOffset := e.asm.Offset()
+	e.asm.B(0) // placeholder
+
+	// Insert new entry
+	insertLabel := e.asm.Offset()
+	e.asm.MOVimm(X11, bucketOccupied)
+	e.asm.STRB(X11, X10, bucketStatusOff)
+	e.asm.STR(X22, X10, bucketHashOff)  // Store hash
+	e.asm.STR(X21, X10, bucketKeyOff)   // Store key
+	e.asm.ADDi(X12, X10, bucketKeyOff)
+	e.asm.ADD(X12, X12, X4)
+	e.asm.STRx(X19, X12) // Store value
+
+	// Increment count
+	e.asm.LDR(X11, X20, mapCountOff)
+	e.asm.ADDi(X11, X11, 1)
+	e.asm.STR(X11, X20, mapCountOff)
+	doneFromInsertOffset := e.asm.Offset()
+	e.asm.B(0) // placeholder
+
+	// Update existing entry
+	updateLabel := e.asm.Offset()
+	e.asm.ADDi(X12, X10, bucketKeyOff)
+	e.asm.ADD(X12, X12, X4)
+	e.asm.STRx(X19, X12) // Store value
+
+	doneLabel := e.asm.Offset()
+
+	// Patch all branches
+	e.asm.Patch(insertBranchOffset, e.asm.Bcond_instr(CondEQ, int32(insertLabel-insertBranchOffset)>>2))
+	e.asm.Patch(insertDeletedBranchOffset, e.asm.Bcond_instr(CondEQ, int32(insertLabel-insertDeletedBranchOffset)>>2))
+	e.asm.Patch(updateBranchOffset, e.asm.Bcond_instr(CondEQ, int32(updateLabel-updateBranchOffset)>>2))
+	e.asm.Patch(loopBackBranchOffset, e.asm.Bcond_instr(CondNE, int32(probeLoopStart-loopBackBranchOffset)>>2))
+	e.asm.Patch(doneFromFullOffset, e.asm.B_instr(int32(doneLabel-doneFromFullOffset)>>2))
+	e.asm.Patch(doneFromInsertOffset, e.asm.B_instr(int32(doneLabel-doneFromInsertOffset)>>2))
+}
+
+// emitMapDelete marks a key as deleted in the map.
+// Args: map, key
+func (e *Emitter) emitMapDelete(instr *ir.Instr) {
+	mapReg := e.loadOperand(instr.Args[0], X0)
+	keyReg := e.loadOperand(instr.Args[1], X1)
+
+	// Save map ptr
+	e.asm.MOV(X20, mapReg)
+
+	// Load map metadata
+	e.asm.LDR(X2, mapReg, mapBucketsOff)
+	e.asm.LDR(X3, mapReg, mapCapacityOff)
+	e.asm.LDR(X4, mapReg, mapKeySizeOff)
+	e.asm.LDR(X5, mapReg, mapValSizeOff)
+
+	// Bucket size
+	e.asm.ADDi(X6, X4, 16)
+	e.asm.ADD(X6, X6, X5)
+
+	// Hash
+	keyType := instr.Args[1].Type
+	if keyType != nil && keyType.String() == "string" {
+		e.emitHashString(keyReg, X7)
+	} else {
+		e.emitHashInt(keyReg, X7)
+	}
+
+	// index = hash % capacity
+	e.asm.UDIV(X8, X7, X3)
+	e.asm.MSUB(X8, X8, X3, X7)
+
+	e.asm.MOV(X9, X8)
+
+	probeLoopStart := e.asm.Offset()
+
+	e.asm.MUL(X10, X9, X6)
+	e.asm.ADD(X10, X2, X10)
+
+	e.asm.LDRB(X11, X10, bucketStatusOff)
+	e.asm.CMPi(X11, bucketEmpty)
+	notFoundBranchOffset := e.asm.Offset()
+	e.asm.Bcond(CondEQ, 0) // placeholder - not found
+
+	e.asm.CMPi(X11, bucketDeleted)
+	continueProbeBranchOffset := e.asm.Offset()
+	e.asm.Bcond(CondEQ, 0) // placeholder - continue probing
+
+	// Compare key (integer keys only)
+	e.asm.LDR(X12, X10, bucketKeyOff)
+	e.asm.CMP(X12, keyReg)
+	foundBranchOffset := e.asm.Offset()
+	e.asm.Bcond(CondEQ, 0) // placeholder - found
+
+	// Continue probing
+	continueProbeLabel := e.asm.Offset()
+	e.asm.ADDi(X9, X9, 1)
+	e.asm.CMP(X9, X3)
+	e.asm.CSEL(X9, XZR, X9, CondGE)
+	e.asm.CMP(X9, X8)
+	loopBackBranchOffset := e.asm.Offset()
+	e.asm.Bcond(CondNE, 0) // placeholder
+	doneFromWrapOffset := e.asm.Offset()
+	e.asm.B(0) // placeholder - wrapped, done
+
+	// Found - mark as deleted
+	foundLabel := e.asm.Offset()
+	e.asm.MOVimm(X11, bucketDeleted)
+	e.asm.STRB(X11, X10, bucketStatusOff)
+	// Decrement count
+	e.asm.LDR(X11, X20, mapCountOff)
+	e.asm.SUBi(X11, X11, 1)
+	e.asm.STR(X11, X20, mapCountOff)
+
+	doneLabel := e.asm.Offset()
+
+	// Patch all branches
+	e.asm.Patch(notFoundBranchOffset, e.asm.Bcond_instr(CondEQ, int32(doneLabel-notFoundBranchOffset)>>2))
+	e.asm.Patch(continueProbeBranchOffset, e.asm.Bcond_instr(CondEQ, int32(continueProbeLabel-continueProbeBranchOffset)>>2))
+	e.asm.Patch(foundBranchOffset, e.asm.Bcond_instr(CondEQ, int32(foundLabel-foundBranchOffset)>>2))
+	e.asm.Patch(loopBackBranchOffset, e.asm.Bcond_instr(CondNE, int32(probeLoopStart-loopBackBranchOffset)>>2))
+	e.asm.Patch(doneFromWrapOffset, e.asm.B_instr(int32(doneLabel-doneFromWrapOffset)>>2))
+}
+
+// emitMapLen returns the number of entries in the map.
+// Args: map
+// Returns: count
+func (e *Emitter) emitMapLen(instr *ir.Instr) {
+	mapReg := e.loadOperand(instr.Args[0], X0)
+	e.asm.LDR(X0, mapReg, mapCountOff)
 	e.storeToVReg(instr.Dest.VReg, X0)
 }
 

@@ -1168,6 +1168,8 @@ func (p *Parser) parsePrefixExpr() ast.Expr {
 		return p.parseChanRecv()
 	case token.Chan:
 		return p.parseChanCreate()
+	case token.Map:
+		return p.parseMapExpr()
 	default:
 		p.error(fmt.Sprintf("unexpected token %s in expression", p.curToken.Type))
 		return nil
@@ -1602,6 +1604,51 @@ func (p *Parser) parseChanCreate() ast.Expr {
 	return expr
 }
 
+func (p *Parser) parseMapExpr() *ast.MapExpr {
+	m := &ast.MapExpr{Token: p.curToken}
+
+	// Parse map type: map[K]V
+	m.MapType = p.parseMapType()
+	if m.MapType == nil {
+		return nil
+	}
+
+	// Expect '{' after type
+	if !p.expect(token.LeftBrace) {
+		return nil
+	}
+	p.nextToken() // move past '{'
+
+	// Parse key: value pairs
+	for !p.curTokenIs(token.RightBrace) && !p.curTokenIs(token.EOF) {
+		entry := ast.MapEntry{}
+
+		// Parse key
+		entry.Key = p.parseExpression(LOWEST)
+
+		// Expect ':'
+		if !p.expect(token.Colon) {
+			return nil
+		}
+		p.nextToken() // move past ':'
+
+		// Parse value
+		entry.Value = p.parseExpression(LOWEST)
+
+		m.Entries = append(m.Entries, entry)
+
+		// Handle comma
+		if p.peekTokenIs(token.Comma) {
+			p.nextToken() // move to ','
+			p.nextToken() // move past ','
+		} else {
+			p.nextToken() // move to '}'
+		}
+	}
+
+	return m
+}
+
 func (p *Parser) parseInfixExpr(left ast.Expr) ast.Expr {
 	switch p.curToken.Type {
 	case token.Plus, token.Minus, token.Star, token.Slash, token.Percent,
@@ -1798,6 +1845,8 @@ func (p *Parser) parseType() ast.Type {
 		return p.parseRefType()
 	case token.Chan:
 		return p.parseChanType()
+	case token.Map:
+		return p.parseMapType()
 	default:
 		p.error(fmt.Sprintf("unexpected token %s in type", p.curToken.Type))
 		return nil
@@ -1975,6 +2024,28 @@ func (p *Parser) parseChanType() *ast.ChanType {
 	}
 
 	return ch
+}
+
+func (p *Parser) parseMapType() *ast.MapType {
+	m := &ast.MapType{Token: p.curToken}
+
+	// Expect '[' after 'map'
+	if !p.expect(token.LeftBracket) {
+		return nil
+	}
+	p.nextToken() // move to key type
+
+	m.Key = p.parseType()
+
+	// Expect ']' after key type
+	if !p.expect(token.RightBracket) {
+		return nil
+	}
+	p.nextToken() // move to value type
+
+	m.Value = p.parseType()
+
+	return m
 }
 
 // ============================================

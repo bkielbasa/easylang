@@ -95,6 +95,13 @@ const (
 	OpSyscallRead  // read(fd, buf, size) -> bytes_read
 	OpSyscallWrite // write(fd, buf, size) -> bytes_written
 	OpSyscallClose // close(fd) -> int
+
+	// Map operations
+	OpMapNew    // (keySize, valSize) -> map ptr
+	OpMapGet    // (map, key) -> value
+	OpMapSet    // (map, key, value)
+	OpMapDelete // (map, key)
+	OpMapLen    // (map) -> int
 )
 
 var opNames = [...]string{
@@ -157,6 +164,11 @@ var opNames = [...]string{
 	OpSyscallRead:  "syscall_read",
 	OpSyscallWrite: "syscall_write",
 	OpSyscallClose: "syscall_close",
+	OpMapNew:       "mapnew",
+	OpMapGet:       "mapget",
+	OpMapSet:       "mapset",
+	OpMapDelete:    "mapdelete",
+	OpMapLen:       "maplen",
 }
 
 func (o Op) String() string {

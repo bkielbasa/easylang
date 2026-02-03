@@ -545,6 +545,8 @@ func (b *Builder) buildExpr(expr ast.Expr) Operand {
 		return b.buildBlock(e.Block)
 	case *ast.ArrayExpr:
 		return b.buildArrayExpr(e)
+	case *ast.MapExpr:
+		return b.buildMapExpr(e)
 	case *ast.IndexExpr:
 		return b.buildIndexExpr(e)
 	case *ast.SliceExpr:
@@ -749,13 +751,13 @@ func (b *Builder) buildFieldAssignment(field *ast.FieldExpr, right Operand) Oper
 }
 
 func (b *Builder) buildIndexAssignment(index *ast.IndexExpr, right Operand) Operand {
-	// Get the array/slice pointer
+	// Get the array/slice/map pointer
 	arrayPtr := b.buildExpr(index.Expr)
 
 	// Get the index value
 	idx := b.buildExpr(index.Index)
 
-	// Get the array/slice type
+	// Get the array/slice/map type
 	exprType := b.info.Types[index.Expr]
 	if exprType == nil {
 		return None()
@@ -787,6 +789,13 @@ func (b *Builder) buildIndexAssignment(index *ast.IndexExpr, right Operand) Oper
 			Args: []Operand{arrayPtr},
 		})
 		arrayPtr = dataPtr
+	case *types.Map:
+		// Map assignment: emit OpMapSet
+		b.emit(&Instr{
+			Op:   OpMapSet,
+			Args: []Operand{arrayPtr, idx, right},
+		})
+		return None()
 	default:
 		return None()
 	}
@@ -959,6 +968,13 @@ func (b *Builder) buildLenBuiltin(e *ast.CallExpr) Operand {
 			Op:   OpLoad,
 			Dest: result,
 			Args: []Operand{lenAddr},
+		})
+	case *types.Map:
+		// Map length - load count from map header (offset 8)
+		b.emit(&Instr{
+			Op:   OpMapLen,
+			Dest: result,
+			Args: []Operand{arg},
 		})
 	case *types.Basic:
 		basic := argType.Underlying().(*types.Basic)
@@ -1452,22 +1468,63 @@ func (b *Builder) buildArrayExpr(e *ast.ArrayExpr) Operand {
 	return fatPtr
 }
 
-// buildIndexExpr builds an array/slice/string index expression.
+// buildMapExpr builds a map literal expression.
+// Maps are represented as a pointer to a map header.
+func (b *Builder) buildMapExpr(e *ast.MapExpr) Operand {
+	// Get the map type from type info
+	mapType := b.info.Types[e]
+	if mapType == nil {
+		return None()
+	}
+	mType, ok := mapType.(*types.Map)
+	if !ok {
+		return None()
+	}
+
+	keySize := int64(b.typeSize(mType.Key))
+	valSize := int64(b.typeSize(mType.Value))
+
+	// Create a new map with OpMapNew
+	mapPtr := b.fn.NewVReg(mapType)
+	b.emit(&Instr{
+		Op:   OpMapNew,
+		Dest: mapPtr,
+		Args: []Operand{Imm(keySize, types.Typ[types.Int]), Imm(valSize, types.Typ[types.Int])},
+	})
+
+	// Insert each entry with OpMapSet
+	for _, entry := range e.Entries {
+		key := b.buildExpr(entry.Key)
+		val := b.buildExpr(entry.Value)
+		b.emit(&Instr{
+			Op:   OpMapSet,
+			Args: []Operand{mapPtr, key, val},
+		})
+	}
+
+	return mapPtr
+}
+
+// buildIndexExpr builds an array/slice/string/map index expression.
 func (b *Builder) buildIndexExpr(e *ast.IndexExpr) Operand {
-	// Get the array/slice/string expression
+	// Get the array/slice/string/map expression
 	base := b.buildExpr(e.Expr)
 	idx := b.buildExpr(e.Index)
 
-	// Get element type and check if it's a string
+	// Get element type and check the container type
 	exprType := b.info.Types[e.Expr]
 	var elemType types.Type
 	isString := false
+	isMap := false
 
 	switch t := exprType.Underlying().(type) {
 	case *types.Array:
 		elemType = t.Elem
 	case *types.Slice:
 		elemType = t.Elem
+	case *types.Map:
+		elemType = t.Value
+		isMap = true
 	case *types.Basic:
 		if t.Kind == types.String {
 			elemType = types.Typ[types.Int] // Return int for easier use with literals
@@ -1476,6 +1533,17 @@ func (b *Builder) buildIndexExpr(e *ast.IndexExpr) Operand {
 	}
 	if elemType == nil {
 		return None()
+	}
+
+	// Handle map index
+	if isMap {
+		result := b.fn.NewVReg(elemType)
+		b.emit(&Instr{
+			Op:   OpMapGet,
+			Dest: result,
+			Args: []Operand{base, idx},
+		})
+		return result
 	}
 
 	var dataPtr Operand
