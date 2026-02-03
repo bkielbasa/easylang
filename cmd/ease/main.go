@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"ease/pkg/ast"
 	"ease/pkg/codegen/arm64"
 	"ease/pkg/ir"
 	"ease/pkg/lexer"
@@ -209,30 +210,377 @@ Arguments after -- are passed to the program.`)
 func cmdTest(args []string) {
 	var verbose bool
 	var pattern string
+	var tags []string
+	var skipTags []string
+	var testDir string = "."
 
 	for i := 0; i < len(args); i++ {
 		switch args[i] {
 		case "-v", "--verbose":
 			verbose = true
-		case "-run":
+		case "-run", "-name":
 			if i+1 < len(args) {
 				pattern = args[i+1]
 				i++
 			}
+		case "-tag":
+			if i+1 < len(args) {
+				tags = append(tags, args[i+1])
+				i++
+			}
+		case "-skip":
+			if i+1 < len(args) {
+				skipTags = append(skipTags, args[i+1])
+				i++
+			}
 		case "-h", "--help":
-			fmt.Println(`Usage: ease test [options] [packages]
+			fmt.Println(`Usage: ease test [options] [directory]
 
 Options:
-    -v           verbose output
-    -run <pat>   run only tests matching pattern`)
+    -v            verbose output
+    -name <pat>   run only tests with descriptions matching pattern
+    -tag <tag>    run only tests with this tag (e.g., slow, integration)
+    -skip <tag>   skip tests with this tag
+
+Examples:
+    ease test                    # run all tests in current directory
+    ease test ./mypackage        # run tests in specific directory
+    ease test -name "login"      # run tests matching "login"
+    ease test -tag slow          # run only slow tests
+    ease test -skip integration  # skip integration tests`)
 			return
+		default:
+			if !strings.HasPrefix(args[i], "-") {
+				testDir = args[i]
+			}
 		}
 	}
 
-	// For now, just print that tests aren't implemented yet
-	_ = verbose
-	_ = pattern
-	fmt.Println("ease test: test runner not yet implemented")
+	// Find all *_test.ease files
+	testFiles, err := findTestFiles(testDir)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "ease test: %v\n", err)
+		os.Exit(1)
+	}
+
+	if len(testFiles) == 0 {
+		fmt.Println("ease test: no test files found")
+		return
+	}
+
+	if verbose {
+		fmt.Printf("Found %d test file(s)\n", len(testFiles))
+	}
+
+	// Collect all tests
+	var allTests []testCase
+	for _, file := range testFiles {
+		tests, err := collectTests(file, pattern, tags, skipTags)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "ease test: error in %s: %v\n", file, err)
+			continue
+		}
+		allTests = append(allTests, tests...)
+	}
+
+	if len(allTests) == 0 {
+		fmt.Println("ease test: no tests to run")
+		return
+	}
+
+	// Run tests
+	passed := 0
+	failed := 0
+
+	for _, tc := range allTests {
+		if verbose {
+			fmt.Printf("=== RUN   %s\n", tc.name)
+		}
+
+		err := runTest(tc, verbose)
+		if err != nil {
+			failed++
+			fmt.Printf("--- FAIL: %s\n", tc.name)
+			if verbose {
+				fmt.Printf("    %v\n", err)
+			}
+		} else {
+			passed++
+			if verbose {
+				fmt.Printf("--- PASS: %s\n", tc.name)
+			}
+		}
+	}
+
+	// Summary
+	fmt.Println()
+	if failed > 0 {
+		fmt.Printf("FAIL: %d passed, %d failed\n", passed, failed)
+		os.Exit(1)
+	}
+	fmt.Printf("PASS: %d passed\n", passed)
+}
+
+type testCase struct {
+	name       string
+	file       string
+	sourceCode string // complete program source for this test
+}
+
+// findTestFiles finds all *_test.ease files in a directory
+func findTestFiles(dir string) ([]string, error) {
+	var files []string
+	err := filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		if !info.IsDir() && strings.HasSuffix(path, "_test.ease") {
+			files = append(files, path)
+		}
+		return nil
+	})
+	return files, err
+}
+
+// collectTests parses a file and collects test cases
+func collectTests(file string, pattern string, tags, skipTags []string) ([]testCase, error) {
+	source, err := os.ReadFile(file)
+	if err != nil {
+		return nil, err
+	}
+
+	l := lexer.New(string(source), file)
+	p := parser.New(l)
+	prog := p.ParseProgram()
+
+	if len(p.Errors()) > 0 {
+		return nil, fmt.Errorf("parse errors: %v", p.Errors())
+	}
+
+	var tests []testCase
+
+	// Collect non-test declarations (functions, structs, etc.)
+	var nonTestDecls []string
+	sourceLines := strings.Split(string(source), "\n")
+
+	for _, decl := range prog.Decls {
+		switch d := decl.(type) {
+		case *ast.TestDecl:
+			// Check if test matches pattern
+			if pattern != "" && !strings.Contains(d.Description.Value, pattern) {
+				continue
+			}
+
+			// Check tags
+			testTags := getTestTags(d.Attributes)
+			if len(tags) > 0 && !hasAnyTag(testTags, tags) {
+				continue
+			}
+			if hasAnyTag(testTags, skipTags) {
+				continue
+			}
+
+			// Extract test body source
+			testBody := extractTestBody(sourceLines, d)
+
+			// Build complete program for this test
+			testProg := buildTestProgram(sourceLines, prog, d, testBody)
+
+			tests = append(tests, testCase{
+				name:       d.Description.Value,
+				file:       file,
+				sourceCode: testProg,
+			})
+
+		default:
+			// Track non-test declarations for context
+			_ = nonTestDecls
+		}
+	}
+
+	return tests, nil
+}
+
+// getTestTags extracts tag names from test attributes
+func getTestTags(attrs []ast.Attribute) []string {
+	var tags []string
+	for _, attr := range attrs {
+		tags = append(tags, attr.Name.Name)
+	}
+	return tags
+}
+
+// hasAnyTag checks if testTags contains any of the target tags
+func hasAnyTag(testTags, targetTags []string) bool {
+	for _, tt := range testTags {
+		for _, target := range targetTags {
+			if tt == target {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+// extractTestBody extracts the body of a test declaration from source
+func extractTestBody(lines []string, test *ast.TestDecl) string {
+	// Get start position from the block's Token
+	startLine := test.Body.Token.Pos.Line - 1 // 0-indexed
+
+	if startLine < 0 || startLine >= len(lines) {
+		return ""
+	}
+
+	// Find the end by counting braces
+	var body strings.Builder
+	braceCount := 0
+	started := false
+	firstLine := true
+
+	for i := startLine; i < len(lines); i++ {
+		line := lines[i]
+		if firstLine {
+			// On the first line, find the opening brace and skip everything before it
+			braceIdx := strings.Index(line, "{")
+			if braceIdx >= 0 {
+				started = true
+				braceCount = 1
+				// Write content after the brace if any
+				rest := strings.TrimSpace(line[braceIdx+1:])
+				if rest != "" {
+					body.WriteString("    ")
+					body.WriteString(rest)
+					body.WriteString("\n")
+				}
+			}
+			firstLine = false
+			continue
+		}
+
+		// Count braces in the line
+		for j, ch := range line {
+			if ch == '{' {
+				braceCount++
+			} else if ch == '}' {
+				braceCount--
+				if started && braceCount == 0 {
+					// Found closing brace, include text before it
+					content := strings.TrimRight(line[:j], " \t")
+					if content != "" {
+						body.WriteString(content)
+					}
+					return body.String()
+				}
+			}
+		}
+
+		// Add line to body
+		if started && braceCount > 0 {
+			body.WriteString(line)
+			body.WriteString("\n")
+		}
+	}
+
+	return body.String()
+}
+
+// buildTestProgram builds a complete program source that runs a single test
+func buildTestProgram(lines []string, prog *ast.Program, test *ast.TestDecl, testBody string) string {
+	var builder strings.Builder
+
+	// Copy all non-test declarations (structs, functions, etc.)
+	for _, decl := range prog.Decls {
+		switch d := decl.(type) {
+		case *ast.TestDecl:
+			// Skip test declarations
+			continue
+		default:
+			// Extract source for this declaration
+			startLine := d.Pos().Line - 1
+			endLine := findDeclEnd(lines, startLine)
+			for i := startLine; i <= endLine && i < len(lines); i++ {
+				builder.WriteString(lines[i])
+				builder.WriteString("\n")
+			}
+			builder.WriteString("\n")
+		}
+	}
+
+	// Generate main function that runs the test
+	builder.WriteString("fn main() -> int {\n")
+	builder.WriteString(testBody)
+	builder.WriteString("\n    return 0\n")
+	builder.WriteString("}\n")
+
+	return builder.String()
+}
+
+// findDeclEnd finds the end line of a declaration starting at startLine
+func findDeclEnd(lines []string, startLine int) int {
+	braceCount := 0
+	inDecl := false
+
+	for i := startLine; i < len(lines); i++ {
+		line := lines[i]
+		for _, ch := range line {
+			if ch == '{' {
+				braceCount++
+				inDecl = true
+			} else if ch == '}' {
+				braceCount--
+				if inDecl && braceCount == 0 {
+					return i
+				}
+			}
+		}
+	}
+	return startLine
+}
+
+// runTest compiles and runs a single test
+func runTest(tc testCase, verbose bool) error {
+	// Write test program to temp file
+	tmpDir, err := os.MkdirTemp("", "ease-test-*")
+	if err != nil {
+		return err
+	}
+	defer os.RemoveAll(tmpDir)
+
+	srcFile := filepath.Join(tmpDir, "test.ease")
+	if err := os.WriteFile(srcFile, []byte(tc.sourceCode), 0644); err != nil {
+		return err
+	}
+
+	binFile := filepath.Join(tmpDir, "test")
+
+	// Compile
+	if err := compile(srcFile, binFile, false, false); err != nil {
+		return fmt.Errorf("compile error: %v", err)
+	}
+
+	// Sign (macOS requirement)
+	signCmd := exec.Command("codesign", "-s", "-", "-f", binFile)
+	signCmd.Run() // Ignore errors
+
+	// Run
+	cmd := exec.Command(binFile)
+	output, err := cmd.CombinedOutput()
+
+	if err != nil {
+		if exitErr, ok := err.(*exec.ExitError); ok {
+			code := exitErr.ExitCode()
+			if code != 0 {
+				// Non-zero exit = test failure
+				if len(output) > 0 {
+					return fmt.Errorf("exit code %d: %s", code, string(output))
+				}
+				return fmt.Errorf("exit code %d", code)
+			}
+		}
+		return err
+	}
+
+	return nil
 }
 
 // compile compiles an Ease source file to a binary.

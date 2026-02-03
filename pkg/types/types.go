@@ -309,7 +309,10 @@ func (e *Enum) VariantIndex(name string) int {
 func (e *Enum) MaxVariantSize() int {
 	maxSize := 0
 	for _, v := range e.Variants {
-		size := len(v.Fields) * 8 // Assume 8 bytes per field for simplicity
+		size := 0
+		for _, f := range v.Fields {
+			size += TypeSize(f.Type)
+		}
 		if size > maxSize {
 			maxSize = size
 		}
@@ -558,4 +561,38 @@ func (t *TypeParam) isType()          {}
 // NewTypeParam creates a new type parameter.
 func NewTypeParam(name string, id int) *TypeParam {
 	return &TypeParam{Name: name, ID: id}
+}
+
+// TypeSize returns the size in bytes of any type.
+func TypeSize(t Type) int {
+	switch typ := t.Underlying().(type) {
+	case *Basic:
+		return typ.Size()
+	case *Pointer:
+		return 8
+	case *Array:
+		return 24 // fat pointer [ptr, len, cap]
+	case *Slice:
+		return 24 // fat pointer [ptr, len, cap]
+	case *Struct:
+		size := 0
+		for _, f := range typ.Fields {
+			size += TypeSize(f.Type)
+		}
+		return size
+	case *Enum:
+		return 8 + typ.MaxVariantSize() // tag + max variant data
+	case *Function:
+		return 8 // function pointer
+	case *Tuple:
+		size := 0
+		for _, e := range typ.Elems {
+			size += TypeSize(e)
+		}
+		return size
+	case *Channel:
+		return 8 // channel handle
+	default:
+		return 8 // default to pointer size
+	}
 }
