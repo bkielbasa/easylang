@@ -1,0 +1,42 @@
+fn main() -> int {
+    let a = "hello"
+    let b = " world"
+
+    // Test 1: Concatenate two strings
+    let c = a + b
+
+    // Check length is 11 (5 + 6)
+    if len(c) != 11 {
+        return 1
+    }
+
+    // Check first character is 'h' (104)
+    if c[0] != 104 {
+        return 2
+    }
+
+    // Check space character at position 5 (32)
+    if c[5] != 32 {
+        return 3
+    }
+
+    // Check last character is 'd' (100)
+    if c[10] != 100 {
+        return 4
+    }
+
+    // Test 2: Concatenate with empty string
+    let d = a + ""
+    if len(d) != 5 {
+        return 5
+    }
+
+    // Test 3: Empty + string
+    let e = "" + b
+    if len(e) != 6 {
+        return 6
+    }
+
+    // All tests passed
+    return 42
+}

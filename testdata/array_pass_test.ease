@@ -1,0 +1,19 @@
+fn sum_array(arr: [int; 3]) -> int {
+    return arr[0] + arr[1] + arr[2]
+}
+
+fn get_second(arr: [int; 4]) -> int {
+    return arr[1]
+}
+
+fn main() -> int {
+    let a = [10, 20, 30]
+    let b = [1, 2, 3, 4]
+
+    let sum = sum_array(a)
+    let second = get_second(b)
+
+    // sum = 60, second = 2
+    // return 60 + 2 = 62
+    return sum + second
+}

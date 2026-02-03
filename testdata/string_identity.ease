@@ -1,0 +1,22 @@
+fn get_hello() -> string {
+    return "hello"
+}
+
+fn get_world() -> string {
+    return "world"
+}
+
+fn get_same() -> string {
+    return "hello"
+}
+
+fn main() -> int {
+    let a = get_hello()
+    let b = get_world()
+    let c = get_same()
+
+    // a and c should point to the same string (string deduplication)
+    // This isn't really testable without comparing pointers,
+    // but we can at least verify strings compile and are returned
+    return 0
+}

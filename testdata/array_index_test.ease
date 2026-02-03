@@ -1,0 +1,21 @@
+fn get_element(arr: [int; 3], idx: int) -> int {
+    return arr[idx]
+}
+
+fn main() -> int {
+    let arr = [100, 200, 300]
+
+    // Test direct indexing
+    let a = arr[0]
+    let b = arr[1]
+    let c = arr[2]
+
+    // Test indexing with variable
+    let i = 1
+    let d = arr[i]
+
+    // Verify: a=100, b=200, c=300, d=200
+    // Return: 100 + 200 + 300 + 200 = 800
+    // But we'll just return d to test variable indexing
+    return d
+}

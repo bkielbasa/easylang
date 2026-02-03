@@ -1,0 +1,51 @@
+fn main() -> int {
+    print("Testing strconv.Atoi:\n")
+
+    let n1 = strconv.Atoi("42")
+    print("Atoi(\"42\") = ")
+    print(strconv.Itoa(n1))
+    print("\n")
+
+    let n2 = strconv.Atoi("0")
+    print("Atoi(\"0\") = ")
+    print(strconv.Itoa(n2))
+    print("\n")
+
+    let n3 = strconv.Atoi("-123")
+    print("Atoi(\"-123\") = ")
+    print(strconv.Itoa(n3))
+    print("\n")
+
+    let n4 = strconv.Atoi("999")
+    print("Atoi(\"999\") = ")
+    print(strconv.Itoa(n4))
+    print("\n")
+
+    let n5 = strconv.Atoi("+456")
+    print("Atoi(\"+456\") = ")
+    print(strconv.Itoa(n5))
+    print("\n")
+
+    let n6 = strconv.Atoi("-1")
+    print("Atoi(\"-1\") = ")
+    print(strconv.Itoa(n6))
+    print("\n")
+
+    let n7 = strconv.Atoi("1000000000")
+    print("Atoi(\"1000000000\") = ")
+    print(strconv.Itoa(n7))
+    print("\n")
+
+    // Test with command-line arg parsing
+    let argc = os.Argc()
+    if argc > 1 {
+        let arg = os.Argv(1)
+        let num = strconv.Atoi(arg)
+        print("Parsed arg: ")
+        print(strconv.Itoa(num))
+        print("\n")
+        return num
+    }
+
+    return 0
+}

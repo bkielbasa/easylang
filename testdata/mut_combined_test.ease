@@ -1,0 +1,32 @@
+struct Point {
+    x: int,
+    y: int,
+}
+
+fn main() -> int {
+    let mut p = Point { x: 0, y: 0 }
+    p.x = 10
+    p.y = 20
+    if p.x != 10 {
+        return 1
+    }
+    if p.y != 20 {
+        return 2
+    }
+    let mut arr = [1, 2, 3]
+    arr[0] = 100
+    arr[1] = 200
+    arr[2] = 50
+    if arr[0] != 100 {
+        return 3
+    }
+    if arr[1] != 200 {
+        return 4
+    }
+    let result = p.x + p.y
+    let p2 = Point { x: result, y: 0 }
+    if p2.x != 30 {
+        return 5
+    }
+    return 42
+}

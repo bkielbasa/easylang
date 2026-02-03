@@ -1,0 +1,20 @@
+fn main() -> int {
+    let argc = os.Argc()
+
+    if argc > 1 {
+        print("Args received:\n")
+        let arg1 = os.Argv(1)
+        print("  arg1: ")
+        print(arg1)
+        print("\n")
+
+        if argc > 2 {
+            let arg2 = os.Argv(2)
+            print("  arg2: ")
+            print(arg2)
+            print("\n")
+        }
+    }
+
+    return argc
+}

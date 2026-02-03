@@ -1,0 +1,508 @@
+(* ============================================== *)
+(* Grammar Specification - EBNF                   *)
+(* Go-like syntax + Rust-like type safety         *)
+(* ============================================== *)
+
+(* ============================================== *)
+(* PROGRAM STRUCTURE                              *)
+(* ============================================== *)
+
+program = { import_decl } , { top_level_decl } ;
+
+(* ============================================== *)
+(* IMPORTS                                        *)
+(* ============================================== *)
+
+(* Import always uses parentheses, even for single import *)
+import_decl = "import" , "(" , import_item , { import_item } , ")" ;
+
+import_item = import_path , [ "as" , identifier ] ;
+
+(* Import path types:
+   - stdlib:    bare name                    "io", "http", "json"
+   - local:     starts with ./               "./config", "./utils/strings"
+   - external:  URL-style                    "github.com/user/pkg"
+
+   Reference in code uses last path segment (or alias):
+   - "io"                      → io.read_file()
+   - "./utils/strings"         → strings.trim()
+   - "github.com/user/logger"  → logger.info()
+   - "http" as h               → h.Server{}
+
+   Unused imports are a compile error.
+
+   Visibility (like Go):
+   - Uppercase first letter = public (exported)
+   - Lowercase first letter = private (package-internal)
+*)
+
+import_path = stdlib_import | local_import | external_import ;
+
+stdlib_import = identifier ;                           (* "io", "http" *)
+local_import = '"./' , { path_segment , "/" } , path_segment , '"' ;  (* "./foo", "./foo/bar" *)
+external_import = '"' , domain , "/" , { path_segment , "/" } , path_segment , '"' ;
+
+path_segment = identifier ;
+domain = identifier , "." , identifier , { "." , identifier } ;  (* github.com, etc *)
+
+top_level_decl = [ attributes ] , ( function_decl
+              | struct_decl
+              | enum_decl
+              | trait_decl
+              | type_alias
+              | const_decl
+              | test_decl ) ;
+
+(* ============================================== *)
+(* ATTRIBUTES                                     *)
+(* ============================================== *)
+
+attributes = { attribute } ;
+attribute = "#[" , identifier , [ "(" , [ arg_list ] , ")" ] , "]" ;
+
+(* Common attributes:
+   #[slow]           - marks test as slow
+   #[integration]    - marks test as integration test
+   #[parallel]       - allows test to run in parallel
+   #[ignore]         - skips test
+   #[timeout(5000)]  - sets test timeout in ms
+*)
+
+(* ============================================== *)
+(* DECLARATIONS                                   *)
+(* ============================================== *)
+
+(* Functions *)
+function_decl = "fn" , identifier , [ generic_params ] ,
+                "(" , [ param_list ] , ")" , [ "->" , type ] , block ;
+
+param_list = param , { "," , param } ;
+param = identifier , ":" , type ;
+
+generic_params = "<" , generic_param , { "," , generic_param } , ">" ;
+generic_param = identifier , [ ":" , trait_bound ] ;
+trait_bound = type , { "+" , type } ;
+
+(* Structs *)
+struct_decl = "struct" , identifier , [ generic_params ] ,
+              "{" , [ field_list ] , "}" ;
+
+field_list = field , { "," , field } , [ "," ] ;
+field = identifier , ":" , type ;
+
+(* Enums - Rust-style with named fields *)
+(* enum Option<T> { Some { value: T }, None }                       *)
+(* enum Result<T, E> { Ok { value: T }, Err { error: E } }          *)
+(* enum Message { Quit, Move { x: int, y: int }, Write { text: string } } *)
+enum_decl = "enum" , identifier , [ generic_params ] ,
+            "{" , [ variant_list ] , "}" ;
+
+variant_list = variant , { "," , variant } , [ "," ] ;
+variant = identifier , [ "{" , [ field_list ] , "}" ] ;
+
+(* Traits *)
+trait_decl = "trait" , identifier , [ generic_params ] ,
+             [ ":" , trait_bound ] , "{" , { trait_member } , "}" ;
+
+trait_member = trait_method | trait_type ;
+trait_method = "fn" , identifier , [ generic_params ] ,
+               "(" , [ param_list ] , ")" , [ "->" , type ] , [ block ] ;
+trait_type = "type" , identifier , [ ":" , trait_bound ] ;
+
+(* Implementations *)
+impl_decl = "impl" , [ generic_params ] , [ type , "for" ] , type ,
+            "{" , { impl_member } , "}" ;
+
+impl_member = function_decl ;
+
+(* Type aliases *)
+type_alias = "type" , identifier , [ generic_params ] , "=" , type ;
+
+(* Constants *)
+const_decl = "const" , identifier , [ ":" , type ] , "=" , expression ;
+
+(* Tests - only in *_test.mylang files *)
+(* test "description" { body }                                       *)
+(* Tests implicitly return Result<(), Error> - success at end        *)
+(* Use return error.New("msg") to fail                               *)
+test_decl = "test" , string_lit , block ;
+
+(* Variables - immutable by default *)
+let_decl = "let" , [ "mut" ] , pattern , [ ":" , type ] , [ "=" , expression ] ;
+
+(* ============================================== *)
+(* TYPES                                          *)
+(* ============================================== *)
+
+type = primitive_type
+     | identifier , [ generic_args ]      (* named type / generic *)
+     | tuple_type
+     | array_type
+     | slice_type
+     | function_type
+     | reference_type
+     | channel_type ;
+
+primitive_type = "int" | "int8" | "int16" | "int32" | "int64"
+               | "uint" | "uint8" | "uint16" | "uint32" | "uint64"
+               | "float32" | "float64"
+               | "bool"
+               | "string"
+               | "char"
+               | "()" ;                    (* unit type *)
+
+generic_args = "<" , type , { "," , type } , ">" ;
+
+tuple_type = "(" , type , "," , type , { "," , type } , ")" ;
+
+array_type = "[" , type , ";" , integer_lit , "]" ;
+
+slice_type = "[" , type , "]" ;
+
+function_type = "fn" , "(" , [ type_list ] , ")" , [ "->" , type ] ;
+type_list = type , { "," , type } ;
+
+reference_type = "&" , [ "mut" ] , type ;
+
+channel_type = "chan" , "<" , type , ">" ;
+
+(* Built-in generic types *)
+(* Option<T>        - Some(T) | None *)
+(* Result<T, E>     - success T | error E *)
+
+(* ============================================== *)
+(* STATEMENTS                                     *)
+(* ============================================== *)
+
+statement = let_decl
+          | expression_stmt
+          | return_stmt
+          | if_stmt
+          | match_stmt
+          | for_stmt
+          | break_stmt
+          | continue_stmt
+          | go_stmt
+          | block ;
+
+expression_stmt = expression ;
+
+return_stmt = "return" , [ expression ] ;
+
+if_stmt = "if" , expression , block , [ "else" , ( if_stmt | block ) ] ;
+
+match_stmt = "match" , expression , "{" , { match_arm } , "}" ;
+match_arm = pattern , [ "if" , expression ] , "=>" , ( expression | block ) , [ "," ] ;
+
+(* Go-style for loops - all loop forms use "for" *)
+for_stmt = "for" , block                                (* infinite: for { } *)
+         | "for" , expression , block                   (* condition: for x > 0 { } *)
+         | "for" , pattern , "in" , expression , block ; (* range: for x in iter { } *)
+
+break_stmt = "break" , [ expression ] ;
+
+continue_stmt = "continue" ;
+
+go_stmt = "go" , expression ;    (* spawn goroutine *)
+
+block = "{" , { statement } , [ expression ] , "}" ;
+
+(* ============================================== *)
+(* PATTERNS (for pattern matching)                *)
+(* ============================================== *)
+
+pattern = literal_pattern
+        | identifier_pattern
+        | wildcard_pattern
+        | tuple_pattern
+        | struct_pattern
+        | enum_pattern
+        | slice_pattern
+        | range_pattern
+        | or_pattern ;
+
+literal_pattern = integer_lit | float_lit | string_lit | "true" | "false" ;
+
+identifier_pattern = [ "mut" ] , identifier ;
+
+wildcard_pattern = "_" ;
+
+tuple_pattern = "(" , pattern , { "," , pattern } , ")" ;
+
+struct_pattern = identifier , "{" , [ field_pattern_list ] , [ ".." ] , "}" ;
+field_pattern_list = field_pattern , { "," , field_pattern } ;
+field_pattern = identifier , [ ":" , pattern ] ;
+
+enum_pattern = identifier , [ "(" , pattern , { "," , pattern } , ")" ] ;
+
+slice_pattern = "[" , [ pattern , { "," , pattern } ] , [ ".." , [ pattern ] ] , "]" ;
+
+range_pattern = pattern , ( ".." | "..=" ) , pattern ;
+
+or_pattern = pattern , "|" , pattern ;
+
+(* ============================================== *)
+(* EXPRESSIONS                                    *)
+(* ============================================== *)
+
+expression = assignment_expr ;
+
+assignment_expr = or_expr , [ ( "=" | "+=" | "-=" | "*=" | "/=" | "%=" ) , assignment_expr ] ;
+
+or_expr = and_expr , { "||" , and_expr } ;
+
+and_expr = comparison_expr , { "&&" , comparison_expr } ;
+
+comparison_expr = bitwise_or_expr , [ comparison_op , bitwise_or_expr ] ;
+comparison_op = "==" | "!=" | "<" | "<=" | ">" | ">=" ;
+
+bitwise_or_expr = bitwise_xor_expr , { "|" , bitwise_xor_expr } ;
+
+bitwise_xor_expr = bitwise_and_expr , { "^" , bitwise_and_expr } ;
+
+bitwise_and_expr = shift_expr , { "&" , shift_expr } ;
+
+shift_expr = additive_expr , { ( "<<" | ">>" ) , additive_expr } ;
+
+additive_expr = multiplicative_expr , { ( "+" | "-" ) , multiplicative_expr } ;
+
+multiplicative_expr = unary_expr , { ( "*" | "/" | "%" ) , unary_expr } ;
+
+unary_expr = ( "-" | "!" | "&" | "&mut" | "*" ) , unary_expr
+           | postfix_expr ;
+
+postfix_expr = primary_expr , { postfix_op } ;
+postfix_op = call_expr
+           | index_expr
+           | field_access
+           | method_call
+           | try_op
+           | channel_op ;
+
+call_expr = "(" , [ arg_list ] , ")" ;
+arg_list = expression , { "," , expression } ;
+
+index_expr = "[" , expression , "]" ;
+
+field_access = "." , identifier ;
+
+method_call = "." , identifier , [ generic_args ] , "(" , [ arg_list ] , ")" ;
+
+try_op = "?" ;                              (* error propagation *)
+
+channel_op = "<-" , expression              (* send to channel *)
+           | "<-" ;                         (* receive from channel *)
+
+primary_expr = literal
+             | identifier
+             | "(" , expression , ")"
+             | tuple_expr
+             | array_expr
+             | struct_expr
+             | closure_expr
+             | if_expr
+             | match_expr
+             | block
+             | channel_recv ;
+
+literal = integer_lit
+        | float_lit
+        | string_lit
+        | char_lit
+        | bool_lit ;
+
+bool_lit = "true" | "false" ;
+
+tuple_expr = "(" , expression , "," , [ expression , { "," , expression } ] , ")" ;
+
+array_expr = "[" , [ expression , { "," , expression } ] , "]"
+           | "[" , expression , ";" , expression , "]" ;   (* repeat syntax *)
+
+struct_expr = identifier , "{" , [ field_init_list ] , "}" ;
+field_init_list = field_init , { "," , field_init } , [ "," ] ;
+field_init = identifier , [ ":" , expression ] ;           (* shorthand: name = name: name *)
+
+closure_expr = [ "move" ] , "|" , [ param_list ] , "|" , [ "->" , type ] , ( expression | block ) ;
+
+if_expr = "if" , expression , block , "else" , ( if_expr | block ) ;
+
+match_expr = "match" , expression , "{" , { match_arm } , "}" ;
+
+channel_recv = "<-" , expression ;          (* receive from channel *)
+
+(* ============================================== *)
+(* CONCURRENCY                                    *)
+(* ============================================== *)
+
+(* Channel creation *)
+(* let ch = chan<int>()           - unbuffered channel *)
+(* let ch = chan<int>(10)         - buffered channel with capacity 10 *)
+
+(* Spawn goroutine *)
+(* go some_function()             *)
+(* go || { ... }                  - with closure *)
+
+(* Send and receive *)
+(* ch <- value                    - send *)
+(* let x = <-ch                   - receive *)
+
+(* Select statement - for multiple channel operations *)
+select_stmt = "select" , "{" , { select_arm } , "}" ;
+select_arm = ( recv_case | send_case | default_case ) , "=>" , ( expression | block ) , [ "," ] ;
+recv_case = pattern , "=" , "<-" , expression ;
+send_case = expression , "<-" , expression ;
+default_case = "default" ;
+
+(* ============================================== *)
+(* LEXICAL ELEMENTS                               *)
+(* ============================================== *)
+
+identifier = letter , { letter | digit | "_" } ;
+letter = "a".."z" | "A".."Z" | "_" ;
+digit = "0".."9" ;
+
+integer_lit = decimal_lit | hex_lit | octal_lit | binary_lit ;
+decimal_lit = digit , { digit | "_" } ;
+hex_lit = "0x" , hex_digit , { hex_digit | "_" } ;
+octal_lit = "0o" , octal_digit , { octal_digit | "_" } ;
+binary_lit = "0b" , binary_digit , { binary_digit | "_" } ;
+hex_digit = digit | "a".."f" | "A".."F" ;
+octal_digit = "0".."7" ;
+binary_digit = "0" | "1" ;
+
+float_lit = decimal_lit , "." , decimal_lit , [ exponent ]
+          | decimal_lit , exponent ;
+exponent = ( "e" | "E" ) , [ "+" | "-" ] , decimal_lit ;
+
+string_lit = '"' , { string_char | escape_seq } , '"' ;
+string_char = (* any character except '"' and '\' *) ;
+escape_seq = "\" , ( "n" | "r" | "t" | "\" | '"' | "0" | "x" , hex_digit , hex_digit ) ;
+
+char_lit = "'" , ( char_char | escape_seq ) , "'" ;
+char_char = (* any character except "'" and '\' *) ;
+
+(* Raw strings *)
+raw_string_lit = "r" , '"' , { (* any character except '"' *) } , '"'
+               | "r#" , '"' , { (* any character *) } , '"' , "#" ;
+
+(* ============================================== *)
+(* COMMENTS                                       *)
+(* ============================================== *)
+
+line_comment = "//" , { (* any character except newline *) } ;
+block_comment = "/*" , { (* any character *) } , "*/" ;
+doc_comment = "///" , { (* any character except newline *) } ;
+
+(* ============================================== *)
+(* SPECIAL CONSTRUCTS                             *)
+(* ============================================== *)
+
+(* Error creation *)
+(* error.New("message")           - create new error *)
+(* error.Wrap(err, "context")     - wrap existing error *)
+
+(* Option and Result are enums - defined as: *)
+(* enum Option<T> { Some { value: T }, None }                   *)
+(* enum Result<T, E> { Ok { value: T }, Err { error: E } }      *)
+(*                                                               *)
+(* Usage:                                                        *)
+(* Some { value: 42 }             - present value                *)
+(* None                           - absent value                 *)
+(* Ok { value: data }             - success                      *)
+(* Err { error: e }               - failure                      *)
+
+(* Result is inferred by return type *)
+(* fn foo() -> Result<int, Error> { *)
+(*     return 42                  - inferred as success *)
+(*     return error.New("fail")   - inferred as failure *)
+(* }                                *)
+
+(* ============================================== *)
+(* EXAMPLE PROGRAM                                *)
+(* ============================================== *)
+
+(*
+import (
+    "io"                              // stdlib
+    "http"                            // stdlib
+    "./config"                        // local module
+    "./utils/validation" as valid     // local with alias
+    "github.com/user/logger"          // external package
+)
+
+// Rust-style enums with named fields
+enum Message {
+    Quit,
+    Move { x: int, y: int },
+    Write { text: string },
+    ChangeColor { r: int, g: int, b: int },
+}
+
+// Uppercase = public, lowercase = private (like Go)
+struct Config {                       // Config is public (uppercase)
+    Name: string,                     // Name is public
+    Port: int,                        // Port is public
+    secret: string,                   // secret is private (lowercase)
+}
+
+trait Validator {                     // Validator is public
+    fn Validate(&self) -> Result<(), Error>   // Validate is public
+}
+
+impl Validator for Config {
+    fn Validate(&self) -> Result<(), Error> {
+        if self.Port < 0 || self.Port > 65535 {
+            return error.New("invalid port")
+        }
+        // implicit success - no return needed
+    }
+}
+
+// loadConfig is private (lowercase)
+fn loadConfig(path: string) -> Result<Config, Error> {
+    let content = io.ReadFile(path)?
+    let cfg = config.Parse(content)?      // using local ./config module
+    valid.Check(cfg)?                     // using aliased module
+    return cfg
+}
+
+// Pattern matching on enums
+fn handleMessage(msg: Message) {
+    match msg {
+        Message::Quit => {
+            logger.Info("quitting")
+        },
+        Message::Move { x, y } => {
+            logger.Info("moving to " + x.to_string() + "," + y.to_string())
+        },
+        Message::Write { text } => {
+            logger.Info("writing: " + text)
+        },
+        Message::ChangeColor { r, g, b } => {
+            logger.Info("color: rgb(" + r.to_string() + "," + g.to_string() + "," + b.to_string() + ")")
+        },
+    }
+}
+
+// main is the entry point (special case, like Go)
+fn main() -> Result<(), Error> {
+    let cfg = loadConfig("config.json")?
+
+    logger.Info("loaded config: " + cfg.Name)   // using external package
+
+    // Using enums
+    let msg = Message::Move { x: 10, y: 20 }
+    handleMessage(msg)
+
+    let server = http.Server{
+        Addr: ":" + cfg.Port.to_string(),
+    }
+
+    go || {
+        logger.Info("Server starting on port " + cfg.Port.to_string())
+    }
+
+    server.Listen()?
+    // implicit success
+}
+*)

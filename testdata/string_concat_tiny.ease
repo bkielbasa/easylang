@@ -1,0 +1,6 @@
+fn main() -> int {
+    let a = "hi"
+    let b = "!"
+    let c = a + b
+    return 42
+}

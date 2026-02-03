@@ -1,0 +1,11 @@
+fn main() -> int {
+    // Test print
+    print("Hello, World!\n")
+
+    // Test os.ReadFile
+    let content = os.ReadFile("testdata/hello.txt")
+    print("File contents: ")
+    print(content)
+
+    return 42
+}

@@ -1,0 +1,23 @@
+fn main() -> int {
+    let empty = ""
+    let hello = "hello"
+    let longer = "hello world"
+
+    // Test 1: Empty string length should be 0
+    if len(empty) != 0 {
+        return 1
+    }
+
+    // Test 2: "hello" length should be 5
+    if len(hello) != 5 {
+        return 2
+    }
+
+    // Test 3: "hello world" length should be 11
+    if len(longer) != 11 {
+        return 3
+    }
+
+    // All tests passed
+    return 42
+}

@@ -1,0 +1,8 @@
+fn get_string() -> string {
+    return "hello"
+}
+
+fn main() -> int {
+    let s = get_string()
+    return 42
+}

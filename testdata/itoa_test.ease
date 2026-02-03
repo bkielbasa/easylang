@@ -1,0 +1,36 @@
+fn main() -> int {
+    print("Testing strconv.Itoa:\n")
+
+    print("42 = ")
+    print(strconv.Itoa(42))
+    print("\n")
+
+    print("0 = ")
+    print(strconv.Itoa(0))
+    print("\n")
+
+    print("-123 = ")
+    print(strconv.Itoa(-123))
+    print("\n")
+
+    print("1000000 = ")
+    print(strconv.Itoa(1000000))
+    print("\n")
+
+    print("-1 = ")
+    print(strconv.Itoa(-1))
+    print("\n")
+
+    print("9999999999 = ")
+    print(strconv.Itoa(9999999999))
+    print("\n")
+
+    // Test with expression
+    let x = 100
+    let y = 23
+    print("100 + 23 = ")
+    print(strconv.Itoa(x + y))
+    print("\n")
+
+    return 0
+}

@@ -1,0 +1,37 @@
+fn main() -> int {
+    let a = "hello"
+    let b = "hello"
+    let c = "world"
+    let d = "hell"
+    let e = "hello!"
+
+    // Test 1: Same content strings should be equal
+    if a != b {
+        return 1
+    }
+
+    // Test 2: Different content strings should not be equal
+    if a == c {
+        return 2
+    }
+
+    // Test 3: Prefix should not equal full string
+    if a == d {
+        return 3
+    }
+
+    // Test 4: String with extra char should not be equal
+    if a == e {
+        return 4
+    }
+
+    // Test 5: Empty strings should be equal
+    let empty1 = ""
+    let empty2 = ""
+    if empty1 != empty2 {
+        return 5
+    }
+
+    // All tests passed
+    return 42
+}

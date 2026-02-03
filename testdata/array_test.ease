@@ -1,0 +1,7 @@
+fn main() -> int {
+    let arr = []int{10, 20, 30}
+    let x = arr[0]
+    let y = arr[1]
+    let z = arr[2]
+    return x + y + z
+}

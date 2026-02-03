@@ -1,0 +1,7 @@
+fn max(a: int, b: int) -> int {
+    return if a > b { a } else { b }
+}
+
+fn main() -> int {
+    return max(3, 7)
+}

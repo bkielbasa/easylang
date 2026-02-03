@@ -1,0 +1,37 @@
+struct Point {
+    x: int,
+    y: int,
+}
+
+impl Point {
+    fn sum(self: Point) -> int {
+        return self.x + self.y
+    }
+
+    fn scale(self: Point, factor: int) -> int {
+        return self.x * factor + self.y * factor
+    }
+}
+
+struct Rect {
+    w: int,
+    h: int,
+}
+
+impl Rect {
+    fn area(self: Rect) -> int {
+        return self.w * self.h
+    }
+}
+
+fn main() -> int {
+    let p = Point { x: 3, y: 4 }
+    let r = Rect { w: 5, h: 6 }
+
+    let sum = p.sum()           // 3 + 4 = 7
+    let scaled = p.scale(2)     // 3*2 + 4*2 = 14
+    let area = r.area()         // 5 * 6 = 30
+
+    // Total: 7 + 14 + 30 = 51
+    return sum + scaled + area
+}
