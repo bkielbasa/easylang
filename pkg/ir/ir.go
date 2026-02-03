@@ -75,6 +75,9 @@ const (
 	OpStrIndexOf    // find substring index, -1 if not found (arg0, arg1) -> int
 	OpStrSubstring  // extract substring (arg0=str, arg1=start, arg2=end) -> string
 	OpStrCharAt     // get character code at index (arg0=str, arg1=index) -> int
+	OpStrTrim       // trim chars from both ends (arg0=str, arg1=chars) -> string
+	OpStrReplace    // replace all occurrences (arg0=str, arg1=old, arg2=new) -> string
+	OpStrSplit      // split by separator (arg0=str, arg1=sep) -> []string
 
 	// IO operations
 	OpPrint     // print string to stdout (arg0=string)
@@ -152,6 +155,9 @@ var opNames = [...]string{
 	OpStrIndexOf:    "strindexof",
 	OpStrSubstring:  "strsubstring",
 	OpStrCharAt:     "strcharat",
+	OpStrTrim:       "strtrim",
+	OpStrReplace:    "strreplace",
+	OpStrSplit:      "strsplit",
 	OpPrint:     "print",
 	OpReadFile:  "readfile",
 	OpWriteFile: "writefile",

@@ -363,6 +363,12 @@ func (e *Emitter) emitInstr(instr *ir.Instr) {
 		e.emitStrSubstring(instr)
 	case ir.OpStrCharAt:
 		e.emitStrCharAt(instr)
+	case ir.OpStrTrim:
+		e.emitStrTrim(instr)
+	case ir.OpStrReplace:
+		e.emitStrReplace(instr)
+	case ir.OpStrSplit:
+		e.emitStrSplit(instr)
 	case ir.OpArrayLen:
 		e.emitArrayLen(instr)
 	case ir.OpArrayCap:
@@ -1068,13 +1074,14 @@ func (e *Emitter) emitStrSubstring(instr *ir.Instr) {
 	e.asm.MOVimm(X0, -16)
 	e.asm.AND(X23, X23, X0)
 
-	// Allocate using heap
-	e.asm.MOV(X0, X23)
-	e.asm.MOVimm(X16, 0x2000049) // mmap syscall
-	e.asm.MOVimm(X1, 3)          // PROT_READ | PROT_WRITE
-	e.asm.MOVimm(X2, 0x1002)     // MAP_PRIVATE | MAP_ANON
-	e.asm.MOVimm(X3, -1)         // fd = -1
-	e.asm.MOVimm(X4, 0)          // offset = 0
+	// Allocate using mmap
+	e.asm.MOV(X0, XZR)           // addr = NULL
+	e.asm.MOV(X1, X23)           // len = size
+	e.asm.MOVimm(X2, 3)          // prot = PROT_READ | PROT_WRITE
+	e.asm.MOVimm(X3, 0x1002)     // flags = MAP_PRIVATE | MAP_ANON
+	e.asm.MOVimm(X4, -1)         // fd = -1
+	e.asm.MOV(X5, XZR)           // offset = 0
+	e.asm.MOVimm(X16, 0x20000C5) // mmap syscall
 	e.asm.SVC(0x80)
 
 	// X0 = allocated buffer pointer
@@ -1106,6 +1113,804 @@ func (e *Emitter) emitStrSubstring(instr *ir.Instr) {
 
 	// Return buffer pointer
 	e.asm.MOV(X16, X24)
+	e.storeToVReg(instr.Dest.VReg, X16)
+}
+
+// emitStrTrim trims specified characters from both ends of a string
+func (e *Emitter) emitStrTrim(instr *ir.Instr) {
+	str := e.loadOperand(instr.Args[0], X9)
+	chars := e.loadOperand(instr.Args[1], X10)
+
+	// Save inputs
+	e.asm.MOV(X19, str)
+	e.asm.MOV(X20, chars)
+
+	// Get length of string -> X21
+	e.asm.MOV(X11, X19)
+	e.asm.MOVimm(X21, 0)
+	strLenLoop := e.asm.Offset()
+	e.asm.LDRB(X12, X11, 0)
+	e.asm.CMP(X12, XZR)
+	strLenDone := e.asm.Offset()
+	e.asm.Bcond(CondEQ, 0)
+	e.asm.ADDi(X11, X11, 1)
+	e.asm.ADDi(X21, X21, 1)
+	e.asm.B(int32(strLenLoop - e.asm.Offset()))
+	strLenDoneLabel := e.asm.Offset()
+	e.asm.Patch(strLenDone, e.asm.Bcond_instr(CondEQ, int32(strLenDoneLabel-strLenDone)>>2))
+
+	// If empty string, jump to empty handler
+	e.asm.CMP(X21, XZR)
+	emptyBranch := e.asm.Offset()
+	e.asm.Bcond(CondEQ, 0)
+
+	// Find start index -> X22
+	e.asm.MOVimm(X22, 0)
+	findStartLoop := e.asm.Offset()
+	e.asm.CMP(X22, X21)
+	allTrimmedBranch1 := e.asm.Offset()
+	e.asm.Bcond(CondGE, 0)
+
+	// Load char at start
+	e.asm.ADD(X11, X19, X22)
+	e.asm.LDRB(X23, X11, 0)
+
+	// Check if char is in trim set
+	e.asm.MOV(X24, X20)
+	charCheckLoop := e.asm.Offset()
+	e.asm.LDRB(X25, X24, 0)
+	e.asm.CMP(X25, XZR)
+	startFound := e.asm.Offset()
+	e.asm.Bcond(CondEQ, 0)
+
+	e.asm.CMP(X23, X25)
+	charMatches := e.asm.Offset()
+	e.asm.Bcond(CondEQ, 0)
+
+	e.asm.ADDi(X24, X24, 1)
+	e.asm.B(int32(charCheckLoop - e.asm.Offset()))
+
+	// Char matches, advance start
+	charMatchesLabel := e.asm.Offset()
+	e.asm.Patch(charMatches, e.asm.Bcond_instr(CondEQ, int32(charMatchesLabel-charMatches)>>2))
+	e.asm.ADDi(X22, X22, 1)
+	e.asm.B(int32(findStartLoop - e.asm.Offset()))
+
+	// Start found, now find end
+	startFoundLabel := e.asm.Offset()
+	e.asm.Patch(startFound, e.asm.Bcond_instr(CondEQ, int32(startFoundLabel-startFound)>>2))
+
+	// Find end index -> X26 (exclusive)
+	e.asm.MOV(X26, X21)
+	findEndLoop := e.asm.Offset()
+	e.asm.CMP(X26, X22)
+	allTrimmedBranch2 := e.asm.Offset()
+	e.asm.Bcond(CondLE, 0)
+
+	// Load char at end-1
+	e.asm.SUBi(X11, X26, 1)
+	e.asm.ADD(X11, X19, X11)
+	e.asm.LDRB(X23, X11, 0)
+
+	// Check if char is in trim set
+	e.asm.MOV(X24, X20)
+	charCheckLoop2 := e.asm.Offset()
+	e.asm.LDRB(X25, X24, 0)
+	e.asm.CMP(X25, XZR)
+	endFound := e.asm.Offset()
+	e.asm.Bcond(CondEQ, 0)
+
+	e.asm.CMP(X23, X25)
+	charMatches2 := e.asm.Offset()
+	e.asm.Bcond(CondEQ, 0)
+
+	e.asm.ADDi(X24, X24, 1)
+	e.asm.B(int32(charCheckLoop2 - e.asm.Offset()))
+
+	// Char matches, decrement end
+	charMatchesLabel2 := e.asm.Offset()
+	e.asm.Patch(charMatches2, e.asm.Bcond_instr(CondEQ, int32(charMatchesLabel2-charMatches2)>>2))
+	e.asm.SUBi(X26, X26, 1)
+	e.asm.B(int32(findEndLoop - e.asm.Offset()))
+
+	// End found, extract substring
+	endFoundLabel := e.asm.Offset()
+	e.asm.Patch(endFound, e.asm.Bcond_instr(CondEQ, int32(endFoundLabel-endFound)>>2))
+
+	// Calculate length = end - start -> X27
+	e.asm.SUB(X27, X26, X22)
+
+	// Save X22 (start) in X28 temporarily (X27 should be preserved)
+	e.asm.MOV(X28, X22)
+
+	// Allocate size = length + 1 (for null), aligned to 16
+	e.asm.ADDi(X23, X27, 1)
+	e.asm.ADDi(X23, X23, 15)
+	e.asm.MOVimm(X0, -16)
+	e.asm.AND(X23, X23, X0)
+
+	// mmap syscall
+	e.asm.MOV(X0, XZR)           // addr = NULL
+	e.asm.MOV(X1, X23)           // len = size
+	e.asm.MOVimm(X2, 3)          // prot = PROT_READ | PROT_WRITE
+	e.asm.MOVimm(X3, 0x1002)     // flags = MAP_PRIVATE | MAP_ANON
+	e.asm.MOVimm(X4, -1)         // fd = -1
+	e.asm.MOV(X5, XZR)           // offset = 0
+	e.asm.MOVimm(X16, 0x20000C5) // mmap syscall
+	e.asm.SVC(0x80)
+
+	// X0 = allocated buffer
+	// Save buffer ptr and recalculate values (may have been clobbered by syscall)
+	e.asm.MOV(X23, X0) // X23 = dest buffer
+
+	// Recalculate start and length from X28 (saved start) and by re-scanning
+	// Actually, X27 (length) and X28 (start) should still be valid if they're callee-saved
+	// But to be safe, let's use them directly: X28 = start index, X27 = length
+	// Source = X19 + X28, copy X27 bytes
+
+	e.asm.ADD(X24, X19, X28) // X24 = source ptr (original string + start)
+	e.asm.MOV(X25, X23)      // X25 = dest ptr
+
+	// Copy loop
+	trimCopyLoop := e.asm.Offset()
+	e.asm.CMP(X27, XZR)
+	trimCopyDone := e.asm.Offset()
+	e.asm.Bcond(CondEQ, 0)
+
+	e.asm.LDRB(X11, X24, 0)
+	e.asm.STRB(X11, X25, 0)
+	e.asm.ADDi(X24, X24, 1)
+	e.asm.ADDi(X25, X25, 1)
+	e.asm.SUBi(X27, X27, 1)
+	e.asm.B(int32(trimCopyLoop - e.asm.Offset()))
+
+	trimCopyDoneLabel := e.asm.Offset()
+	e.asm.Patch(trimCopyDone, e.asm.Bcond_instr(CondEQ, int32(trimCopyDoneLabel-trimCopyDone)>>2))
+
+	// Null terminate
+	e.asm.STRB(XZR, X25, 0)
+	e.asm.MOV(X16, X23) // return buffer ptr
+	endBranch := e.asm.Offset()
+	e.asm.B(0)
+
+	// Empty/all trimmed handler
+	emptyLabel := e.asm.Offset()
+	e.asm.Patch(emptyBranch, e.asm.Bcond_instr(CondEQ, int32(emptyLabel-emptyBranch)>>2))
+	e.asm.Patch(allTrimmedBranch1, e.asm.Bcond_instr(CondGE, int32(emptyLabel-allTrimmedBranch1)>>2))
+	e.asm.Patch(allTrimmedBranch2, e.asm.Bcond_instr(CondLE, int32(emptyLabel-allTrimmedBranch2)>>2))
+
+	// Allocate empty string
+	e.asm.MOV(X0, XZR)
+	e.asm.MOVimm(X1, 16)
+	e.asm.MOVimm(X2, 3)
+	e.asm.MOVimm(X3, 0x1002)
+	e.asm.MOVimm(X4, -1)
+	e.asm.MOV(X5, XZR)
+	e.asm.MOVimm(X16, 0x20000C5)
+	e.asm.SVC(0x80)
+	e.asm.STRB(XZR, X0, 0)
+	e.asm.MOV(X16, X0)
+
+	endLabel := e.asm.Offset()
+	e.asm.Patch(endBranch, e.asm.B_instr(int32(endLabel-endBranch)>>2))
+
+	e.storeToVReg(instr.Dest.VReg, X16)
+}
+
+// emitStrReplace replaces all occurrences of old with new in a string
+func (e *Emitter) emitStrReplace(instr *ir.Instr) {
+	str := e.loadOperand(instr.Args[0], X9)
+	oldStr := e.loadOperand(instr.Args[1], X10)
+	newStr := e.loadOperand(instr.Args[2], X11)
+
+	// Save inputs in callee-saved registers
+	e.asm.MOV(X19, str)    // X19 = original string
+	e.asm.MOV(X20, oldStr) // X20 = old string
+	e.asm.MOV(X21, newStr) // X21 = new string
+
+	// Get length of original string -> X22
+	e.asm.MOV(X11, str)
+	e.asm.MOVimm(X22, 0)
+	strLenLoop := e.asm.Offset()
+	e.asm.LDRB(X12, X11, 0)
+	e.asm.CMP(X12, XZR)
+	strLenDone := e.asm.Offset()
+	e.asm.Bcond(CondEQ, 0)
+	e.asm.ADDi(X11, X11, 1)
+	e.asm.ADDi(X22, X22, 1)
+	e.asm.B(int32(strLenLoop - e.asm.Offset()))
+	strLenDoneLabel := e.asm.Offset()
+	e.asm.Patch(strLenDone, e.asm.Bcond_instr(CondEQ, int32(strLenDoneLabel-strLenDone)>>2))
+
+	// Get length of old string -> X23
+	e.asm.MOV(X11, oldStr)
+	e.asm.MOVimm(X23, 0)
+	oldLenLoop := e.asm.Offset()
+	e.asm.LDRB(X12, X11, 0)
+	e.asm.CMP(X12, XZR)
+	oldLenDone := e.asm.Offset()
+	e.asm.Bcond(CondEQ, 0)
+	e.asm.ADDi(X11, X11, 1)
+	e.asm.ADDi(X23, X23, 1)
+	e.asm.B(int32(oldLenLoop - e.asm.Offset()))
+	oldLenDoneLabel := e.asm.Offset()
+	e.asm.Patch(oldLenDone, e.asm.Bcond_instr(CondEQ, int32(oldLenDoneLabel-oldLenDone)>>2))
+
+	// Get length of new string -> X24
+	e.asm.MOV(X11, newStr)
+	e.asm.MOVimm(X24, 0)
+	newLenLoop := e.asm.Offset()
+	e.asm.LDRB(X12, X11, 0)
+	e.asm.CMP(X12, XZR)
+	newLenDone := e.asm.Offset()
+	e.asm.Bcond(CondEQ, 0)
+	e.asm.ADDi(X11, X11, 1)
+	e.asm.ADDi(X24, X24, 1)
+	e.asm.B(int32(newLenLoop - e.asm.Offset()))
+	newLenDoneLabel := e.asm.Offset()
+	e.asm.Patch(newLenDone, e.asm.Bcond_instr(CondEQ, int32(newLenDoneLabel-newLenDone)>>2))
+
+	// If old string is empty, just return copy of original
+	e.asm.CMP(X23, XZR)
+	oldEmptyBranch := e.asm.Offset()
+	e.asm.Bcond(CondEQ, 0)
+
+	// Count occurrences of old in str -> X25
+	e.asm.MOVimm(X25, 0) // count
+	e.asm.MOV(X26, X19)  // current position
+	countLoop := e.asm.Offset()
+	e.asm.LDRB(X11, X26, 0)
+	e.asm.CMP(X11, XZR)
+	countDone := e.asm.Offset()
+	e.asm.Bcond(CondEQ, 0)
+
+	// Check if old starts at current position
+	e.asm.MOV(X27, X26) // compare ptr in str
+	e.asm.MOV(X28, X20) // compare ptr in old
+	e.asm.MOVimm(X0, 0) // match count
+
+	cmpLoop := e.asm.Offset()
+	e.asm.CMP(X0, X23)
+	matchFound := e.asm.Offset()
+	e.asm.Bcond(CondEQ, 0) // matched all of old
+
+	e.asm.LDRB(X11, X27, 0)
+	e.asm.LDRB(X12, X28, 0)
+	e.asm.CMP(X11, X12)
+	noMatch := e.asm.Offset()
+	e.asm.Bcond(CondNE, 0)
+
+	e.asm.ADDi(X27, X27, 1)
+	e.asm.ADDi(X28, X28, 1)
+	e.asm.ADDi(X0, X0, 1)
+	e.asm.B(int32(cmpLoop - e.asm.Offset()))
+
+	// Match found, increment count and skip old length
+	matchFoundLabel := e.asm.Offset()
+	e.asm.Patch(matchFound, e.asm.Bcond_instr(CondEQ, int32(matchFoundLabel-matchFound)>>2))
+	e.asm.ADDi(X25, X25, 1)
+	e.asm.ADD(X26, X26, X23)
+	e.asm.B(int32(countLoop - e.asm.Offset()))
+
+	// No match, advance one char
+	noMatchLabel := e.asm.Offset()
+	e.asm.Patch(noMatch, e.asm.Bcond_instr(CondNE, int32(noMatchLabel-noMatch)>>2))
+	e.asm.ADDi(X26, X26, 1)
+	e.asm.B(int32(countLoop - e.asm.Offset()))
+
+	countDoneLabel := e.asm.Offset()
+	e.asm.Patch(countDone, e.asm.Bcond_instr(CondEQ, int32(countDoneLabel-countDone)>>2))
+
+	// Calculate result size: origLen - count*oldLen + count*newLen + 1
+	// X26 = count * oldLen
+	e.asm.MUL(X26, X25, X23)
+	// X27 = count * newLen
+	e.asm.MUL(X27, X25, X24)
+	// X28 = origLen - count*oldLen
+	e.asm.SUB(X28, X22, X26)
+	// X0 = resultLen = X28 + count*newLen + 1
+	e.asm.ADD(X0, X28, X27)
+	e.asm.ADDi(X0, X0, 1)
+
+	// Align to 16
+	e.asm.ADDi(X0, X0, 15)
+	e.asm.MOVimm(X11, -16)
+	e.asm.AND(X1, X0, X11) // X1 = aligned size (len parameter for mmap)
+
+	// mmap syscall
+	e.asm.MOV(X0, XZR)           // addr = NULL
+	e.asm.MOVimm(X2, 3)          // prot = PROT_READ | PROT_WRITE
+	e.asm.MOVimm(X3, 0x1002)     // flags = MAP_PRIVATE | MAP_ANON
+	e.asm.MOVimm(X4, -1)         // fd = -1
+	e.asm.MOV(X5, XZR)           // offset = 0
+	e.asm.MOVimm(X16, 0x20000C5) // mmap syscall
+	e.asm.SVC(0x80)
+
+	// X0 = result buffer, save it
+	e.asm.MOV(X28, X0) // save result ptr
+
+	// Recalculate oldLen -> X23 (since X23 may have been clobbered by syscall)
+	e.asm.MOV(X11, X20)
+	e.asm.MOVimm(X23, 0)
+	recalcOldLenLoop := e.asm.Offset()
+	e.asm.LDRB(X12, X11, 0)
+	e.asm.CMP(X12, XZR)
+	recalcOldLenDone := e.asm.Offset()
+	e.asm.Bcond(CondEQ, 0)
+	e.asm.ADDi(X11, X11, 1)
+	e.asm.ADDi(X23, X23, 1)
+	e.asm.B(int32(recalcOldLenLoop - e.asm.Offset()))
+	recalcOldLenDoneLabel := e.asm.Offset()
+	e.asm.Patch(recalcOldLenDone, e.asm.Bcond_instr(CondEQ, int32(recalcOldLenDoneLabel-recalcOldLenDone)>>2))
+
+	// Recalculate newLen -> X24
+	e.asm.MOV(X11, X21)
+	e.asm.MOVimm(X24, 0)
+	recalcNewLenLoop := e.asm.Offset()
+	e.asm.LDRB(X12, X11, 0)
+	e.asm.CMP(X12, XZR)
+	recalcNewLenDone := e.asm.Offset()
+	e.asm.Bcond(CondEQ, 0)
+	e.asm.ADDi(X11, X11, 1)
+	e.asm.ADDi(X24, X24, 1)
+	e.asm.B(int32(recalcNewLenLoop - e.asm.Offset()))
+	recalcNewLenDoneLabel := e.asm.Offset()
+	e.asm.Patch(recalcNewLenDone, e.asm.Bcond_instr(CondEQ, int32(recalcNewLenDoneLabel-recalcNewLenDone)>>2))
+
+	// Now copy with replacements
+	e.asm.MOV(X26, X19) // source ptr
+	e.asm.MOV(X27, X28) // dest ptr (from saved result)
+
+	replaceLoop := e.asm.Offset()
+	e.asm.LDRB(X11, X26, 0)
+	e.asm.CMP(X11, XZR)
+	replaceDone := e.asm.Offset()
+	e.asm.Bcond(CondEQ, 0)
+
+	// Check if old starts at current position
+	e.asm.MOV(X0, X26) // compare ptr in str
+	e.asm.MOV(X1, X20) // compare ptr in old
+	e.asm.MOVimm(X2, 0) // match count
+
+	cmpLoop2 := e.asm.Offset()
+	e.asm.CMP(X2, X23)
+	matchFound2 := e.asm.Offset()
+	e.asm.Bcond(CondEQ, 0) // matched all of old
+
+	e.asm.LDRB(X11, X0, 0)
+	e.asm.LDRB(X12, X1, 0)
+	e.asm.CMP(X11, X12)
+	noMatch2 := e.asm.Offset()
+	e.asm.Bcond(CondNE, 0)
+
+	e.asm.ADDi(X0, X0, 1)
+	e.asm.ADDi(X1, X1, 1)
+	e.asm.ADDi(X2, X2, 1)
+	e.asm.B(int32(cmpLoop2 - e.asm.Offset()))
+
+	// Match found, copy new string
+	matchFoundLabel2 := e.asm.Offset()
+	e.asm.Patch(matchFound2, e.asm.Bcond_instr(CondEQ, int32(matchFoundLabel2-matchFound2)>>2))
+	e.asm.MOV(X0, X21) // new string ptr
+	e.asm.MOVimm(X1, 0) // counter
+
+	copyNewLoop := e.asm.Offset()
+	e.asm.CMP(X1, X24)
+	copyNewDone := e.asm.Offset()
+	e.asm.Bcond(CondEQ, 0)
+
+	e.asm.LDRB(X11, X0, 0)
+	e.asm.STRB(X11, X27, 0)
+	e.asm.ADDi(X0, X0, 1)
+	e.asm.ADDi(X27, X27, 1)
+	e.asm.ADDi(X1, X1, 1)
+	e.asm.B(int32(copyNewLoop - e.asm.Offset()))
+
+	copyNewDoneLabel := e.asm.Offset()
+	e.asm.Patch(copyNewDone, e.asm.Bcond_instr(CondEQ, int32(copyNewDoneLabel-copyNewDone)>>2))
+
+	// Skip old string in source
+	e.asm.ADD(X26, X26, X23)
+	e.asm.B(int32(replaceLoop - e.asm.Offset()))
+
+	// No match, copy single char
+	noMatchLabel2 := e.asm.Offset()
+	e.asm.Patch(noMatch2, e.asm.Bcond_instr(CondNE, int32(noMatchLabel2-noMatch2)>>2))
+	e.asm.LDRB(X11, X26, 0)
+	e.asm.STRB(X11, X27, 0)
+	e.asm.ADDi(X26, X26, 1)
+	e.asm.ADDi(X27, X27, 1)
+	e.asm.B(int32(replaceLoop - e.asm.Offset()))
+
+	replaceDoneLabel := e.asm.Offset()
+	e.asm.Patch(replaceDone, e.asm.Bcond_instr(CondEQ, int32(replaceDoneLabel-replaceDone)>>2))
+
+	// Null terminate
+	e.asm.STRB(XZR, X27, 0)
+
+	// Return result
+	e.asm.MOV(X16, X28)
+	endBranch := e.asm.Offset()
+	e.asm.B(0)
+
+	// Old string empty: just copy original
+	oldEmptyLabel := e.asm.Offset()
+	e.asm.Patch(oldEmptyBranch, e.asm.Bcond_instr(CondEQ, int32(oldEmptyLabel-oldEmptyBranch)>>2))
+
+	// Allocate for copy
+	e.asm.ADDi(X1, X22, 1)    // X1 = origLen + 1 (for null)
+	e.asm.ADDi(X1, X1, 15)
+	e.asm.MOVimm(X11, -16)
+	e.asm.AND(X1, X1, X11)    // X1 = aligned size
+
+	e.asm.MOV(X0, XZR)        // addr = NULL
+	e.asm.MOVimm(X2, 3)       // prot
+	e.asm.MOVimm(X3, 0x1002)  // flags
+	e.asm.MOVimm(X4, -1)      // fd = -1
+	e.asm.MOV(X5, XZR)        // offset = 0
+	e.asm.MOVimm(X16, 0x20000C5)
+	e.asm.SVC(0x80)
+
+	e.asm.MOV(X26, X19) // source
+	e.asm.MOV(X27, X0)  // dest
+	e.asm.MOV(X28, X0)  // save result
+
+	copyOrigLoop := e.asm.Offset()
+	e.asm.LDRB(X11, X26, 0)
+	e.asm.STRB(X11, X27, 0)
+	e.asm.CMP(X11, XZR)
+	copyOrigDone := e.asm.Offset()
+	e.asm.Bcond(CondEQ, 0)
+	e.asm.ADDi(X26, X26, 1)
+	e.asm.ADDi(X27, X27, 1)
+	e.asm.B(int32(copyOrigLoop - e.asm.Offset()))
+
+	copyOrigDoneLabel := e.asm.Offset()
+	e.asm.Patch(copyOrigDone, e.asm.Bcond_instr(CondEQ, int32(copyOrigDoneLabel-copyOrigDone)>>2))
+
+	e.asm.MOV(X16, X28)
+
+	endLabel := e.asm.Offset()
+	e.asm.Patch(endBranch, e.asm.B_instr(int32(endLabel-endBranch)>>2))
+
+	e.storeToVReg(instr.Dest.VReg, X16)
+}
+
+// emitStrSplit splits a string by separator and returns an array of strings
+func (e *Emitter) emitStrSplit(instr *ir.Instr) {
+	str := e.loadOperand(instr.Args[0], X9)
+	sep := e.loadOperand(instr.Args[1], X10)
+
+	// Save inputs in callee-saved registers
+	e.asm.MOV(X19, str) // X19 = string
+	e.asm.MOV(X20, sep) // X20 = separator
+
+	// Get length of string -> X21
+	e.asm.MOV(X11, str)
+	e.asm.MOVimm(X21, 0)
+	strLenLoop := e.asm.Offset()
+	e.asm.LDRB(X12, X11, 0)
+	e.asm.CMP(X12, XZR)
+	strLenDone := e.asm.Offset()
+	e.asm.Bcond(CondEQ, 0)
+	e.asm.ADDi(X11, X11, 1)
+	e.asm.ADDi(X21, X21, 1)
+	e.asm.B(int32(strLenLoop - e.asm.Offset()))
+	strLenDoneLabel := e.asm.Offset()
+	e.asm.Patch(strLenDone, e.asm.Bcond_instr(CondEQ, int32(strLenDoneLabel-strLenDone)>>2))
+
+	// Get length of separator -> X22
+	e.asm.MOV(X11, sep)
+	e.asm.MOVimm(X22, 0)
+	sepLenLoop := e.asm.Offset()
+	e.asm.LDRB(X12, X11, 0)
+	e.asm.CMP(X12, XZR)
+	sepLenDone := e.asm.Offset()
+	e.asm.Bcond(CondEQ, 0)
+	e.asm.ADDi(X11, X11, 1)
+	e.asm.ADDi(X22, X22, 1)
+	e.asm.B(int32(sepLenLoop - e.asm.Offset()))
+	sepLenDoneLabel := e.asm.Offset()
+	e.asm.Patch(sepLenDone, e.asm.Bcond_instr(CondEQ, int32(sepLenDoneLabel-sepLenDone)>>2))
+
+	// Count parts (= occurrences + 1) -> X23
+	e.asm.MOVimm(X23, 1) // at least one part
+	e.asm.MOV(X24, X19)  // current position
+
+	// If separator is empty, return array with just the original string
+	e.asm.CMP(X22, XZR)
+	sepEmptyBranch := e.asm.Offset()
+	e.asm.Bcond(CondEQ, 0)
+
+	countPartsLoop := e.asm.Offset()
+	e.asm.LDRB(X11, X24, 0)
+	e.asm.CMP(X11, XZR)
+	countPartsDone := e.asm.Offset()
+	e.asm.Bcond(CondEQ, 0)
+
+	// Check if separator starts at current position
+	e.asm.MOV(X25, X24) // compare ptr in str
+	e.asm.MOV(X26, X20) // compare ptr in sep
+	e.asm.MOVimm(X27, 0) // match count
+
+	cmpSepLoop := e.asm.Offset()
+	e.asm.CMP(X27, X22)
+	sepMatchFound := e.asm.Offset()
+	e.asm.Bcond(CondEQ, 0) // matched all of sep
+
+	e.asm.LDRB(X11, X25, 0)
+	e.asm.LDRB(X12, X26, 0)
+	e.asm.CMP(X11, X12)
+	sepNoMatch := e.asm.Offset()
+	e.asm.Bcond(CondNE, 0)
+
+	e.asm.ADDi(X25, X25, 1)
+	e.asm.ADDi(X26, X26, 1)
+	e.asm.ADDi(X27, X27, 1)
+	e.asm.B(int32(cmpSepLoop - e.asm.Offset()))
+
+	// Sep found, increment count and skip sep length
+	sepMatchFoundLabel := e.asm.Offset()
+	e.asm.Patch(sepMatchFound, e.asm.Bcond_instr(CondEQ, int32(sepMatchFoundLabel-sepMatchFound)>>2))
+	e.asm.ADDi(X23, X23, 1)
+	e.asm.ADD(X24, X24, X22)
+	e.asm.B(int32(countPartsLoop - e.asm.Offset()))
+
+	// Sep not found, advance one char
+	sepNoMatchLabel := e.asm.Offset()
+	e.asm.Patch(sepNoMatch, e.asm.Bcond_instr(CondNE, int32(sepNoMatchLabel-sepNoMatch)>>2))
+	e.asm.ADDi(X24, X24, 1)
+	e.asm.B(int32(countPartsLoop - e.asm.Offset()))
+
+	countPartsDoneLabel := e.asm.Offset()
+	e.asm.Patch(countPartsDone, e.asm.Bcond_instr(CondEQ, int32(countPartsDoneLabel-countPartsDone)>>2))
+
+	// Allocate fat pointer (24 bytes) for array
+	e.asm.MOV(X0, XZR)       // addr = NULL
+	e.asm.MOVimm(X1, 24)     // len = 24
+	e.asm.MOVimm(X2, 3)      // PROT_READ | PROT_WRITE
+	e.asm.MOVimm(X3, 0x1002) // MAP_PRIVATE | MAP_ANON
+	e.asm.MOVimm(X4, -1)     // fd = -1
+	e.asm.MOV(X5, XZR)       // offset = 0
+	e.asm.MOVimm(X16, 0x20000C5)
+	e.asm.SVC(0x80)
+	e.asm.MOV(X28, X0) // X28 = fat pointer
+
+	// Allocate array of string pointers (8 bytes each)
+	e.asm.LSL(X1, X23, 3) // X1 = count * 8 (len)
+	e.asm.MOV(X0, XZR)       // addr = NULL
+	e.asm.MOVimm(X2, 3)
+	e.asm.MOVimm(X3, 0x1002)
+	e.asm.MOVimm(X4, -1)
+	e.asm.MOV(X5, XZR)       // offset = 0
+	e.asm.MOVimm(X16, 0x20000C5)
+	e.asm.SVC(0x80)
+	e.asm.MOV(X27, X0) // X27 = data pointer
+
+	// Store in fat pointer: [ptr, len, cap]
+	e.asm.STR(X27, X28, 0)     // ptr
+	e.asm.STR(X23, X28, 8)     // len
+	e.asm.STR(X23, X28, 16)    // cap
+
+	// Now extract each part
+	e.asm.MOV(X24, X19)  // current position in string
+	e.asm.MOV(X25, X27)  // current position in array
+	e.asm.MOV(X26, X24)  // start of current part
+
+	splitLoop := e.asm.Offset()
+	e.asm.LDRB(X11, X24, 0)
+	e.asm.CMP(X11, XZR)
+	splitDone := e.asm.Offset()
+	e.asm.Bcond(CondEQ, 0)
+
+	// Check if separator starts at current position
+	e.asm.MOV(X0, X24) // compare ptr in str
+	e.asm.MOV(X1, X20) // compare ptr in sep
+	e.asm.MOVimm(X2, 0) // match count
+
+	cmpSepLoop2 := e.asm.Offset()
+	e.asm.CMP(X2, X22)
+	sepMatchFound2 := e.asm.Offset()
+	e.asm.Bcond(CondEQ, 0) // matched all of sep
+
+	e.asm.LDRB(X11, X0, 0)
+	e.asm.LDRB(X12, X1, 0)
+	e.asm.CMP(X11, X12)
+	sepNoMatch2 := e.asm.Offset()
+	e.asm.Bcond(CondNE, 0)
+
+	e.asm.ADDi(X0, X0, 1)
+	e.asm.ADDi(X1, X1, 1)
+	e.asm.ADDi(X2, X2, 1)
+	e.asm.B(int32(cmpSepLoop2 - e.asm.Offset()))
+
+	// Sep found - extract part from X26 to X24
+	sepMatchFoundLabel2 := e.asm.Offset()
+	e.asm.Patch(sepMatchFound2, e.asm.Bcond_instr(CondEQ, int32(sepMatchFoundLabel2-sepMatchFound2)>>2))
+
+	// Calculate part length
+	e.asm.SUB(X3, X24, X26) // part length
+
+	// Allocate memory for part
+	e.asm.ADDi(X1, X3, 1) // +1 for null -> X1
+	e.asm.ADDi(X1, X1, 15)
+	e.asm.MOVimm(X11, -16)
+	e.asm.AND(X1, X1, X11) // X1 = aligned size (len for mmap)
+
+	// mmap call
+	e.asm.MOV(X0, XZR)       // addr = NULL
+	e.asm.MOVimm(X2, 3)      // prot
+	e.asm.MOVimm(X3, 0x1002) // flags
+	e.asm.MOVimm(X4, -1)     // fd = -1
+	e.asm.MOV(X5, XZR)       // offset = 0
+	e.asm.MOVimm(X16, 0x20000C5)
+	e.asm.SVC(0x80)
+
+	// X0 = part buffer
+	// Copy part
+	e.asm.MOV(X1, X26) // source
+	e.asm.MOV(X2, X0)  // dest
+	e.asm.MOV(X4, X0)  // save part ptr
+
+	// Recalculate part length
+	e.asm.SUB(X3, X24, X26)
+
+	copyPartLoop := e.asm.Offset()
+	e.asm.CMP(X3, XZR)
+	copyPartDone := e.asm.Offset()
+	e.asm.Bcond(CondEQ, 0)
+
+	e.asm.LDRB(X11, X1, 0)
+	e.asm.STRB(X11, X2, 0)
+	e.asm.ADDi(X1, X1, 1)
+	e.asm.ADDi(X2, X2, 1)
+	e.asm.SUBi(X3, X3, 1)
+	e.asm.B(int32(copyPartLoop - e.asm.Offset()))
+
+	copyPartDoneLabel := e.asm.Offset()
+	e.asm.Patch(copyPartDone, e.asm.Bcond_instr(CondEQ, int32(copyPartDoneLabel-copyPartDone)>>2))
+
+	// Null terminate part
+	e.asm.STRB(XZR, X2, 0)
+
+	// Store part pointer in array
+	e.asm.STR(X4, X25, 0)
+	e.asm.ADDi(X25, X25, 8) // advance array pointer
+
+	// Skip separator and continue
+	e.asm.ADD(X24, X24, X22)
+	e.asm.MOV(X26, X24) // new start
+	e.asm.B(int32(splitLoop - e.asm.Offset()))
+
+	// No sep match, advance one char
+	sepNoMatchLabel2 := e.asm.Offset()
+	e.asm.Patch(sepNoMatch2, e.asm.Bcond_instr(CondNE, int32(sepNoMatchLabel2-sepNoMatch2)>>2))
+	e.asm.ADDi(X24, X24, 1)
+	e.asm.B(int32(splitLoop - e.asm.Offset()))
+
+	// Done - add final part
+	splitDoneLabel := e.asm.Offset()
+	e.asm.Patch(splitDone, e.asm.Bcond_instr(CondEQ, int32(splitDoneLabel-splitDone)>>2))
+
+	// Calculate final part length
+	e.asm.SUB(X3, X24, X26)
+
+	// Allocate memory for final part
+	e.asm.ADDi(X1, X3, 1)    // X1 = len + 1
+	e.asm.ADDi(X1, X1, 15)
+	e.asm.MOVimm(X11, -16)
+	e.asm.AND(X1, X1, X11)   // X1 = aligned size (len for mmap)
+
+	e.asm.MOV(X0, XZR)       // addr = NULL
+	e.asm.MOVimm(X2, 3)      // prot
+	e.asm.MOVimm(X3, 0x1002) // flags
+	e.asm.MOVimm(X4, -1)     // fd = -1
+	e.asm.MOV(X5, XZR)       // offset = 0
+	e.asm.MOVimm(X16, 0x20000C5)
+	e.asm.SVC(0x80)
+
+	// Copy final part
+	e.asm.MOV(X1, X26)
+	e.asm.MOV(X2, X0)
+	e.asm.MOV(X4, X0)
+	e.asm.SUB(X3, X24, X26)
+
+	copyFinalLoop := e.asm.Offset()
+	e.asm.CMP(X3, XZR)
+	copyFinalDone := e.asm.Offset()
+	e.asm.Bcond(CondEQ, 0)
+
+	e.asm.LDRB(X11, X1, 0)
+	e.asm.STRB(X11, X2, 0)
+	e.asm.ADDi(X1, X1, 1)
+	e.asm.ADDi(X2, X2, 1)
+	e.asm.SUBi(X3, X3, 1)
+	e.asm.B(int32(copyFinalLoop - e.asm.Offset()))
+
+	copyFinalDoneLabel := e.asm.Offset()
+	e.asm.Patch(copyFinalDone, e.asm.Bcond_instr(CondEQ, int32(copyFinalDoneLabel-copyFinalDone)>>2))
+
+	e.asm.STRB(XZR, X2, 0) // null terminate
+
+	// Store final part pointer
+	e.asm.STR(X4, X25, 0)
+
+	// Return fat pointer
+	e.asm.MOV(X16, X28)
+	endBranch := e.asm.Offset()
+	e.asm.B(0)
+
+	// Empty separator - return array with just the original string
+	sepEmptyLabel := e.asm.Offset()
+	e.asm.Patch(sepEmptyBranch, e.asm.Bcond_instr(CondEQ, int32(sepEmptyLabel-sepEmptyBranch)>>2))
+
+	// Allocate fat pointer
+	e.asm.MOV(X0, XZR)       // addr = NULL
+	e.asm.MOVimm(X1, 24)     // len = 24
+	e.asm.MOVimm(X2, 3)      // prot
+	e.asm.MOVimm(X3, 0x1002) // flags
+	e.asm.MOVimm(X4, -1)     // fd = -1
+	e.asm.MOV(X5, XZR)       // offset = 0
+	e.asm.MOVimm(X16, 0x20000C5)
+	e.asm.SVC(0x80)
+	e.asm.MOV(X28, X0)
+
+	// Allocate array for 1 string
+	e.asm.MOV(X0, XZR)       // addr = NULL
+	e.asm.MOVimm(X1, 8)      // len = 8
+	e.asm.MOVimm(X2, 3)      // prot
+	e.asm.MOVimm(X3, 0x1002) // flags
+	e.asm.MOVimm(X4, -1)     // fd = -1
+	e.asm.MOV(X5, XZR)       // offset = 0
+	e.asm.MOVimm(X16, 0x20000C5)
+	e.asm.SVC(0x80)
+	e.asm.MOV(X27, X0)
+
+	// Copy original string - allocate buffer
+	e.asm.ADDi(X1, X21, 1)   // X1 = strlen + 1
+	e.asm.ADDi(X1, X1, 15)
+	e.asm.MOVimm(X11, -16)
+	e.asm.AND(X1, X1, X11)   // X1 = aligned size (len for mmap)
+
+	e.asm.MOV(X0, XZR)       // addr = NULL
+	e.asm.MOVimm(X2, 3)      // prot
+	e.asm.MOVimm(X3, 0x1002) // flags
+	e.asm.MOVimm(X4, -1)     // fd = -1
+	e.asm.MOV(X5, XZR)       // offset = 0
+	e.asm.MOVimm(X16, 0x20000C5)
+	e.asm.SVC(0x80)
+
+	e.asm.MOV(X24, X19) // source
+	e.asm.MOV(X25, X0)  // dest
+	e.asm.MOV(X26, X0)  // save
+
+	copyOrigLoop2 := e.asm.Offset()
+	e.asm.LDRB(X11, X24, 0)
+	e.asm.STRB(X11, X25, 0)
+	e.asm.CMP(X11, XZR)
+	copyOrigDone2 := e.asm.Offset()
+	e.asm.Bcond(CondEQ, 0)
+	e.asm.ADDi(X24, X24, 1)
+	e.asm.ADDi(X25, X25, 1)
+	e.asm.B(int32(copyOrigLoop2 - e.asm.Offset()))
+
+	copyOrigDoneLabel2 := e.asm.Offset()
+	e.asm.Patch(copyOrigDone2, e.asm.Bcond_instr(CondEQ, int32(copyOrigDoneLabel2-copyOrigDone2)>>2))
+
+	// Store in array
+	e.asm.STR(X26, X27, 0)
+
+	// Store in fat pointer
+	e.asm.STR(X27, X28, 0)
+	e.asm.MOVimm(X11, 1)
+	e.asm.STR(X11, X28, 8)
+	e.asm.STR(X11, X28, 16)
+
+	e.asm.MOV(X16, X28)
+
+	endLabel := e.asm.Offset()
+	e.asm.Patch(endBranch, e.asm.B_instr(int32(endLabel-endBranch)>>2))
+
 	e.storeToVReg(instr.Dest.VReg, X16)
 }
 

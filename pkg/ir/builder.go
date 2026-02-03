@@ -891,6 +891,12 @@ func (b *Builder) buildCallExpr(e *ast.CallExpr) Operand {
 			return b.buildStrCharAt(e)
 		case "str_concat":
 			return b.buildStrConcatBuiltin(e)
+		case "str_trim":
+			return b.buildStrTrim(e)
+		case "str_replace":
+			return b.buildStrReplace(e)
+		case "str_split":
+			return b.buildStrSplit(e)
 		}
 	}
 
@@ -2453,6 +2459,59 @@ func (b *Builder) buildStrConcatBuiltin(e *ast.CallExpr) Operand {
 		Op:   OpStrConcat,
 		Dest: dest,
 		Args: []Operand{a, bb},
+	})
+	return dest
+}
+
+func (b *Builder) buildStrTrim(e *ast.CallExpr) Operand {
+	if len(e.Args) != 2 {
+		return None()
+	}
+
+	s := b.buildExpr(e.Args[0])
+	chars := b.buildExpr(e.Args[1])
+
+	dest := b.fn.NewVReg(types.Typ[types.String])
+	b.emit(&Instr{
+		Op:   OpStrTrim,
+		Dest: dest,
+		Args: []Operand{s, chars},
+	})
+	return dest
+}
+
+func (b *Builder) buildStrReplace(e *ast.CallExpr) Operand {
+	if len(e.Args) != 3 {
+		return None()
+	}
+
+	s := b.buildExpr(e.Args[0])
+	old := b.buildExpr(e.Args[1])
+	newStr := b.buildExpr(e.Args[2])
+
+	dest := b.fn.NewVReg(types.Typ[types.String])
+	b.emit(&Instr{
+		Op:   OpStrReplace,
+		Dest: dest,
+		Args: []Operand{s, old, newStr},
+	})
+	return dest
+}
+
+func (b *Builder) buildStrSplit(e *ast.CallExpr) Operand {
+	if len(e.Args) != 2 {
+		return None()
+	}
+
+	s := b.buildExpr(e.Args[0])
+	sep := b.buildExpr(e.Args[1])
+
+	// Return type is []string - array fat pointer
+	dest := b.fn.NewVReg(types.NewArray(types.Typ[types.String], 0))
+	b.emit(&Instr{
+		Op:   OpStrSplit,
+		Dest: dest,
+		Args: []Operand{s, sep},
 	})
 	return dest
 }

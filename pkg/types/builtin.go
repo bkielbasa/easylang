@@ -235,6 +235,37 @@ var Builtins = []*BuiltinFunction{
 			Result: TypString,
 		},
 	},
+	{
+		Name: "str_trim",
+		Type: &Function{
+			Params: []*Param{
+				{Name: "s", Type: TypString},
+				{Name: "chars", Type: TypString},
+			},
+			Result: TypString,
+		},
+	},
+	{
+		Name: "str_replace",
+		Type: &Function{
+			Params: []*Param{
+				{Name: "s", Type: TypString},
+				{Name: "old", Type: TypString},
+				{Name: "new", Type: TypString},
+			},
+			Result: TypString,
+		},
+	},
+	{
+		Name: "str_split",
+		Type: &Function{
+			Params: []*Param{
+				{Name: "s", Type: TypString},
+				{Name: "sep", Type: TypString},
+			},
+			Result: NewArray(TypString, 0),
+		},
+	},
 }
 
 // LookupBuiltin returns the builtin function with the given name, or nil if not found.

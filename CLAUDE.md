@@ -4,6 +4,9 @@ A compiled language focusing on developer experience, self-hosting, fast executi
 
 ## Design Decisions
 
+Prefer defining stdlib instead of building new builtins. For example `strings.Split` instead of `str_split`, etc.
+After a successful step, update CLAUDE.md with the current status.
+
 ### Core Design
 - **Type System**: Static with inference
 - **Memory**: Garbage collected
@@ -119,7 +122,11 @@ ease/
 ease build <file.ease>       # Compile to executable
 ease build -o out file.ease  # Compile with custom output name
 ease run <file.ease>         # Compile and run
-ease test                    # Run tests (not yet implemented)
+ease test                    # Run tests in current directory
+ease test -name "login"      # Filter by description
+ease test -tag slow          # Run tagged tests
+ease test -skip integration  # Skip tagged tests
+ease test -v                 # Verbose output
 ease version                 # Print version
 ```
 
@@ -142,9 +149,10 @@ Never add information to commits that I used Claude
 - [x] Arrays with Go-style syntax: `[]int{1, 2, 3}`
 - [x] `len()` builtin for arrays
 - [x] Strings (basic support)
+- [x] Test runner (discovery, filtering, execution)
+- [x] String builtins: `str_concat`, `str_substring`, `str_index_of`, `str_contains`, `str_starts_with`, `str_ends_with`, `str_char_at`, `str_trim`, `str_replace`, `str_split`
 
 ### Next Steps
-- [ ] Test runner (discovery, filtering, execution)
 - [ ] Structs (codegen)
 - [ ] Enums and pattern matching (codegen)
 - [ ] Standard library
