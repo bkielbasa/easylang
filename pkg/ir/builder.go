@@ -866,6 +866,20 @@ func (b *Builder) buildCallExpr(e *ast.CallExpr) Operand {
 			return b.buildSyscallWrite(e)
 		case "syscall_close":
 			return b.buildSyscallClose(e)
+		case "str_contains":
+			return b.buildStrContains(e)
+		case "str_starts_with":
+			return b.buildStrStartsWith(e)
+		case "str_ends_with":
+			return b.buildStrEndsWith(e)
+		case "str_index_of":
+			return b.buildStrIndexOf(e)
+		case "str_substring":
+			return b.buildStrSubstring(e)
+		case "str_char_at":
+			return b.buildStrCharAt(e)
+		case "str_concat":
+			return b.buildStrConcatBuiltin(e)
 		}
 	}
 
@@ -2139,6 +2153,128 @@ func (b *Builder) buildMethodExpr(e *ast.MethodExpr) Operand {
 		Op:   OpCall,
 		Dest: dest,
 		Args: args,
+	})
+	return dest
+}
+
+// String operation builders
+
+func (b *Builder) buildStrContains(e *ast.CallExpr) Operand {
+	if len(e.Args) != 2 {
+		return None()
+	}
+
+	haystack := b.buildExpr(e.Args[0])
+	needle := b.buildExpr(e.Args[1])
+
+	dest := b.fn.NewVReg(types.Typ[types.Bool])
+	b.emit(&Instr{
+		Op:   OpStrContains,
+		Dest: dest,
+		Args: []Operand{haystack, needle},
+	})
+	return dest
+}
+
+func (b *Builder) buildStrStartsWith(e *ast.CallExpr) Operand {
+	if len(e.Args) != 2 {
+		return None()
+	}
+
+	s := b.buildExpr(e.Args[0])
+	prefix := b.buildExpr(e.Args[1])
+
+	dest := b.fn.NewVReg(types.Typ[types.Bool])
+	b.emit(&Instr{
+		Op:   OpStrStartsWith,
+		Dest: dest,
+		Args: []Operand{s, prefix},
+	})
+	return dest
+}
+
+func (b *Builder) buildStrEndsWith(e *ast.CallExpr) Operand {
+	if len(e.Args) != 2 {
+		return None()
+	}
+
+	s := b.buildExpr(e.Args[0])
+	suffix := b.buildExpr(e.Args[1])
+
+	dest := b.fn.NewVReg(types.Typ[types.Bool])
+	b.emit(&Instr{
+		Op:   OpStrEndsWith,
+		Dest: dest,
+		Args: []Operand{s, suffix},
+	})
+	return dest
+}
+
+func (b *Builder) buildStrIndexOf(e *ast.CallExpr) Operand {
+	if len(e.Args) != 2 {
+		return None()
+	}
+
+	s := b.buildExpr(e.Args[0])
+	substr := b.buildExpr(e.Args[1])
+
+	dest := b.fn.NewVReg(types.Typ[types.Int])
+	b.emit(&Instr{
+		Op:   OpStrIndexOf,
+		Dest: dest,
+		Args: []Operand{s, substr},
+	})
+	return dest
+}
+
+func (b *Builder) buildStrSubstring(e *ast.CallExpr) Operand {
+	if len(e.Args) != 3 {
+		return None()
+	}
+
+	s := b.buildExpr(e.Args[0])
+	start := b.buildExpr(e.Args[1])
+	end := b.buildExpr(e.Args[2])
+
+	dest := b.fn.NewVReg(types.Typ[types.String])
+	b.emit(&Instr{
+		Op:   OpStrSubstring,
+		Dest: dest,
+		Args: []Operand{s, start, end},
+	})
+	return dest
+}
+
+func (b *Builder) buildStrCharAt(e *ast.CallExpr) Operand {
+	if len(e.Args) != 2 {
+		return None()
+	}
+
+	s := b.buildExpr(e.Args[0])
+	index := b.buildExpr(e.Args[1])
+
+	dest := b.fn.NewVReg(types.Typ[types.Int])
+	b.emit(&Instr{
+		Op:   OpStrCharAt,
+		Dest: dest,
+		Args: []Operand{s, index},
+	})
+	return dest
+}
+
+func (b *Builder) buildStrConcatBuiltin(e *ast.CallExpr) Operand {
+	if len(e.Args) != 2 {
+		return None()
+	}
+
+	a := b.buildExpr(e.Args[0])
+	bb := b.buildExpr(e.Args[1])
+
+	dest := b.fn.NewVReg(types.Typ[types.String])
+	b.emit(&Instr{
+		Op:   OpStrConcat,
+		Dest: dest,
+		Args: []Operand{a, bb},
 	})
 	return dest
 }

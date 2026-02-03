@@ -351,6 +351,18 @@ func (e *Emitter) emitInstr(instr *ir.Instr) {
 		e.emitStrSlice(instr)
 	case ir.OpLoadByte:
 		e.emitLoadByte(instr)
+	case ir.OpStrContains:
+		e.emitStrContains(instr)
+	case ir.OpStrStartsWith:
+		e.emitStrStartsWith(instr)
+	case ir.OpStrEndsWith:
+		e.emitStrEndsWith(instr)
+	case ir.OpStrIndexOf:
+		e.emitStrIndexOf(instr)
+	case ir.OpStrSubstring:
+		e.emitStrSubstring(instr)
+	case ir.OpStrCharAt:
+		e.emitStrCharAt(instr)
 	case ir.OpArrayLen:
 		e.emitArrayLen(instr)
 	case ir.OpArrayCap:
@@ -700,6 +712,391 @@ func (e *Emitter) emitLoadByte(instr *ir.Instr) {
 	// Load byte from the address (LDRB zero-extends to 64-bit)
 	e.asm.LDRB(X17, addr, 0)
 	e.storeToVReg(instr.Dest.VReg, X17)
+}
+
+// emitStrCharAt returns the byte at index position in a string
+func (e *Emitter) emitStrCharAt(instr *ir.Instr) {
+	str := e.loadOperand(instr.Args[0], X9)
+	index := e.loadOperand(instr.Args[1], X10)
+
+	// Compute address: str + index
+	e.asm.ADD(X11, str, index)
+	// Load byte at that address
+	e.asm.LDRB(X16, X11, 0)
+	e.storeToVReg(instr.Dest.VReg, X16)
+}
+
+// emitStrStartsWith checks if string starts with prefix
+func (e *Emitter) emitStrStartsWith(instr *ir.Instr) {
+	str := e.loadOperand(instr.Args[0], X9)
+	prefix := e.loadOperand(instr.Args[1], X10)
+
+	// Save original pointers
+	e.asm.MOV(X19, str)
+	e.asm.MOV(X20, prefix)
+
+	// Compare loop
+	loopStart := e.asm.Offset()
+
+	// Load byte from prefix
+	e.asm.LDRB(X11, X20, 0)
+	// If prefix byte is null, we've matched all of prefix - success
+	e.asm.CMP(X11, XZR)
+	successBranch := e.asm.Offset()
+	e.asm.Bcond(CondEQ, 0) // placeholder
+
+	// Load byte from str
+	e.asm.LDRB(X12, X19, 0)
+	// If str byte is null but prefix isn't - fail
+	e.asm.CMP(X12, XZR)
+	failBranch1 := e.asm.Offset()
+	e.asm.Bcond(CondEQ, 0) // placeholder
+
+	// Compare bytes
+	e.asm.CMP(X11, X12)
+	failBranch2 := e.asm.Offset()
+	e.asm.Bcond(CondNE, 0) // placeholder
+
+	// Bytes match - advance both pointers
+	e.asm.ADDi(X19, X19, 1)
+	e.asm.ADDi(X20, X20, 1)
+	e.asm.B(int32(loopStart - e.asm.Offset()))
+
+	// Success: return 1
+	successLabel := e.asm.Offset()
+	e.asm.Patch(successBranch, e.asm.Bcond_instr(CondEQ, int32(successLabel-successBranch)>>2))
+	e.asm.MOVimm(X16, 1)
+	endBranch := e.asm.Offset()
+	e.asm.B(0) // placeholder
+
+	// Fail: return 0
+	failLabel := e.asm.Offset()
+	e.asm.Patch(failBranch1, e.asm.Bcond_instr(CondEQ, int32(failLabel-failBranch1)>>2))
+	e.asm.Patch(failBranch2, e.asm.Bcond_instr(CondNE, int32(failLabel-failBranch2)>>2))
+	e.asm.MOVimm(X16, 0)
+
+	// End
+	endLabel := e.asm.Offset()
+	e.asm.Patch(endBranch, e.asm.B_instr(int32(endLabel-endBranch)>>2))
+
+	e.storeToVReg(instr.Dest.VReg, X16)
+}
+
+// emitStrEndsWith checks if string ends with suffix
+func (e *Emitter) emitStrEndsWith(instr *ir.Instr) {
+	str := e.loadOperand(instr.Args[0], X9)
+	suffix := e.loadOperand(instr.Args[1], X10)
+
+	// Calculate length of str -> X21
+	e.asm.MOV(X11, str)
+	e.asm.MOVimm(X21, 0)
+	len1Loop := e.asm.Offset()
+	e.asm.LDRB(X12, X11, 0)
+	e.asm.CMP(X12, XZR)
+	len1Done := e.asm.Offset()
+	e.asm.Bcond(CondEQ, 0)
+	e.asm.ADDi(X11, X11, 1)
+	e.asm.ADDi(X21, X21, 1)
+	e.asm.B(int32(len1Loop - e.asm.Offset()))
+	len1DoneLabel := e.asm.Offset()
+	e.asm.Patch(len1Done, e.asm.Bcond_instr(CondEQ, int32(len1DoneLabel-len1Done)>>2))
+
+	// Calculate length of suffix -> X22
+	e.asm.MOV(X11, suffix)
+	e.asm.MOVimm(X22, 0)
+	len2Loop := e.asm.Offset()
+	e.asm.LDRB(X12, X11, 0)
+	e.asm.CMP(X12, XZR)
+	len2Done := e.asm.Offset()
+	e.asm.Bcond(CondEQ, 0)
+	e.asm.ADDi(X11, X11, 1)
+	e.asm.ADDi(X22, X22, 1)
+	e.asm.B(int32(len2Loop - e.asm.Offset()))
+	len2DoneLabel := e.asm.Offset()
+	e.asm.Patch(len2Done, e.asm.Bcond_instr(CondEQ, int32(len2DoneLabel-len2Done)>>2))
+
+	// If suffix is longer than str, return false
+	e.asm.CMP(X22, X21)
+	failBranchLen := e.asm.Offset()
+	e.asm.Bcond(CondGT, 0)
+
+	// Position str pointer at (str + len(str) - len(suffix))
+	e.asm.SUB(X23, X21, X22)
+	e.asm.ADD(X19, str, X23) // X19 = str + (strLen - suffixLen)
+	e.asm.MOV(X20, suffix)   // X20 = suffix
+
+	// Compare loop
+	cmpLoop := e.asm.Offset()
+	e.asm.LDRB(X11, X20, 0)
+	e.asm.CMP(X11, XZR)
+	successBranch := e.asm.Offset()
+	e.asm.Bcond(CondEQ, 0)
+
+	e.asm.LDRB(X12, X19, 0)
+	e.asm.CMP(X11, X12)
+	failBranchCmp := e.asm.Offset()
+	e.asm.Bcond(CondNE, 0)
+
+	e.asm.ADDi(X19, X19, 1)
+	e.asm.ADDi(X20, X20, 1)
+	e.asm.B(int32(cmpLoop - e.asm.Offset()))
+
+	// Success
+	successLabel := e.asm.Offset()
+	e.asm.Patch(successBranch, e.asm.Bcond_instr(CondEQ, int32(successLabel-successBranch)>>2))
+	e.asm.MOVimm(X16, 1)
+	endBranch := e.asm.Offset()
+	e.asm.B(0)
+
+	// Fail
+	failLabel := e.asm.Offset()
+	e.asm.Patch(failBranchLen, e.asm.Bcond_instr(CondGT, int32(failLabel-failBranchLen)>>2))
+	e.asm.Patch(failBranchCmp, e.asm.Bcond_instr(CondNE, int32(failLabel-failBranchCmp)>>2))
+	e.asm.MOVimm(X16, 0)
+
+	endLabel := e.asm.Offset()
+	e.asm.Patch(endBranch, e.asm.B_instr(int32(endLabel-endBranch)>>2))
+
+	e.storeToVReg(instr.Dest.VReg, X16)
+}
+
+// emitStrIndexOf finds the first occurrence of needle in haystack, returns -1 if not found
+func (e *Emitter) emitStrIndexOf(instr *ir.Instr) {
+	haystack := e.loadOperand(instr.Args[0], X9)
+	needle := e.loadOperand(instr.Args[1], X10)
+
+	// Get length of needle -> X22
+	e.asm.MOV(X11, needle)
+	e.asm.MOVimm(X22, 0)
+	needleLenLoop := e.asm.Offset()
+	e.asm.LDRB(X12, X11, 0)
+	e.asm.CMP(X12, XZR)
+	needleLenDone := e.asm.Offset()
+	e.asm.Bcond(CondEQ, 0)
+	e.asm.ADDi(X11, X11, 1)
+	e.asm.ADDi(X22, X22, 1)
+	e.asm.B(int32(needleLenLoop - e.asm.Offset()))
+	needleLenDoneLabel := e.asm.Offset()
+	e.asm.Patch(needleLenDone, e.asm.Bcond_instr(CondEQ, int32(needleLenDoneLabel-needleLenDone)>>2))
+
+	// If needle is empty, return 0
+	e.asm.CMP(X22, XZR)
+	emptyNeedleBranch := e.asm.Offset()
+	e.asm.Bcond(CondEQ, 0)
+
+	// X19 = current position in haystack (index)
+	e.asm.MOVimm(X19, 0)
+	// X20 = haystack pointer
+	e.asm.MOV(X20, haystack)
+
+	// Outer loop: check each position in haystack
+	outerLoop := e.asm.Offset()
+
+	// Check if haystack[pos] is null - end of string, not found
+	e.asm.LDRB(X11, X20, 0)
+	e.asm.CMP(X11, XZR)
+	notFoundBranch := e.asm.Offset()
+	e.asm.Bcond(CondEQ, 0)
+
+	// Inner comparison: compare needle at current position
+	e.asm.MOV(X23, X20) // X23 = current haystack position
+	e.asm.MOV(X24, needle)
+	e.asm.MOVimm(X25, 0) // X25 = needle index
+
+	innerLoop := e.asm.Offset()
+	// If we've matched all of needle, we found it
+	e.asm.CMP(X25, X22)
+	foundBranch := e.asm.Offset()
+	e.asm.Bcond(CondEQ, 0)
+
+	// Load and compare bytes
+	e.asm.LDRB(X11, X23, 0)
+	e.asm.LDRB(X12, X24, 0)
+	e.asm.CMP(X11, X12)
+	mismatchBranch := e.asm.Offset()
+	e.asm.Bcond(CondNE, 0)
+
+	// Bytes match, continue
+	e.asm.ADDi(X23, X23, 1)
+	e.asm.ADDi(X24, X24, 1)
+	e.asm.ADDi(X25, X25, 1)
+	e.asm.B(int32(innerLoop - e.asm.Offset()))
+
+	// Mismatch - try next position
+	mismatchLabel := e.asm.Offset()
+	e.asm.Patch(mismatchBranch, e.asm.Bcond_instr(CondNE, int32(mismatchLabel-mismatchBranch)>>2))
+	e.asm.ADDi(X19, X19, 1)
+	e.asm.ADDi(X20, X20, 1)
+	e.asm.B(int32(outerLoop - e.asm.Offset()))
+
+	// Found: return index
+	foundLabel := e.asm.Offset()
+	e.asm.Patch(foundBranch, e.asm.Bcond_instr(CondEQ, int32(foundLabel-foundBranch)>>2))
+	e.asm.MOV(X16, X19)
+	endBranch1 := e.asm.Offset()
+	e.asm.B(0)
+
+	// Empty needle: return 0
+	emptyLabel := e.asm.Offset()
+	e.asm.Patch(emptyNeedleBranch, e.asm.Bcond_instr(CondEQ, int32(emptyLabel-emptyNeedleBranch)>>2))
+	e.asm.MOVimm(X16, 0)
+	endBranch2 := e.asm.Offset()
+	e.asm.B(0)
+
+	// Not found: return -1
+	notFoundLabel := e.asm.Offset()
+	e.asm.Patch(notFoundBranch, e.asm.Bcond_instr(CondEQ, int32(notFoundLabel-notFoundBranch)>>2))
+	e.asm.MOVimm(X16, -1)
+
+	// End
+	endLabel := e.asm.Offset()
+	e.asm.Patch(endBranch1, e.asm.B_instr(int32(endLabel-endBranch1)>>2))
+	e.asm.Patch(endBranch2, e.asm.B_instr(int32(endLabel-endBranch2)>>2))
+
+	e.storeToVReg(instr.Dest.VReg, X16)
+}
+
+// emitStrContains checks if haystack contains needle
+func (e *Emitter) emitStrContains(instr *ir.Instr) {
+	// Reuse str_index_of logic: contains = (index_of >= 0)
+	haystack := e.loadOperand(instr.Args[0], X9)
+	needle := e.loadOperand(instr.Args[1], X10)
+
+	// Get length of needle -> X22
+	e.asm.MOV(X11, needle)
+	e.asm.MOVimm(X22, 0)
+	needleLenLoop := e.asm.Offset()
+	e.asm.LDRB(X12, X11, 0)
+	e.asm.CMP(X12, XZR)
+	needleLenDone := e.asm.Offset()
+	e.asm.Bcond(CondEQ, 0)
+	e.asm.ADDi(X11, X11, 1)
+	e.asm.ADDi(X22, X22, 1)
+	e.asm.B(int32(needleLenLoop - e.asm.Offset()))
+	needleLenDoneLabel := e.asm.Offset()
+	e.asm.Patch(needleLenDone, e.asm.Bcond_instr(CondEQ, int32(needleLenDoneLabel-needleLenDone)>>2))
+
+	// Empty needle always found
+	e.asm.CMP(X22, XZR)
+	emptyNeedleBranch := e.asm.Offset()
+	e.asm.Bcond(CondEQ, 0)
+
+	// X20 = haystack pointer
+	e.asm.MOV(X20, haystack)
+
+	// Outer loop
+	outerLoop := e.asm.Offset()
+	e.asm.LDRB(X11, X20, 0)
+	e.asm.CMP(X11, XZR)
+	notFoundBranch := e.asm.Offset()
+	e.asm.Bcond(CondEQ, 0)
+
+	// Inner comparison
+	e.asm.MOV(X23, X20)
+	e.asm.MOV(X24, needle)
+	e.asm.MOVimm(X25, 0)
+
+	innerLoop := e.asm.Offset()
+	e.asm.CMP(X25, X22)
+	foundBranch := e.asm.Offset()
+	e.asm.Bcond(CondEQ, 0)
+
+	e.asm.LDRB(X11, X23, 0)
+	e.asm.LDRB(X12, X24, 0)
+	e.asm.CMP(X11, X12)
+	mismatchBranch := e.asm.Offset()
+	e.asm.Bcond(CondNE, 0)
+
+	e.asm.ADDi(X23, X23, 1)
+	e.asm.ADDi(X24, X24, 1)
+	e.asm.ADDi(X25, X25, 1)
+	e.asm.B(int32(innerLoop - e.asm.Offset()))
+
+	mismatchLabel := e.asm.Offset()
+	e.asm.Patch(mismatchBranch, e.asm.Bcond_instr(CondNE, int32(mismatchLabel-mismatchBranch)>>2))
+	e.asm.ADDi(X20, X20, 1)
+	e.asm.B(int32(outerLoop - e.asm.Offset()))
+
+	// Found or empty needle: return true (1)
+	foundLabel := e.asm.Offset()
+	e.asm.Patch(foundBranch, e.asm.Bcond_instr(CondEQ, int32(foundLabel-foundBranch)>>2))
+	e.asm.Patch(emptyNeedleBranch, e.asm.Bcond_instr(CondEQ, int32(foundLabel-emptyNeedleBranch)>>2))
+	e.asm.MOVimm(X16, 1)
+	endBranch := e.asm.Offset()
+	e.asm.B(0)
+
+	// Not found: return false (0)
+	notFoundLabel := e.asm.Offset()
+	e.asm.Patch(notFoundBranch, e.asm.Bcond_instr(CondEQ, int32(notFoundLabel-notFoundBranch)>>2))
+	e.asm.MOVimm(X16, 0)
+
+	endLabel := e.asm.Offset()
+	e.asm.Patch(endBranch, e.asm.B_instr(int32(endLabel-endBranch)>>2))
+
+	e.storeToVReg(instr.Dest.VReg, X16)
+}
+
+// emitStrSubstring extracts a substring from start to end indices
+// Allocates memory for the result string
+func (e *Emitter) emitStrSubstring(instr *ir.Instr) {
+	str := e.loadOperand(instr.Args[0], X9)
+	start := e.loadOperand(instr.Args[1], X10)
+	end := e.loadOperand(instr.Args[2], X11)
+
+	// Save inputs in callee-saved registers
+	e.asm.MOV(X19, str)
+	e.asm.MOV(X20, start)
+	e.asm.MOV(X21, end)
+
+	// Calculate length = end - start
+	e.asm.SUB(X22, X21, X20)
+
+	// Allocate size = length + 1 (for null terminator), aligned to 16
+	e.asm.ADDi(X23, X22, 1)
+	e.asm.ADDi(X23, X23, 15)
+	// Align to 16: mask with ~15 = -16
+	e.asm.MOVimm(X0, -16)
+	e.asm.AND(X23, X23, X0)
+
+	// Allocate using heap
+	e.asm.MOV(X0, X23)
+	e.asm.MOVimm(X16, 0x2000049) // mmap syscall
+	e.asm.MOVimm(X1, 3)          // PROT_READ | PROT_WRITE
+	e.asm.MOVimm(X2, 0x1002)     // MAP_PRIVATE | MAP_ANON
+	e.asm.MOVimm(X3, -1)         // fd = -1
+	e.asm.MOVimm(X4, 0)          // offset = 0
+	e.asm.SVC(0x80)
+
+	// X0 = allocated buffer pointer
+	e.asm.MOV(X24, X0) // Save destination pointer
+
+	// Copy substring: from str+start to buffer
+	e.asm.ADD(X25, X19, X20) // X25 = source pointer (str + start)
+	e.asm.MOV(X26, X24)      // X26 = dest pointer
+	e.asm.MOVimm(X27, 0)     // X27 = bytes copied
+
+	// Copy loop
+	copyLoop := e.asm.Offset()
+	e.asm.CMP(X27, X22)
+	copyDone := e.asm.Offset()
+	e.asm.Bcond(CondEQ, 0)
+
+	e.asm.LDRB(X28, X25, 0)
+	e.asm.STRB(X28, X26, 0)
+	e.asm.ADDi(X25, X25, 1)
+	e.asm.ADDi(X26, X26, 1)
+	e.asm.ADDi(X27, X27, 1)
+	e.asm.B(int32(copyLoop - e.asm.Offset()))
+
+	copyDoneLabel := e.asm.Offset()
+	e.asm.Patch(copyDone, e.asm.Bcond_instr(CondEQ, int32(copyDoneLabel-copyDone)>>2))
+
+	// Null terminate
+	e.asm.STRB(XZR, X26, 0)
+
+	// Return buffer pointer
+	e.asm.MOV(X16, X24)
+	e.storeToVReg(instr.Dest.VReg, X16)
 }
 
 func (e *Emitter) emitCopy(instr *ir.Instr) {

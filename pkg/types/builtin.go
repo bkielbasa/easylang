@@ -163,6 +163,78 @@ var Builtins = []*BuiltinFunction{
 			Result: TypInt, // returns 0 on success, -1 on error
 		},
 	},
+	// String operations
+	{
+		Name: "str_contains",
+		Type: &Function{
+			Params: []*Param{
+				{Name: "haystack", Type: TypString},
+				{Name: "needle", Type: TypString},
+			},
+			Result: TypBool,
+		},
+	},
+	{
+		Name: "str_starts_with",
+		Type: &Function{
+			Params: []*Param{
+				{Name: "s", Type: TypString},
+				{Name: "prefix", Type: TypString},
+			},
+			Result: TypBool,
+		},
+	},
+	{
+		Name: "str_ends_with",
+		Type: &Function{
+			Params: []*Param{
+				{Name: "s", Type: TypString},
+				{Name: "suffix", Type: TypString},
+			},
+			Result: TypBool,
+		},
+	},
+	{
+		Name: "str_index_of",
+		Type: &Function{
+			Params: []*Param{
+				{Name: "s", Type: TypString},
+				{Name: "substr", Type: TypString},
+			},
+			Result: TypInt, // returns -1 if not found
+		},
+	},
+	{
+		Name: "str_substring",
+		Type: &Function{
+			Params: []*Param{
+				{Name: "s", Type: TypString},
+				{Name: "start", Type: TypInt},
+				{Name: "end", Type: TypInt},
+			},
+			Result: TypString,
+		},
+	},
+	{
+		Name: "str_char_at",
+		Type: &Function{
+			Params: []*Param{
+				{Name: "s", Type: TypString},
+				{Name: "index", Type: TypInt},
+			},
+			Result: TypInt, // returns character code
+		},
+	},
+	{
+		Name: "str_concat",
+		Type: &Function{
+			Params: []*Param{
+				{Name: "a", Type: TypString},
+				{Name: "b", Type: TypString},
+			},
+			Result: TypString,
+		},
+	},
 }
 
 // LookupBuiltin returns the builtin function with the given name, or nil if not found.

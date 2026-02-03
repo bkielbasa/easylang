@@ -63,12 +63,18 @@ const (
 	OpIndexAddr // compute element address: base + index * elemSize
 
 	// String operations
-	OpStrEq     // string equality comparison
-	OpStrNe     // string inequality comparison
-	OpStrLen    // string length (scans for null)
-	OpStrConcat // string concatenation (arg0 + arg1)
-	OpStrSlice  // string slice (arg0=str, arg1=start, arg2=end)
-	OpLoadByte  // load single byte from address (for string indexing)
+	OpStrEq         // string equality comparison
+	OpStrNe         // string inequality comparison
+	OpStrLen        // string length (scans for null)
+	OpStrConcat     // string concatenation (arg0 + arg1)
+	OpStrSlice      // string slice (arg0=str, arg1=start, arg2=end)
+	OpLoadByte      // load single byte from address (for string indexing)
+	OpStrContains   // check if haystack contains needle (arg0, arg1) -> bool
+	OpStrStartsWith // check if string starts with prefix (arg0, arg1) -> bool
+	OpStrEndsWith   // check if string ends with suffix (arg0, arg1) -> bool
+	OpStrIndexOf    // find substring index, -1 if not found (arg0, arg1) -> int
+	OpStrSubstring  // extract substring (arg0=str, arg1=start, arg2=end) -> string
+	OpStrCharAt     // get character code at index (arg0=str, arg1=index) -> int
 
 	// IO operations
 	OpPrint     // print string to stdout (arg0=string)
@@ -127,12 +133,18 @@ var opNames = [...]string{
 	OpMakeArray: "makearray",
 	OpArrayPush: "arraypush",
 	OpIndexAddr: "indexaddr",
-	OpStrEq:     "streq",
-	OpStrNe:     "strne",
-	OpStrLen:    "strlen",
-	OpStrConcat: "strconcat",
-	OpStrSlice:  "strslice",
-	OpLoadByte:  "loadbyte",
+	OpStrEq:         "streq",
+	OpStrNe:         "strne",
+	OpStrLen:        "strlen",
+	OpStrConcat:     "strconcat",
+	OpStrSlice:      "strslice",
+	OpLoadByte:      "loadbyte",
+	OpStrContains:   "strcontains",
+	OpStrStartsWith: "strstartswith",
+	OpStrEndsWith:   "strendswith",
+	OpStrIndexOf:    "strindexof",
+	OpStrSubstring:  "strsubstring",
+	OpStrCharAt:     "strcharat",
 	OpPrint:     "print",
 	OpReadFile:  "readfile",
 	OpWriteFile: "writefile",
