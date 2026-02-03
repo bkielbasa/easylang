@@ -1084,6 +1084,18 @@ func (a *Analyzer) analyzeCallExpr(e *ast.CallExpr) types.Type {
 		}
 	}
 
+	// Handle package-qualified builtins (e.g., os.ReadFile, os.WriteFile)
+	if field, ok := e.Func.(*ast.FieldExpr); ok {
+		if pkg, ok := field.Expr.(*ast.Ident); ok && pkg.Name == "os" {
+			switch field.Field.Name {
+			case "ReadFile":
+				return a.analyzeOsReadFileCall(e)
+			case "WriteFile":
+				return a.analyzeOsWriteFileCall(e)
+			}
+		}
+	}
+
 	fnType := a.analyzeExpr(e.Func)
 
 	fn, ok := fnType.(*types.Function)
@@ -1489,6 +1501,58 @@ func (a *Analyzer) analyzeOsReadFile(e *ast.MethodExpr) types.Type {
 	}
 
 	return types.Typ[types.String]
+}
+
+func (a *Analyzer) analyzeOsWriteFile(e *ast.MethodExpr) types.Type {
+	if len(e.Args) != 2 {
+		a.error(e.Pos(), "os.WriteFile requires exactly 2 arguments (path, content)")
+		return types.Typ[types.Int]
+	}
+
+	pathType := a.analyzeExpr(e.Args[0])
+	if !isString(pathType) {
+		a.error(e.Args[0].Pos(), "os.WriteFile path must be string; got %s", pathType)
+	}
+
+	contentType := a.analyzeExpr(e.Args[1])
+	if !isString(contentType) {
+		a.error(e.Args[1].Pos(), "os.WriteFile content must be string; got %s", contentType)
+	}
+
+	return types.Typ[types.Int] // returns 0 on success, -1 on error
+}
+
+func (a *Analyzer) analyzeOsReadFileCall(e *ast.CallExpr) types.Type {
+	if len(e.Args) != 1 {
+		a.error(e.Pos(), "os.ReadFile requires exactly 1 argument")
+		return types.Typ[types.String]
+	}
+
+	argType := a.analyzeExpr(e.Args[0])
+	if !isString(argType) {
+		a.error(e.Args[0].Pos(), "os.ReadFile argument must be string; got %s", argType)
+	}
+
+	return types.Typ[types.String]
+}
+
+func (a *Analyzer) analyzeOsWriteFileCall(e *ast.CallExpr) types.Type {
+	if len(e.Args) != 2 {
+		a.error(e.Pos(), "os.WriteFile requires exactly 2 arguments (path, content)")
+		return types.Typ[types.Int]
+	}
+
+	pathType := a.analyzeExpr(e.Args[0])
+	if !isString(pathType) {
+		a.error(e.Args[0].Pos(), "os.WriteFile path must be string; got %s", pathType)
+	}
+
+	contentType := a.analyzeExpr(e.Args[1])
+	if !isString(contentType) {
+		a.error(e.Args[1].Pos(), "os.WriteFile content must be string; got %s", contentType)
+	}
+
+	return types.Typ[types.Int] // returns 0 on success, -1 on error
 }
 
 func (a *Analyzer) analyzeOsArgc(e *ast.MethodExpr) types.Type {
@@ -2217,6 +2281,8 @@ func (a *Analyzer) analyzeMethodExpr(e *ast.MethodExpr) types.Type {
 			switch e.Method.Name {
 			case "ReadFile":
 				return a.analyzeOsReadFile(e)
+			case "WriteFile":
+				return a.analyzeOsWriteFile(e)
 			case "Argc":
 				return a.analyzeOsArgc(e)
 			case "Argv":

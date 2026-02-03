@@ -363,6 +363,8 @@ func (e *Emitter) emitInstr(instr *ir.Instr) {
 		e.emitPrint(instr)
 	case ir.OpReadFile:
 		e.emitReadFile(instr)
+	case ir.OpWriteFile:
+		e.emitWriteFile(instr)
 	case ir.OpArgc:
 		e.emitArgc(instr)
 	case ir.OpArgv:
@@ -373,6 +375,14 @@ func (e *Emitter) emitInstr(instr *ir.Instr) {
 		e.emitStrToInt(instr)
 	case ir.OpHeapAlloc:
 		e.emitHeapAlloc(instr)
+	case ir.OpSyscallOpen:
+		e.emitSyscallOpen(instr)
+	case ir.OpSyscallRead:
+		e.emitSyscallRead(instr)
+	case ir.OpSyscallWrite:
+		e.emitSyscallWrite(instr)
+	case ir.OpSyscallClose:
+		e.emitSyscallClose(instr)
 	}
 }
 
@@ -1149,6 +1159,95 @@ func (e *Emitter) emitReadFile(instr *ir.Instr) {
 	e.storeToVReg(instr.Dest.VReg, X21)
 }
 
+func (e *Emitter) emitWriteFile(instr *ir.Instr) {
+	// Load arguments
+	path := e.loadOperand(instr.Args[0], X19)
+	content := e.loadOperand(instr.Args[1], X20)
+	e.asm.MOV(X19, path)    // Save path
+	e.asm.MOV(X20, content) // Save content
+
+	// Get string length (same pattern as emitStrLen)
+	e.asm.MOV(X21, X20)     // X21 = scanning pointer
+	e.asm.MOVimm(X22, 0)    // X22 = length counter
+
+	strlenLoop := e.asm.Offset()
+	e.asm.LDRB(X23, X21, 0) // Load byte
+	e.asm.CMP(X23, XZR)     // Check if null
+	strlenDone := e.asm.Offset()
+	e.asm.Bcond(CondEQ, 0)  // if null, done (placeholder)
+	e.asm.ADDi(X21, X21, 1) // Increment pointer
+	e.asm.ADDi(X22, X22, 1) // Increment counter
+	strlenEnd := e.asm.Offset()
+	backOffset := int32(strlenLoop - strlenEnd)
+	e.asm.B(backOffset)     // Jump back to loop
+
+	// Patch the done branch
+	strlenDoneLabel := e.asm.Offset()
+	e.asm.Patch(strlenDone, e.asm.Bcond_instr(CondEQ, int32(strlenDoneLabel-strlenDone)>>2))
+	// X22 now contains the string length
+
+	// open(path, O_WRONLY | O_CREAT | O_TRUNC, 0644)
+	// O_WRONLY=1, O_CREAT=0x200, O_TRUNC=0x400 -> 0x601 = 1537
+	e.asm.MOV(X0, X19)              // path
+	e.asm.MOVimm(X1, 1537)          // flags: O_WRONLY | O_CREAT | O_TRUNC
+	e.asm.MOVimm(X2, 420)           // mode: 0644 octal = 420 decimal
+	e.asm.MOVimm(X16, 0x2000005)    // syscall open
+	e.asm.SVC(0x80)
+	e.asm.MOV(X21, X0)              // Save fd in X21 (X22 has length)
+
+	// Check for open error
+	e.asm.CMP(X21, XZR)
+	openOk := e.asm.Offset()
+	e.asm.Bcond(CondGE, 0)          // Branch if fd >= 0
+
+	// Open failed, return -1
+	e.asm.MOVimm(X16, -1)
+	e.storeToVReg(instr.Dest.VReg, X16)
+	openFailed := e.asm.Offset()
+	e.asm.B(0)                      // Jump to end (placeholder)
+
+	// Patch openOk branch
+	openOkLabel := e.asm.Offset()
+	e.asm.Patch(openOk, e.asm.Bcond_instr(CondGE, int32(openOkLabel-openOk)>>2))
+
+	// write(fd, content, length)
+	e.asm.MOV(X0, X21)              // fd
+	e.asm.MOV(X1, X20)              // content
+	e.asm.MOV(X2, X22)              // length
+	e.asm.MOVimm(X16, 0x2000004)    // syscall write
+	e.asm.SVC(0x80)
+	e.asm.MOV(X23, X0)              // Save bytes written
+
+	// close(fd)
+	e.asm.MOV(X0, X21)              // fd
+	e.asm.MOVimm(X16, 0x2000006)    // syscall close
+	e.asm.SVC(0x80)
+
+	// Check if all bytes were written
+	e.asm.CMP(X23, X22)             // Compare written with length
+	writeOk := e.asm.Offset()
+	e.asm.Bcond(CondEQ, 0)          // Branch if equal
+
+	// Write failed (partial write), return -1
+	e.asm.MOVimm(X16, -1)
+	e.storeToVReg(instr.Dest.VReg, X16)
+	writeFailed := e.asm.Offset()
+	e.asm.B(0)                      // Jump to end (placeholder)
+
+	// Patch writeOk branch
+	writeOkLabel := e.asm.Offset()
+	e.asm.Patch(writeOk, e.asm.Bcond_instr(CondEQ, int32(writeOkLabel-writeOk)>>2))
+
+	// Success, return 0
+	e.asm.MOVimm(X16, 0)
+	e.storeToVReg(instr.Dest.VReg, X16)
+
+	// Patch failure jumps
+	endLabel := e.asm.Offset()
+	e.asm.Patch(openFailed, e.asm.B_instr(int32(endLabel-openFailed)>>2))
+	e.asm.Patch(writeFailed, e.asm.B_instr(int32(endLabel-writeFailed)>>2))
+}
+
 // emitArgc returns the number of command line arguments
 // argc is saved in X27 at program start
 func (e *Emitter) emitArgc(instr *ir.Instr) {
@@ -1477,5 +1576,105 @@ func (e *Emitter) emitMmapCall(size int64) {
 	e.asm.MOVimm(X5, 0)                // offset = 0
 	e.asm.MOVimm(X16, 0x20000C5)       // syscall mmap (197 + 0x2000000)
 	e.asm.SVC(0x80)
+}
+
+// emitSyscallOpen emits the open syscall.
+// open(path, flags, mode) -> fd
+// macOS ARM64 syscall: 5 (0x2000005)
+func (e *Emitter) emitSyscallOpen(instr *ir.Instr) {
+	// Load arguments
+	path := e.loadOperand(instr.Args[0], X0)   // path
+	flags := e.loadOperand(instr.Args[1], X1)  // flags
+	mode := e.loadOperand(instr.Args[2], X2)   // mode
+
+	if path != X0 {
+		e.asm.MOV(X0, path)
+	}
+	if flags != X1 {
+		e.asm.MOV(X1, flags)
+	}
+	if mode != X2 {
+		e.asm.MOV(X2, mode)
+	}
+
+	// Syscall number for open
+	e.asm.MOVimm(X16, 0x2000005)
+	e.asm.SVC(0x80)
+
+	// Result is in X0
+	e.storeToVReg(instr.Dest.VReg, X0)
+}
+
+// emitSyscallRead emits the read syscall.
+// read(fd, buf, size) -> bytes_read
+// macOS ARM64 syscall: 3 (0x2000003)
+func (e *Emitter) emitSyscallRead(instr *ir.Instr) {
+	// Load arguments
+	fd := e.loadOperand(instr.Args[0], X0)    // fd
+	buf := e.loadOperand(instr.Args[1], X1)   // buf
+	size := e.loadOperand(instr.Args[2], X2)  // size
+
+	if fd != X0 {
+		e.asm.MOV(X0, fd)
+	}
+	if buf != X1 {
+		e.asm.MOV(X1, buf)
+	}
+	if size != X2 {
+		e.asm.MOV(X2, size)
+	}
+
+	// Syscall number for read
+	e.asm.MOVimm(X16, 0x2000003)
+	e.asm.SVC(0x80)
+
+	// Result is in X0
+	e.storeToVReg(instr.Dest.VReg, X0)
+}
+
+// emitSyscallWrite emits the write syscall.
+// write(fd, buf, size) -> bytes_written
+// macOS ARM64 syscall: 4 (0x2000004)
+func (e *Emitter) emitSyscallWrite(instr *ir.Instr) {
+	// Load arguments
+	fd := e.loadOperand(instr.Args[0], X0)    // fd
+	buf := e.loadOperand(instr.Args[1], X1)   // buf
+	size := e.loadOperand(instr.Args[2], X2)  // size
+
+	if fd != X0 {
+		e.asm.MOV(X0, fd)
+	}
+	if buf != X1 {
+		e.asm.MOV(X1, buf)
+	}
+	if size != X2 {
+		e.asm.MOV(X2, size)
+	}
+
+	// Syscall number for write
+	e.asm.MOVimm(X16, 0x2000004)
+	e.asm.SVC(0x80)
+
+	// Result is in X0
+	e.storeToVReg(instr.Dest.VReg, X0)
+}
+
+// emitSyscallClose emits the close syscall.
+// close(fd) -> int
+// macOS ARM64 syscall: 6 (0x2000006)
+func (e *Emitter) emitSyscallClose(instr *ir.Instr) {
+	// Load argument
+	fd := e.loadOperand(instr.Args[0], X0)
+
+	if fd != X0 {
+		e.asm.MOV(X0, fd)
+	}
+
+	// Syscall number for close
+	e.asm.MOVimm(X16, 0x2000006)
+	e.asm.SVC(0x80)
+
+	// Result is in X0
+	e.storeToVReg(instr.Dest.VReg, X0)
 }
 

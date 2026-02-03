@@ -849,6 +849,14 @@ func (b *Builder) buildCallExpr(e *ast.CallExpr) Operand {
 			return b.buildPrintBuiltin(e)
 		case "heap_alloc":
 			return b.buildHeapAllocBuiltin(e)
+		case "syscall_open":
+			return b.buildSyscallOpen(e)
+		case "syscall_read":
+			return b.buildSyscallRead(e)
+		case "syscall_write":
+			return b.buildSyscallWrite(e)
+		case "syscall_close":
+			return b.buildSyscallClose(e)
 		}
 	}
 
@@ -858,6 +866,8 @@ func (b *Builder) buildCallExpr(e *ast.CallExpr) Operand {
 			switch field.Field.Name {
 			case "ReadFile":
 				return b.buildReadFileBuiltin(e)
+			case "WriteFile":
+				return b.buildWriteFileBuiltin(e)
 			}
 		}
 	}
@@ -1062,6 +1072,98 @@ func (b *Builder) buildReadFileBuiltin(e *ast.CallExpr) Operand {
 	return dest
 }
 
+func (b *Builder) buildSyscallOpen(e *ast.CallExpr) Operand {
+	if len(e.Args) != 3 {
+		return None()
+	}
+
+	path := b.buildExpr(e.Args[0])
+	flags := b.buildExpr(e.Args[1])
+	mode := b.buildExpr(e.Args[2])
+
+	result := b.fn.NewVReg(types.Typ[types.Int])
+	b.emit(&Instr{
+		Op:   OpSyscallOpen,
+		Dest: result,
+		Args: []Operand{path, flags, mode},
+	})
+
+	return result
+}
+
+func (b *Builder) buildSyscallRead(e *ast.CallExpr) Operand {
+	if len(e.Args) != 3 {
+		return None()
+	}
+
+	fd := b.buildExpr(e.Args[0])
+	buf := b.buildExpr(e.Args[1])
+	size := b.buildExpr(e.Args[2])
+
+	result := b.fn.NewVReg(types.Typ[types.Int])
+	b.emit(&Instr{
+		Op:   OpSyscallRead,
+		Dest: result,
+		Args: []Operand{fd, buf, size},
+	})
+
+	return result
+}
+
+func (b *Builder) buildSyscallWrite(e *ast.CallExpr) Operand {
+	if len(e.Args) != 3 {
+		return None()
+	}
+
+	fd := b.buildExpr(e.Args[0])
+	buf := b.buildExpr(e.Args[1])
+	size := b.buildExpr(e.Args[2])
+
+	result := b.fn.NewVReg(types.Typ[types.Int])
+	b.emit(&Instr{
+		Op:   OpSyscallWrite,
+		Dest: result,
+		Args: []Operand{fd, buf, size},
+	})
+
+	return result
+}
+
+func (b *Builder) buildSyscallClose(e *ast.CallExpr) Operand {
+	if len(e.Args) != 1 {
+		return None()
+	}
+
+	fd := b.buildExpr(e.Args[0])
+
+	result := b.fn.NewVReg(types.Typ[types.Int])
+	b.emit(&Instr{
+		Op:   OpSyscallClose,
+		Dest: result,
+		Args: []Operand{fd},
+	})
+
+	return result
+}
+
+func (b *Builder) buildWriteFileBuiltin(e *ast.CallExpr) Operand {
+	if len(e.Args) != 2 {
+		return None()
+	}
+
+	path := b.buildExpr(e.Args[0])
+	content := b.buildExpr(e.Args[1])
+
+	result := b.fn.NewVReg(types.Typ[types.Int])
+	b.emit(&Instr{
+		Op:   OpWriteFile,
+		Dest: result,
+		Args: []Operand{path, content},
+	})
+
+	return result
+}
+
 func (b *Builder) buildOsReadFile(e *ast.MethodExpr) Operand {
 	if len(e.Args) != 1 {
 		return None()
@@ -1077,6 +1179,24 @@ func (b *Builder) buildOsReadFile(e *ast.MethodExpr) Operand {
 	})
 
 	return dest
+}
+
+func (b *Builder) buildOsWriteFile(e *ast.MethodExpr) Operand {
+	if len(e.Args) != 2 {
+		return None()
+	}
+
+	path := b.buildExpr(e.Args[0])
+	content := b.buildExpr(e.Args[1])
+
+	result := b.fn.NewVReg(types.Typ[types.Int])
+	b.emit(&Instr{
+		Op:   OpWriteFile,
+		Dest: result,
+		Args: []Operand{path, content},
+	})
+
+	return result
 }
 
 func (b *Builder) buildOsArgc(e *ast.MethodExpr) Operand {
@@ -1940,6 +2060,8 @@ func (b *Builder) buildMethodExpr(e *ast.MethodExpr) Operand {
 			switch e.Method.Name {
 			case "ReadFile":
 				return b.buildOsReadFile(e)
+			case "WriteFile":
+				return b.buildOsWriteFile(e)
 			case "Argc":
 				return b.buildOsArgc(e)
 			case "Argv":

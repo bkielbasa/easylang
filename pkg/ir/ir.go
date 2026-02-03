@@ -71,10 +71,11 @@ const (
 	OpLoadByte  // load single byte from address (for string indexing)
 
 	// IO operations
-	OpPrint    // print string to stdout (arg0=string)
-	OpReadFile // read file contents (arg0=path) -> string
-	OpArgc     // get argument count
-	OpArgv     // get argument at index (arg0=index) -> string
+	OpPrint     // print string to stdout (arg0=string)
+	OpReadFile  // read file contents (arg0=path) -> string
+	OpWriteFile // write string to file (arg0=path, arg1=content) -> int (0=success, -1=error)
+	OpArgc      // get argument count
+	OpArgv      // get argument at index (arg0=index) -> string
 
 	// Conversion operations
 	OpIntToStr // convert int to string (arg0=int) -> string
@@ -82,6 +83,12 @@ const (
 
 	// Heap operations
 	OpHeapAlloc // allocate memory from heap (arg0=size) -> pointer
+
+	// File syscalls
+	OpSyscallOpen  // open(path, flags, mode) -> fd
+	OpSyscallRead  // read(fd, buf, size) -> bytes_read
+	OpSyscallWrite // write(fd, buf, size) -> bytes_written
+	OpSyscallClose // close(fd) -> int
 )
 
 var opNames = [...]string{
@@ -128,11 +135,16 @@ var opNames = [...]string{
 	OpLoadByte:  "loadbyte",
 	OpPrint:     "print",
 	OpReadFile:  "readfile",
+	OpWriteFile: "writefile",
 	OpArgc:      "argc",
 	OpArgv:      "argv",
 	OpIntToStr:  "inttostr",
 	OpStrToInt:  "strtoint",
-	OpHeapAlloc: "heapalloc",
+	OpHeapAlloc:    "heapalloc",
+	OpSyscallOpen:  "syscall_open",
+	OpSyscallRead:  "syscall_read",
+	OpSyscallWrite: "syscall_write",
+	OpSyscallClose: "syscall_close",
 }
 
 func (o Op) String() string {

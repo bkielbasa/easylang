@@ -122,6 +122,47 @@ var Builtins = []*BuiltinFunction{
 			Result: TypInt, // returns pointer as int (address)
 		},
 	},
+	// Low-level file syscalls
+	{
+		Name: "syscall_open",
+		Type: &Function{
+			Params: []*Param{
+				{Name: "path", Type: TypString},
+				{Name: "flags", Type: TypInt},
+				{Name: "mode", Type: TypInt},
+			},
+			Result: TypInt, // returns fd or -1 on error
+		},
+	},
+	{
+		Name: "syscall_read",
+		Type: &Function{
+			Params: []*Param{
+				{Name: "fd", Type: TypInt},
+				{Name: "buf", Type: TypInt}, // pointer as int (from heap_alloc)
+				{Name: "size", Type: TypInt},
+			},
+			Result: TypInt, // returns bytes read or -1 on error
+		},
+	},
+	{
+		Name: "syscall_write",
+		Type: &Function{
+			Params: []*Param{
+				{Name: "fd", Type: TypInt},
+				{Name: "buf", Type: TypString}, // string (passed as pointer)
+				{Name: "size", Type: TypInt},
+			},
+			Result: TypInt, // returns bytes written or -1 on error
+		},
+	},
+	{
+		Name: "syscall_close",
+		Type: &Function{
+			Params: []*Param{{Name: "fd", Type: TypInt}},
+			Result: TypInt, // returns 0 on success, -1 on error
+		},
+	},
 }
 
 // LookupBuiltin returns the builtin function with the given name, or nil if not found.
