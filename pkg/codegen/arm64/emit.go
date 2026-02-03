@@ -252,6 +252,12 @@ func (e *Emitter) loadParameters() {
 	if e.fn.Name == "main" {
 		e.asm.MOV(X27, X0) // Save argc
 		e.asm.MOV(X28, X1) // Save argv
+
+		// Initialize heap state registers
+		// X25 = heap_ptr (current bump pointer, 0 = uninitialized)
+		// X26 = heap_end (end of current mmap'd region)
+		e.asm.MOVimm(X25, 0)
+		e.asm.MOVimm(X26, 0)
 	}
 
 	// Load parameters from argument registers into their allocated locations
@@ -365,6 +371,8 @@ func (e *Emitter) emitInstr(instr *ir.Instr) {
 		e.emitIntToStr(instr)
 	case ir.OpStrToInt:
 		e.emitStrToInt(instr)
+	case ir.OpHeapAlloc:
+		e.emitHeapAlloc(instr)
 	}
 }
 
@@ -1356,5 +1364,118 @@ func (e *Emitter) emitStrToInt(instr *ir.Instr) {
 
 	// Store result
 	e.storeToVReg(instr.Dest.VReg, X20)
+}
+
+// emitHeapAlloc allocates memory from the heap using a bump allocator.
+// Heap state is stored in callee-saved registers:
+//   X25 = heap_ptr (current bump pointer, 0 = uninitialized)
+//   X26 = heap_end (end of current mmap'd region)
+// On macOS ARM64, mmap syscall is 0x20000C5 (197 + 0x2000000)
+func (e *Emitter) emitHeapAlloc(instr *ir.Instr) {
+	// Load requested size
+	size := e.loadOperand(instr.Args[0], X16)
+	e.asm.MOV(X19, size) // X19 = requested size
+
+	// Align size to 8 bytes: size = (size + 7) & ~7
+	// Use shifts to clear the low 3 bits: (x + 7) >> 3 << 3
+	e.asm.ADDi(X19, X19, 7)
+	e.asm.LSR(X19, X19, 3)
+	e.asm.LSL(X19, X19, 3)
+
+	// Check if heap is initialized (X25 != 0)
+	e.asm.CMP(X25, XZR)
+	heapInitialized := e.asm.Offset()
+	e.asm.Bcond(CondNE, 0) // placeholder: jump if initialized
+
+	// Heap not initialized: call mmap to get initial region
+	e.emitMmapCall(1024 * 1024) // 1MB initial heap
+
+	// X0 now has the mmap result
+	// Check for error (mmap returns -1 on error)
+	e.asm.CMN(X0, 1) // compare with -1
+	mmapOK := e.asm.Offset()
+	e.asm.Bcond(CondNE, 0) // placeholder: jump if OK
+
+	// mmap failed - for now, just return 0 (null pointer)
+	e.asm.MOVimm(X16, 0)
+	e.storeToVReg(instr.Dest.VReg, X16)
+	mmapFailedRet := e.asm.Offset()
+	e.asm.B(0) // placeholder: jump to end
+
+	// Patch mmapOK branch
+	mmapOKLabel := e.asm.Offset()
+	e.asm.Patch(mmapOK, e.asm.Bcond_instr(CondNE, int32(mmapOKLabel-mmapOK)>>2))
+
+	// Initialize heap state
+	e.asm.MOV(X25, X0)              // heap_ptr = mmap result
+	e.asm.MOVimm(X17, 1024*1024)    // heap size
+	e.asm.ADD(X26, X0, X17)         // heap_end = heap_ptr + size
+
+	// Patch heapInitialized branch
+	initDone := e.asm.Offset()
+	e.asm.Patch(heapInitialized, e.asm.Bcond_instr(CondNE, int32(initDone-heapInitialized)>>2))
+
+	// Now allocate from the bump allocator
+	// Check if we have enough space: heap_ptr + size <= heap_end
+	e.asm.ADD(X17, X25, X19)   // X17 = heap_ptr + size
+	e.asm.CMP(X17, X26)        // compare with heap_end
+	haveSpace := e.asm.Offset()
+	e.asm.Bcond(CondLE, 0)     // placeholder: jump if we have space
+
+	// Not enough space: need to mmap more
+	// For simplicity, mmap another 1MB region
+	// Note: This creates a new region, not extending the old one
+	// A more sophisticated allocator would handle this better
+	e.emitMmapCall(1024 * 1024)
+
+	// Check for mmap error
+	e.asm.CMN(X0, 1)
+	mmap2OK := e.asm.Offset()
+	e.asm.Bcond(CondNE, 0)
+
+	// mmap failed
+	e.asm.MOVimm(X16, 0)
+	e.storeToVReg(instr.Dest.VReg, X16)
+	mmap2FailedRet := e.asm.Offset()
+	e.asm.B(0) // placeholder: jump to end
+
+	// Patch mmap2OK
+	mmap2OKLabel := e.asm.Offset()
+	e.asm.Patch(mmap2OK, e.asm.Bcond_instr(CondNE, int32(mmap2OKLabel-mmap2OK)>>2))
+
+	// Update heap state to new region
+	e.asm.MOV(X25, X0)
+	e.asm.MOVimm(X17, 1024*1024)
+	e.asm.ADD(X26, X0, X17)
+
+	// Patch haveSpace branch
+	allocLabel := e.asm.Offset()
+	e.asm.Patch(haveSpace, e.asm.Bcond_instr(CondLE, int32(allocLabel-haveSpace)>>2))
+
+	// Bump allocate: result = heap_ptr, heap_ptr += size
+	e.asm.MOV(X16, X25)        // X16 = current heap_ptr (result)
+	e.asm.ADD(X25, X25, X19)   // heap_ptr += size
+
+	// Store result
+	e.storeToVReg(instr.Dest.VReg, X16)
+
+	// Patch failure return jumps to here
+	endLabel := e.asm.Offset()
+	e.asm.Patch(mmapFailedRet, e.asm.B_instr(int32(endLabel-mmapFailedRet)>>2))
+	e.asm.Patch(mmap2FailedRet, e.asm.B_instr(int32(endLabel-mmap2FailedRet)>>2))
+}
+
+// emitMmapCall emits a mmap syscall to allocate anonymous memory.
+// Result is returned in X0.
+// mmap(addr=0, len=size, prot=RW, flags=PRIVATE|ANON, fd=-1, offset=0)
+func (e *Emitter) emitMmapCall(size int64) {
+	e.asm.MOVimm(X0, 0)                // addr = NULL (let kernel choose)
+	e.asm.MOVimm(X1, size)             // length
+	e.asm.MOVimm(X2, 0x3)              // prot = PROT_READ | PROT_WRITE
+	e.asm.MOVimm(X3, 0x1002)           // flags = MAP_PRIVATE | MAP_ANONYMOUS
+	e.asm.MOVimm(X4, -1)               // fd = -1 (anonymous)
+	e.asm.MOVimm(X5, 0)                // offset = 0
+	e.asm.MOVimm(X16, 0x20000C5)       // syscall mmap (197 + 0x2000000)
+	e.asm.SVC(0x80)
 }
 

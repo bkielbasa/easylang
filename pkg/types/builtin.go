@@ -115,6 +115,13 @@ var Builtins = []*BuiltinFunction{
 			Result: TypUnit, // actually never returns
 		},
 	},
+	{
+		Name: "heap_alloc",
+		Type: &Function{
+			Params: []*Param{{Name: "size", Type: TypInt}},
+			Result: TypInt, // returns pointer as int (address)
+		},
+	},
 }
 
 // LookupBuiltin returns the builtin function with the given name, or nil if not found.

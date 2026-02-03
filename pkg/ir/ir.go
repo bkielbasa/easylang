@@ -79,6 +79,9 @@ const (
 	// Conversion operations
 	OpIntToStr // convert int to string (arg0=int) -> string
 	OpStrToInt // convert string to int (arg0=string) -> int
+
+	// Heap operations
+	OpHeapAlloc // allocate memory from heap (arg0=size) -> pointer
 )
 
 var opNames = [...]string{
@@ -129,6 +132,7 @@ var opNames = [...]string{
 	OpArgv:      "argv",
 	OpIntToStr:  "inttostr",
 	OpStrToInt:  "strtoint",
+	OpHeapAlloc: "heapalloc",
 }
 
 func (o Op) String() string {

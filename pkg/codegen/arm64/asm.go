@@ -193,6 +193,27 @@ func (a *Assembler) MVN(rd, rm Reg) {
 	a.emit(instr)
 }
 
+// LSL Xd, Xn, #shift (logical shift left by immediate)
+// Encoded as UBFM Xd, Xn, #(-shift MOD 64), #(63-shift)
+func (a *Assembler) LSL(rd, rn Reg, shift uint8) {
+	// sf=1, opc=10, 100110, N=1, immr, imms, Rn, Rd
+	// For LSL: immr = -shift MOD 64, imms = 63 - shift
+	immr := uint32((64 - shift) & 0x3F)
+	imms := uint32(63 - shift)
+	instr := uint32(0xD3400000) | immr<<16 | imms<<10 | uint32(rn)<<5 | uint32(rd)
+	a.emit(instr)
+}
+
+// LSR Xd, Xn, #shift (logical shift right by immediate)
+// Encoded as UBFM Xd, Xn, #shift, #63
+func (a *Assembler) LSR(rd, rn Reg, shift uint8) {
+	// sf=1, opc=10, 100110, N=1, immr, imms=63, Rn, Rd
+	immr := uint32(shift & 0x3F)
+	imms := uint32(63)
+	instr := uint32(0xD3400000) | immr<<16 | imms<<10 | uint32(rn)<<5 | uint32(rd)
+	a.emit(instr)
+}
+
 // ============================================
 // Data Processing -- Immediate
 // ============================================
@@ -287,6 +308,22 @@ func (a *Assembler) CMPi(rn Reg, imm12 uint16) {
 	a.emit(instr)
 }
 
+// CMN Xn, Xm (compare negative: Xn + Xm, sets flags)
+func (a *Assembler) CMN(rn, rm Reg) {
+	// ADDS XZR, Xn, Xm
+	// sf=1, op=0, S=1, shift=00, Rm, imm6=000000, Rn, Rd=11111
+	instr := uint32(0xAB000000) | uint32(rm)<<16 | uint32(rn)<<5 | uint32(XZR)
+	a.emit(instr)
+}
+
+// CMNi Xn, imm12 (compare negative with immediate)
+func (a *Assembler) CMNi(rn Reg, imm12 uint16) {
+	// ADDS XZR, Xn, imm12
+	// sf=1, op=0, S=1, 100010, sh=0, imm12, Rn, Rd=11111
+	instr := uint32(0xB1000000) | uint32(imm12&0xFFF)<<10 | uint32(rn)<<5 | uint32(XZR)
+	a.emit(instr)
+}
+
 // CSET Xd, cond (conditional set: Xd = cond ? 1 : 0)
 func (a *Assembler) CSET(rd Reg, cond Cond) {
 	// CSINC Xd, XZR, XZR, invert(cond)
@@ -322,6 +359,12 @@ func (a *Assembler) Bcond(cond Cond, offset int32) {
 func (a *Assembler) Bcond_instr(cond Cond, imm19 int32) uint32 {
 	// 01010100, imm19, 0, cond
 	return uint32(0x54000000) | uint32(imm19&0x7FFFF)<<5 | uint32(cond)
+}
+
+// B_instr returns the encoding for B without emitting it
+func (a *Assembler) B_instr(imm26 int32) uint32 {
+	// 000101, imm26
+	return uint32(0x14000000) | uint32(imm26&0x3FFFFFF)
 }
 
 // BL offset (branch with link, for function calls)

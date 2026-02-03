@@ -847,6 +847,8 @@ func (b *Builder) buildCallExpr(e *ast.CallExpr) Operand {
 			return b.buildPushBuiltin(e)
 		case "print":
 			return b.buildPrintBuiltin(e)
+		case "heap_alloc":
+			return b.buildHeapAllocBuiltin(e)
 		}
 	}
 
@@ -1024,6 +1026,23 @@ func (b *Builder) buildPrintBuiltin(e *ast.CallExpr) Operand {
 	})
 
 	return None()
+}
+
+func (b *Builder) buildHeapAllocBuiltin(e *ast.CallExpr) Operand {
+	if len(e.Args) != 1 {
+		return None()
+	}
+
+	size := b.buildExpr(e.Args[0])
+
+	result := b.fn.NewVReg(types.Typ[types.Int])
+	b.emit(&Instr{
+		Op:   OpHeapAlloc,
+		Dest: result,
+		Args: []Operand{size},
+	})
+
+	return result
 }
 
 func (b *Builder) buildReadFileBuiltin(e *ast.CallExpr) Operand {
