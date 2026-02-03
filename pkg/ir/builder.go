@@ -588,6 +588,14 @@ func (b *Builder) buildBinaryExpr(e *ast.BinaryExpr) Operand {
 		return b.buildAssignment(e)
 	}
 
+	// Handle short-circuit logical operators
+	if e.Op.Type == token.LogicalAnd {
+		return b.buildLogicalAnd(e)
+	}
+	if e.Op.Type == token.LogicalOr {
+		return b.buildLogicalOr(e)
+	}
+
 	left := b.buildExpr(e.Left)
 	right := b.buildExpr(e.Right)
 
@@ -659,6 +667,94 @@ func (b *Builder) buildBinaryExpr(e *ast.BinaryExpr) Operand {
 	})
 
 	return dest
+}
+
+// buildLogicalAnd implements short-circuit evaluation for &&
+// left && right => if left then right else false
+func (b *Builder) buildLogicalAnd(e *ast.BinaryExpr) Operand {
+	result := b.fn.NewVReg(types.Typ[types.Bool])
+
+	// Create blocks for short-circuit evaluation
+	rightBlock := b.fn.NewBlock(b.newLabel("and.right"))
+	falseBlock := b.fn.NewBlock(b.newLabel("and.false"))
+	endBlock := b.fn.NewBlock(b.newLabel("and.end"))
+
+	// Evaluate left operand
+	left := b.buildExpr(e.Left)
+
+	// If left is true, evaluate right; otherwise short-circuit to false
+	b.emit(&Instr{
+		Op:   OpBranch,
+		Args: []Operand{left, Label(rightBlock.Label), Label(falseBlock.Label)},
+	})
+
+	// Right block: evaluate right operand and copy to result
+	b.block = rightBlock
+	right := b.buildExpr(e.Right)
+	b.emit(&Instr{
+		Op:   OpCopy,
+		Dest: result,
+		Args: []Operand{right},
+	})
+	b.emit(&Instr{Op: OpJump, Args: []Operand{Label(endBlock.Label)}})
+
+	// False block: result = false
+	b.block = falseBlock
+	b.emit(&Instr{
+		Op:   OpCopy,
+		Dest: result,
+		Args: []Operand{Imm(0, types.Typ[types.Bool])},
+	})
+	b.emit(&Instr{Op: OpJump, Args: []Operand{Label(endBlock.Label)}})
+
+	// End block
+	b.block = endBlock
+
+	return result
+}
+
+// buildLogicalOr implements short-circuit evaluation for ||
+// left || right => if left then true else right
+func (b *Builder) buildLogicalOr(e *ast.BinaryExpr) Operand {
+	result := b.fn.NewVReg(types.Typ[types.Bool])
+
+	// Create blocks for short-circuit evaluation
+	trueBlock := b.fn.NewBlock(b.newLabel("or.true"))
+	rightBlock := b.fn.NewBlock(b.newLabel("or.right"))
+	endBlock := b.fn.NewBlock(b.newLabel("or.end"))
+
+	// Evaluate left operand
+	left := b.buildExpr(e.Left)
+
+	// If left is true, short-circuit to true; otherwise evaluate right
+	b.emit(&Instr{
+		Op:   OpBranch,
+		Args: []Operand{left, Label(trueBlock.Label), Label(rightBlock.Label)},
+	})
+
+	// True block: result = true
+	b.block = trueBlock
+	b.emit(&Instr{
+		Op:   OpCopy,
+		Dest: result,
+		Args: []Operand{Imm(1, types.Typ[types.Bool])},
+	})
+	b.emit(&Instr{Op: OpJump, Args: []Operand{Label(endBlock.Label)}})
+
+	// Right block: evaluate right operand and copy to result
+	b.block = rightBlock
+	right := b.buildExpr(e.Right)
+	b.emit(&Instr{
+		Op:   OpCopy,
+		Dest: result,
+		Args: []Operand{right},
+	})
+	b.emit(&Instr{Op: OpJump, Args: []Operand{Label(endBlock.Label)}})
+
+	// End block
+	b.block = endBlock
+
+	return result
 }
 
 func (b *Builder) buildAssignment(e *ast.BinaryExpr) Operand {

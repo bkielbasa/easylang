@@ -169,9 +169,10 @@ func (w *Writer) Write() []byte {
 	codeFileOff := alignUp(headerSize+loadCmdsSize+64, 256) // +64 for LC_CODE_SIGNATURE and padding
 	codeVMAddr := uint64(0x100000000) + codeFileOff // VM address matches file offset within __TEXT
 
-	// __TEXT segment covers exactly one page (required for code signing)
-	textSegFileSize := uint64(PageSize)
-	textSegVMSize := uint64(PageSize)
+	// __TEXT segment must be large enough to contain all code and strings
+	// Round up to page boundary for proper memory mapping
+	textSegFileSize := alignUp(codeFileOff+codeSize, uint64(PageSize))
+	textSegVMSize := textSegFileSize
 
 	// __LINKEDIT comes after __TEXT
 	linkeditFileOff := textSegFileSize
