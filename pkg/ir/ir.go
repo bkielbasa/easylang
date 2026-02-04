@@ -50,9 +50,10 @@ const (
 	OpBranch // conditional branch
 
 	// Memory
-	OpAlloc  // allocate stack space, returns pointer
-	OpLoad   // load from memory address
-	OpStore  // store to memory address
+	OpAlloc   // allocate stack space, returns pointer
+	OpLoad    // load from memory address
+	OpStore   // store to memory address
+	OpMemCopy // copy memory (arg0=src, arg1=dst, arg2=size)
 
 	// Array operations
 	OpArrayPtr  // get pointer from array fat pointer (arg0=array)
@@ -137,6 +138,7 @@ var opNames = [...]string{
 	OpAlloc:     "alloc",
 	OpLoad:      "load",
 	OpStore:     "store",
+	OpMemCopy:   "memcopy",
 	OpArrayPtr:  "arrayptr",
 	OpArrayLen:  "arraylen",
 	OpArrayCap:  "arraycap",

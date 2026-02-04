@@ -278,13 +278,16 @@ func (a *Assembler) MOVK(rd Reg, imm16 uint16, hw uint8) {
 }
 
 // MOV Xd, Xm (alias for ORR Xd, XZR, Xm)
-// For SP, uses ADD Xd, SP, #0 since ORR treats r31 as XZR
+// When rd is SP, uses ADD Xd, Xm, #0 since ORR can't target SP.
+// When rm is SP/XZR (31), ORR treats it as XZR (gives 0), so callers
+// who want SP must use explicit ADDi(rd, SP, 0).
 func (a *Assembler) MOV(rd, rm Reg) {
-	if rm == SP || rd == SP {
-		// Use ADD with immediate 0, which treats r31 as SP
+	if rd == SP {
+		// SP can't be the destination of ORR, use ADD
 		a.ADDi(rd, rm, 0)
 		return
 	}
+	// ORR treats register 31 as XZR, so MOV(X0, XZR) gives X0 = 0
 	a.ORR(rd, XZR, rm)
 }
 

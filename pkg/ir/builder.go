@@ -307,7 +307,6 @@ func (b *Builder) buildLetStmt(s *ast.LetStmt, savedVars map[string]Operand) {
 	// Handle identifier pattern
 	if ident, ok := s.Pattern.(*ast.IdentPattern); ok {
 		name := ident.Name.Name
-		dest := b.fn.NewVReg(varType)
 
 		// Save old binding if exists
 		if old, exists := b.prog.Globals[name]; exists {
@@ -316,13 +315,30 @@ func (b *Builder) buildLetStmt(s *ast.LetStmt, savedVars map[string]Operand) {
 			savedVars[name] = None()
 		}
 
-		b.emit(&Instr{
-			Op:   OpCopy,
-			Dest: dest,
-			Args: []Operand{val},
-		})
-
-		b.prog.Globals[name] = dest
+		// For struct types, allocate space and copy the struct data
+		if _, isStruct := varType.Underlying().(*types.Struct); isStruct {
+			size := b.typeSize(varType)
+			dest := b.fn.NewVReg(types.NewPointer(varType, false))
+			b.emit(&Instr{
+				Op:   OpAlloc,
+				Dest: dest,
+				Args: []Operand{Imm(int64(size), types.Typ[types.Int])},
+			})
+			// Copy struct data from source to destination
+			b.emit(&Instr{
+				Op:   OpMemCopy,
+				Args: []Operand{val, dest, Imm(int64(size), types.Typ[types.Int])},
+			})
+			b.prog.Globals[name] = dest
+		} else {
+			dest := b.fn.NewVReg(varType)
+			b.emit(&Instr{
+				Op:   OpCopy,
+				Dest: dest,
+				Args: []Operand{val},
+			})
+			b.prog.Globals[name] = dest
+		}
 	}
 }
 
@@ -786,8 +802,22 @@ func (b *Builder) buildIdentAssignment(ident *ast.Ident, right Operand) Operand 
 		return None()
 	}
 
+	// Get the variable's type from semantic analysis
+	varType := b.info.Types[ident]
+
 	// If the variable has a virtual register, emit a copy instruction
 	if oldOp.Kind == OpndVReg {
+		// For struct types, copy the struct data
+		if varType != nil {
+			if _, isStruct := varType.Underlying().(*types.Struct); isStruct {
+				size := b.typeSize(varType)
+				b.emit(&Instr{
+					Op:   OpMemCopy,
+					Args: []Operand{right, oldOp, Imm(int64(size), types.Typ[types.Int])},
+				})
+				return None()
+			}
+		}
 		b.emit(&Instr{
 			Op:   OpCopy,
 			Dest: oldOp,
@@ -822,10 +852,11 @@ func (b *Builder) buildFieldAssignment(field *ast.FieldExpr, right Operand) Oper
 		return None()
 	}
 
-	// Get field offset
+	// Get field info
 	fieldName := field.Field.Name
+	fieldType := st.FieldByName(fieldName)
 	offset := b.fieldOffset(st, fieldName)
-	if offset < 0 {
+	if offset < 0 || fieldType == nil {
 		return None()
 	}
 
@@ -837,11 +868,20 @@ func (b *Builder) buildFieldAssignment(field *ast.FieldExpr, right Operand) Oper
 		Args: []Operand{structPtr, Imm(int64(offset), types.Typ[types.Int])},
 	})
 
-	// Store the value
-	b.emit(&Instr{
-		Op:   OpStore,
-		Args: []Operand{right, fieldAddr},
-	})
+	// For struct-typed fields, copy the entire struct data
+	if _, isStruct := fieldType.Type.Underlying().(*types.Struct); isStruct {
+		size := b.typeSize(fieldType.Type)
+		b.emit(&Instr{
+			Op:   OpMemCopy,
+			Args: []Operand{right, fieldAddr, Imm(int64(size), types.Typ[types.Int])},
+		})
+	} else {
+		// Store the value for non-struct types
+		b.emit(&Instr{
+			Op:   OpStore,
+			Args: []Operand{right, fieldAddr},
+		})
+	}
 
 	return None()
 }
@@ -1678,7 +1718,13 @@ func (b *Builder) buildIndexExpr(e *ast.IndexExpr) Operand {
 			Args: []Operand{dataPtr, offset},
 		})
 
-		// Load and return the element value
+		// For struct types, return the address (pointer semantics)
+		// Field access will use this address directly
+		if _, isStruct := elemType.Underlying().(*types.Struct); isStruct {
+			return elemAddr
+		}
+
+		// Load and return the element value for non-struct types
 		result := b.fn.NewVReg(elemType)
 		b.emit(&Instr{
 			Op:   OpLoad,
@@ -1852,11 +1898,20 @@ func (b *Builder) buildStructExpr(e *ast.StructExpr) Operand {
 			Args: []Operand{structPtr, Imm(int64(offset), types.Typ[types.Int])},
 		})
 
-		// Store the value
-		b.emit(&Instr{
-			Op:   OpStore,
-			Args: []Operand{val, fieldAddr},
-		})
+		// For struct-typed fields, copy the entire struct data
+		if _, isStruct := field.Type.Underlying().(*types.Struct); isStruct {
+			size := b.typeSize(field.Type)
+			b.emit(&Instr{
+				Op:   OpMemCopy,
+				Args: []Operand{val, fieldAddr, Imm(int64(size), types.Typ[types.Int])},
+			})
+		} else {
+			// Store the value for non-struct types
+			b.emit(&Instr{
+				Op:   OpStore,
+				Args: []Operand{val, fieldAddr},
+			})
+		}
 	}
 
 	return structPtr
@@ -1904,7 +1959,13 @@ func (b *Builder) buildFieldExpr(e *ast.FieldExpr) Operand {
 		Args: []Operand{structPtr, Imm(int64(offset), types.Typ[types.Int])},
 	})
 
-	// Load and return the field value
+	// For struct types, return the address (pointer semantics)
+	// This allows proper copying of the entire struct rather than just 8 bytes
+	if _, isStruct := field.Type.Underlying().(*types.Struct); isStruct {
+		return fieldAddr
+	}
+
+	// Load and return the field value for non-struct types
 	result := b.fn.NewVReg(field.Type)
 	b.emit(&Instr{
 		Op:   OpLoad,

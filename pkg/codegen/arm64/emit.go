@@ -3,6 +3,7 @@ package arm64
 import (
 	"ease/pkg/ir"
 	"ease/pkg/types"
+	"fmt"
 )
 
 // Apple ARM64 ABI:
@@ -24,17 +25,19 @@ const (
 
 // Emitter converts IR to ARM64 machine code.
 type Emitter struct {
-	asm         *Assembler
-	fn          *ir.Function
-	prog        *ir.Program    // program being emitted (for string table)
-	vregToReg   map[int]Reg    // virtual register to physical register
-	vregSpill   map[int]int    // virtual register to stack offset
-	allocOffset map[int]int    // vreg to allocation offset (for OpAlloc results)
-	labels      map[string]int // label to code offset (block labels)
-	funcOffsets map[string]int // function name to code offset
-	fixups      []fixup        // branch fixups
-	strFixups   []strFixup     // string address fixups
-	stackSize   int            // total stack size
+	asm              *Assembler
+	fn               *ir.Function
+	prog             *ir.Program    // program being emitted (for string table)
+	vregToReg        map[int]Reg    // virtual register to physical register
+	vregSpill        map[int]int    // virtual register to stack offset
+	allocOffset      map[int]int    // vreg to allocation offset (for OpAlloc results)
+	structRetOffset  map[int]int    // vreg to struct return copy offset (for OpCall with struct results)
+	structRetSize    map[int]int    // vreg to struct size (for struct return copies)
+	labels           map[string]int // label to code offset (block labels)
+	funcOffsets      map[string]int // function name to code offset
+	fixups           []fixup        // branch fixups
+	strFixups        []strFixup     // string address fixups
+	stackSize        int            // total stack size
 }
 
 type strFixup struct {
@@ -144,6 +147,8 @@ func (e *Emitter) emitFunction(fn *ir.Function) {
 	e.vregToReg = make(map[int]Reg)
 	e.vregSpill = make(map[int]int)
 	e.allocOffset = make(map[int]int)
+	e.structRetOffset = make(map[int]int)
+	e.structRetSize = make(map[int]int)
 
 	// Calculate stack layout
 	e.calculateStackLayout()
@@ -165,10 +170,65 @@ func (e *Emitter) emitFunction(fn *ir.Function) {
 	e.fn = nil
 }
 
+// getStructSize returns the size of a struct type in bytes, or 0 if not a struct.
+func getStructSize(t types.Type) int {
+	if t == nil {
+		return 0
+	}
+	// Check if it's a struct type
+	underlying := t.Underlying()
+	st, ok := underlying.(*types.Struct)
+	if !ok {
+		return 0
+	}
+	// Sum up field sizes
+	size := 0
+	for _, f := range st.Fields {
+		size += typeSize(f.Type)
+	}
+	return size
+}
+
+// typeSize returns the size of a type in bytes.
+func typeSize(t types.Type) int {
+	if t == nil {
+		return 8
+	}
+	switch typ := t.Underlying().(type) {
+	case *types.Basic:
+		switch typ.Kind {
+		case types.Bool:
+			return 8 // bools are stored as 64-bit for simplicity
+		case types.Int:
+			return 8
+		case types.String:
+			return 8 // pointer to string data
+		default:
+			return 8
+		}
+	case *types.Pointer:
+		return 8
+	case *types.Struct:
+		size := 0
+		for _, f := range typ.Fields {
+			size += typeSize(f.Type)
+		}
+		return size
+	default:
+		return 8
+	}
+}
+
 func (e *Emitter) calculateStackLayout() {
+	debugFn := e.fn.Name == "parse_fn_decl"
+
 	// Count how many vregs we need to spill
 	maxVReg := e.fn.NextVReg
 	numSpills := 0
+
+	if debugFn {
+		fmt.Printf("DEBUG %s: maxVReg=%d, numTempRegs=%d\n", e.fn.Name, maxVReg, numTempRegs)
+	}
 
 	// Simple allocation: first 7 vregs go to x9-x15, rest spill
 	for vreg := 0; vreg < maxVReg; vreg++ {
@@ -176,6 +236,10 @@ func (e *Emitter) calculateStackLayout() {
 			e.vregToReg[vreg] = Reg(X9 + Reg(vreg))
 		} else {
 			e.vregSpill[vreg] = numSpills * 8
+			if debugFn {
+				fmt.Printf("DEBUG %s: vreg %d spills to offset %d (FP+16+%d = FP+%d)\n",
+					e.fn.Name, vreg, numSpills*8, numSpills*8, 16+numSpills*8)
+			}
 			numSpills++
 		}
 	}
@@ -184,6 +248,10 @@ func (e *Emitter) calculateStackLayout() {
 	// [sp]        saved x29, x30 (16 bytes)
 	// [sp+16]     spilled vregs
 	spillSize := numSpills * 8
+
+	if debugFn {
+		fmt.Printf("DEBUG %s: spillSize=%d\n", e.fn.Name, spillSize)
+	}
 
 	// Scan for OpAlloc instructions and pre-allocate space
 	allocSize := 0
@@ -198,15 +266,55 @@ func (e *Emitter) calculateStackLayout() {
 				size := int(instr.Args[0].Imm)
 				// Round up to 8-byte alignment
 				alignedSize := (size + 7) & ^7
+				if debugFn {
+					fmt.Printf("DEBUG %s: alloc vreg %d at offset %d (size %d)\n",
+						e.fn.Name, instr.Dest.VReg, 16+spillSize+allocSize, alignedSize)
+				}
 				allocSize += alignedSize
 			}
 		}
 	}
 
-	e.stackSize = 16 + spillSize + allocSize
+	if debugFn {
+		fmt.Printf("DEBUG %s: allocSize=%d\n", e.fn.Name, allocSize)
+	}
+
+	// Scan for OpCall instructions with struct return types
+	// and pre-allocate space to copy the returned struct
+	structRetSize := 0
+	for _, block := range e.fn.Blocks {
+		for _, instr := range block.Instrs {
+			if instr.Op == ir.OpCall && instr.Dest.Kind == ir.OpndVReg {
+				// Check if the destination type is a struct
+				size := getStructSize(instr.Dest.Type)
+				if size > 0 {
+					// Allocate space for struct return copy
+					offset := 16 + spillSize + allocSize + structRetSize
+					e.structRetOffset[instr.Dest.VReg] = offset
+					e.structRetSize[instr.Dest.VReg] = size
+					alignedSize := (size + 7) & ^7
+					if debugFn {
+						fmt.Printf("DEBUG %s: struct ret vreg %d at offset %d (size %d, func=%v)\n",
+							e.fn.Name, instr.Dest.VReg, offset, size, instr.Args[0])
+					}
+					structRetSize += alignedSize
+				}
+			}
+		}
+	}
+
+	if debugFn {
+		fmt.Printf("DEBUG %s: structRetSize=%d\n", e.fn.Name, structRetSize)
+	}
+
+	e.stackSize = 16 + spillSize + allocSize + structRetSize
 
 	// Align to 16 bytes
 	e.stackSize = (e.stackSize + 15) & ^15
+
+	if debugFn {
+		fmt.Printf("DEBUG %s: final stackSize=%d\n", e.fn.Name, e.stackSize)
+	}
 }
 
 func (e *Emitter) emitPrologue() {
@@ -229,7 +337,7 @@ func (e *Emitter) emitPrologue() {
 func (e *Emitter) emitEpilogue() {
 	// Restore SP from FP in case of dynamic stack allocation
 	// FP points to where we saved FP/LR, SP might have been modified
-	e.asm.MOV(SP, X29)
+	e.asm.ADDi(SP, X29, 0) // Use ADDi since MOV treats r31 as XZR, not SP
 
 	// LDP post-index has limited range (-512 to 504 bytes)
 	// For larger stacks, we need to adjust SP separately
@@ -335,6 +443,8 @@ func (e *Emitter) emitInstr(instr *ir.Instr) {
 		e.emitLoad(instr)
 	case ir.OpStore:
 		e.emitStore(instr)
+	case ir.OpMemCopy:
+		e.emitMemCopy(instr)
 	case ir.OpIndexAddr:
 		e.emitIndexAddr(instr)
 	case ir.OpArrayPtr:
@@ -580,8 +690,8 @@ func (e *Emitter) emitStrLen(instr *ir.Instr) {
 	e.storeToVReg(instr.Dest.VReg, X16)
 }
 
-// emitStrConcat concatenates two strings, allocating space on the stack.
-// Result pointer is valid until function returns.
+// emitStrConcat concatenates two strings, allocating space on the heap.
+// Uses heap allocation so the string persists after function returns.
 func (e *Emitter) emitStrConcat(instr *ir.Instr) {
 	// Load string pointers
 	str1 := e.loadOperand(instr.Args[0], X9)
@@ -621,15 +731,14 @@ func (e *Emitter) emitStrConcat(instr *ir.Instr) {
 	e.asm.ADD(X23, X21, X22)
 	e.asm.ADDi(X23, X23, 1)
 
-	// Align to 16 bytes: size = (size + 15) & ~15
-	e.asm.ADDi(X23, X23, 15)
-	e.asm.MOVimm(X11, -16) // ~15 in two's complement
+	// Align to 8 bytes: size = (size + 7) & ~7
+	e.asm.ADDi(X23, X23, 7)
+	e.asm.MOVimm(X11, -8)
 	e.asm.AND(X23, X23, X11)
 
-	// Allocate stack space: SP = SP - size
-	e.asm.SUB(SP, SP, X23)
-	// Save result pointer (current SP)
-	e.asm.MOV(X24, SP)
+	// Use bump allocator for heap allocation (instead of stack)
+	// This ensures the string persists after the function returns
+	e.emitBumpAlloc(X23, X24) // Allocate X23 bytes, result in X24
 
 	// Copy str1 bytes to result
 	e.asm.MOV(X9, X19)  // src = str1
@@ -665,6 +774,7 @@ func (e *Emitter) emitStrConcat(instr *ir.Instr) {
 }
 
 // emitStrSlice extracts a substring: result = str[start:end]
+// Uses heap allocation so the string persists after function returns.
 func (e *Emitter) emitStrSlice(instr *ir.Instr) {
 	// Load arguments: str, start, end
 	str := e.loadOperand(instr.Args[0], X19)
@@ -677,15 +787,15 @@ func (e *Emitter) emitStrSlice(instr *ir.Instr) {
 	// Calculate length = end - start
 	e.asm.SUB(X22, X21, X20)
 
-	// Allocate size = length + 1, aligned to 16
+	// Allocate size = length + 1, aligned to 8 bytes
 	e.asm.ADDi(X23, X22, 1)
-	e.asm.ADDi(X23, X23, 15)
-	e.asm.MOVimm(X11, -16)
+	e.asm.ADDi(X23, X23, 7)
+	e.asm.MOVimm(X11, -8)
 	e.asm.AND(X23, X23, X11)
 
-	// Grow stack
-	e.asm.SUB(SP, SP, X23)
-	e.asm.MOV(X24, SP) // Save result pointer
+	// Use bump allocator for heap allocation (instead of stack)
+	// This ensures the string persists after the function returns
+	e.emitBumpAlloc(X23, X24) // Allocate X23 bytes, result in X24
 
 	// Calculate source address: str + start
 	e.asm.ADD(X9, X19, X20)
@@ -693,10 +803,11 @@ func (e *Emitter) emitStrSlice(instr *ir.Instr) {
 	e.asm.MOV(X10, X24)
 
 	// Copy loop: copy X22 bytes
-	e.asm.MOV(X25, X22) // Counter
+	// Note: Use X27 for counter since X25 is used by bump allocator for heap_ptr
+	e.asm.MOV(X27, X22) // Counter
 
 	// If length is 0, skip copy
-	e.asm.CMP(X25, XZR)
+	e.asm.CMP(X27, XZR)
 	skipCopy := e.asm.Offset()
 	e.asm.Bcond(CondEQ, 0)
 
@@ -705,8 +816,8 @@ func (e *Emitter) emitStrSlice(instr *ir.Instr) {
 	e.asm.STRB(X11, X10, 0)
 	e.asm.ADDi(X9, X9, 1)
 	e.asm.ADDi(X10, X10, 1)
-	e.asm.SUBi(X25, X25, 1)
-	e.asm.CMP(X25, XZR)
+	e.asm.SUBi(X27, X27, 1)
+	e.asm.CMP(X27, XZR)
 	e.asm.Bcond(CondNE, int32(copyLoop-e.asm.Offset()))
 
 	// Patch skip branch
@@ -917,11 +1028,11 @@ func (e *Emitter) emitStrIndexOf(instr *ir.Instr) {
 	// Inner comparison: compare needle at current position
 	e.asm.MOV(X23, X20) // X23 = current haystack position
 	e.asm.MOV(X24, needle)
-	e.asm.MOVimm(X25, 0) // X25 = needle index
+	e.asm.MOVimm(X13, 0) // X13 = needle index (avoid X25 - heap_ptr)
 
 	innerLoop := e.asm.Offset()
 	// If we've matched all of needle, we found it
-	e.asm.CMP(X25, X22)
+	e.asm.CMP(X13, X22)
 	foundBranch := e.asm.Offset()
 	e.asm.Bcond(CondEQ, 0)
 
@@ -935,7 +1046,7 @@ func (e *Emitter) emitStrIndexOf(instr *ir.Instr) {
 	// Bytes match, continue
 	e.asm.ADDi(X23, X23, 1)
 	e.asm.ADDi(X24, X24, 1)
-	e.asm.ADDi(X25, X25, 1)
+	e.asm.ADDi(X13, X13, 1) // X13 = needle index (avoid X25 - heap_ptr)
 	e.asm.B(int32(innerLoop - e.asm.Offset()))
 
 	// Mismatch - try next position
@@ -1010,10 +1121,10 @@ func (e *Emitter) emitStrContains(instr *ir.Instr) {
 	// Inner comparison
 	e.asm.MOV(X23, X20)
 	e.asm.MOV(X24, needle)
-	e.asm.MOVimm(X25, 0)
+	e.asm.MOVimm(X13, 0) // X13 = needle index (avoid X25 - heap_ptr)
 
 	innerLoop := e.asm.Offset()
-	e.asm.CMP(X25, X22)
+	e.asm.CMP(X13, X22)
 	foundBranch := e.asm.Offset()
 	e.asm.Bcond(CondEQ, 0)
 
@@ -1025,7 +1136,7 @@ func (e *Emitter) emitStrContains(instr *ir.Instr) {
 
 	e.asm.ADDi(X23, X23, 1)
 	e.asm.ADDi(X24, X24, 1)
-	e.asm.ADDi(X25, X25, 1)
+	e.asm.ADDi(X13, X13, 1) // X13 = needle index (avoid X25 - heap_ptr)
 	e.asm.B(int32(innerLoop - e.asm.Offset()))
 
 	mismatchLabel := e.asm.Offset()
@@ -1088,8 +1199,8 @@ func (e *Emitter) emitStrSubstring(instr *ir.Instr) {
 	e.asm.MOV(X24, X0) // Save destination pointer
 
 	// Copy substring: from str+start to buffer
-	e.asm.ADD(X25, X19, X20) // X25 = source pointer (str + start)
-	e.asm.MOV(X26, X24)      // X26 = dest pointer
+	e.asm.ADD(X13, X19, X20) // X13 = source pointer (str + start) - avoid X25 (heap_ptr)
+	e.asm.MOV(X14, X24)      // X14 = dest pointer - avoid X26 (heap_end)
 	e.asm.MOVimm(X27, 0)     // X27 = bytes copied
 
 	// Copy loop
@@ -1098,10 +1209,10 @@ func (e *Emitter) emitStrSubstring(instr *ir.Instr) {
 	copyDone := e.asm.Offset()
 	e.asm.Bcond(CondEQ, 0)
 
-	e.asm.LDRB(X28, X25, 0)
-	e.asm.STRB(X28, X26, 0)
-	e.asm.ADDi(X25, X25, 1)
-	e.asm.ADDi(X26, X26, 1)
+	e.asm.LDRB(X28, X13, 0)
+	e.asm.STRB(X28, X14, 0)
+	e.asm.ADDi(X13, X13, 1)
+	e.asm.ADDi(X14, X14, 1)
 	e.asm.ADDi(X27, X27, 1)
 	e.asm.B(int32(copyLoop - e.asm.Offset()))
 
@@ -1109,7 +1220,7 @@ func (e *Emitter) emitStrSubstring(instr *ir.Instr) {
 	e.asm.Patch(copyDone, e.asm.Bcond_instr(CondEQ, int32(copyDoneLabel-copyDone)>>2))
 
 	// Null terminate
-	e.asm.STRB(XZR, X26, 0)
+	e.asm.STRB(XZR, X14, 0)
 
 	// Return buffer pointer
 	e.asm.MOV(X16, X24)
@@ -1158,12 +1269,12 @@ func (e *Emitter) emitStrTrim(instr *ir.Instr) {
 	// Check if char is in trim set
 	e.asm.MOV(X24, X20)
 	charCheckLoop := e.asm.Offset()
-	e.asm.LDRB(X25, X24, 0)
-	e.asm.CMP(X25, XZR)
+	e.asm.LDRB(X13, X24, 0) // X13 = trim char (avoid X25 - heap_ptr)
+	e.asm.CMP(X13, XZR)
 	startFound := e.asm.Offset()
 	e.asm.Bcond(CondEQ, 0)
 
-	e.asm.CMP(X23, X25)
+	e.asm.CMP(X23, X13)
 	charMatches := e.asm.Offset()
 	e.asm.Bcond(CondEQ, 0)
 
@@ -1180,27 +1291,27 @@ func (e *Emitter) emitStrTrim(instr *ir.Instr) {
 	startFoundLabel := e.asm.Offset()
 	e.asm.Patch(startFound, e.asm.Bcond_instr(CondEQ, int32(startFoundLabel-startFound)>>2))
 
-	// Find end index -> X26 (exclusive)
-	e.asm.MOV(X26, X21)
+	// Find end index -> X14 (exclusive) - avoid X26 (heap_end)
+	e.asm.MOV(X14, X21)
 	findEndLoop := e.asm.Offset()
-	e.asm.CMP(X26, X22)
+	e.asm.CMP(X14, X22)
 	allTrimmedBranch2 := e.asm.Offset()
 	e.asm.Bcond(CondLE, 0)
 
 	// Load char at end-1
-	e.asm.SUBi(X11, X26, 1)
+	e.asm.SUBi(X11, X14, 1) // X14 = end index (avoid X26)
 	e.asm.ADD(X11, X19, X11)
 	e.asm.LDRB(X23, X11, 0)
 
 	// Check if char is in trim set
 	e.asm.MOV(X24, X20)
 	charCheckLoop2 := e.asm.Offset()
-	e.asm.LDRB(X25, X24, 0)
-	e.asm.CMP(X25, XZR)
+	e.asm.LDRB(X13, X24, 0) // X13 = trim char (avoid X25)
+	e.asm.CMP(X13, XZR)
 	endFound := e.asm.Offset()
 	e.asm.Bcond(CondEQ, 0)
 
-	e.asm.CMP(X23, X25)
+	e.asm.CMP(X23, X13)
 	charMatches2 := e.asm.Offset()
 	e.asm.Bcond(CondEQ, 0)
 
@@ -1210,7 +1321,7 @@ func (e *Emitter) emitStrTrim(instr *ir.Instr) {
 	// Char matches, decrement end
 	charMatchesLabel2 := e.asm.Offset()
 	e.asm.Patch(charMatches2, e.asm.Bcond_instr(CondEQ, int32(charMatchesLabel2-charMatches2)>>2))
-	e.asm.SUBi(X26, X26, 1)
+	e.asm.SUBi(X14, X14, 1) // X14 = end index (avoid X26)
 	e.asm.B(int32(findEndLoop - e.asm.Offset()))
 
 	// End found, extract substring
@@ -1218,7 +1329,7 @@ func (e *Emitter) emitStrTrim(instr *ir.Instr) {
 	e.asm.Patch(endFound, e.asm.Bcond_instr(CondEQ, int32(endFoundLabel-endFound)>>2))
 
 	// Calculate length = end - start -> X27
-	e.asm.SUB(X27, X26, X22)
+	e.asm.SUB(X27, X14, X22) // X14 = end index (avoid X26)
 
 	// Save X22 (start) in X28 temporarily (X27 should be preserved)
 	e.asm.MOV(X28, X22)
@@ -1249,7 +1360,7 @@ func (e *Emitter) emitStrTrim(instr *ir.Instr) {
 	// Source = X19 + X28, copy X27 bytes
 
 	e.asm.ADD(X24, X19, X28) // X24 = source ptr (original string + start)
-	e.asm.MOV(X25, X23)      // X25 = dest ptr
+	e.asm.MOV(X13, X23)      // X13 = dest ptr (avoid X25 - heap_ptr)
 
 	// Copy loop
 	trimCopyLoop := e.asm.Offset()
@@ -1258,9 +1369,9 @@ func (e *Emitter) emitStrTrim(instr *ir.Instr) {
 	e.asm.Bcond(CondEQ, 0)
 
 	e.asm.LDRB(X11, X24, 0)
-	e.asm.STRB(X11, X25, 0)
+	e.asm.STRB(X11, X13, 0)
 	e.asm.ADDi(X24, X24, 1)
-	e.asm.ADDi(X25, X25, 1)
+	e.asm.ADDi(X13, X13, 1)
 	e.asm.SUBi(X27, X27, 1)
 	e.asm.B(int32(trimCopyLoop - e.asm.Offset()))
 
@@ -1268,7 +1379,7 @@ func (e *Emitter) emitStrTrim(instr *ir.Instr) {
 	e.asm.Patch(trimCopyDone, e.asm.Bcond_instr(CondEQ, int32(trimCopyDoneLabel-trimCopyDone)>>2))
 
 	// Null terminate
-	e.asm.STRB(XZR, X25, 0)
+	e.asm.STRB(XZR, X13, 0)
 	e.asm.MOV(X16, X23) // return buffer ptr
 	endBranch := e.asm.Offset()
 	e.asm.B(0)
@@ -1355,17 +1466,17 @@ func (e *Emitter) emitStrReplace(instr *ir.Instr) {
 	oldEmptyBranch := e.asm.Offset()
 	e.asm.Bcond(CondEQ, 0)
 
-	// Count occurrences of old in str -> X25
-	e.asm.MOVimm(X25, 0) // count
-	e.asm.MOV(X26, X19)  // current position
+	// Count occurrences of old in str -> X13
+	e.asm.MOVimm(X13, 0) // count - avoid X25 (heap_ptr)
+	e.asm.MOV(X14, X19)  // current position - avoid X26 (heap_end)
 	countLoop := e.asm.Offset()
-	e.asm.LDRB(X11, X26, 0)
+	e.asm.LDRB(X11, X14, 0)
 	e.asm.CMP(X11, XZR)
 	countDone := e.asm.Offset()
 	e.asm.Bcond(CondEQ, 0)
 
 	// Check if old starts at current position
-	e.asm.MOV(X27, X26) // compare ptr in str
+	e.asm.MOV(X27, X14) // compare ptr in str - avoid X26 (heap_end)
 	e.asm.MOV(X28, X20) // compare ptr in old
 	e.asm.MOVimm(X0, 0) // match count
 
@@ -1388,26 +1499,26 @@ func (e *Emitter) emitStrReplace(instr *ir.Instr) {
 	// Match found, increment count and skip old length
 	matchFoundLabel := e.asm.Offset()
 	e.asm.Patch(matchFound, e.asm.Bcond_instr(CondEQ, int32(matchFoundLabel-matchFound)>>2))
-	e.asm.ADDi(X25, X25, 1)
-	e.asm.ADD(X26, X26, X23)
+	e.asm.ADDi(X13, X13, 1)
+	e.asm.ADD(X14, X14, X23)
 	e.asm.B(int32(countLoop - e.asm.Offset()))
 
 	// No match, advance one char
 	noMatchLabel := e.asm.Offset()
 	e.asm.Patch(noMatch, e.asm.Bcond_instr(CondNE, int32(noMatchLabel-noMatch)>>2))
-	e.asm.ADDi(X26, X26, 1)
+	e.asm.ADDi(X14, X14, 1)
 	e.asm.B(int32(countLoop - e.asm.Offset()))
 
 	countDoneLabel := e.asm.Offset()
 	e.asm.Patch(countDone, e.asm.Bcond_instr(CondEQ, int32(countDoneLabel-countDone)>>2))
 
 	// Calculate result size: origLen - count*oldLen + count*newLen + 1
-	// X26 = count * oldLen
-	e.asm.MUL(X26, X25, X23)
+	// X14 = count * oldLen
+	e.asm.MUL(X14, X13, X23)
 	// X27 = count * newLen
-	e.asm.MUL(X27, X25, X24)
+	e.asm.MUL(X27, X13, X24)
 	// X28 = origLen - count*oldLen
-	e.asm.SUB(X28, X22, X26)
+	e.asm.SUB(X28, X22, X14)
 	// X0 = resultLen = X28 + count*newLen + 1
 	e.asm.ADD(X0, X28, X27)
 	e.asm.ADDi(X0, X0, 1)
@@ -1458,17 +1569,17 @@ func (e *Emitter) emitStrReplace(instr *ir.Instr) {
 	e.asm.Patch(recalcNewLenDone, e.asm.Bcond_instr(CondEQ, int32(recalcNewLenDoneLabel-recalcNewLenDone)>>2))
 
 	// Now copy with replacements
-	e.asm.MOV(X26, X19) // source ptr
+	e.asm.MOV(X14, X19) // source ptr - avoid X26 (heap_end)
 	e.asm.MOV(X27, X28) // dest ptr (from saved result)
 
 	replaceLoop := e.asm.Offset()
-	e.asm.LDRB(X11, X26, 0)
+	e.asm.LDRB(X11, X14, 0)
 	e.asm.CMP(X11, XZR)
 	replaceDone := e.asm.Offset()
 	e.asm.Bcond(CondEQ, 0)
 
 	// Check if old starts at current position
-	e.asm.MOV(X0, X26) // compare ptr in str
+	e.asm.MOV(X0, X14) // compare ptr in str
 	e.asm.MOV(X1, X20) // compare ptr in old
 	e.asm.MOVimm(X2, 0) // match count
 
@@ -1510,15 +1621,15 @@ func (e *Emitter) emitStrReplace(instr *ir.Instr) {
 	e.asm.Patch(copyNewDone, e.asm.Bcond_instr(CondEQ, int32(copyNewDoneLabel-copyNewDone)>>2))
 
 	// Skip old string in source
-	e.asm.ADD(X26, X26, X23)
+	e.asm.ADD(X14, X14, X23)
 	e.asm.B(int32(replaceLoop - e.asm.Offset()))
 
 	// No match, copy single char
 	noMatchLabel2 := e.asm.Offset()
 	e.asm.Patch(noMatch2, e.asm.Bcond_instr(CondNE, int32(noMatchLabel2-noMatch2)>>2))
-	e.asm.LDRB(X11, X26, 0)
+	e.asm.LDRB(X11, X14, 0)
 	e.asm.STRB(X11, X27, 0)
-	e.asm.ADDi(X26, X26, 1)
+	e.asm.ADDi(X14, X14, 1)
 	e.asm.ADDi(X27, X27, 1)
 	e.asm.B(int32(replaceLoop - e.asm.Offset()))
 
@@ -1551,17 +1662,17 @@ func (e *Emitter) emitStrReplace(instr *ir.Instr) {
 	e.asm.MOVimm(X16, 0x20000C5)
 	e.asm.SVC(0x80)
 
-	e.asm.MOV(X26, X19) // source
+	e.asm.MOV(X14, X19) // source - avoid X26 (heap_end)
 	e.asm.MOV(X27, X0)  // dest
 	e.asm.MOV(X28, X0)  // save result
 
 	copyOrigLoop := e.asm.Offset()
-	e.asm.LDRB(X11, X26, 0)
+	e.asm.LDRB(X11, X14, 0)
 	e.asm.STRB(X11, X27, 0)
 	e.asm.CMP(X11, XZR)
 	copyOrigDone := e.asm.Offset()
 	e.asm.Bcond(CondEQ, 0)
-	e.asm.ADDi(X26, X26, 1)
+	e.asm.ADDi(X14, X14, 1)
 	e.asm.ADDi(X27, X27, 1)
 	e.asm.B(int32(copyOrigLoop - e.asm.Offset()))
 
@@ -1629,8 +1740,8 @@ func (e *Emitter) emitStrSplit(instr *ir.Instr) {
 	e.asm.Bcond(CondEQ, 0)
 
 	// Check if separator starts at current position
-	e.asm.MOV(X25, X24) // compare ptr in str
-	e.asm.MOV(X26, X20) // compare ptr in sep
+	e.asm.MOV(X13, X24) // compare ptr in str - avoid X25 (heap_ptr)
+	e.asm.MOV(X14, X20) // compare ptr in sep - avoid X26 (heap_end)
 	e.asm.MOVimm(X27, 0) // match count
 
 	cmpSepLoop := e.asm.Offset()
@@ -1638,14 +1749,14 @@ func (e *Emitter) emitStrSplit(instr *ir.Instr) {
 	sepMatchFound := e.asm.Offset()
 	e.asm.Bcond(CondEQ, 0) // matched all of sep
 
-	e.asm.LDRB(X11, X25, 0)
-	e.asm.LDRB(X12, X26, 0)
+	e.asm.LDRB(X11, X13, 0)
+	e.asm.LDRB(X12, X14, 0)
 	e.asm.CMP(X11, X12)
 	sepNoMatch := e.asm.Offset()
 	e.asm.Bcond(CondNE, 0)
 
-	e.asm.ADDi(X25, X25, 1)
-	e.asm.ADDi(X26, X26, 1)
+	e.asm.ADDi(X13, X13, 1)
+	e.asm.ADDi(X14, X14, 1)
 	e.asm.ADDi(X27, X27, 1)
 	e.asm.B(int32(cmpSepLoop - e.asm.Offset()))
 
@@ -1694,8 +1805,8 @@ func (e *Emitter) emitStrSplit(instr *ir.Instr) {
 
 	// Now extract each part
 	e.asm.MOV(X24, X19)  // current position in string
-	e.asm.MOV(X25, X27)  // current position in array
-	e.asm.MOV(X26, X24)  // start of current part
+	e.asm.MOV(X13, X27)  // current position in array - avoid X25 (heap_ptr)
+	e.asm.MOV(X14, X24)  // start of current part - avoid X26 (heap_end)
 
 	splitLoop := e.asm.Offset()
 	e.asm.LDRB(X11, X24, 0)
@@ -1724,12 +1835,12 @@ func (e *Emitter) emitStrSplit(instr *ir.Instr) {
 	e.asm.ADDi(X2, X2, 1)
 	e.asm.B(int32(cmpSepLoop2 - e.asm.Offset()))
 
-	// Sep found - extract part from X26 to X24
+	// Sep found - extract part from X14 to X24
 	sepMatchFoundLabel2 := e.asm.Offset()
 	e.asm.Patch(sepMatchFound2, e.asm.Bcond_instr(CondEQ, int32(sepMatchFoundLabel2-sepMatchFound2)>>2))
 
 	// Calculate part length
-	e.asm.SUB(X3, X24, X26) // part length
+	e.asm.SUB(X3, X24, X14) // part length
 
 	// Allocate memory for part
 	e.asm.ADDi(X1, X3, 1) // +1 for null -> X1
@@ -1748,12 +1859,12 @@ func (e *Emitter) emitStrSplit(instr *ir.Instr) {
 
 	// X0 = part buffer
 	// Copy part
-	e.asm.MOV(X1, X26) // source
+	e.asm.MOV(X1, X14) // source
 	e.asm.MOV(X2, X0)  // dest
 	e.asm.MOV(X4, X0)  // save part ptr
 
 	// Recalculate part length
-	e.asm.SUB(X3, X24, X26)
+	e.asm.SUB(X3, X24, X14)
 
 	copyPartLoop := e.asm.Offset()
 	e.asm.CMP(X3, XZR)
@@ -1774,12 +1885,12 @@ func (e *Emitter) emitStrSplit(instr *ir.Instr) {
 	e.asm.STRB(XZR, X2, 0)
 
 	// Store part pointer in array
-	e.asm.STR(X4, X25, 0)
-	e.asm.ADDi(X25, X25, 8) // advance array pointer
+	e.asm.STR(X4, X13, 0)
+	e.asm.ADDi(X13, X13, 8) // advance array pointer
 
 	// Skip separator and continue
 	e.asm.ADD(X24, X24, X22)
-	e.asm.MOV(X26, X24) // new start
+	e.asm.MOV(X14, X24) // new start
 	e.asm.B(int32(splitLoop - e.asm.Offset()))
 
 	// No sep match, advance one char
@@ -1793,7 +1904,7 @@ func (e *Emitter) emitStrSplit(instr *ir.Instr) {
 	e.asm.Patch(splitDone, e.asm.Bcond_instr(CondEQ, int32(splitDoneLabel-splitDone)>>2))
 
 	// Calculate final part length
-	e.asm.SUB(X3, X24, X26)
+	e.asm.SUB(X3, X24, X14)
 
 	// Allocate memory for final part
 	e.asm.ADDi(X1, X3, 1)    // X1 = len + 1
@@ -1810,10 +1921,10 @@ func (e *Emitter) emitStrSplit(instr *ir.Instr) {
 	e.asm.SVC(0x80)
 
 	// Copy final part
-	e.asm.MOV(X1, X26)
+	e.asm.MOV(X1, X14)
 	e.asm.MOV(X2, X0)
 	e.asm.MOV(X4, X0)
-	e.asm.SUB(X3, X24, X26)
+	e.asm.SUB(X3, X24, X14)
 
 	copyFinalLoop := e.asm.Offset()
 	e.asm.CMP(X3, XZR)
@@ -1833,7 +1944,7 @@ func (e *Emitter) emitStrSplit(instr *ir.Instr) {
 	e.asm.STRB(XZR, X2, 0) // null terminate
 
 	// Store final part pointer
-	e.asm.STR(X4, X25, 0)
+	e.asm.STR(X4, X13, 0)
 
 	// Return fat pointer
 	e.asm.MOV(X16, X28)
@@ -1881,24 +1992,24 @@ func (e *Emitter) emitStrSplit(instr *ir.Instr) {
 	e.asm.SVC(0x80)
 
 	e.asm.MOV(X24, X19) // source
-	e.asm.MOV(X25, X0)  // dest
-	e.asm.MOV(X26, X0)  // save
+	e.asm.MOV(X13, X0)  // dest - avoid X25 (heap_ptr)
+	e.asm.MOV(X14, X0)  // save - avoid X26 (heap_end)
 
 	copyOrigLoop2 := e.asm.Offset()
 	e.asm.LDRB(X11, X24, 0)
-	e.asm.STRB(X11, X25, 0)
+	e.asm.STRB(X11, X13, 0)
 	e.asm.CMP(X11, XZR)
 	copyOrigDone2 := e.asm.Offset()
 	e.asm.Bcond(CondEQ, 0)
 	e.asm.ADDi(X24, X24, 1)
-	e.asm.ADDi(X25, X25, 1)
+	e.asm.ADDi(X13, X13, 1)
 	e.asm.B(int32(copyOrigLoop2 - e.asm.Offset()))
 
 	copyOrigDoneLabel2 := e.asm.Offset()
 	e.asm.Patch(copyOrigDone2, e.asm.Bcond_instr(CondEQ, int32(copyOrigDoneLabel2-copyOrigDone2)>>2))
 
 	// Store in array
-	e.asm.STR(X26, X27, 0)
+	e.asm.STR(X14, X27, 0)
 
 	// Store in fat pointer
 	e.asm.STR(X27, X28, 0)
@@ -1969,7 +2080,29 @@ func (e *Emitter) emitCall(instr *ir.Instr) {
 
 	// Move result from x0 to destination
 	if instr.Dest.Kind == ir.OpndVReg {
-		e.storeToVReg(instr.Dest.VReg, X0)
+		// Check if this is a struct return that needs copying
+		if offset, ok := e.structRetOffset[instr.Dest.VReg]; ok {
+			size := e.structRetSize[instr.Dest.VReg]
+			// X0 contains pointer to callee's struct (may be on invalid stack)
+			// Copy the struct data to our pre-allocated local space
+			// X0 = source pointer
+			// X16 = destination pointer (our local space)
+			e.asm.ADDi(X16, X29, uint16(offset))
+
+			// Copy struct data field by field (8 bytes at a time)
+			for i := 0; i < size; i += 8 {
+				// Load from source [X0 + i]
+				e.asm.LDR(X17, X0, uint16(i))
+				// Store to dest [X16 + i]
+				e.asm.STR(X17, X16, uint16(i))
+			}
+
+			// Store our local pointer to the dest vreg
+			e.storeToVReg(instr.Dest.VReg, X16)
+		} else {
+			// Not a struct return, just store X0
+			e.storeToVReg(instr.Dest.VReg, X0)
+		}
 	}
 }
 
@@ -2198,6 +2331,20 @@ func (e *Emitter) emitStore(instr *ir.Instr) {
 	e.asm.STRx(value, addr)
 }
 
+func (e *Emitter) emitMemCopy(instr *ir.Instr) {
+	// OpMemCopy: copy size bytes from src to dst
+	// Args[0] is src address, Args[1] is dst address, Args[2] is size (in bytes)
+	src := e.loadOperand(instr.Args[0], X16)
+	dst := e.loadOperand(instr.Args[1], X17)
+	size := instr.Args[2].Imm // size is an immediate
+
+	// Copy 8 bytes at a time
+	for i := int64(0); i < size; i += 8 {
+		e.asm.LDR(X18, src, uint16(i))
+		e.asm.STR(X18, dst, uint16(i))
+	}
+}
+
 func (e *Emitter) emitIndexAddr(instr *ir.Instr) {
 	// OpIndexAddr: dest = base + offset
 	// Args[0] is base pointer, Args[1] is byte offset
@@ -2240,32 +2387,150 @@ func (e *Emitter) emitArrayCap(instr *ir.Instr) {
 }
 
 func (e *Emitter) emitArrayPush(instr *ir.Instr) {
-	// OpArrayPush: push element to array
-	// Args[0] = array fat pointer, Args[1] = element, Args[2] = element size
+	// OpArrayPush: push element to array with capacity checking and growth
+	// Args[0] = array fat pointer, Args[1] = element (or pointer to struct), Args[2] = element size
+	// Fat pointer layout: [ptr (8 bytes), len (8 bytes), cap (8 bytes)]
+
+	// Get element size from Args[2] (it's an immediate)
+	elemSizeVal := int(instr.Args[2].Imm)
+
+	// Load operands and preserve them
 	fatPtr := e.loadOperand(instr.Args[0], X19)
-	e.asm.MOV(X19, fatPtr)
+	e.asm.MOV(X19, fatPtr) // X19 = fat pointer address
 	elem := e.loadOperand(instr.Args[1], X20)
-	e.asm.MOV(X20, elem)
-	elemSize := e.loadOperand(instr.Args[2], X21)
-	e.asm.MOV(X21, elemSize)
+	e.asm.MOV(X20, elem) // X20 = element (value or ptr to struct)
 
-	// Load current length
-	e.asm.LDR(X22, X19, 8) // len at offset 8
+	// Load len and cap from fat pointer
+	e.asm.LDR(X21, X19, 8)  // X21 = len
+	e.asm.LDR(X22, X19, 16) // X22 = cap
 
-	// Compute element address: ptr + len * elemSize
-	e.asm.LDRx(X23, X19) // data ptr at offset 0
-	e.asm.MUL(X24, X22, X21) // offset = len * elemSize
-	e.asm.ADD(X25, X23, X24) // addr = ptr + offset
+	// Check if we need to grow: len >= cap
+	e.asm.CMP(X21, X22)
+	noGrowNeeded := e.asm.Offset()
+	e.asm.Bcond(CondLT, 0) // placeholder: skip growth if len < cap
 
-	// Store element at computed address
-	e.asm.STRx(X20, X25)
+	// === GROWTH SECTION ===
+	// Calculate new capacity: new_cap = (cap == 0) ? 8 : cap * 2
+	e.asm.CMP(X22, XZR)
+	capNonZero := e.asm.Offset()
+	e.asm.Bcond(CondNE, 0) // placeholder: jump if cap != 0
 
-	// Increment length
-	e.asm.ADDi(X22, X22, 1)
+	// cap == 0: new_cap = 8
+	e.asm.MOVimm(X23, 8)
+	capSet := e.asm.Offset()
+	e.asm.B(0) // placeholder: skip the doubling
 
-	// Store new length back
-	e.asm.ADDi(X26, X19, 8) // len address
-	e.asm.STRx(X22, X26)
+	// cap != 0: new_cap = cap * 2
+	e.asm.Patch(capNonZero, e.asm.Bcond_instr(CondNE, int32(e.asm.Offset()-capNonZero)/4))
+	e.asm.LSL(X23, X22, 1) // X23 = new_cap = cap * 2
+
+	// Patch the jump from cap==0 case
+	e.asm.Patch(capSet, e.asm.B_instr(int32(e.asm.Offset()-capSet)/4))
+
+	// X23 = new_cap
+	// Allocate new buffer: new_cap * elemSize bytes
+	e.asm.MOVimm(X24, int64(elemSizeVal))
+	e.asm.MUL(X0, X23, X24) // X0 = new_cap * elemSize = allocation size
+
+	// Save registers before heap allocation (it uses X25 as heap pointer)
+	e.asm.STPpre(X19, X20, SP, -16) // save fat_ptr and elem (16 bytes)
+	e.asm.STPpre(X21, X23, SP, -16) // save len and new_cap (16 bytes)
+
+	// Call heap allocator inline (similar to emitHeapAlloc but simplified)
+	// X0 already has size, just need to do the allocation
+	e.asm.MOV(X1, X0) // X1 = size for mmap
+
+	// Align size to 8 bytes
+	e.asm.ADDi(X1, X1, 7)
+	e.asm.LSR(X1, X1, 3)
+	e.asm.LSL(X1, X1, 3)
+
+	// Use mmap for allocation (simpler than bump allocator for now)
+	e.asm.MOV(X0, XZR)       // addr = NULL
+	e.asm.MOVimm(X2, 3)      // prot = PROT_READ | PROT_WRITE
+	e.asm.MOVimm(X3, 0x1002) // flags = MAP_ANON | MAP_PRIVATE
+	e.asm.MOVimm(X4, -1)     // fd = -1
+	e.asm.MOV(X5, XZR)       // offset = 0
+	e.asm.MOVimm(X16, 0x20000C5)
+	e.asm.SVC(0x80)
+	// X0 = new buffer pointer
+
+	e.asm.MOV(X24, X0) // X24 = new buffer pointer
+
+	// Restore saved registers
+	e.asm.LDPpost(X21, X23, SP, 16) // restore len and new_cap (16 bytes)
+	e.asm.LDPpost(X19, X20, SP, 16) // restore fat_ptr and elem (16 bytes)
+
+	// Copy old data to new buffer if len > 0
+	e.asm.CMP(X21, XZR)
+	skipCopy := e.asm.Offset()
+	e.asm.Bcond(CondEQ, 0) // placeholder: skip copy if len == 0
+
+	// Copy len * elemSize bytes from old to new
+	e.asm.LDRx(X14, X19) // X14 = old ptr - avoid X26 (heap_end)
+	e.asm.MOVimm(X27, int64(elemSizeVal))
+	e.asm.MUL(X28, X21, X27) // X28 = len * elemSize = bytes to copy
+
+	// Simple byte-by-byte copy loop (copy in 8-byte chunks)
+	e.asm.MOV(X0, XZR) // X0 = offset = 0
+	copyLoop := e.asm.Offset()
+	e.asm.CMP(X0, X28)
+	copyDone := e.asm.Offset()
+	e.asm.Bcond(CondGE, 0) // placeholder: exit if offset >= bytes
+
+	// Load 8 bytes from old[offset]
+	e.asm.ADD(X1, X14, X0) // X1 = old + offset
+	e.asm.LDRx(X2, X1)     // X2 = old[offset]
+	// Store to new[offset]
+	e.asm.ADD(X3, X24, X0) // X3 = new + offset
+	e.asm.STRx(X2, X3)     // new[offset] = old[offset]
+	e.asm.ADDi(X0, X0, 8)  // offset += 8
+	e.asm.B(int32(copyLoop - e.asm.Offset()))
+
+	// Patch copy done branch
+	e.asm.Patch(copyDone, e.asm.Bcond_instr(CondGE, int32(e.asm.Offset()-copyDone)/4))
+
+	// Patch skip copy branch
+	e.asm.Patch(skipCopy, e.asm.Bcond_instr(CondEQ, int32(e.asm.Offset()-skipCopy)/4))
+
+	// Update fat pointer with new ptr and cap
+	e.asm.STRx(X24, X19)     // store new ptr at offset 0
+	e.asm.STR(X23, X19, 16)  // store new_cap at offset 16
+
+	// X24 now has the data pointer for the push
+	e.asm.MOV(X14, X24) // X14 = data ptr (new buffer) - avoid X26 (heap_end)
+	noGrowDone := e.asm.Offset()
+	e.asm.B(0) // placeholder: skip to push section
+
+	// === NO GROWTH NEEDED ===
+	e.asm.Patch(noGrowNeeded, e.asm.Bcond_instr(CondLT, int32(e.asm.Offset()-noGrowNeeded)/4))
+	e.asm.LDRx(X14, X19) // X14 = existing data ptr - avoid X26 (heap_end)
+
+	// Patch the jump from growth section
+	e.asm.Patch(noGrowDone, e.asm.B_instr(int32(e.asm.Offset()-noGrowDone)/4))
+
+	// === PUSH SECTION ===
+	// X19 = fat ptr, X20 = elem, X21 = len, X14 = data ptr
+	// Compute element address: data_ptr + len * elemSize
+	e.asm.MOVimm(X27, int64(elemSizeVal))
+	e.asm.MUL(X28, X21, X27) // X28 = len * elemSize
+	e.asm.ADD(X28, X14, X28) // X28 = addr = data_ptr + offset
+
+	// Copy element data based on element size
+	if elemSizeVal > 8 {
+		// Struct: elem (X20) is a pointer to struct data, copy all fields
+		for offset := 0; offset < elemSizeVal; offset += 8 {
+			e.asm.LDR(X0, X20, uint16(offset))  // load from source
+			e.asm.STR(X0, X28, uint16(offset))  // store to dest
+		}
+	} else {
+		// Primitive: elem (X20) is the value, store directly
+		e.asm.STRx(X20, X28)
+	}
+
+	// Increment length and store it back
+	e.asm.ADDi(X21, X21, 1)
+	e.asm.STR(X21, X19, 8) // store new len at offset 8
 }
 
 func (e *Emitter) emitMakeArray(instr *ir.Instr) {
@@ -2327,7 +2592,8 @@ func (e *Emitter) emitPrint(instr *ir.Instr) {
 	e.asm.SVC(0x80)
 }
 
-// emitReadFile reads a file and returns its contents as a string
+// emitReadFile reads a file and returns its contents as a string.
+// Uses heap allocation so the string persists after function returns.
 func (e *Emitter) emitReadFile(instr *ir.Instr) {
 	// Load path string
 	path := e.loadOperand(instr.Args[0], X19)
@@ -2341,12 +2607,12 @@ func (e *Emitter) emitReadFile(instr *ir.Instr) {
 	e.asm.SVC(0x80)
 	e.asm.MOV(X20, X0)             // Save fd in X20
 
-	// Allocate buffer on stack (64KB, 16-byte aligned)
-	// SUBi can only handle 12-bit immediate, so use register
+	// Allocate buffer on heap (64KB, 8-byte aligned)
+	// Uses bump allocator so the string persists after function returns
+	// Use X23 for size (not X17) because emitBumpAlloc corrupts X17 internally
 	bufSize := int64(65536)
-	e.asm.MOVimm(X17, bufSize)
-	e.asm.SUB(SP, SP, X17)
-	e.asm.MOV(X21, SP)             // X21 = buffer address
+	e.asm.MOVimm(X23, bufSize)
+	e.emitBumpAlloc(X23, X21)      // Allocate X23 bytes, result in X21
 
 	// read(fd, buf, bufSize)
 	e.asm.MOV(X0, X20)             // fd
@@ -2365,9 +2631,7 @@ func (e *Emitter) emitReadFile(instr *ir.Instr) {
 	e.asm.MOVimm(X16, 0x2000006)   // syscall close
 	e.asm.SVC(0x80)
 
-	// Note: Stack buffer is NOT deallocated here.
-	// The function epilogue will restore SP from FP, cleaning it up.
-	// This means the string is valid until the function returns.
+	// Result pointer is in X21 (heap allocated, persists after return)
 	e.storeToVReg(instr.Dest.VReg, X21)
 }
 
@@ -2484,15 +2748,17 @@ func (e *Emitter) emitArgv(instr *ir.Instr) {
 
 // emitIntToStr converts an integer to a decimal string
 // Algorithm: extract digits by repeatedly dividing by 10, build string backwards
+// Uses heap allocation so the string persists after function returns.
 func (e *Emitter) emitIntToStr(instr *ir.Instr) {
 	// Load the integer value
 	num := e.loadOperand(instr.Args[0], X19)
 	e.asm.MOV(X19, num) // Save in callee-saved register
 
-	// Allocate 24 bytes on stack (enough for "-9223372036854775808\0" = 21 chars, aligned to 16)
+	// Allocate 32 bytes on heap (enough for "-9223372036854775808\0" = 21 chars, aligned to 8)
 	// We'll build the string from the end backwards
-	e.asm.SUBi(SP, SP, 32)
-	e.asm.MOV(X20, SP) // X20 = buffer start
+	// Use X23 for size (not X17) because emitBumpAlloc corrupts X17 internally
+	e.asm.MOVimm(X23, 32)
+	e.emitBumpAlloc(X23, X20) // X20 = buffer start
 
 	// X21 = write pointer (starts at end of buffer - 1 for null terminator)
 	e.asm.ADDi(X21, X20, 23)
@@ -2542,14 +2808,14 @@ func (e *Emitter) emitIntToStr(instr *ir.Instr) {
 	// digit = n % 10
 	e.asm.MOVimm(X23, 10)
 	e.asm.UDIV(X24, X19, X23)  // X24 = n / 10
-	e.asm.MSUB(X25, X24, X23, X19) // X25 = n - (n/10)*10 = n % 10
+	e.asm.MSUB(X27, X24, X23, X19) // X27 = n - (n/10)*10 = n % 10
 
 	// Convert digit to ASCII: '0' + digit
-	e.asm.ADDi(X25, X25, '0')
+	e.asm.ADDi(X27, X27, '0')
 
 	// Move write pointer back and store digit
 	e.asm.SUBi(X21, X21, 1)
-	e.asm.STRB(X25, X21, 0)
+	e.asm.STRB(X27, X21, 0)
 
 	// n = n / 10
 	e.asm.MOV(X19, X24)
@@ -2769,6 +3035,86 @@ func (e *Emitter) emitHeapAlloc(instr *ir.Instr) {
 
 	// Store result
 	e.storeToVReg(instr.Dest.VReg, X16)
+
+	// Patch failure return jumps to here
+	endLabel := e.asm.Offset()
+	e.asm.Patch(mmapFailedRet, e.asm.B_instr(int32(endLabel-mmapFailedRet)>>2))
+	e.asm.Patch(mmap2FailedRet, e.asm.B_instr(int32(endLabel-mmap2FailedRet)>>2))
+}
+
+// emitBumpAlloc allocates memory from the heap using the bump allocator.
+// sizeReg contains the size to allocate (should be already aligned to 8 bytes).
+// dstReg is where the result pointer will be stored.
+// Uses callee-saved X25 (heap_ptr) and X26 (heap_end) for heap state.
+// Clobbers X0-X5, X16, X17.
+func (e *Emitter) emitBumpAlloc(sizeReg, dstReg Reg) {
+	// Check if heap is initialized (X25 != 0)
+	e.asm.CMP(X25, XZR)
+	heapInitialized := e.asm.Offset()
+	e.asm.Bcond(CondNE, 0) // placeholder: jump if initialized
+
+	// Heap not initialized: call mmap to get initial region
+	e.emitMmapCall(1024 * 1024) // 1MB initial heap
+
+	// Check for error (mmap returns -1 on error)
+	e.asm.CMN(X0, 1) // compare with -1
+	mmapOK := e.asm.Offset()
+	e.asm.Bcond(CondNE, 0) // placeholder: jump if OK
+
+	// mmap failed - return 0 (null pointer)
+	e.asm.MOV(dstReg, XZR)
+	mmapFailedRet := e.asm.Offset()
+	e.asm.B(0) // placeholder: jump to end
+
+	// Patch mmapOK branch
+	mmapOKLabel := e.asm.Offset()
+	e.asm.Patch(mmapOK, e.asm.Bcond_instr(CondNE, int32(mmapOKLabel-mmapOK)>>2))
+
+	// Initialize heap state
+	e.asm.MOV(X25, X0)           // heap_ptr = mmap result
+	e.asm.MOVimm(X17, 1024*1024) // heap size
+	e.asm.ADD(X26, X0, X17)      // heap_end = heap_ptr + size
+
+	// Patch heapInitialized branch
+	initDone := e.asm.Offset()
+	e.asm.Patch(heapInitialized, e.asm.Bcond_instr(CondNE, int32(initDone-heapInitialized)>>2))
+
+	// Now allocate from the bump allocator
+	// Check if we have enough space: heap_ptr + size <= heap_end
+	e.asm.ADD(X17, X25, sizeReg) // X17 = heap_ptr + size
+	e.asm.CMP(X17, X26)          // compare with heap_end
+	haveSpace := e.asm.Offset()
+	e.asm.Bcond(CondLE, 0) // placeholder: jump if we have space
+
+	// Not enough space: need to mmap more
+	e.emitMmapCall(1024 * 1024)
+
+	// Check for mmap error
+	e.asm.CMN(X0, 1)
+	mmap2OK := e.asm.Offset()
+	e.asm.Bcond(CondNE, 0)
+
+	// mmap failed
+	e.asm.MOV(dstReg, XZR)
+	mmap2FailedRet := e.asm.Offset()
+	e.asm.B(0) // placeholder: jump to end
+
+	// Patch mmap2OK
+	mmap2OKLabel := e.asm.Offset()
+	e.asm.Patch(mmap2OK, e.asm.Bcond_instr(CondNE, int32(mmap2OKLabel-mmap2OK)>>2))
+
+	// Update heap state to new region
+	e.asm.MOV(X25, X0)
+	e.asm.MOVimm(X17, 1024*1024)
+	e.asm.ADD(X26, X0, X17)
+
+	// Patch haveSpace branch
+	allocLabel := e.asm.Offset()
+	e.asm.Patch(haveSpace, e.asm.Bcond_instr(CondLE, int32(allocLabel-haveSpace)>>2))
+
+	// Bump allocate: result = heap_ptr, heap_ptr += size
+	e.asm.MOV(dstReg, X25)       // result = current heap_ptr
+	e.asm.ADD(X25, X25, sizeReg) // heap_ptr += size
 
 	// Patch failure return jumps to here
 	endLabel := e.asm.Offset()

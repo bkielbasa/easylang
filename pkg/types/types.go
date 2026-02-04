@@ -540,6 +540,16 @@ func IsAssignableTo(src, dst Type) bool {
 		return true
 	}
 
+	// Arrays are assignable to slices of the same element type
+	// This allows []int{1, 2, 3} to be passed where []int is expected
+	if srcArr, ok := src.Underlying().(*Array); ok {
+		if dstSlice, ok := dst.Underlying().(*Slice); ok {
+			if srcArr.Elem.Equals(dstSlice.Elem) {
+				return true
+			}
+		}
+	}
+
 	return false
 }
 

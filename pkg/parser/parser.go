@@ -771,11 +771,17 @@ func (p *Parser) parseLetStmt() *ast.LetStmt {
 
 func (p *Parser) parseReturnStmt() *ast.ReturnStmt {
 	stmt := &ast.ReturnStmt{Token: p.curToken}
-	p.nextToken()
 
-	if !p.curTokenIs(token.RightBrace) && !p.curTokenIs(token.Semicolon) && !p.curTokenIs(token.EOF) {
-		stmt.Value = p.parseExpression(LOWEST)
+	// Check if there's a return value by looking at peek token
+	// If peek is }, ;, EOF, or a keyword that starts a new statement, there's no return value
+	if p.peekTokenIs(token.RightBrace) || p.peekTokenIs(token.Semicolon) || p.peekTokenIs(token.EOF) {
+		// No return value - stay at 'return' token
+		return stmt
 	}
+
+	// There's a return value - advance and parse expression
+	p.nextToken()
+	stmt.Value = p.parseExpression(LOWEST)
 
 	return stmt
 }
@@ -1359,7 +1365,17 @@ func (p *Parser) parseArrayExpr() *ast.ArrayExpr {
 		}
 		// Parse elements
 		arr.Elements = p.parseExprList(token.RightBrace)
-		if !p.expect(token.RightBrace) {
+		// parseExprList returns with:
+		// - current at '}' for empty arrays
+		// - current at last expression, peek at '}' for non-empty arrays
+		// We want to end with current at '}'
+		if p.curTokenIs(token.RightBrace) {
+			// Empty array: current is already at '}', nothing to do
+		} else if p.peekTokenIs(token.RightBrace) {
+			// Non-empty array: advance past last expression to '}'
+			p.nextToken() // move to '}'
+		} else {
+			p.error("expected } after array elements")
 			return nil
 		}
 		return arr
@@ -1384,7 +1400,17 @@ func (p *Parser) parseArrayExpr() *ast.ArrayExpr {
 			}
 			// Parse elements
 			arr.Elements = p.parseExprList(token.RightBrace)
-			if !p.expect(token.RightBrace) {
+			// parseExprList returns with:
+			// - current at '}' for empty arrays
+			// - current at last expression, peek at '}' for non-empty arrays
+			// We want to end with current at '}'
+			if p.curTokenIs(token.RightBrace) {
+				// Empty array: current is already at '}', nothing to do
+			} else if p.peekTokenIs(token.RightBrace) {
+				// Non-empty array: advance past last expression to '}'
+				p.nextToken() // move to '}'
+			} else {
+				p.error("expected } after array elements")
 				return nil
 			}
 			return arr
