@@ -18,26 +18,29 @@ import (
 // - SP: stack pointer (must be 16-byte aligned)
 
 const (
-	numArgRegs   = 8 // x0-x7
-	numTempRegs  = 0 // Spill all vregs to stack for correctness across calls
-	numSavedRegs = 10 // x19-x28
+	numArgRegs   = 8     // x0-x7
+	numTempRegs  = 0     // Spill all vregs to stack for correctness across calls
+	numSavedRegs = 10    // x19-x28
+	debugEmit    = false // Enable debug output for stack allocation
 )
 
 // Emitter converts IR to ARM64 machine code.
 type Emitter struct {
 	asm              *Assembler
 	fn               *ir.Function
-	prog             *ir.Program    // program being emitted (for string table)
-	vregToReg        map[int]Reg    // virtual register to physical register
-	vregSpill        map[int]int    // virtual register to stack offset
-	allocOffset      map[int]int    // vreg to allocation offset (for OpAlloc results)
-	structRetOffset  map[int]int    // vreg to struct return copy offset (for OpCall with struct results)
-	structRetSize    map[int]int    // vreg to struct size (for struct return copies)
-	labels           map[string]int // label to code offset (block labels)
-	funcOffsets      map[string]int // function name to code offset
-	fixups           []fixup        // branch fixups
-	strFixups        []strFixup     // string address fixups
-	stackSize        int            // total stack size
+	prog              *ir.Program    // program being emitted (for string table)
+	vregToReg         map[int]Reg    // virtual register to physical register
+	vregSpill         map[int]int    // virtual register to stack offset
+	allocOffset       map[int]int    // vreg to allocation offset (for OpAlloc results)
+	structRetOffset   map[int]int    // vreg to struct return copy offset (for OpCall with struct results)
+	structRetSize     map[int]int    // vreg to struct size (for struct return copies)
+	structParamOffset map[int]int    // param vreg to struct parameter copy offset
+	structParamSize   map[int]int    // param vreg to struct size (for struct parameter copies)
+	labels            map[string]int // label to code offset (block labels)
+	funcOffsets       map[string]int // function name to code offset
+	fixups            []fixup        // branch fixups
+	strFixups         []strFixup     // string address fixups
+	stackSize         int            // total stack size
 }
 
 type strFixup struct {
@@ -149,6 +152,8 @@ func (e *Emitter) emitFunction(fn *ir.Function) {
 	e.allocOffset = make(map[int]int)
 	e.structRetOffset = make(map[int]int)
 	e.structRetSize = make(map[int]int)
+	e.structParamOffset = make(map[int]int)
+	e.structParamSize = make(map[int]int)
 
 	// Calculate stack layout
 	e.calculateStackLayout()
@@ -202,7 +207,7 @@ func typeSize(t types.Type) int {
 		case types.Int:
 			return 8
 		case types.String:
-			return 8 // pointer to string data
+			return 16 // string = pointer (8) + length (8)
 		default:
 			return 8
 		}
@@ -219,8 +224,29 @@ func typeSize(t types.Type) int {
 	}
 }
 
+// addImm emits code to compute rd = rn + imm, handling large immediates
+// that don't fit in ADDi's 12-bit immediate field.
+func (e *Emitter) addImm(rd, rn Reg, imm int) {
+	if imm < 4096 {
+		// Small immediate - use ADDi directly
+		e.asm.ADDi(rd, rn, uint16(imm))
+	} else {
+		// Large immediate - load into scratch register and use ADD
+		e.asm.MOVimm(X17, int64(imm))
+		e.asm.ADD(rd, rn, X17)
+	}
+}
+
 func (e *Emitter) calculateStackLayout() {
-	debugFn := e.fn.Name == "parse_fn_decl"
+	debugFn := debugEmit
+
+	// Check if this function returns a struct (needs to save X8)
+	sretSize := 0
+	if e.fn.Result != nil {
+		if sz := getStructSize(e.fn.Result); sz > 0 {
+			sretSize = 8 // Reserve 8 bytes at FP+16 to save the X8 sret pointer
+		}
+	}
 
 	// Count how many vregs we need to spill
 	maxVReg := e.fn.NextVReg
@@ -231,14 +257,15 @@ func (e *Emitter) calculateStackLayout() {
 	}
 
 	// Simple allocation: first 7 vregs go to x9-x15, rest spill
+	// Spill offsets start after the sret save slot (if present)
 	for vreg := 0; vreg < maxVReg; vreg++ {
 		if vreg < numTempRegs {
 			e.vregToReg[vreg] = Reg(X9 + Reg(vreg))
 		} else {
-			e.vregSpill[vreg] = numSpills * 8
+			e.vregSpill[vreg] = sretSize + numSpills*8
 			if debugFn {
 				fmt.Printf("DEBUG %s: vreg %d spills to offset %d (FP+16+%d = FP+%d)\n",
-					e.fn.Name, vreg, numSpills*8, numSpills*8, 16+numSpills*8)
+					e.fn.Name, vreg, sretSize+numSpills*8, sretSize+numSpills*8, 16+sretSize+numSpills*8)
 			}
 			numSpills++
 		}
@@ -246,8 +273,9 @@ func (e *Emitter) calculateStackLayout() {
 
 	// Stack layout:
 	// [sp]        saved x29, x30 (16 bytes)
-	// [sp+16]     spilled vregs
-	spillSize := numSpills * 8
+	// [sp+16]     saved X8 (8 bytes, only for sret functions)
+	// [sp+16+sretSize]     spilled vregs
+	spillSize := sretSize + numSpills*8
 
 	if debugFn {
 		fmt.Printf("DEBUG %s: spillSize=%d\n", e.fn.Name, spillSize)
@@ -294,8 +322,8 @@ func (e *Emitter) calculateStackLayout() {
 					e.structRetSize[instr.Dest.VReg] = size
 					alignedSize := (size + 7) & ^7
 					if debugFn {
-						fmt.Printf("DEBUG %s: struct ret vreg %d at offset %d (size %d, func=%v)\n",
-							e.fn.Name, instr.Dest.VReg, offset, size, instr.Args[0])
+						fmt.Printf("DEBUG %s: struct ret vreg %d at offset %d (size %d, type=%v, func=%v)\n",
+							e.fn.Name, instr.Dest.VReg, offset, size, instr.Dest.Type, instr.Args[0])
 					}
 					structRetSize += alignedSize
 				}
@@ -307,7 +335,29 @@ func (e *Emitter) calculateStackLayout() {
 		fmt.Printf("DEBUG %s: structRetSize=%d\n", e.fn.Name, structRetSize)
 	}
 
-	e.stackSize = 16 + spillSize + allocSize + structRetSize
+	// Scan function parameters for struct types that need to be copied to local stack
+	structParamSize := 0
+	for _, param := range e.fn.Params {
+		size := getStructSize(param.Type)
+		if size > 0 {
+			// This parameter is a struct - allocate local space for it
+			offset := 16 + spillSize + allocSize + structRetSize + structParamSize
+			e.structParamOffset[param.VReg] = offset
+			e.structParamSize[param.VReg] = size
+			alignedSize := (size + 7) & ^7
+			if debugFn {
+				fmt.Printf("DEBUG %s: struct param vreg %d at offset %d (size %d, type=%v)\n",
+					e.fn.Name, param.VReg, offset, size, param.Type)
+			}
+			structParamSize += alignedSize
+		}
+	}
+
+	if debugFn {
+		fmt.Printf("DEBUG %s: structParamSize=%d\n", e.fn.Name, structParamSize)
+	}
+
+	e.stackSize = 16 + spillSize + allocSize + structRetSize + structParamSize
 
 	// Align to 16 bytes
 	e.stackSize = (e.stackSize + 15) & ^15
@@ -325,13 +375,29 @@ func (e *Emitter) emitPrologue() {
 		e.asm.STPpre(X29, X30, SP, int16(-e.stackSize))
 	} else {
 		// For large stacks: first allocate, then save FP/LR
-		e.asm.SUBi(SP, SP, uint16(e.stackSize))
+		// SUBi only handles 12-bit immediates (max 4095), so use scratch register for larger sizes
+		if e.stackSize <= 4095 {
+			e.asm.SUBi(SP, SP, uint16(e.stackSize))
+		} else {
+			e.asm.MOVimm(X17, int64(e.stackSize))
+			e.asm.SUB(SP, SP, X17)
+		}
 		e.asm.STP(X29, X30, SP, 0)
 	}
 
 	// mov x29, sp  (set up frame pointer)
 	// Need to use ADD since MOV(x29, SP) doesn't work correctly with SP
 	e.asm.ADDi(X29, SP, 0)
+
+	// For functions returning structs, save X8 (the sret pointer from caller)
+	// X8 may be clobbered by nested function calls, so save it at a known location
+	if e.fn.Result != nil {
+		if structSize := getStructSize(e.fn.Result); structSize > 0 {
+			// Save X8 at FP+16 (the first slot after saved FP/LR)
+			// This is within our spill area but we reserve it for X8
+			e.asm.STR(X8, X29, 16)
+		}
+	}
 }
 
 func (e *Emitter) emitEpilogue() {
@@ -347,7 +413,13 @@ func (e *Emitter) emitEpilogue() {
 	} else {
 		// For large stacks: restore FP/LR, then deallocate
 		e.asm.LDP(X29, X30, SP, 0)
-		e.asm.ADDi(SP, SP, uint16(e.stackSize))
+		// ADDi only handles 12-bit immediates (max 4095), so use scratch register for larger sizes
+		if e.stackSize <= 4095 {
+			e.asm.ADDi(SP, SP, uint16(e.stackSize))
+		} else {
+			e.asm.MOVimm(X17, int64(e.stackSize))
+			e.asm.ADD(SP, SP, X17)
+		}
 	}
 
 	// ret
@@ -376,7 +448,28 @@ func (e *Emitter) loadParameters() {
 		}
 
 		argReg := Reg(X0 + Reg(i))
-		e.storeToVReg(param.VReg, argReg)
+
+		// Check if this is a struct parameter that needs to be copied
+		if offset, ok := e.structParamOffset[param.VReg]; ok {
+			size := e.structParamSize[param.VReg]
+			// argReg contains pointer to struct in caller's stack
+			// Copy struct data to our local space
+			// X16 = destination (our local stack)
+			// argReg (X0-X7) = source (caller's struct pointer)
+			e.addImm(X16, X29, offset)
+
+			// Copy struct data 8 bytes at a time
+			for off := 0; off < size; off += 8 {
+				e.asm.LDR(X17, argReg, uint16(off))
+				e.asm.STR(X17, X16, uint16(off))
+			}
+
+			// Store our local pointer to the vreg
+			e.storeToVReg(param.VReg, X16)
+		} else {
+			// Non-struct parameter - just store the register value
+			e.storeToVReg(param.VReg, argReg)
+		}
 	}
 }
 
@@ -2053,6 +2146,14 @@ func (e *Emitter) emitCall(instr *ir.Instr) {
 	// Args[0] is the function reference, Args[1:] are arguments
 	fnRef := instr.Args[0]
 
+	// For struct returns, set X8 to point to caller's result buffer
+	if instr.Dest.Kind == ir.OpndVReg {
+		if offset, ok := e.structRetOffset[instr.Dest.VReg]; ok {
+			// X8 = FP + offset (our local buffer for the result)
+			e.addImm(X8, X29, offset)
+		}
+	}
+
 	// Move arguments to x0-x7
 	for i := 1; i < len(instr.Args) && i <= numArgRegs; i++ {
 		arg := instr.Args[i]
@@ -2080,24 +2181,11 @@ func (e *Emitter) emitCall(instr *ir.Instr) {
 
 	// Move result from x0 to destination
 	if instr.Dest.Kind == ir.OpndVReg {
-		// Check if this is a struct return that needs copying
+		// Check if this is a struct return
 		if offset, ok := e.structRetOffset[instr.Dest.VReg]; ok {
-			size := e.structRetSize[instr.Dest.VReg]
-			// X0 contains pointer to callee's struct (may be on invalid stack)
-			// Copy the struct data to our pre-allocated local space
-			// X0 = source pointer
-			// X16 = destination pointer (our local space)
-			e.asm.ADDi(X16, X29, uint16(offset))
-
-			// Copy struct data field by field (8 bytes at a time)
-			for i := 0; i < size; i += 8 {
-				// Load from source [X0 + i]
-				e.asm.LDR(X17, X0, uint16(i))
-				// Store to dest [X16 + i]
-				e.asm.STR(X17, X16, uint16(i))
-			}
-
-			// Store our local pointer to the dest vreg
+			// Struct return: callee already wrote to our buffer via X8
+			// Just compute and store the pointer to our local buffer
+			e.addImm(X16, X29, offset)
 			e.storeToVReg(instr.Dest.VReg, X16)
 		} else {
 			// Not a struct return, just store X0
@@ -2107,7 +2195,38 @@ func (e *Emitter) emitCall(instr *ir.Instr) {
 }
 
 func (e *Emitter) emitReturn(instr *ir.Instr) {
-	// Move return value to x0
+	debugFn := debugEmit
+
+	// Check if returning a struct (sret semantics)
+	if e.fn.Result != nil {
+		if structSize := getStructSize(e.fn.Result); structSize > 0 {
+			if debugFn {
+				fmt.Printf("DEBUG %s: emitReturn struct size=%d, type=%v\n", e.fn.Name, structSize, e.fn.Result)
+				if len(instr.Args) > 0 {
+					fmt.Printf("DEBUG %s: emitReturn arg[0]=%v\n", e.fn.Name, instr.Args[0])
+				}
+			}
+			// Load saved X8 from FP+16 (saved in prologue)
+			e.asm.LDR(X8, X29, 16)
+
+			// Returning a struct - copy it to [X8] (caller's buffer)
+			// src contains pointer to the struct on our local stack
+			if len(instr.Args) > 0 {
+				src := e.loadOperand(instr.Args[0], X16)
+				// Copy struct from [src] to [X8]
+				for i := 0; i < structSize; i += 8 {
+					e.asm.LDR(X17, src, uint16(i))
+					e.asm.STR(X17, X8, uint16(i))
+				}
+			}
+			// Return X8 in X0 (per ABI)
+			e.asm.MOV(X0, X8)
+			e.emitEpilogue()
+			return
+		}
+	}
+
+	// Non-struct return - move value to x0
 	if len(instr.Args) > 0 {
 		src := e.loadOperand(instr.Args[0], X16)
 		if src != X0 {
@@ -2307,7 +2426,7 @@ func (e *Emitter) emitAlloc(instr *ir.Instr) {
 	// Spills start at FP+16
 
 	// So the address is simply: FP + offset
-	e.asm.ADDi(X16, X29, uint16(offset))
+	e.addImm(X16, X29, offset)
 	e.storeToVReg(instr.Dest.VReg, X16)
 }
 

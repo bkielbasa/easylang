@@ -1,0 +1,1382 @@
+// Parser for the Ease bootstrap compiler
+// Recursive descent parser that builds an AST
+
+// Token definitions
+fn TK_IDENT() -> int { return 1 }
+fn TK_INT() -> int { return 2 }
+fn TK_STRING() -> int { return 3 }
+fn TK_CHAR() -> int { return 4 }
+fn TK_FN() -> int { return 10 }
+fn TK_LET() -> int { return 11 }
+fn TK_MUT() -> int { return 12 }
+fn TK_IF() -> int { return 13 }
+fn TK_ELSE() -> int { return 14 }
+fn TK_FOR() -> int { return 15 }
+fn TK_IN() -> int { return 16 }
+fn TK_RETURN() -> int { return 17 }
+fn TK_STRUCT() -> int { return 18 }
+fn TK_BREAK() -> int { return 22 }
+fn TK_CONTINUE() -> int { return 23 }
+fn TK_TRUE() -> int { return 24 }
+fn TK_FALSE() -> int { return 25 }
+fn TK_PLUS() -> int { return 30 }
+fn TK_MINUS() -> int { return 31 }
+fn TK_STAR() -> int { return 32 }
+fn TK_SLASH() -> int { return 33 }
+fn TK_PERCENT() -> int { return 34 }
+fn TK_EQ() -> int { return 35 }
+fn TK_EQEQ() -> int { return 36 }
+fn TK_BANGEQ() -> int { return 37 }
+fn TK_LT() -> int { return 38 }
+fn TK_GT() -> int { return 39 }
+fn TK_LTEQ() -> int { return 40 }
+fn TK_GTEQ() -> int { return 41 }
+fn TK_BANG() -> int { return 42 }
+fn TK_AMPAMP() -> int { return 43 }
+fn TK_PIPEPIPE() -> int { return 44 }
+fn TK_AMP() -> int { return 45 }
+fn TK_ARROW() -> int { return 46 }
+fn TK_LPAREN() -> int { return 50 }
+fn TK_RPAREN() -> int { return 51 }
+fn TK_LBRACE() -> int { return 52 }
+fn TK_RBRACE() -> int { return 53 }
+fn TK_LBRACKET() -> int { return 54 }
+fn TK_RBRACKET() -> int { return 55 }
+fn TK_COMMA() -> int { return 56 }
+fn TK_COLON() -> int { return 57 }
+fn TK_SEMI() -> int { return 58 }
+fn TK_DOT() -> int { return 59 }
+fn TK_EOF() -> int { return 100 }
+fn TK_ERROR() -> int { return 101 }
+
+// ============================================================================
+// Character helpers
+// ============================================================================
+
+fn is_alpha(ch: int) -> bool {
+    if ch >= 'a' && ch <= 'z' { return true }
+    if ch >= 'A' && ch <= 'Z' { return true }
+    if ch == '_' { return true }
+    return false
+}
+
+fn is_digit(ch: int) -> bool {
+    return ch >= '0' && ch <= '9'
+}
+
+fn is_alnum(ch: int) -> bool {
+    return is_alpha(ch) || is_digit(ch)
+}
+
+fn is_whitespace(ch: int) -> bool {
+    return ch == ' ' || ch == '\t' || ch == '\r' || ch == '\n'
+}
+
+fn lex_peek(src: string, pos: int) -> int {
+    if pos >= len(src) { return 0 }
+    return str_char_at(src, pos)
+}
+
+fn lex_skip(src: string, pos: int) -> int {
+    let src_len = len(src)
+    let mut p = pos
+    for p < src_len {
+        let ch = lex_peek(src, p)
+        if is_whitespace(ch) {
+            p = p + 1
+        } else if ch == '/' && p + 1 < src_len && lex_peek(src, p + 1) == '/' {
+            for p < src_len && lex_peek(src, p) != '\n' {
+                p = p + 1
+            }
+        } else {
+            break
+        }
+    }
+    return p
+}
+
+fn lex_ident_end(src: string, pos: int) -> int {
+    let src_len = len(src)
+    let mut p = pos
+    for p < src_len && is_alnum(lex_peek(src, p)) {
+        p = p + 1
+    }
+    return p
+}
+
+fn lex_number_end(src: string, pos: int) -> int {
+    let src_len = len(src)
+    let mut p = pos
+    for p < src_len && is_digit(lex_peek(src, p)) {
+        p = p + 1
+    }
+    return p
+}
+
+fn lex_string_end(src: string, pos: int) -> int {
+    let src_len = len(src)
+    let mut p = pos + 1
+    for p < src_len && lex_peek(src, p) != '"' {
+        if lex_peek(src, p) == '\\' {
+            p = p + 1
+        }
+        p = p + 1
+    }
+    if p < src_len { p = p + 1 }
+    return p
+}
+
+fn lex_char_end(src: string, pos: int) -> int {
+    let mut p = pos + 1
+    if lex_peek(src, p) == '\\' {
+        p = p + 2
+    } else {
+        p = p + 1
+    }
+    if lex_peek(src, p) == '\'' { p = p + 1 }
+    return p
+}
+
+fn lookup_keyword(name: string) -> int {
+    if name == "fn" { return TK_FN() }
+    if name == "let" { return TK_LET() }
+    if name == "mut" { return TK_MUT() }
+    if name == "if" { return TK_IF() }
+    if name == "else" { return TK_ELSE() }
+    if name == "for" { return TK_FOR() }
+    if name == "in" { return TK_IN() }
+    if name == "return" { return TK_RETURN() }
+    if name == "struct" { return TK_STRUCT() }
+    if name == "break" { return TK_BREAK() }
+    if name == "continue" { return TK_CONTINUE() }
+    if name == "true" { return TK_TRUE() }
+    if name == "false" { return TK_FALSE() }
+    return TK_IDENT()
+}
+
+fn lex_kind(src: string, pos: int) -> int {
+    let src_len = len(src)
+    if pos >= src_len { return TK_EOF() }
+    let ch = lex_peek(src, pos)
+
+    if is_alpha(ch) {
+        let end = lex_ident_end(src, pos)
+        let name = str_substring(src, pos, end)
+        return lookup_keyword(name)
+    }
+    if is_digit(ch) { return TK_INT() }
+    if ch == '"' { return TK_STRING() }
+    if ch == '\'' { return TK_CHAR() }
+
+    let next = lex_peek(src, pos + 1)
+    if ch == '=' && next == '=' { return TK_EQEQ() }
+    if ch == '!' && next == '=' { return TK_BANGEQ() }
+    if ch == '<' && next == '=' { return TK_LTEQ() }
+    if ch == '>' && next == '=' { return TK_GTEQ() }
+    if ch == '-' && next == '>' { return TK_ARROW() }
+    if ch == '&' && next == '&' { return TK_AMPAMP() }
+    if ch == '|' && next == '|' { return TK_PIPEPIPE() }
+
+    if ch == '+' { return TK_PLUS() }
+    if ch == '-' { return TK_MINUS() }
+    if ch == '*' { return TK_STAR() }
+    if ch == '/' { return TK_SLASH() }
+    if ch == '%' { return TK_PERCENT() }
+    if ch == '=' { return TK_EQ() }
+    if ch == '!' { return TK_BANG() }
+    if ch == '<' { return TK_LT() }
+    if ch == '>' { return TK_GT() }
+    if ch == '&' { return TK_AMP() }
+    if ch == '(' { return TK_LPAREN() }
+    if ch == ')' { return TK_RPAREN() }
+    if ch == '{' { return TK_LBRACE() }
+    if ch == '}' { return TK_RBRACE() }
+    if ch == '[' { return TK_LBRACKET() }
+    if ch == ']' { return TK_RBRACKET() }
+    if ch == ',' { return TK_COMMA() }
+    if ch == ':' { return TK_COLON() }
+    if ch == ';' { return TK_SEMI() }
+    if ch == '.' { return TK_DOT() }
+
+    return TK_ERROR()
+}
+
+fn lex_end(src: string, pos: int, kind: int) -> int {
+    if kind == TK_EOF() { return pos }
+    if kind == TK_IDENT() || kind == TK_FN() || kind == TK_LET() || kind == TK_MUT() ||
+       kind == TK_IF() || kind == TK_ELSE() || kind == TK_FOR() || kind == TK_IN() ||
+       kind == TK_RETURN() || kind == TK_STRUCT() || kind == TK_BREAK() ||
+       kind == TK_CONTINUE() || kind == TK_TRUE() || kind == TK_FALSE() {
+        return lex_ident_end(src, pos)
+    }
+    if kind == TK_INT() { return lex_number_end(src, pos) }
+    if kind == TK_STRING() { return lex_string_end(src, pos) }
+    if kind == TK_CHAR() { return lex_char_end(src, pos) }
+    if kind == TK_EQEQ() || kind == TK_BANGEQ() || kind == TK_LTEQ() || kind == TK_GTEQ() ||
+       kind == TK_ARROW() || kind == TK_AMPAMP() || kind == TK_PIPEPIPE() {
+        return pos + 2
+    }
+    return pos + 1
+}
+
+// ============================================================================
+// Parser State - Simplified to avoid struct copy issues
+// ============================================================================
+
+struct Parser {
+    src: string,
+    pos: int,
+    tok_kind: int,
+    tok_start: int,
+    tok_end: int,
+}
+
+fn new_parser(src: string) -> Parser {
+    return Parser {
+        src: src,
+        pos: 0,
+        tok_kind: 0,
+        tok_start: 0,
+        tok_end: 0,
+    }
+}
+
+fn parser_advance(p: Parser) -> Parser {
+    let mut np = p
+    let new_pos = lex_skip(np.src, np.pos)
+    np.pos = new_pos
+    np.tok_start = new_pos
+    np.tok_kind = lex_kind(np.src, new_pos)
+    np.tok_end = lex_end(np.src, new_pos, np.tok_kind)
+    np.pos = np.tok_end
+    return np
+}
+
+fn parser_text(p: Parser) -> string {
+    return str_substring(p.src, p.tok_start, p.tok_end)
+}
+
+fn token_name(kind: int) -> string {
+    if kind == TK_IDENT() { return "IDENT" }
+    if kind == TK_INT() { return "INT" }
+    if kind == TK_STRING() { return "STRING" }
+    if kind == TK_FN() { return "fn" }
+    if kind == TK_LET() { return "let" }
+    if kind == TK_RETURN() { return "return" }
+    if kind == TK_IF() { return "if" }
+    if kind == TK_ELSE() { return "else" }
+    if kind == TK_FOR() { return "for" }
+    if kind == TK_STRUCT() { return "struct" }
+    if kind == TK_TRUE() { return "true" }
+    if kind == TK_FALSE() { return "false" }
+    if kind == TK_PLUS() { return "+" }
+    if kind == TK_MINUS() { return "-" }
+    if kind == TK_STAR() { return "*" }
+    if kind == TK_SLASH() { return "/" }
+    if kind == TK_EQ() { return "=" }
+    if kind == TK_EQEQ() { return "==" }
+    if kind == TK_BANGEQ() { return "!=" }
+    if kind == TK_LT() { return "<" }
+    if kind == TK_GT() { return ">" }
+    if kind == TK_LTEQ() { return "<=" }
+    if kind == TK_GTEQ() { return ">=" }
+    if kind == TK_AMPAMP() { return "&&" }
+    if kind == TK_PIPEPIPE() { return "||" }
+    if kind == TK_ARROW() { return "->" }
+    if kind == TK_LPAREN() { return "(" }
+    if kind == TK_RPAREN() { return ")" }
+    if kind == TK_LBRACE() { return "{" }
+    if kind == TK_RBRACE() { return "}" }
+    if kind == TK_LBRACKET() { return "[" }
+    if kind == TK_RBRACKET() { return "]" }
+    if kind == TK_COMMA() { return "," }
+    if kind == TK_COLON() { return ":" }
+    if kind == TK_SEMI() { return ";" }
+    if kind == TK_DOT() { return "." }
+    if kind == TK_EOF() { return "EOF" }
+    return "?"
+}
+
+// ============================================================================
+// Operator Precedence (higher number = higher precedence)
+// ============================================================================
+
+fn prec_or() -> int { return 1 }        // ||
+fn prec_and() -> int { return 2 }       // &&
+fn prec_eq() -> int { return 3 }        // == !=
+fn prec_cmp() -> int { return 4 }       // < <= > >=
+fn prec_add() -> int { return 5 }       // + -
+fn prec_mul() -> int { return 6 }       // * / %
+
+fn get_precedence(tok: int) -> int {
+    if tok == TK_PIPEPIPE() { return prec_or() }
+    if tok == TK_AMPAMP() { return prec_and() }
+    if tok == TK_EQEQ() || tok == TK_BANGEQ() { return prec_eq() }
+    if tok == TK_LT() || tok == TK_LTEQ() || tok == TK_GT() || tok == TK_GTEQ() { return prec_cmp() }
+    if tok == TK_PLUS() || tok == TK_MINUS() { return prec_add() }
+    if tok == TK_STAR() || tok == TK_SLASH() || tok == TK_PERCENT() { return prec_mul() }
+    return 0  // not a binary operator
+}
+
+// ============================================================================
+// AST Node types (copied from ast.ease for convenience)
+// ============================================================================
+
+fn EXPR_IDENT() -> int { return 1 }
+fn EXPR_INT() -> int { return 2 }
+fn EXPR_STRING() -> int { return 3 }
+fn EXPR_CHAR() -> int { return 4 }
+fn EXPR_BOOL() -> int { return 5 }
+fn EXPR_BINARY() -> int { return 6 }
+fn EXPR_UNARY() -> int { return 7 }
+fn EXPR_CALL() -> int { return 8 }
+fn EXPR_INDEX() -> int { return 9 }
+fn EXPR_FIELD() -> int { return 10 }
+
+fn STMT_LET() -> int { return 20 }
+fn STMT_RETURN() -> int { return 21 }
+fn STMT_EXPR() -> int { return 22 }
+fn STMT_IF() -> int { return 23 }
+fn STMT_FOR() -> int { return 24 }
+fn STMT_BREAK() -> int { return 25 }
+fn STMT_CONTINUE() -> int { return 26 }
+fn STMT_BLOCK() -> int { return 27 }
+
+fn DECL_FN() -> int { return 30 }
+fn DECL_STRUCT() -> int { return 31 }
+
+fn TYPE_IDENT() -> int { return 40 }
+fn TYPE_ARRAY() -> int { return 41 }
+
+// ============================================================================
+// AST Node structure
+// ============================================================================
+
+struct AstNode {
+    tag: int,
+    str_val: string,
+    int_val: int,
+    left: int,
+    right: int,
+    extra: int,
+    children_start: int,
+    children_count: int,
+}
+
+fn new_node(tag: int) -> AstNode {
+    return AstNode {
+        tag: tag,
+        str_val: "",
+        int_val: 0,
+        left: -1,
+        right: -1,
+        extra: -1,
+        children_start: -1,
+        children_count: 0,
+    }
+}
+
+// ============================================================================
+// Parse Result - contains parser state and result index
+// ============================================================================
+
+struct ParseResult {
+    p: Parser,
+    idx: int,
+    ok: bool,
+}
+
+// Node storage (global for simplicity)
+// In a full implementation, this would be passed around
+// For now we use fixed-size arrays
+
+// ============================================================================
+// Expression Parsing
+// ============================================================================
+
+// Parse a primary expression: literals, identifiers, parenthesized expressions
+fn parse_primary(p: Parser, nodes: []AstNode) -> ParseResult {
+    let kind = p.tok_kind
+
+    // Integer literal
+    if kind == TK_INT() {
+        let text = parser_text(p)
+        let val = strconv.Atoi(text)
+        let mut node = new_node(EXPR_INT())
+        node.int_val = val
+        let idx = len(nodes)
+        push(nodes, node)
+        let mut np = parser_advance(p)
+        return ParseResult { p: np, idx: idx, ok: true }
+    }
+
+    // String literal
+    if kind == TK_STRING() {
+        let text = parser_text(p)
+        // Remove quotes from string
+        let inner = str_substring(text, 1, len(text) - 1)
+        let mut node = new_node(EXPR_STRING())
+        node.str_val = inner
+        let idx = len(nodes)
+        push(nodes, node)
+        let mut np = parser_advance(p)
+        return ParseResult { p: np, idx: idx, ok: true }
+    }
+
+    // Character literal
+    if kind == TK_CHAR() {
+        let text = parser_text(p)
+        let mut val = 0
+        if len(text) >= 2 {
+            if str_char_at(text, 1) == '\\' && len(text) >= 3 {
+                // Escape sequence
+                let ch = str_char_at(text, 2)
+                if ch == 'n' { val = '\n' }
+                else if ch == 't' { val = '\t' }
+                else if ch == 'r' { val = '\r' }
+                else if ch == '\\' { val = '\\' }
+                else if ch == '\'' { val = '\'' }
+                else { val = ch }
+            } else {
+                val = str_char_at(text, 1)
+            }
+        }
+        let mut node = new_node(EXPR_CHAR())
+        node.int_val = val
+        let idx = len(nodes)
+        push(nodes, node)
+        let mut np = parser_advance(p)
+        return ParseResult { p: np, idx: idx, ok: true }
+    }
+
+    // Boolean literals
+    if kind == TK_TRUE() {
+        let mut node = new_node(EXPR_BOOL())
+        node.int_val = 1
+        let idx = len(nodes)
+        push(nodes, node)
+        let mut np = parser_advance(p)
+        return ParseResult { p: np, idx: idx, ok: true }
+    }
+    if kind == TK_FALSE() {
+        let mut node = new_node(EXPR_BOOL())
+        node.int_val = 0
+        let idx = len(nodes)
+        push(nodes, node)
+        let mut np = parser_advance(p)
+        return ParseResult { p: np, idx: idx, ok: true }
+    }
+
+    // Identifier
+    if kind == TK_IDENT() {
+        let text = parser_text(p)
+        let mut node = new_node(EXPR_IDENT())
+        node.str_val = text
+        let idx = len(nodes)
+        push(nodes, node)
+        let mut np = parser_advance(p)
+        return ParseResult { p: np, idx: idx, ok: true }
+    }
+
+    // Parenthesized expression
+    if kind == TK_LPAREN() {
+        let mut np = parser_advance(p)  // consume (
+        let res = parse_expr(np, nodes)
+        if !res.ok {
+            return res
+        }
+        if res.p.tok_kind != TK_RPAREN() {
+            return ParseResult { p: res.p, idx: -1, ok: false }
+        }
+        let mut np2 = parser_advance(res.p)  // consume )
+        return ParseResult { p: np2, idx: res.idx, ok: true }
+    }
+
+    // Error - unexpected token
+    return ParseResult { p: p, idx: -1, ok: false }
+}
+
+// Parse postfix operations: function calls, field access, indexing
+fn parse_postfix(p: Parser, nodes: []AstNode) -> ParseResult {
+    let res = parse_primary(p, nodes)
+    if !res.ok {
+        return res
+    }
+
+    let mut cur_p = res.p
+    let mut cur_idx = res.idx
+
+    for {
+        // Function call
+        if cur_p.tok_kind == TK_LPAREN() {
+            cur_p = parser_advance(cur_p)  // consume (
+
+            // Parse arguments
+            let args_start = len(nodes)
+            let mut args_count = 0
+
+            for cur_p.tok_kind != TK_RPAREN() && cur_p.tok_kind != TK_EOF() {
+                if args_count > 0 {
+                    if cur_p.tok_kind != TK_COMMA() {
+                        return ParseResult { p: cur_p, idx: -1, ok: false }
+                    }
+                    cur_p = parser_advance(cur_p)  // consume ,
+                }
+
+                let arg_res = parse_expr(cur_p, nodes)
+                if !arg_res.ok {
+                    return arg_res
+                }
+                cur_p = arg_res.p
+                args_count = args_count + 1
+            }
+
+            if cur_p.tok_kind != TK_RPAREN() {
+                return ParseResult { p: cur_p, idx: -1, ok: false }
+            }
+            cur_p = parser_advance(cur_p)  // consume )
+
+            // Create call node
+            let mut call_node = new_node(EXPR_CALL())
+            call_node.left = cur_idx
+            call_node.children_start = args_start
+            call_node.children_count = args_count
+            cur_idx = len(nodes)
+            push(nodes, call_node)
+        }
+        // Field access
+        else if cur_p.tok_kind == TK_DOT() {
+            cur_p = parser_advance(cur_p)  // consume .
+            if cur_p.tok_kind != TK_IDENT() {
+                return ParseResult { p: cur_p, idx: -1, ok: false }
+            }
+            let field_name = parser_text(cur_p)
+            cur_p = parser_advance(cur_p)  // consume field name
+
+            let mut field_node = new_node(EXPR_FIELD())
+            field_node.left = cur_idx
+            field_node.str_val = field_name
+            cur_idx = len(nodes)
+            push(nodes, field_node)
+        }
+        // Index access
+        else if cur_p.tok_kind == TK_LBRACKET() {
+            cur_p = parser_advance(cur_p)  // consume [
+            let idx_res = parse_expr(cur_p, nodes)
+            if !idx_res.ok {
+                return idx_res
+            }
+            cur_p = idx_res.p
+            if cur_p.tok_kind != TK_RBRACKET() {
+                return ParseResult { p: cur_p, idx: -1, ok: false }
+            }
+            cur_p = parser_advance(cur_p)  // consume ]
+
+            let mut index_node = new_node(EXPR_INDEX())
+            index_node.left = cur_idx
+            index_node.right = idx_res.idx
+            cur_idx = len(nodes)
+            push(nodes, index_node)
+        }
+        else {
+            break
+        }
+    }
+
+    return ParseResult { p: cur_p, idx: cur_idx, ok: true }
+}
+
+// Parse unary expression
+fn parse_unary(p: Parser, nodes: []AstNode) -> ParseResult {
+    if p.tok_kind == TK_MINUS() || p.tok_kind == TK_BANG() || p.tok_kind == TK_AMP() {
+        let op = p.tok_kind
+        let mut np = parser_advance(p)  // consume operator
+        let res = parse_unary(np, nodes)
+        if !res.ok {
+            return res
+        }
+
+        let mut node = new_node(EXPR_UNARY())
+        node.int_val = op
+        node.right = res.idx
+        let idx = len(nodes)
+        push(nodes, node)
+        return ParseResult { p: res.p, idx: idx, ok: true }
+    }
+
+    return parse_postfix(p, nodes)
+}
+
+// Parse binary expression using precedence climbing
+fn parse_binary(p: Parser, nodes: []AstNode, min_prec: int) -> ParseResult {
+    let res = parse_unary(p, nodes)
+    if !res.ok {
+        return res
+    }
+
+    let mut cur_p = res.p
+    let mut left_idx = res.idx
+
+    for {
+        let op = cur_p.tok_kind
+        let prec = get_precedence(op)
+        if prec == 0 || prec < min_prec {
+            break
+        }
+
+        cur_p = parser_advance(cur_p)  // consume operator
+
+        // Right associative would use prec, left associative uses prec+1
+        let right_res = parse_binary(cur_p, nodes, prec + 1)
+        if !right_res.ok {
+            return right_res
+        }
+        cur_p = right_res.p
+
+        // Create binary node
+        let mut node = new_node(EXPR_BINARY())
+        node.int_val = op
+        node.left = left_idx
+        node.right = right_res.idx
+        left_idx = len(nodes)
+        push(nodes, node)
+    }
+
+    return ParseResult { p: cur_p, idx: left_idx, ok: true }
+}
+
+// Parse any expression
+fn parse_expr(p: Parser, nodes: []AstNode) -> ParseResult {
+    let res = parse_binary(p, nodes, 1)
+    return res
+}
+
+// ============================================================================
+// Statement Parsing
+// ============================================================================
+
+// Forward declare parse_block (will be defined later)
+// In Ease, we handle this by parsing statements inline
+
+fn parse_stmt(p: Parser, nodes: []AstNode) -> ParseResult {
+    // Let statement
+    if p.tok_kind == TK_LET() {
+        let mut np = parser_advance(p)  // consume let
+
+        let mut is_mut = false
+        let mut np2 = np
+        if np2.tok_kind == TK_MUT() {
+            is_mut = true
+            np2 = parser_advance(np2)  // consume mut
+        }
+
+        if np2.tok_kind != TK_IDENT() {
+            return ParseResult { p: np2, idx: -1, ok: false }
+        }
+        let name = parser_text(np2)
+        np2 = parser_advance(np2)  // consume name
+
+        // Optional type annotation
+        let mut type_idx = -1
+        if np2.tok_kind == TK_COLON() {
+            np2 = parser_advance(np2)  // consume :
+            // Parse type (just identifier for now)
+            if np2.tok_kind != TK_IDENT() {
+                return ParseResult { p: np2, idx: -1, ok: false }
+            }
+            let type_name = parser_text(np2)
+            let mut type_node = new_node(TYPE_IDENT())
+            type_node.str_val = type_name
+            type_idx = len(nodes)
+            push(nodes, type_node)
+            np2 = parser_advance(np2)
+        }
+
+        if np2.tok_kind != TK_EQ() {
+            return ParseResult { p: np2, idx: -1, ok: false }
+        }
+        np2 = parser_advance(np2)  // consume =
+
+        let val_res = parse_expr(np2, nodes)
+        if !val_res.ok {
+            return val_res
+        }
+
+        let mut node = new_node(STMT_LET())
+        node.str_val = name
+        node.left = type_idx
+        node.right = val_res.idx
+        if is_mut {
+            node.int_val = 1
+        }
+        let idx = len(nodes)
+        push(nodes, node)
+        return ParseResult { p: val_res.p, idx: idx, ok: true }
+    }
+
+    // Return statement
+    if p.tok_kind == TK_RETURN() {
+        let mut np = parser_advance(p)  // consume return
+
+        let mut val_idx = -1
+        // Check if there's a return value (not followed by } or EOF)
+        if np.tok_kind != TK_RBRACE() && np.tok_kind != TK_EOF() {
+            let res = parse_expr(np, nodes)
+            if !res.ok {
+                return res
+            }
+            np = res.p
+            val_idx = res.idx
+        }
+
+        let mut node = new_node(STMT_RETURN())
+        node.left = val_idx
+        let idx = len(nodes)
+        push(nodes, node)
+        return ParseResult { p: np, idx: idx, ok: true }
+    }
+
+    // If statement
+    if p.tok_kind == TK_IF() {
+        let mut np = parser_advance(p)  // consume if
+
+        let cond_res = parse_expr(np, nodes)
+        if !cond_res.ok {
+            return cond_res
+        }
+
+        let then_res = parse_block(cond_res.p, nodes)
+        if !then_res.ok {
+            return then_res
+        }
+
+        let mut else_idx = -1
+        let mut np2 = then_res.p
+        if np2.tok_kind == TK_ELSE() {
+            np2 = parser_advance(np2)  // consume else
+            if np2.tok_kind == TK_IF() {
+                // else if
+                let else_res = parse_stmt(np2, nodes)
+                if !else_res.ok {
+                    return else_res
+                }
+                np2 = else_res.p
+                else_idx = else_res.idx
+            } else {
+                // else block
+                let else_res = parse_block(np2, nodes)
+                if !else_res.ok {
+                    return else_res
+                }
+                np2 = else_res.p
+                else_idx = else_res.idx
+            }
+        }
+
+        let mut node = new_node(STMT_IF())
+        node.left = cond_res.idx
+        node.right = then_res.idx
+        node.extra = else_idx
+        let idx = len(nodes)
+        push(nodes, node)
+        return ParseResult { p: np2, idx: idx, ok: true }
+    }
+
+    // For statement
+    if p.tok_kind == TK_FOR() {
+        let mut np = parser_advance(p)  // consume for
+
+        let mut cond_idx = -1
+        // Check for condition (not { means there's a condition)
+        if np.tok_kind != TK_LBRACE() {
+            let cond_res = parse_expr(np, nodes)
+            if !cond_res.ok {
+                return cond_res
+            }
+            np = cond_res.p
+            cond_idx = cond_res.idx
+        }
+
+        let body_res = parse_block(np, nodes)
+        if !body_res.ok {
+            return body_res
+        }
+
+        let mut node = new_node(STMT_FOR())
+        node.left = cond_idx
+        node.right = body_res.idx
+        let idx = len(nodes)
+        push(nodes, node)
+        return ParseResult { p: body_res.p, idx: idx, ok: true }
+    }
+
+    // Break statement
+    if p.tok_kind == TK_BREAK() {
+        let mut np = parser_advance(p)
+        let node = new_node(STMT_BREAK())
+        let idx = len(nodes)
+        push(nodes, node)
+        return ParseResult { p: np, idx: idx, ok: true }
+    }
+
+    // Continue statement
+    if p.tok_kind == TK_CONTINUE() {
+        let mut np = parser_advance(p)
+        let node = new_node(STMT_CONTINUE())
+        let idx = len(nodes)
+        push(nodes, node)
+        return ParseResult { p: np, idx: idx, ok: true }
+    }
+
+    // Expression statement (fallback)
+    let res = parse_expr(p, nodes)
+    if !res.ok {
+        return res
+    }
+
+    let mut node = new_node(STMT_EXPR())
+    node.left = res.idx
+    let idx = len(nodes)
+    push(nodes, node)
+    return ParseResult { p: res.p, idx: idx, ok: true }
+}
+
+// Parse a block { ... }
+fn parse_block(p: Parser, nodes: []AstNode) -> ParseResult {
+    if p.tok_kind != TK_LBRACE() {
+        return ParseResult { p: p, idx: -1, ok: false }
+    }
+    let mut np = parser_advance(p)  // consume {
+
+    let stmts_start = len(nodes)
+    let mut stmts_count = 0
+
+    for np.tok_kind != TK_RBRACE() && np.tok_kind != TK_EOF() {
+        let res = parse_stmt(np, nodes)
+        if !res.ok {
+            return res
+        }
+        np = res.p
+        stmts_count = stmts_count + 1
+    }
+
+    if np.tok_kind != TK_RBRACE() {
+        return ParseResult { p: np, idx: -1, ok: false }
+    }
+    np = parser_advance(np)  // consume }
+
+    let mut node = new_node(STMT_BLOCK())
+    node.children_start = stmts_start
+    node.children_count = stmts_count
+    let idx = len(nodes)
+    push(nodes, node)
+    return ParseResult { p: np, idx: idx, ok: true }
+}
+
+// ============================================================================
+// Type Parsing
+// ============================================================================
+
+fn parse_type(p: Parser, nodes: []AstNode) -> ParseResult {
+    // Array type: []T
+    if p.tok_kind == TK_LBRACKET() {
+        let mut np = parser_advance(p)  // consume [
+        if np.tok_kind != TK_RBRACKET() {
+            return ParseResult { p: np, idx: -1, ok: false }
+        }
+        let mut np2 = parser_advance(np)  // consume ]
+
+        let elem_res = parse_type(np2, nodes)
+        if !elem_res.ok {
+            return elem_res
+        }
+
+        let mut node = new_node(TYPE_ARRAY())
+        node.left = elem_res.idx
+        let idx = len(nodes)
+        push(nodes, node)
+        return ParseResult { p: elem_res.p, idx: idx, ok: true }
+    }
+
+    // Simple type name
+    if p.tok_kind == TK_IDENT() {
+        let name = parser_text(p)
+        let mut node = new_node(TYPE_IDENT())
+        node.str_val = name
+        let idx = len(nodes)
+        push(nodes, node)
+        let mut np = parser_advance(p)
+        return ParseResult { p: np, idx: idx, ok: true }
+    }
+
+    return ParseResult { p: p, idx: -1, ok: false }
+}
+
+// ============================================================================
+// Declaration Parsing
+// ============================================================================
+
+// Parse function parameter: name: type
+fn parse_param(p: Parser, nodes: []AstNode) -> ParseResult {
+    if p.tok_kind != TK_IDENT() {
+        return ParseResult { p: p, idx: -1, ok: false }
+    }
+    let name = parser_text(p)
+    let mut np = parser_advance(p)  // consume name
+
+    if np.tok_kind != TK_COLON() {
+        return ParseResult { p: np, idx: -1, ok: false }
+    }
+    let mut np2 = parser_advance(np)  // consume :
+
+    let type_res = parse_type(np2, nodes)
+    if !type_res.ok {
+        return type_res
+    }
+
+    // Store param as a pseudo-node
+    let mut node = new_node(TYPE_IDENT())  // reuse for param
+    node.str_val = name
+    node.left = type_res.idx
+    let idx = len(nodes)
+    push(nodes, node)
+    return ParseResult { p: type_res.p, idx: idx, ok: true }
+}
+
+// Parse function declaration
+fn parse_fn_decl(p: Parser, nodes: []AstNode) -> ParseResult {
+    if p.tok_kind != TK_FN() {
+        return ParseResult { p: p, idx: -1, ok: false }
+    }
+    let mut np = parser_advance(p)  // consume fn
+
+    if np.tok_kind != TK_IDENT() {
+        return ParseResult { p: np, idx: -1, ok: false }
+    }
+    let name = parser_text(np)
+    let mut np2 = parser_advance(np)  // consume name
+
+    if np2.tok_kind != TK_LPAREN() {
+        return ParseResult { p: np2, idx: -1, ok: false }
+    }
+    let mut np3 = parser_advance(np2)  // consume (
+
+    // Parse parameters
+    let params_start = len(nodes)
+    let mut params_count = 0
+    let mut cur_p = np3
+
+    for cur_p.tok_kind != TK_RPAREN() && cur_p.tok_kind != TK_EOF() {
+        if params_count > 0 {
+            if cur_p.tok_kind != TK_COMMA() {
+                return ParseResult { p: cur_p, idx: -1, ok: false }
+            }
+            cur_p = parser_advance(cur_p)  // consume ,
+        }
+
+        let param_res = parse_param(cur_p, nodes)
+        if !param_res.ok {
+            return param_res
+        }
+        cur_p = param_res.p
+        params_count = params_count + 1
+    }
+
+    if cur_p.tok_kind != TK_RPAREN() {
+        return ParseResult { p: cur_p, idx: -1, ok: false }
+    }
+    cur_p = parser_advance(cur_p)  // consume )
+
+    // Optional return type
+    let mut ret_type_idx = -1
+    if cur_p.tok_kind == TK_ARROW() {
+        cur_p = parser_advance(cur_p)  // consume ->
+        let ret_res = parse_type(cur_p, nodes)
+        if !ret_res.ok {
+            return ret_res
+        }
+        cur_p = ret_res.p
+        ret_type_idx = ret_res.idx
+    }
+
+    // Parse body
+    let body_res = parse_block(cur_p, nodes)
+    if !body_res.ok {
+        return body_res
+    }
+
+    let mut node = new_node(DECL_FN())
+    node.str_val = name
+    node.children_start = params_start
+    node.children_count = params_count
+    node.left = ret_type_idx
+    node.right = body_res.idx
+    let idx = len(nodes)
+    push(nodes, node)
+    return ParseResult { p: body_res.p, idx: idx, ok: true }
+}
+
+// Parse struct field: name: type,
+fn parse_struct_field(p: Parser, nodes: []AstNode) -> ParseResult {
+    if p.tok_kind != TK_IDENT() {
+        return ParseResult { p: p, idx: -1, ok: false }
+    }
+    let name = parser_text(p)
+    let mut np = parser_advance(p)  // consume name
+
+    if np.tok_kind != TK_COLON() {
+        return ParseResult { p: np, idx: -1, ok: false }
+    }
+    let mut np2 = parser_advance(np)  // consume :
+
+    let type_res = parse_type(np2, nodes)
+    if !type_res.ok {
+        return type_res
+    }
+
+    // Optional trailing comma
+    let mut np3 = type_res.p
+    if np3.tok_kind == TK_COMMA() {
+        np3 = parser_advance(np3)
+    }
+
+    // Store field as a node
+    let mut node = new_node(TYPE_IDENT())  // reuse for field
+    node.str_val = name
+    node.left = type_res.idx
+    let idx = len(nodes)
+    push(nodes, node)
+    return ParseResult { p: np3, idx: idx, ok: true }
+}
+
+// Parse struct declaration
+fn parse_struct_decl(p: Parser, nodes: []AstNode) -> ParseResult {
+    if p.tok_kind != TK_STRUCT() {
+        return ParseResult { p: p, idx: -1, ok: false }
+    }
+    let mut np = parser_advance(p)  // consume struct
+
+    if np.tok_kind != TK_IDENT() {
+        return ParseResult { p: np, idx: -1, ok: false }
+    }
+    let name = parser_text(np)
+    let mut np2 = parser_advance(np)  // consume name
+
+    if np2.tok_kind != TK_LBRACE() {
+        return ParseResult { p: np2, idx: -1, ok: false }
+    }
+    let mut np3 = parser_advance(np2)  // consume {
+
+    // Parse fields
+    let fields_start = len(nodes)
+    let mut fields_count = 0
+    let mut cur_p = np3
+
+    for cur_p.tok_kind != TK_RBRACE() && cur_p.tok_kind != TK_EOF() {
+        let field_res = parse_struct_field(cur_p, nodes)
+        if !field_res.ok {
+            return field_res
+        }
+        cur_p = field_res.p
+        fields_count = fields_count + 1
+    }
+
+    if cur_p.tok_kind != TK_RBRACE() {
+        return ParseResult { p: cur_p, idx: -1, ok: false }
+    }
+    cur_p = parser_advance(cur_p)  // consume }
+
+    let mut node = new_node(DECL_STRUCT())
+    node.str_val = name
+    node.children_start = fields_start
+    node.children_count = fields_count
+    let idx = len(nodes)
+    push(nodes, node)
+    return ParseResult { p: cur_p, idx: idx, ok: true }
+}
+
+// Parse top-level declaration
+fn parse_decl(p: Parser, nodes: []AstNode) -> ParseResult {
+    if p.tok_kind == TK_FN() {
+        return parse_fn_decl(p, nodes)
+    }
+    if p.tok_kind == TK_STRUCT() {
+        return parse_struct_decl(p, nodes)
+    }
+    return ParseResult { p: p, idx: -1, ok: false }
+}
+
+// Parse entire program
+fn parse_program(p: Parser, nodes: []AstNode) -> ParseResult {
+    let mut cur_p = p
+    let mut decl_count = 0
+
+    for cur_p.tok_kind != TK_EOF() {
+        let res = parse_decl(cur_p, nodes)
+        if !res.ok {
+            return res
+        }
+        cur_p = res.p
+        decl_count = decl_count + 1
+    }
+
+    // Return last declaration index or -1 if none
+    let idx = len(nodes) - 1
+    return ParseResult { p: cur_p, idx: idx, ok: decl_count > 0 }
+}
+
+// ============================================================================
+// AST Printing helpers
+// ============================================================================
+
+fn print_node(nodes: []AstNode, idx: int, indent: int) {
+    if idx < 0 || idx >= len(nodes) {
+        return
+    }
+
+    // Print indentation
+    let mut i = 0
+    for i < indent {
+        print("  ")
+        i = i + 1
+    }
+
+    let node = nodes[idx]
+    let tag = node.tag
+
+    if tag == EXPR_INT() {
+        print("Int(")
+        print(strconv.Itoa(node.int_val))
+        print(")\n")
+    } else if tag == EXPR_IDENT() {
+        print("Ident(")
+        print(node.str_val)
+        print(")\n")
+    } else if tag == EXPR_STRING() {
+        print("String(\"")
+        print(node.str_val)
+        print("\")\n")
+    } else if tag == EXPR_BOOL() {
+        print("Bool(")
+        if node.int_val != 0 {
+            print("true")
+        } else {
+            print("false")
+        }
+        print(")\n")
+    } else if tag == EXPR_BINARY() {
+        print("Binary(")
+        print(token_name(node.int_val))
+        print(")\n")
+        print_node(nodes, node.left, indent + 1)
+        print_node(nodes, node.right, indent + 1)
+    } else if tag == EXPR_UNARY() {
+        print("Unary(")
+        print(token_name(node.int_val))
+        print(")\n")
+        print_node(nodes, node.right, indent + 1)
+    } else if tag == EXPR_CALL() {
+        print("Call\n")
+        print_node(nodes, node.left, indent + 1)
+        let mut j = 0
+        for j < node.children_count {
+            print_node(nodes, node.children_start + j, indent + 1)
+            j = j + 1
+        }
+    } else if tag == EXPR_FIELD() {
+        print("Field(.")
+        print(node.str_val)
+        print(")\n")
+        print_node(nodes, node.left, indent + 1)
+    } else if tag == STMT_LET() {
+        print("Let(")
+        print(node.str_val)
+        if node.int_val != 0 {
+            print(", mut")
+        }
+        print(")\n")
+        print_node(nodes, node.right, indent + 1)
+    } else if tag == STMT_RETURN() {
+        print("Return\n")
+        print_node(nodes, node.left, indent + 1)
+    } else if tag == STMT_IF() {
+        print("If\n")
+        print_node(nodes, node.left, indent + 1)
+        print_node(nodes, node.right, indent + 1)
+        if node.extra >= 0 {
+            let mut k = 0
+            for k < indent {
+                print("  ")
+                k = k + 1
+            }
+            print("Else\n")
+            print_node(nodes, node.extra, indent + 1)
+        }
+    } else if tag == STMT_FOR() {
+        print("For\n")
+        if node.left >= 0 {
+            print_node(nodes, node.left, indent + 1)
+        }
+        print_node(nodes, node.right, indent + 1)
+    } else if tag == STMT_BLOCK() {
+        print("Block\n")
+        let mut j = 0
+        for j < node.children_count {
+            print_node(nodes, node.children_start + j, indent + 1)
+            j = j + 1
+        }
+    } else if tag == DECL_FN() {
+        print("Fn(")
+        print(node.str_val)
+        print(")\n")
+        // Print params
+        let mut j = 0
+        for j < node.children_count {
+            let pnode = nodes[node.children_start + j]
+            let mut k = 0
+            for k < indent + 1 {
+                print("  ")
+                k = k + 1
+            }
+            print("Param(")
+            print(pnode.str_val)
+            print(")\n")
+            j = j + 1
+        }
+        // Print body
+        print_node(nodes, node.right, indent + 1)
+    } else if tag == DECL_STRUCT() {
+        print("Struct(")
+        print(node.str_val)
+        print(")\n")
+        let mut j = 0
+        for j < node.children_count {
+            let fnode = nodes[node.children_start + j]
+            let mut k = 0
+            for k < indent + 1 {
+                print("  ")
+                k = k + 1
+            }
+            print("Field(")
+            print(fnode.str_val)
+            print(")\n")
+            j = j + 1
+        }
+    } else {
+        print("Node(tag=")
+        print(strconv.Itoa(tag))
+        print(")\n")
+    }
+}
+
+// ============================================================================
+// Test
+// ============================================================================
+
+fn main() -> int {
+    // Test 1: Parse simple expression
+    print("Test 1: Parse expression '1 + 2 * 3'\n")
+    let mut nodes1 = []AstNode{}
+    let mut p1 = new_parser("1 + 2 * 3")
+    p1 = parser_advance(p1)
+    let res1 = parse_expr(p1, nodes1)
+    if !res1.ok {
+        print("ERROR: failed to parse expression\n")
+        return 1
+    }
+    print_node(nodes1, res1.idx, 0)
+    print("\n")
+
+    // Verify: should be Binary(+) with left=1, right=Binary(*) with 2,3
+    if nodes1[res1.idx].tag != EXPR_BINARY() {
+        print("ERROR: expected binary expression\n")
+        return 2
+    }
+    if nodes1[res1.idx].int_val != TK_PLUS() {
+        print("ERROR: expected + operator\n")
+        return 3
+    }
+
+    // Test 2: Parse function
+    print("Test 2: Parse simple function\n")
+    let mut nodes2 = []AstNode{}
+    let mut p2 = new_parser("fn add(a: int, b: int) -> int { return a + b }")
+    p2 = parser_advance(p2)
+    let res2 = parse_fn_decl(p2, nodes2)
+    if !res2.ok {
+        print("ERROR: failed to parse function\n")
+        return 4
+    }
+    print_node(nodes2, res2.idx, 0)
+    print("\n")
+
+    // Verify
+    if nodes2[res2.idx].tag != DECL_FN() {
+        print("ERROR: expected function declaration\n")
+        return 5
+    }
+    if nodes2[res2.idx].str_val != "add" {
+        print("ERROR: expected function name 'add'\n")
+        return 6
+    }
+    if nodes2[res2.idx].children_count != 2 {
+        print("ERROR: expected 2 parameters\n")
+        return 7
+    }
+
+    // Test 3: Parse struct
+    print("Test 3: Parse struct\n")
+    let mut nodes3 = []AstNode{}
+    let mut p3 = new_parser("struct Point { x: int, y: int, }")
+    p3 = parser_advance(p3)
+    let res3 = parse_struct_decl(p3, nodes3)
+    if !res3.ok {
+        print("ERROR: failed to parse struct\n")
+        return 8
+    }
+    print_node(nodes3, res3.idx, 0)
+    print("\n")
+
+    // Verify
+    if nodes3[res3.idx].tag != DECL_STRUCT() {
+        print("ERROR: expected struct declaration\n")
+        return 9
+    }
+    if nodes3[res3.idx].str_val != "Point" {
+        print("ERROR: expected struct name 'Point'\n")
+        return 10
+    }
+    if nodes3[res3.idx].children_count != 2 {
+        print("ERROR: expected 2 fields\n")
+        return 11
+    }
+
+    // Test 4: Parse function call
+    print("Test 4: Parse function call 'foo(1, 2)'\n")
+    let mut nodes4 = []AstNode{}
+    let mut p4 = new_parser("foo(1, 2)")
+    p4 = parser_advance(p4)
+    let res4 = parse_expr(p4, nodes4)
+    if !res4.ok {
+        print("ERROR: failed to parse call\n")
+        return 12
+    }
+    print_node(nodes4, res4.idx, 0)
+    print("\n")
+
+    // Test 5: Parse if statement
+    print("Test 5: Parse if statement\n")
+    let mut nodes5 = []AstNode{}
+    let mut p5 = new_parser("if x > 0 { return 1 } else { return 0 }")
+    p5 = parser_advance(p5)
+    let res5 = parse_stmt(p5, nodes5)
+    if !res5.ok {
+        print("ERROR: failed to parse if\n")
+        return 13
+    }
+    print_node(nodes5, res5.idx, 0)
+    print("\n")
+
+    print("parser.ease: All tests passed!\n")
+    return 0
+}

@@ -129,8 +129,10 @@ func (b *Basic) Size() int {
 		return 2
 	case Int32, Uint32, Float32:
 		return 4
-	case Int, Int64, Uint, Uint64, Float64, String:
+	case Int, Int64, Uint, Uint64, Float64:
 		return 8
+	case String:
+		return 16 // string = pointer (8) + length (8)
 	case Unit:
 		return 0
 	default:
