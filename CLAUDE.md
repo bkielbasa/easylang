@@ -156,32 +156,56 @@ Never add information to commits that I used Claude
 - [x] Bootstrap lexer and token modules (in Ease)
 - [x] Bootstrap parser (in Ease) - all 5 tests pass ✅
 
-### In Progress (Self-Hosting)
-- [ ] Bootstrap semantic analysis (in Ease) - tests run but crash in types_equal
-- [x] Bootstrap IR generation (in Ease) - basic IR instruction representation ✅
-- [x] Bootstrap code generation (in Ease) - ARM64 instruction encoding works ✅
+### Bootstrap Compiler (Self-Hosting)
+
+Progress on implementing the Ease compiler in Ease itself:
+
+**Completed Components:**
+- [x] **Lexer** - Tokenization with full token support (bootstrap/lexer.ease)
+- [x] **Parser** - All language constructs, 5 tests passing (bootstrap/parser.ease)
+- [x] **IR Generation** - 3-address code with simplified instruction format (bootstrap/ir.ease)
+  - IRInstr struct with op, dest, arg1, arg2 fields
+  - Operations: ADD, SUB, MUL, DIV, EQ, NE, LT, GT, LOADCONST, CALL, RETURN
+- [x] **Code Generation** - ARM64 instruction encoding (bootstrap/codegen.ease)
+  - Instruction encoders: ADD, SUB, MUL, RET
+  - Register constants and hex display utilities
+  - All encodings verified correct
+
+**In Progress:**
+- [ ] **Semantic Analysis** - Type checking and name resolution (bootstrap/sema.ease)
+  - Tests start but crash in types_equal function
+  - Likely struct/recursion related issue
+
+**Not Started:**
+- [ ] Integration - Connect parser → sema → IR → codegen pipeline
+- [ ] Mach-O generation - Binary output writer
 
 ### Recent Fixes
+
+**ARM64 Code Generation:**
+- Fixed modulo operator (%) returning incorrect values
+  - SDIV was overwriting left operand when it was in X16
+  - Now uses X18 as temporary to preserve original value
+  - Correctly computes: result = left - (left / right) * right
 - Fixed ARM64 stack corruption for large stack frames (>4095 bytes)
-  - 12-bit immediate truncation in SUBi/ADDi was causing stack sizes like 6496 to become 2400
-  - Added `addImm` helper that uses MOVimm + ADD/SUB for large immediates
+  - 12-bit immediate truncation in SUBi/ADDi caused incorrect stack sizes
+  - Added `addImm` helper using MOVimm + ADD/SUB for large values
+
+**Struct and Memory Handling:**
+- Fixed struct return buffer corruption from type size mismatch
+  - IR builder: arrays/slices = 24 bytes (ptr + len + cap)
+  - Codegen was using 8 bytes, causing sret buffer underallocation
+  - Fixed emit.go typeSize to return 24 bytes for Array/Slice types
 - Implemented proper sret (struct return) calling convention
   - Caller sets X8 to result buffer, callee writes to [X8], saves X8 at FP+16
 - Fixed struct parameter passing to copy data to callee's stack frame
-- Fixed string size to 16 bytes (pointer + length) in type size calculations
-- Fixed forward function references with two-pass compilation
-- Fixed struct return buffer corruption caused by type size mismatch
-  - IR builder correctly calculated arrays/slices as 24 bytes (ptr + len + cap)
-  - Codegen was incorrectly treating them as 8 bytes, causing sret buffer underallocation
-  - Fixed emit.go typeSize to return 24 bytes for Array/Slice types
+- Fixed string size to 16 bytes (pointer + length) in type calculations
+
+**Compilation and Symbol Resolution:**
 - Fixed forward function references in IR generation
   - buildIdent now checks TypeInfo.Uses to resolve function symbols
-  - Enables proper two-pass compilation where functions can be called before definition
-  - Fixed bootstrap/parser.ease tests to all pass
-- Fixed modulo operator (%) returning incorrect values
-  - In emitMod, SDIV was overwriting the left operand when it was in X16
-  - Changed to use X18 as temporary register to preserve left operand
-  - Now correctly computes: result = left - (left / right) * right
+  - Enables two-pass compilation: functions callable before definition
+  - Bootstrap parser tests now all pass (5/5)
 
 ### Known Issues
 - Bootstrap semantic analyzer (sema.ease) crashes during types_equal check in binary operator analysis
