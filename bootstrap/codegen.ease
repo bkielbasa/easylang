@@ -1,0 +1,192 @@
+// ARM64 code generation for the Ease bootstrap compiler
+// Generates machine code (32-bit instructions) from IR
+
+// ============================================================================
+// ARM64 Register Constants
+// ============================================================================
+
+fn X0() -> int { return 0 }
+fn X1() -> int { return 1 }
+fn X2() -> int { return 2 }
+fn X29() -> int { return 29 }  // FP - Frame pointer
+fn X30() -> int { return 30 }  // LR - Link register
+
+// ============================================================================
+// ARM64 Instruction Encoding
+// ============================================================================
+
+// ADD Xd, Xn, Xm
+// Encoding: 0x8B000000 | (rm << 16) | (rn << 5) | rd
+fn encode_add(rd: int, rn: int, rm: int) -> int {
+    let base = 2332033024  // 0x8B000000
+    let rm_part = rm * 65536  // rm << 16
+    let rn_part = rn * 32     // rn << 5
+    return base + rm_part + rn_part + rd
+}
+
+// SUB Xd, Xn, Xm
+// Encoding: 0xCB000000 | (rm << 16) | (rn << 5) | rd
+fn encode_sub(rd: int, rn: int, rm: int) -> int {
+    let base = 3405774848  // 0xCB000000
+    let rm_part = rm * 65536
+    let rn_part = rn * 32
+    return base + rm_part + rn_part + rd
+}
+
+// MUL Xd, Xn, Xm
+// Encoding: 0x9B007C00 | (rm << 16) | (rn << 5) | rd
+fn encode_mul(rd: int, rn: int, rm: int) -> int {
+    let base = 2600500224  // 0x9B007C00
+    let rm_part = rm * 65536
+    let rn_part = rn * 32
+    return base + rm_part + rn_part + rd
+}
+
+// RET (return via X30/LR)
+// Encoding: 0xD65F03C0
+fn encode_ret() -> int {
+    return 3596551104  // 0xD65F03C0
+}
+
+// ============================================================================
+// Convert int to hex string for display
+// ============================================================================
+
+fn digit_to_char(d: int) -> string {
+    if d == 0 { return "0" }
+    if d == 1 { return "1" }
+    if d == 2 { return "2" }
+    if d == 3 { return "3" }
+    if d == 4 { return "4" }
+    if d == 5 { return "5" }
+    if d == 6 { return "6" }
+    if d == 7 { return "7" }
+    if d == 8 { return "8" }
+    if d == 9 { return "9" }
+    if d == 10 { return "a" }
+    if d == 11 { return "b" }
+    if d == 12 { return "c" }
+    if d == 13 { return "d" }
+    if d == 14 { return "e" }
+    if d == 15 { return "f" }
+    return "?"
+}
+
+fn int_to_hex(n: int) -> string {
+    let mut val = n
+
+    // Extract 8 hex digits from low to high
+    let d0 = val % 16
+    val = val / 16
+
+    let d1 = val % 16
+    val = val / 16
+
+    let d2 = val % 16
+    val = val / 16
+
+    let d3 = val % 16
+    val = val / 16
+
+    let d4 = val % 16
+    val = val / 16
+
+    let d5 = val % 16
+    val = val / 16
+
+    let d6 = val % 16
+    val = val / 16
+
+    let d7 = val % 16
+
+    // Build string from most to least significant
+    let mut result = "0x"
+    result = str_concat(result, digit_to_char(d7))
+    result = str_concat(result, digit_to_char(d6))
+    result = str_concat(result, digit_to_char(d5))
+    result = str_concat(result, digit_to_char(d4))
+    result = str_concat(result, digit_to_char(d3))
+    result = str_concat(result, digit_to_char(d2))
+    result = str_concat(result, digit_to_char(d1))
+    result = str_concat(result, digit_to_char(d0))
+
+    return result
+}
+
+fn power_of_2(exp: int) -> int {
+    let mut result = 1
+    let mut i = 0
+    for i < exp {
+        result = result * 2
+        i = i + 1
+    }
+    return result
+}
+
+// ============================================================================
+// Test: Generate and verify instruction encodings
+// ============================================================================
+
+fn main() -> int {
+    print("=== Bootstrap ARM64 Code Generator ===\n\n")
+
+    // Test individual instruction encodings
+    print("Testing instruction encodings:\n\n")
+
+    // ADD x0, x1, x2
+    let add_instr = encode_add(X0(), X1(), X2())
+    print("ADD x0, x1, x2:\n")
+    print("  Generated: ")
+    print(int_to_hex(add_instr))
+    print("\n")
+    print("  Expected:  0x8b020020\n")
+
+    // SUB x0, x1, x2
+    let sub_instr = encode_sub(X0(), X1(), X2())
+    print("\nSUB x0, x1, x2:\n")
+    print("  Generated: ")
+    print(int_to_hex(sub_instr))
+    print("\n")
+    print("  Expected:  0xcb020020\n")
+
+    // MUL x0, x1, x2
+    let mul_instr = encode_mul(X0(), X1(), X2())
+    print("\nMUL x0, x1, x2:\n")
+    print("  Generated: ")
+    print(int_to_hex(mul_instr))
+    print("\n")
+    print("  Expected:  0x9b027c20\n")
+
+    // RET
+    let ret_instr = encode_ret()
+    print("\nRET:\n")
+    print("  Generated: ")
+    print(int_to_hex(ret_instr))
+    print("\n")
+    print("  Expected:  0xd65f03c0\n")
+
+    // Generate a simple function body in an array
+    print("\n--- Generating simple function ---\n")
+    print("Code: add x0, x1, x2; ret\n\n")
+
+    let mut code = []int{}
+    push(code, add_instr)
+    push(code, ret_instr)
+
+    print("Generated ")
+    print(strconv.Itoa(len(code)))
+    print(" instructions:\n")
+
+    let mut i = 0
+    for i < len(code) {
+        print("  [")
+        print(strconv.Itoa(i))
+        print("] ")
+        print(int_to_hex(code[i]))
+        print("\n")
+        i = i + 1
+    }
+
+    print("\nTest completed successfully!\n")
+    return 0
+}

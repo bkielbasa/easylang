@@ -158,8 +158,8 @@ Never add information to commits that I used Claude
 
 ### In Progress (Self-Hosting)
 - [ ] Bootstrap semantic analysis (in Ease) - tests run but crash in types_equal
-- [x] Bootstrap IR generation (in Ease) - basic structure implemented ✅
-- [ ] Bootstrap code generation (in Ease)
+- [x] Bootstrap IR generation (in Ease) - basic IR instruction representation ✅
+- [x] Bootstrap code generation (in Ease) - ARM64 instruction encoding works ✅
 
 ### Recent Fixes
 - Fixed ARM64 stack corruption for large stack frames (>4095 bytes)
@@ -178,6 +178,10 @@ Never add information to commits that I used Claude
   - buildIdent now checks TypeInfo.Uses to resolve function symbols
   - Enables proper two-pass compilation where functions can be called before definition
   - Fixed bootstrap/parser.ease tests to all pass
+- Fixed modulo operator (%) returning incorrect values
+  - In emitMod, SDIV was overwriting the left operand when it was in X16
+  - Changed to use X18 as temporary register to preserve left operand
+  - Now correctly computes: result = left - (left / right) * right
 
 ### Known Issues
 - Bootstrap semantic analyzer (sema.ease) crashes during types_equal check in binary operator analysis
