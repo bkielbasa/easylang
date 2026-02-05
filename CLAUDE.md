@@ -170,9 +170,13 @@ Never add information to commits that I used Claude
 - Fixed struct parameter passing to copy data to callee's stack frame
 - Fixed string size to 16 bytes (pointer + length) in type size calculations
 - Fixed forward function references with two-pass compilation
+- Fixed struct return buffer corruption caused by type size mismatch
+  - IR builder correctly calculated arrays/slices as 24 bytes (ptr + len + cap)
+  - Codegen was incorrectly treating them as 8 bytes, causing sret buffer underallocation
+  - Fixed emit.go typeSize to return 24 bytes for Array/Slice types
 
 ### Known Issues
-- **Struct return buffer corruption with nested calls**: When a function returns a large struct (>100 bytes), the sret buffer is allocated at a low offset in the caller's stack frame. If the caller then makes nested function calls with large stack frames, those frames can extend upward and overwrite the sret buffer, corrupting the returned struct data. This affects recursive functions and functions that pass returned structs to other functions. Workaround: Keep structs small or avoid returning them from functions that will be called recursively.
+None currently identified.
 
 ### Future
 - [ ] Standard library

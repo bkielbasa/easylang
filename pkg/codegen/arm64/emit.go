@@ -213,6 +213,8 @@ func typeSize(t types.Type) int {
 		}
 	case *types.Pointer:
 		return 8
+	case *types.Array, *types.Slice:
+		return 24 // fat pointer: ptr (8) + len (8) + cap (8)
 	case *types.Struct:
 		size := 0
 		for _, f := range typ.Fields {
