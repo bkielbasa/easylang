@@ -153,6 +153,11 @@ Never add information to commits that I used Claude
 - [x] String builtins: `str_concat`, `str_substring`, `str_index_of`, `str_contains`, `str_starts_with`, `str_ends_with`, `str_char_at`, `str_trim`, `str_replace`, `str_split`
 - [x] Short-circuit logical operators (`&&`, `||`)
 - [x] Struct returns from functions (proper sret calling convention)
+- [x] Global variables (simple literals: int, string, bool)
+  - Parser: `let x = 42` and `let mut y = 100`
+  - Semantic analysis: type checking and symbol registration
+  - IR/Codegen: simple literals work as compile-time constants
+  - Limitation: arrays/structs as globals not yet supported
 - [x] Bootstrap lexer and token modules (in Ease)
 - [x] Bootstrap parser (in Ease) - all 5 tests pass ✅
 
@@ -173,8 +178,9 @@ Progress on implementing the Ease compiler in Ease itself:
 
 **In Progress:**
 - [ ] **Semantic Analysis** - Type checking and name resolution (bootstrap/sema.ease)
-  - Tests start but crash in types_equal function
-  - Likely struct/recursion related issue
+  - Root cause identified: 480-byte Sema struct passed by value causes corruption
+  - Solution requires: `let mut g_semas = []Sema{}` pattern
+  - Blocked on: global array/struct support (Phase 2 of global variables)
 
 **Not Started:**
 - [ ] Integration - Connect parser → sema → IR → codegen pipeline
