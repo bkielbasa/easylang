@@ -632,11 +632,12 @@ func (e *Emitter) emitMod(instr *ir.Instr) {
 	left := e.loadOperand(instr.Args[0], X16)
 	right := e.loadOperand(instr.Args[1], X17)
 
-	// X16 = left / right
-	e.asm.SDIV(X16, left, right)
-	// X16 = left - X16 * right
-	e.asm.MSUB(X16, X16, right, left)
-	e.storeToVReg(instr.Dest.VReg, X16)
+	// Use X18 as temp to avoid overwriting left if it's in X16
+	// X18 = left / right
+	e.asm.SDIV(X18, left, right)
+	// X18 = left - X18 * right
+	e.asm.MSUB(X18, X18, right, left)
+	e.storeToVReg(instr.Dest.VReg, X18)
 }
 
 func (e *Emitter) emitNeg(instr *ir.Instr) {
