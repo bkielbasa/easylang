@@ -40,12 +40,18 @@ type Emitter struct {
 	funcOffsets       map[string]int // function name to code offset
 	fixups            []fixup        // branch fixups
 	strFixups         []strFixup     // string address fixups
+	globalFixups      []globalFixup  // global variable address fixups
 	stackSize         int            // total stack size
 }
 
 type strFixup struct {
 	offset int // offset of ADR instruction
 	strIdx int // index into program's string table
+}
+
+type globalFixup struct {
+	offset int    // offset of ADR instruction
+	name   string // global variable name
 }
 
 type fixup struct {
@@ -2296,6 +2302,17 @@ func (e *Emitter) loadOperand(op ir.Operand, scratch Reg) Reg {
 			strIdx: op.StrIdx,
 		})
 		e.asm.ADR(scratch, 0) // placeholder
+		return scratch
+	case ir.OpndGlobal:
+		// Load global variable address using ADR
+		// This will be fixed up later with the actual global address
+		e.globalFixups = append(e.globalFixups, globalFixup{
+			offset: e.asm.Offset(),
+			name:   op.Global,
+		})
+		e.asm.ADR(scratch, 0) // placeholder for global address
+		// Load the value from the global
+		e.asm.LDR(scratch, scratch, 0)
 		return scratch
 	default:
 		return scratch

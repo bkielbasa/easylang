@@ -87,13 +87,33 @@ func (b *Builder) buildVarDecl(v *ast.VarDecl) {
 		return
 	}
 
-	// Global variables need initialization code
-	// For now, create a GlobalRef that will be initialized in main or an init function
-	op := GlobalRef(v.Name.Name, sym.Type)
-	b.prog.Globals[v.Name.Name] = op
+	// For simple literals, store the value directly as an immediate
+	// TODO: Implement proper mutable globals with data section storage
+	var op Operand
+	switch val := v.Value.(type) {
+	case *ast.IntLit:
+		// For now, treat all literal int globals as immediates
+		// This means mutable globals won't actually be mutable yet
+		op = Imm(val.Value, sym.Type)
+	case *ast.StringLit:
+		// Strings are always immutable in our current model
+		idx := len(b.prog.Strings)
+		b.prog.Strings = append(b.prog.Strings, val.Value)
+		op = StrConst(idx)
+	case *ast.BoolLit:
+		// Booleans as immediates
+		intVal := int64(0)
+		if val.Value {
+			intVal = 1
+		}
+		op = Imm(intVal, sym.Type)
+	default:
+		// Complex expressions need storage and initialization
+		// For now, use GlobalRef as placeholder
+		op = GlobalRef(v.Name.Name, sym.Type)
+	}
 
-	// TODO: Generate initialization code for complex expressions
-	// This will require an __init function or initialization in main
+	b.prog.Globals[v.Name.Name] = op
 }
 
 func (b *Builder) buildFnDecl(fn *ast.FnDecl) {

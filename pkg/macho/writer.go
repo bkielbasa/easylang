@@ -50,7 +50,8 @@ const (
 type Writer struct {
 	buf     bytes.Buffer
 	code    []byte
-	strings []string // string constants (will be placed after code)
+	strings []string       // string constants (will be placed after code)
+	globals map[string]int64 // global variables (name -> initial value)
 	symbols []Symbol
 	mainOff int64
 }
@@ -65,7 +66,9 @@ type Symbol struct {
 
 // NewWriter creates a new Mach-O writer.
 func NewWriter() *Writer {
-	return &Writer{}
+	return &Writer{
+		globals: make(map[string]int64),
+	}
 }
 
 // SetCode sets the executable code.
@@ -95,6 +98,35 @@ func (w *Writer) StringsSize() uint64 {
 		size += uint64(len(s) + 1) // +1 for null terminator
 	}
 	return size
+}
+
+// SetGlobal sets a global variable with its initial value.
+func (w *Writer) SetGlobal(name string, value int64) {
+	w.globals[name] = value
+}
+
+// GlobalOffset returns the file offset of a global variable (relative to code start).
+// Globals are placed after strings in memory.
+func (w *Writer) GlobalOffset(name string) uint64 {
+	// Start after code and strings
+	offset := uint64(len(w.code)) + w.StringsSize()
+
+	// Add padding to align to 8-byte boundary
+	if offset%8 != 0 {
+		offset += 8 - (offset % 8)
+	}
+
+	// For now, allocate globals sequentially (8 bytes each for int64)
+	// In a real implementation, we'd track each global's offset properly
+	// For simplicity, just return a placeholder offset
+	// TODO: Implement proper global allocation
+	return offset
+}
+
+// GlobalsSize returns the total size of all global variables.
+func (w *Writer) GlobalsSize() uint64 {
+	// Each global is 8 bytes (int64)
+	return uint64(len(w.globals) * 8)
 }
 
 // SetMainOffset sets the offset of the main function within the code.
