@@ -154,10 +154,10 @@ Never add information to commits that I used Claude
 - [x] Short-circuit logical operators (`&&`, `||`)
 - [x] Struct returns from functions (proper sret calling convention)
 - [x] Bootstrap lexer and token modules (in Ease)
-- [x] Bootstrap parser (in Ease) - all 5 tests pass
+- [x] Bootstrap parser (in Ease) - all 5 tests pass ✅
 
 ### In Progress (Self-Hosting)
-- [ ] Bootstrap semantic analysis (in Ease)
+- [ ] Bootstrap semantic analysis (in Ease) - tests run but crash in types_equal
 - [ ] Bootstrap IR generation (in Ease)
 - [ ] Bootstrap code generation (in Ease)
 
@@ -174,9 +174,15 @@ Never add information to commits that I used Claude
   - IR builder correctly calculated arrays/slices as 24 bytes (ptr + len + cap)
   - Codegen was incorrectly treating them as 8 bytes, causing sret buffer underallocation
   - Fixed emit.go typeSize to return 24 bytes for Array/Slice types
+- Fixed forward function references in IR generation
+  - buildIdent now checks TypeInfo.Uses to resolve function symbols
+  - Enables proper two-pass compilation where functions can be called before definition
+  - Fixed bootstrap/parser.ease tests to all pass
 
 ### Known Issues
-None currently identified.
+- Bootstrap semantic analyzer (sema.ease) crashes during types_equal check in binary operator analysis
+  - Tests start running but segfault partway through test 2
+  - Likely another struct-related or recursion issue
 
 ### Future
 - [ ] Standard library
