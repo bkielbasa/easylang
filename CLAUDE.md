@@ -158,7 +158,7 @@ Never add information to commits that I used Claude
 
 ### In Progress (Self-Hosting)
 - [ ] Bootstrap semantic analysis (in Ease) - tests run but crash in types_equal
-- [ ] Bootstrap IR generation (in Ease)
+- [x] Bootstrap IR generation (in Ease) - basic structure implemented ✅
 - [ ] Bootstrap code generation (in Ease)
 
 ### Recent Fixes
@@ -183,6 +183,9 @@ Never add information to commits that I used Claude
 - Bootstrap semantic analyzer (sema.ease) crashes during types_equal check in binary operator analysis
   - Tests start running but segfault partway through test 2
   - Likely another struct-related or recursion issue
+- **Array operations on returned structs**: When a struct containing an array is returned from a function, then passed to another function that reads from AND pushes to that array, it crashes
+  - Pattern: `struct S { arr: []int }; fn make() -> S { ... }; fn use(s: S) { let x = s.arr[0]; push(s.arr, x+1); }`
+  - Workaround: Avoid combining struct returns with complex array operations in the same function
 
 ### Future
 - [ ] Standard library
