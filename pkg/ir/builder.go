@@ -5,6 +5,7 @@ import (
 
 	"ease/pkg/ast"
 	"ease/pkg/sema"
+	"ease/pkg/symbols"
 	"ease/pkg/token"
 	"ease/pkg/types"
 )
@@ -589,7 +590,17 @@ func (b *Builder) buildIdent(ident *ast.Ident) Operand {
 	if op, ok := b.prog.Globals[ident.Name]; ok {
 		return op
 	}
-	// Might be a function reference
+
+	// Check if this is a function reference using semantic analysis info
+	// This handles both forward and backward function references
+	if sym, ok := b.info.Uses[ident]; ok {
+		if sym.Kind == symbols.FuncSymbol {
+			return FuncRef(sym.Name, nil)
+		}
+	}
+
+	// Fallback: check if it's in the already-processed functions
+	// (for cases where semantic info might not be available)
 	for _, fn := range b.prog.Functions {
 		if fn.Name == ident.Name {
 			return FuncRef(fn.Name, nil)
