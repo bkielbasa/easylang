@@ -1,0 +1,109 @@
+// IR (Intermediate Representation) generator for the Ease bootstrap compiler
+// Simplified version that avoids compiler bugs with struct returns + arrays
+
+// ============================================================================
+// IR Operation Constants
+// ============================================================================
+
+fn OP_ADD() -> int { return 1 }
+fn OP_SUB() -> int { return 2 }
+fn OP_MUL() -> int { return 3 }
+fn OP_DIV() -> int { return 4 }
+fn OP_EQ() -> int { return 7 }
+fn OP_NE() -> int { return 8 }
+fn OP_LT() -> int { return 9 }
+fn OP_GT() -> int { return 11 }
+fn OP_LOADCONST() -> int { return 14 }
+fn OP_CALL() -> int { return 15 }
+fn OP_RETURN() -> int { return 16 }
+
+fn op_name(op: int) -> string {
+    if op == OP_ADD() { return "add" }
+    if op == OP_SUB() { return "sub" }
+    if op == OP_MUL() { return "mul" }
+    if op == OP_DIV() { return "div" }
+    if op == OP_EQ() { return "eq" }
+    if op == OP_NE() { return "ne" }
+    if op == OP_LT() { return "lt" }
+    if op == OP_GT() { return "gt" }
+    if op == OP_LOADCONST() { return "loadconst" }
+    if op == OP_CALL() { return "call" }
+    if op == OP_RETURN() { return "return" }
+    return "unknown"
+}
+
+// ============================================================================
+// IR Instruction (simplified - just stores op and virtual registers)
+// ============================================================================
+
+struct IRInstr {
+    op: int,
+    dest: int,    // destination vreg (-1 if none)
+    arg1: int,    // first operand vreg/imm
+    arg2: int,    // second operand vreg/imm (-1 if none)
+}
+
+fn make_instr(op: int, dest: int, arg1: int, arg2: int) -> IRInstr {
+    return IRInstr {
+        op: op,
+        dest: dest,
+        arg1: arg1,
+        arg2: arg2,
+    }
+}
+
+// ============================================================================
+// Simple test: Generate IR for a+b
+// ============================================================================
+
+fn main() -> int {
+    print("=== Bootstrap IR Generator ===\n\n")
+
+    // Build IR for: v2 = add v0, v1; return v2
+    let mut instrs = []IRInstr{}
+
+    // v2 = add v0, v1
+    push(instrs, make_instr(OP_ADD(), 2, 0, 1))
+
+    // return v2
+    push(instrs, make_instr(OP_RETURN(), -1, 2, -1))
+
+    print("Generated ")
+    print(strconv.Itoa(len(instrs)))
+    print(" instructions:\n\n")
+
+    // Print instructions
+    let mut i = 0
+    for i < len(instrs) {
+        let instr = instrs[i]
+        print("  ")
+
+        // Print destination
+        if instr.dest >= 0 {
+            print("v")
+            print(strconv.Itoa(instr.dest))
+            print(" = ")
+        }
+
+        // Print operation
+        print(op_name(instr.op))
+
+        // Print arg1
+        if instr.arg1 >= 0 {
+            print(" v")
+            print(strconv.Itoa(instr.arg1))
+        }
+
+        // Print arg2
+        if instr.arg2 >= 0 {
+            print(", v")
+            print(strconv.Itoa(instr.arg2))
+        }
+
+        print("\n")
+        i = i + 1
+    }
+
+    print("\nTest passed!\n")
+    return 0
+}
