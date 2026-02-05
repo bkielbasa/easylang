@@ -138,6 +138,8 @@ func (a *Analyzer) collectDeclarations(prog *ast.Program) {
 			a.collectEnumDecl(d)
 		case *ast.ConstDecl:
 			a.collectConstDecl(d)
+		case *ast.VarDecl:
+			a.collectVarDecl(d)
 		case *ast.ImplDecl:
 			a.collectImplDecl(d)
 		}
@@ -283,6 +285,38 @@ func (a *Analyzer) collectConstDecl(c *ast.ConstDecl) {
 	sym := symbols.NewSymbol(name, symbols.ConstSymbol, constType, c.Pos())
 	a.table.Global.Define(sym)
 	a.info.Defs[c.Name] = sym
+}
+
+func (a *Analyzer) collectVarDecl(v *ast.VarDecl) {
+	name := v.Name.Name
+	if a.table.Global.Lookup(name) != nil {
+		a.error(v.Pos(), "redeclaration of '%s'", name)
+		return
+	}
+
+	// Analyze the initializer value to determine type
+	var varType types.Type
+	if v.Type != nil {
+		varType = a.resolveType(v.Type)
+		// Type check the initializer against declared type
+		valueType := a.analyzeExpr(v.Value)
+		if !types.IsAssignableTo(valueType, varType) {
+			a.error(v.Pos(), "cannot assign %s to %s", valueType, varType)
+		}
+	} else {
+		// Infer from value
+		varType = a.analyzeExpr(v.Value)
+	}
+
+	// Use VarSymbol for mutable globals, ConstSymbol for immutable
+	kind := symbols.VarSymbol
+	if !v.Mutable {
+		kind = symbols.ConstSymbol
+	}
+
+	sym := symbols.NewSymbol(name, kind, varType, v.Pos())
+	a.table.Global.Define(sym)
+	a.info.Defs[v.Name] = sym
 }
 
 func (a *Analyzer) collectImplDecl(impl *ast.ImplDecl) {
@@ -786,6 +820,8 @@ func (a *Analyzer) analyzeDecl(decl ast.Decl) {
 	case *ast.EnumDecl:
 		// Already analyzed during collection
 	case *ast.ConstDecl:
+		// Already analyzed during collection
+	case *ast.VarDecl:
 		// Already analyzed during collection
 	case *ast.ImplDecl:
 		a.analyzeImplDecl(d)

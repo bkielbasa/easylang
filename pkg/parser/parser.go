@@ -180,6 +180,8 @@ func (p *Parser) parseDeclaration() ast.Decl {
 		return p.parseTypeAlias()
 	case token.Const:
 		return p.parseConstDecl()
+	case token.Let:
+		return p.parseVarDecl()
 	case token.Ident:
 		// Check for contextual "test" keyword
 		if p.curToken.Literal == "test" {
@@ -651,6 +653,38 @@ func (p *Parser) parseConstDecl() *ast.ConstDecl {
 
 	c.Value = p.parseExpression(LOWEST)
 	return c
+}
+
+func (p *Parser) parseVarDecl() *ast.VarDecl {
+	v := &ast.VarDecl{Token: p.curToken}
+
+	// Check for 'mut' keyword
+	if p.peekTokenIs(token.Mut) {
+		p.nextToken() // consume 'let'
+		v.Mutable = true
+	}
+
+	if !p.expect(token.Ident) {
+		return nil
+	}
+	v.Name = &ast.Ident{Token: p.curToken, Name: p.curToken.Literal}
+
+	// Optional type annotation
+	if p.peekTokenIs(token.Colon) {
+		p.nextToken() // consume name
+		p.nextToken() // consume ':'
+		v.Type = p.parseType()
+	}
+
+	// Require initializer for global variables
+	if !p.expect(token.Assign) {
+		p.error("global variables must be initialized")
+		return nil
+	}
+	p.nextToken() // consume '='
+
+	v.Value = p.parseExpression(LOWEST)
+	return v
 }
 
 func (p *Parser) parseAttribute() *ast.Attribute {

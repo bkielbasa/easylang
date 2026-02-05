@@ -196,6 +196,7 @@ const (
 	OpndLabel            // label reference
 	OpndFunc             // function reference
 	OpndStr              // string constant (index into program's string table)
+	OpndGlobal           // global variable reference
 )
 
 // Operand represents an instruction operand.
@@ -206,6 +207,7 @@ type Operand struct {
 	Label   string // for OpndLabel
 	Func    string // for OpndFunc
 	StrIdx  int    // for OpndStr (index into program's string table)
+	Global  string // for OpndGlobal (global variable name)
 	Type    types.Type
 }
 
@@ -223,6 +225,8 @@ func (o Operand) String() string {
 		return o.Func
 	case OpndStr:
 		return fmt.Sprintf("str%d", o.StrIdx)
+	case OpndGlobal:
+		return fmt.Sprintf("@%s", o.Global)
 	default:
 		return "?"
 	}
@@ -246,6 +250,11 @@ func Label(name string) Operand {
 // FuncRef creates a function reference operand.
 func FuncRef(name string, typ types.Type) Operand {
 	return Operand{Kind: OpndFunc, Func: name, Type: typ}
+}
+
+// GlobalRef creates a global variable operand.
+func GlobalRef(name string, typ types.Type) Operand {
+	return Operand{Kind: OpndGlobal, Global: name, Type: typ}
 }
 
 // StrConst creates a string constant operand.

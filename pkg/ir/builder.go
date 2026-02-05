@@ -31,6 +31,17 @@ func NewBuilder(info *sema.TypeInfo) *Builder {
 
 // Build converts a program AST to IR.
 func (b *Builder) Build(prog *ast.Program) *Program {
+	// First pass: collect global variables and constants
+	for _, decl := range prog.Decls {
+		switch d := decl.(type) {
+		case *ast.ConstDecl:
+			b.buildConstDecl(d)
+		case *ast.VarDecl:
+			b.buildVarDecl(d)
+		}
+	}
+
+	// Second pass: build functions
 	for _, decl := range prog.Decls {
 		switch d := decl.(type) {
 		case *ast.FnDecl:
@@ -40,6 +51,49 @@ func (b *Builder) Build(prog *ast.Program) *Program {
 		}
 	}
 	return b.prog
+}
+
+func (b *Builder) buildConstDecl(c *ast.ConstDecl) {
+	// Get the symbol to determine the type
+	sym := b.info.Defs[c.Name]
+	if sym == nil {
+		return
+	}
+
+	// For now, we only support simple constant expressions (literals)
+	// Complex initialization will be handled later
+	var op Operand
+	switch v := c.Value.(type) {
+	case *ast.IntLit:
+		op = Imm(v.Value, sym.Type)
+	case *ast.StringLit:
+		// Add string to string table
+		idx := len(b.prog.Strings)
+		b.prog.Strings = append(b.prog.Strings, v.Value)
+		op = StrConst(idx)
+	default:
+		// For complex expressions, we'll need to generate initialization code
+		// For now, just create a placeholder
+		op = GlobalRef(c.Name.Name, sym.Type)
+	}
+
+	b.prog.Globals[c.Name.Name] = op
+}
+
+func (b *Builder) buildVarDecl(v *ast.VarDecl) {
+	// Get the symbol to determine the type
+	sym := b.info.Defs[v.Name]
+	if sym == nil {
+		return
+	}
+
+	// Global variables need initialization code
+	// For now, create a GlobalRef that will be initialized in main or an init function
+	op := GlobalRef(v.Name.Name, sym.Type)
+	b.prog.Globals[v.Name.Name] = op
+
+	// TODO: Generate initialization code for complex expressions
+	// This will require an __init function or initialization in main
 }
 
 func (b *Builder) buildFnDecl(fn *ast.FnDecl) {

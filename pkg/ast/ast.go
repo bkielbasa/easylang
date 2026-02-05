@@ -209,6 +209,19 @@ func (c *ConstDecl) Pos() token.Position { return c.Token.Pos }
 func (c *ConstDecl) node()               {}
 func (c *ConstDecl) decl()               {}
 
+// VarDecl represents a global variable declaration: let name = expr or let mut name = expr
+type VarDecl struct {
+	Token   token.Token // 'let'
+	Mutable bool
+	Name    *Ident
+	Type    Type // optional
+	Value   Expr // required for globals
+}
+
+func (v *VarDecl) Pos() token.Position { return v.Token.Pos }
+func (v *VarDecl) node()               {}
+func (v *VarDecl) decl()               {}
+
 // TestDecl represents a test declaration: test "description" { }
 type TestDecl struct {
 	Token       token.Token  // 'test'
