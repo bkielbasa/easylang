@@ -151,10 +151,30 @@ Never add information to commits that I used Claude
 - [x] Strings (basic support)
 - [x] Test runner (discovery, filtering, execution)
 - [x] String builtins: `str_concat`, `str_substring`, `str_index_of`, `str_contains`, `str_starts_with`, `str_ends_with`, `str_char_at`, `str_trim`, `str_replace`, `str_split`
+- [x] Short-circuit logical operators (`&&`, `||`)
+- [x] Struct returns from functions (proper sret calling convention)
+- [x] Bootstrap lexer and token modules (in Ease)
+- [x] Bootstrap parser (in Ease) - all 5 tests pass
 
-### Next Steps
-- [ ] Structs (codegen)
-- [ ] Enums and pattern matching (codegen)
+### In Progress (Self-Hosting)
+- [ ] Bootstrap semantic analysis (in Ease)
+- [ ] Bootstrap IR generation (in Ease)
+- [ ] Bootstrap code generation (in Ease)
+
+### Recent Fixes
+- Fixed ARM64 stack corruption for large stack frames (>4095 bytes)
+  - 12-bit immediate truncation in SUBi/ADDi was causing stack sizes like 6496 to become 2400
+  - Added `addImm` helper that uses MOVimm + ADD/SUB for large immediates
+- Implemented proper sret (struct return) calling convention
+  - Caller sets X8 to result buffer, callee writes to [X8], saves X8 at FP+16
+- Fixed struct parameter passing to copy data to callee's stack frame
+- Fixed string size to 16 bytes (pointer + length) in type size calculations
+- Fixed forward function references with two-pass compilation
+
+### Known Issues
+- **Struct return buffer corruption with nested calls**: When a function returns a large struct (>100 bytes), the sret buffer is allocated at a low offset in the caller's stack frame. If the caller then makes nested function calls with large stack frames, those frames can extend upward and overwrite the sret buffer, corrupting the returned struct data. This affects recursive functions and functions that pass returned structs to other functions. Workaround: Keep structs small or avoid returning them from functions that will be called recursively.
+
+### Future
 - [ ] Standard library
 - [ ] WebAssembly backend
 - [ ] x86_64 backend
