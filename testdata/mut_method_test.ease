@@ -1,0 +1,21 @@
+struct Counter {
+    value: int,
+}
+
+impl Counter {
+    fn get(&self) -> int {
+        return self.value
+    }
+
+    fn inc(&mut self) {
+        self.value = self.value + 1
+    }
+}
+
+fn main() -> int {
+    let mut c = Counter { value: 0 }
+    c.inc()
+    c.inc()
+    c.inc()
+    return c.get()  // Should be 3
+}

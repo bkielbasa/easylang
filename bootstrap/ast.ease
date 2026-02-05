@@ -1,0 +1,289 @@
+// AST node definitions for the bootstrap compiler
+// Uses integer tags to distinguish node types
+
+// ============================================================================
+// Node type tags
+// ============================================================================
+
+// Expression node types
+fn EXPR_IDENT() -> int { return 1 }
+fn EXPR_INT() -> int { return 2 }
+fn EXPR_STRING() -> int { return 3 }
+fn EXPR_CHAR() -> int { return 4 }
+fn EXPR_BOOL() -> int { return 5 }
+fn EXPR_BINARY() -> int { return 6 }
+fn EXPR_UNARY() -> int { return 7 }
+fn EXPR_CALL() -> int { return 8 }
+fn EXPR_INDEX() -> int { return 9 }
+fn EXPR_FIELD() -> int { return 10 }
+fn EXPR_ARRAY() -> int { return 11 }
+fn EXPR_STRUCT() -> int { return 12 }
+fn EXPR_IF() -> int { return 13 }
+fn EXPR_BLOCK() -> int { return 14 }
+
+// Statement node types
+fn STMT_LET() -> int { return 20 }
+fn STMT_RETURN() -> int { return 21 }
+fn STMT_EXPR() -> int { return 22 }
+fn STMT_IF() -> int { return 23 }
+fn STMT_FOR() -> int { return 24 }
+fn STMT_BREAK() -> int { return 25 }
+fn STMT_CONTINUE() -> int { return 26 }
+
+// Declaration node types
+fn DECL_FN() -> int { return 30 }
+fn DECL_STRUCT() -> int { return 31 }
+fn DECL_ENUM() -> int { return 32 }
+fn DECL_IMPL() -> int { return 33 }
+
+// Type node types
+fn TYPE_IDENT() -> int { return 40 }
+fn TYPE_ARRAY() -> int { return 41 }
+fn TYPE_PTR() -> int { return 42 }
+
+// ============================================================================
+// AST Node - A generic container for all nodes
+// We use indices into arrays to represent children (poor man's pointers)
+// ============================================================================
+
+struct AstNode {
+    tag: int,           // Node type tag (EXPR_*, STMT_*, etc.)
+
+    // Common fields
+    line: int,
+    col: int,
+
+    // Value fields (usage depends on tag)
+    str_val: string,    // For IDENT, STRING, etc.
+    int_val: int,       // For INT, CHAR, BOOL, operator token kind
+
+    // Child node indices (-1 means no child)
+    left: int,          // Left child / condition / callee
+    right: int,         // Right child / then branch
+    extra: int,         // Else branch / third operand
+
+    // For nodes with multiple children (params, args, fields)
+    children_start: int,
+    children_count: int,
+}
+
+fn new_node(tag: int, line: int, col: int) -> AstNode {
+    return AstNode {
+        tag: tag,
+        line: line,
+        col: col,
+        str_val: "",
+        int_val: 0,
+        left: -1,
+        right: -1,
+        extra: -1,
+        children_start: -1,
+        children_count: 0,
+    }
+}
+
+// Note: The parser will manage the node array directly
+// We pass arrays to functions rather than storing them in a struct
+// to avoid issues with empty array initialization
+
+// ============================================================================
+// Helper constructors
+// ============================================================================
+
+fn make_ident(name: string, line: int, col: int) -> AstNode {
+    let mut node = new_node(EXPR_IDENT(), line, col)
+    node.str_val = name
+    return node
+}
+
+fn make_int_lit(value: int, line: int, col: int) -> AstNode {
+    let mut node = new_node(EXPR_INT(), line, col)
+    node.int_val = value
+    return node
+}
+
+fn make_string_lit(value: string, line: int, col: int) -> AstNode {
+    let mut node = new_node(EXPR_STRING(), line, col)
+    node.str_val = value
+    return node
+}
+
+fn make_char_lit(value: int, line: int, col: int) -> AstNode {
+    let mut node = new_node(EXPR_CHAR(), line, col)
+    node.int_val = value
+    return node
+}
+
+fn make_bool_lit(value: bool, line: int, col: int) -> AstNode {
+    let mut node = new_node(EXPR_BOOL(), line, col)
+    if value {
+        node.int_val = 1
+    } else {
+        node.int_val = 0
+    }
+    return node
+}
+
+fn make_binary(op: int, left: int, right: int, line: int, col: int) -> AstNode {
+    let mut node = new_node(EXPR_BINARY(), line, col)
+    node.int_val = op
+    node.left = left
+    node.right = right
+    return node
+}
+
+fn make_unary(op: int, operand: int, line: int, col: int) -> AstNode {
+    let mut node = new_node(EXPR_UNARY(), line, col)
+    node.int_val = op
+    node.right = operand
+    return node
+}
+
+fn make_call(callee: int, args_start: int, args_count: int, line: int, col: int) -> AstNode {
+    let mut node = new_node(EXPR_CALL(), line, col)
+    node.left = callee
+    node.children_start = args_start
+    node.children_count = args_count
+    return node
+}
+
+fn make_index(expr: int, index: int, line: int, col: int) -> AstNode {
+    let mut node = new_node(EXPR_INDEX(), line, col)
+    node.left = expr
+    node.right = index
+    return node
+}
+
+fn make_field(expr: int, field_name: string, line: int, col: int) -> AstNode {
+    let mut node = new_node(EXPR_FIELD(), line, col)
+    node.left = expr
+    node.str_val = field_name
+    return node
+}
+
+fn make_if_expr(cond: int, then_br: int, else_br: int, line: int, col: int) -> AstNode {
+    let mut node = new_node(EXPR_IF(), line, col)
+    node.left = cond
+    node.right = then_br
+    node.extra = else_br
+    return node
+}
+
+// Statement constructors
+
+fn make_let_stmt(name: string, type_idx: int, value: int, is_mut: bool, line: int, col: int) -> AstNode {
+    let mut node = new_node(STMT_LET(), line, col)
+    node.str_val = name
+    node.left = type_idx      // type (-1 if inferred)
+    node.right = value        // initializer
+    if is_mut {
+        node.int_val = 1
+    } else {
+        node.int_val = 0
+    }
+    return node
+}
+
+fn make_return_stmt(value: int, line: int, col: int) -> AstNode {
+    let mut node = new_node(STMT_RETURN(), line, col)
+    node.left = value  // -1 for bare return
+    return node
+}
+
+fn make_expr_stmt(expr: int, line: int, col: int) -> AstNode {
+    let mut node = new_node(STMT_EXPR(), line, col)
+    node.left = expr
+    return node
+}
+
+fn make_if_stmt(cond: int, then_br: int, else_br: int, line: int, col: int) -> AstNode {
+    let mut node = new_node(STMT_IF(), line, col)
+    node.left = cond
+    node.right = then_br
+    node.extra = else_br
+    return node
+}
+
+fn make_for_stmt(cond: int, body: int, line: int, col: int) -> AstNode {
+    let mut node = new_node(STMT_FOR(), line, col)
+    node.left = cond   // -1 for infinite loop
+    node.right = body
+    return node
+}
+
+fn make_break_stmt(line: int, col: int) -> AstNode {
+    return new_node(STMT_BREAK(), line, col)
+}
+
+fn make_continue_stmt(line: int, col: int) -> AstNode {
+    return new_node(STMT_CONTINUE(), line, col)
+}
+
+// Declaration constructors
+
+fn make_fn_decl(name: string, params_start: int, params_count: int, ret_type: int, body: int, line: int, col: int) -> AstNode {
+    let mut node = new_node(DECL_FN(), line, col)
+    node.str_val = name
+    node.children_start = params_start
+    node.children_count = params_count
+    node.left = ret_type  // -1 if no return type
+    node.right = body
+    return node
+}
+
+fn make_struct_decl(name: string, fields_start: int, fields_count: int, line: int, col: int) -> AstNode {
+    let mut node = new_node(DECL_STRUCT(), line, col)
+    node.str_val = name
+    node.children_start = fields_start
+    node.children_count = fields_count
+    return node
+}
+
+// Type constructors
+
+fn make_type_ident(name: string, line: int, col: int) -> AstNode {
+    let mut node = new_node(TYPE_IDENT(), line, col)
+    node.str_val = name
+    return node
+}
+
+fn make_type_array(elem_type: int, line: int, col: int) -> AstNode {
+    let mut node = new_node(TYPE_ARRAY(), line, col)
+    node.left = elem_type
+    return node
+}
+
+// ============================================================================
+// Test
+// ============================================================================
+
+fn main() -> int {
+    // Test node creation
+    let ident = make_ident("hello", 1, 1)
+    if ident.tag != EXPR_IDENT() {
+        return 1
+    }
+    if ident.str_val != "hello" {
+        return 2
+    }
+
+    let int_lit = make_int_lit(42, 1, 5)
+    if int_lit.tag != EXPR_INT() {
+        return 3
+    }
+    if int_lit.int_val != 42 {
+        return 4
+    }
+
+    // Test binary expression: left + right
+    let binary = make_binary(30, 0, 1, 1, 3)  // 30 = TK_PLUS
+    if binary.tag != EXPR_BINARY() {
+        return 5
+    }
+    if binary.int_val != 30 {
+        return 6
+    }
+
+    print("ast.ease: All tests passed!\n")
+    return 0
+}
