@@ -238,6 +238,18 @@ Progress on implementing the Ease compiler in Ease itself:
 
 ### Recent Fixes
 
+**Memory Operations for Binary Writing (Feb 6, 2026):**
+- Added low-level memory operations for Mach-O binary generation
+  - `poke(addr, value)` - write byte to memory address
+  - `peek(addr) -> int` - read byte from memory address
+  - `str_len(s) -> int` - get string length
+  - `mem_set(addr, value, count)` - set memory bytes (has loop issues, use with caution)
+- Implemented in IR (OpPoke, OpPeek, OpMemSet, OpStrLen)
+- ARM64 codegen with LDRB/STRB byte operations
+- Enables bootstrap compiler to write binary files byte-by-byte
+- Files: pkg/ir/ir.go, pkg/ir/builder.go, pkg/sema/analyzer.go, pkg/codegen/arm64/emit.go
+- Note: mem_set has intermittent loop issues; poke/peek/str_len work reliably
+
 **File I/O Implementation (Feb 6, 2026):**
 - Implemented complete file I/O syscall support for macOS ARM64
   - `syscall.open(path, flags, mode)` - open file with proper flag/mode handling

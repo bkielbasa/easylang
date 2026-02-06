@@ -1190,6 +1190,14 @@ func (b *Builder) buildCallExpr(e *ast.CallExpr) Operand {
 			return b.buildPrintBuiltin(e)
 		case "heap_alloc":
 			return b.buildHeapAllocBuiltin(e)
+		case "poke":
+			return b.buildPokeBuiltin(e)
+		case "peek":
+			return b.buildPeekBuiltin(e)
+		case "str_len":
+			return b.buildStrLenBuiltin(e)
+		case "mem_set":
+			return b.buildMemSetBuiltin(e)
 		case "syscall_open":
 			return b.buildSyscallOpen(e)
 		case "syscall_read":
@@ -1427,6 +1435,73 @@ func (b *Builder) buildHeapAllocBuiltin(e *ast.CallExpr) Operand {
 	})
 
 	return result
+}
+
+func (b *Builder) buildPokeBuiltin(e *ast.CallExpr) Operand {
+	if len(e.Args) != 2 {
+		return None()
+	}
+
+	addr := b.buildExpr(e.Args[0])
+	value := b.buildExpr(e.Args[1])
+
+	b.emit(&Instr{
+		Op:   OpPoke,
+		Args: []Operand{addr, value},
+	})
+
+	return None()
+}
+
+func (b *Builder) buildPeekBuiltin(e *ast.CallExpr) Operand {
+	if len(e.Args) != 1 {
+		return None()
+	}
+
+	addr := b.buildExpr(e.Args[0])
+
+	result := b.fn.NewVReg(types.Typ[types.Int])
+	b.emit(&Instr{
+		Op:   OpPeek,
+		Dest: result,
+		Args: []Operand{addr},
+	})
+
+	return result
+}
+
+func (b *Builder) buildStrLenBuiltin(e *ast.CallExpr) Operand {
+	if len(e.Args) != 1 {
+		return None()
+	}
+
+	str := b.buildExpr(e.Args[0])
+
+	result := b.fn.NewVReg(types.Typ[types.Int])
+	b.emit(&Instr{
+		Op:   OpStrLen,
+		Dest: result,
+		Args: []Operand{str},
+	})
+
+	return result
+}
+
+func (b *Builder) buildMemSetBuiltin(e *ast.CallExpr) Operand {
+	if len(e.Args) != 3 {
+		return None()
+	}
+
+	addr := b.buildExpr(e.Args[0])
+	value := b.buildExpr(e.Args[1])
+	count := b.buildExpr(e.Args[2])
+
+	b.emit(&Instr{
+		Op:   OpMemSet,
+		Args: []Operand{addr, value, count},
+	})
+
+	return None()
 }
 
 func (b *Builder) buildReadFileBuiltin(e *ast.CallExpr) Operand {

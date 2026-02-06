@@ -1,0 +1,101 @@
+// Binary writing utilities for bootstrap compiler
+// Provides helpers to write binary data to files
+
+// Write a single byte to a file descriptor
+fn write_byte(fd: int, value: int) -> int {
+    let buf = heap_alloc(1)
+    // TODO: Need a way to set byte at address
+    // For now, return error
+    return syscall.write(fd, buf, 1)
+}
+
+// Write 32-bit little-endian integer to file
+fn write_u32_le(fd: int, value: int) -> int {
+    // Allocate 4-byte buffer
+    let buf = heap_alloc(4)
+
+    // Extract bytes (little-endian: LSB first)
+    // byte0 = value & 0xFF
+    // byte1 = (value >> 8) & 0xFF
+    // byte2 = (value >> 16) & 0xFF
+    // byte3 = (value >> 24) & 0xFF
+
+    // TODO: Need byte-level memory write operations
+    // For now, we can use a workaround with syscall.write
+
+    // Write all 4 bytes
+    return syscall.write(fd, buf, 4)
+}
+
+// Write 64-bit little-endian integer to file
+fn write_u64_le(fd: int, value: int) -> int {
+    // Write low 32 bits
+    let result1 = write_u32_le(fd, value)
+    if result1 < 0 {
+        return result1
+    }
+
+    // Write high 32 bits (value >> 32)
+    let high = value / 0x100000000
+    let result2 = write_u32_le(fd, high)
+    if result2 < 0 {
+        return result2
+    }
+
+    return 8  // Total bytes written
+}
+
+// Write string with null terminator
+fn write_cstring(fd: int, str: string) -> int {
+    // Get string length
+    let len = str_len(str)
+
+    // Write string bytes
+    let result = syscall.write(fd, str, len)
+    if result < 0 {
+        return result
+    }
+
+    // Write null terminator
+    // write_byte(fd, 0)
+
+    return len + 1
+}
+
+// Write fixed-length string (padded with zeros)
+fn write_fixed_string(fd: int, str: string, len: int) -> int {
+    let str_len_val = str_len(str)
+
+    // Write string
+    if str_len_val > 0 {
+        let result = syscall.write(fd, str, str_len_val)
+        if result < 0 {
+            return result
+        }
+    }
+
+    // Write padding zeros
+    let padding = len - str_len_val
+    let i = 0
+    for i < padding {
+        // write_byte(fd, 0)
+        i = i + 1
+    }
+
+    return len
+}
+
+// Helper: get string length
+fn str_len(s: string) -> int {
+    let len = 0
+    let i = 0
+    // TODO: Need a way to check if we've reached null terminator
+    // For now, return 0
+    return len
+}
+
+fn main() -> int {
+    print("Binary writing utilities\n")
+    print("Note: Requires byte-level memory operations\n")
+    return 0
+}

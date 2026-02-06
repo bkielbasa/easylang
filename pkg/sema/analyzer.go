@@ -1498,6 +1498,18 @@ func (a *Analyzer) analyzeCallExpr(e *ast.CallExpr) types.Type {
 			return a.analyzePushBuiltin(e)
 		case "print":
 			return a.analyzePrintBuiltin(e)
+		case "poke", "mem_set":
+			// poke(addr, value) and mem_set(addr, value, count) return ()
+			for _, arg := range e.Args {
+				a.analyzeExpr(arg)
+			}
+			return types.Typ[types.Unit]
+		case "peek", "str_len":
+			// peek(addr) and str_len(s) return int
+			for _, arg := range e.Args {
+				a.analyzeExpr(arg)
+			}
+			return types.Typ[types.Int]
 		}
 
 		// Check if this is a call to a generic function

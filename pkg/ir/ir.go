@@ -95,6 +95,11 @@ const (
 	// Heap operations
 	OpHeapAlloc // allocate memory from heap (arg0=size) -> pointer
 
+	// Memory operations
+	OpPoke   // write byte to memory (arg0=addr, arg1=value)
+	OpPeek   // read byte from memory (arg0=addr) -> value
+	OpMemSet // set memory (arg0=addr, arg1=value, arg2=count)
+
 	// File syscalls
 	OpSyscallOpen  // open(path, flags, mode) -> fd
 	OpSyscallRead  // read(fd, buf, size) -> bytes_read
@@ -169,6 +174,9 @@ var opNames = [...]string{
 	OpIntToStr:  "inttostr",
 	OpStrToInt:  "strtoint",
 	OpHeapAlloc:    "heapalloc",
+	OpPoke:         "poke",
+	OpPeek:         "peek",
+	OpMemSet:       "memset",
 	OpSyscallOpen:  "syscall_open",
 	OpSyscallRead:  "syscall_read",
 	OpSyscallWrite: "syscall_write",

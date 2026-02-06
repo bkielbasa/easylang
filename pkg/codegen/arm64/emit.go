@@ -709,6 +709,12 @@ func (e *Emitter) emitInstr(instr *ir.Instr) {
 		e.emitStrToInt(instr)
 	case ir.OpHeapAlloc:
 		e.emitHeapAlloc(instr)
+	case ir.OpPoke:
+		e.emitPoke(instr)
+	case ir.OpPeek:
+		e.emitPeek(instr)
+	case ir.OpMemSet:
+		e.emitMemSet(instr)
 	case ir.OpSyscallOpen:
 		e.emitSyscallOpen(instr)
 	case ir.OpSyscallRead:
@@ -3389,6 +3395,82 @@ func (e *Emitter) emitMmapCall(size int64) {
 	e.asm.MOVimm(X5, 0)                // offset = 0
 	e.asm.MOVimm(X16, 0x20000C5)       // syscall mmap (197 + 0x2000000)
 	e.asm.SVC(0x80)
+}
+
+// emitPoke writes a byte to memory
+// Args[0] is address, Args[1] is value (byte)
+func (e *Emitter) emitPoke(instr *ir.Instr) {
+	addr := e.loadOperand(instr.Args[0], X16)
+	value := e.loadOperand(instr.Args[1], X17)
+
+	if addr != X16 {
+		e.asm.MOV(X16, addr)
+	}
+	if value != X17 {
+		e.asm.MOV(X17, value)
+	}
+
+	// Write byte: STRB W17, [X16]
+	e.asm.STRB(X17, X16, 0)
+}
+
+// emitPeek reads a byte from memory
+// Args[0] is address, Dest is result (byte value as int)
+func (e *Emitter) emitPeek(instr *ir.Instr) {
+	addr := e.loadOperand(instr.Args[0], X16)
+
+	if addr != X16 {
+		e.asm.MOV(X16, addr)
+	}
+
+	// Read byte: LDRB W17, [X16]
+	e.asm.LDRB(X17, X16, 0)
+	e.storeToVReg(instr.Dest.VReg, X17)
+}
+
+// emitMemSet sets memory to a byte value
+// Args[0] is address, Args[1] is value (byte), Args[2] is count
+func (e *Emitter) emitMemSet(instr *ir.Instr) {
+	addr := e.loadOperand(instr.Args[0], X16)
+	value := e.loadOperand(instr.Args[1], X17)
+	count := e.loadOperand(instr.Args[2], X18)
+
+	if addr != X16 {
+		e.asm.MOV(X16, addr)
+	}
+	if value != X17 {
+		e.asm.MOV(X17, value)
+	}
+	if count != X18 {
+		e.asm.MOV(X18, count)
+	}
+
+	// Load constant 1 for increment/decrement
+	e.asm.MOVimm(X19, 1)
+
+	// Loop: check count, write byte, repeat
+	loopStart := e.asm.Offset()
+
+	// Check if count is zero
+	e.asm.CMP(X18, XZR)
+	doneOffset := e.asm.Offset()
+	e.asm.Bcond(CondEQ, 0) // if zero, jump to done (placeholder)
+
+	// Write byte
+	e.asm.STRB(X17, X16, 0)
+
+	// Increment address and decrement count
+	e.asm.ADD(X16, X16, X19)  // addr++ (register add)
+	e.asm.SUB(X18, X18, X19)  // count-- (register sub)
+
+	// Unconditional jump back to loop start
+	loopEnd := e.asm.Offset()
+	backOffset := int32(loopStart - loopEnd)
+	e.asm.B(backOffset) // B() handles division by 4
+
+	// Patch done branch
+	doneLabel := e.asm.Offset()
+	e.asm.Patch(doneOffset, e.asm.Bcond_instr(CondEQ, int32(doneLabel-doneOffset)>>2))
 }
 
 // emitSyscallOpen emits the open syscall.
