@@ -148,6 +148,20 @@ func (w *Writer) AddSymbol(name string, offset int64, section int, extern bool) 
 	})
 }
 
+// CodeVMAddr returns the VM address where code will be loaded.
+// Must be called after SetCode.
+func (w *Writer) CodeVMAddr() uint64 {
+	// Calculate same as in Write()
+	hasData := len(w.globalVars) > 0
+	headerSize := uint64(32)
+	loadCmdsSize := uint64(72 + 152 + 72 + 24 + 80 + 32 + 24 + 24 + 16)
+	if hasData {
+		loadCmdsSize += 152 // Add __DATA segment size
+	}
+	codeFileOff := alignUp(headerSize+loadCmdsSize+64, 256)
+	return uint64(0x100000000) + codeFileOff
+}
+
 // Write generates the Mach-O binary and returns the bytes.
 func (w *Writer) Write() []byte {
 	w.buf.Reset()

@@ -67,9 +67,8 @@ func (b *Builder) buildConstDecl(c *ast.ConstDecl) {
 	case *ast.IntLit:
 		op = Imm(v.Value, sym.Type)
 	case *ast.StringLit:
-		// Add string to string table
-		idx := len(b.prog.Strings)
-		b.prog.Strings = append(b.prog.Strings, v.Value)
+		// Add string to string table (with deduplication)
+		idx := b.prog.AddString(v.Value)
 		op = StrConst(idx)
 	default:
 		// For complex expressions, we'll need to generate initialization code
@@ -101,9 +100,8 @@ func (b *Builder) buildVarDecl(v *ast.VarDecl) {
 			op = Imm(val.Value, sym.Type)
 		}
 	case *ast.StringLit:
-		// Strings use the string table
-		idx := len(b.prog.Strings)
-		b.prog.Strings = append(b.prog.Strings, val.Value)
+		// Strings use the string table (with deduplication)
+		idx := b.prog.AddString(val.Value)
 		op = StrConst(idx)
 	case *ast.BoolLit:
 		if v.Mutable {
@@ -2874,7 +2872,7 @@ func (b *Builder) calculateTypeSize(t types.Type) int {
 		case types.Bool:
 			return 1
 		case types.String:
-			return 16 // pointer + length
+			return 8 // pointer to null-terminated string
 		default:
 			return 8
 		}

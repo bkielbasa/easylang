@@ -131,29 +131,42 @@ func (e *Emitter) CodeSize() int {
 	return e.asm.Offset()
 }
 
-// FixupStrings patches ADR instructions for string constants.
-// codeSize is the total size of the code section.
+// FixupStrings patches ADRP+ADD instructions for string constants.
 // stringOffsets[i] is the offset of strings[i] from the start of the code section.
-func (e *Emitter) FixupStrings(stringOffsets []uint64) {
+// codeVMAddr is the VM address where the code will be loaded.
+func (e *Emitter) FixupStrings(stringOffsets []uint64, codeVMAddr uint64) {
 	for _, fix := range e.strFixups {
-		// String is at stringOffsets[fix.strIdx] from code start
-		// ADR instruction is at fix.offset from code start
-		// Offset = stringOffset - instrOffset
-		strOffset := int32(stringOffsets[fix.strIdx])
-		instrOffset := int32(fix.offset)
-		offset := strOffset - instrOffset
+		// Calculate VM addresses
+		instrVMAddr := codeVMAddr + uint64(fix.offset)
+		strVMAddr := codeVMAddr + stringOffsets[fix.strIdx]
 
-		// Re-encode ADR instruction with correct offset
-		immlo := uint32(offset & 0x3)
-		immhi := uint32((offset >> 2) & 0x7FFFF)
-		// Read existing instruction to get Rd
-		oldInstr := uint32(e.asm.code[fix.offset]) |
+		// Read ADRP instruction to get Rd
+		adrpInstr := uint32(e.asm.code[fix.offset]) |
 			uint32(e.asm.code[fix.offset+1])<<8 |
 			uint32(e.asm.code[fix.offset+2])<<16 |
 			uint32(e.asm.code[fix.offset+3])<<24
-		rd := oldInstr & 0x1F
-		instr := uint32(0x10000000) | (immlo << 29) | (immhi << 5) | rd
-		e.asm.Patch(fix.offset, instr)
+		rd := adrpInstr & 0x1F
+
+		// ADRP: Form PC-relative address to 4KB page
+		// Result = (PC & ~0xFFF) + SignExtend(immhi:immlo, 21) << 12
+		targetPage := strVMAddr & ^uint64(0xFFF)
+		adrpPage := instrVMAddr & ^uint64(0xFFF)
+		pageOffset := int64(targetPage) - int64(adrpPage)
+		pageCount := int32(pageOffset >> 12)
+
+		// Encode ADRP: op=1, immlo[1:0], 10000, immhi[18:0], Rd
+		immlo := uint32(pageCount & 0x3)
+		immhi := uint32((pageCount >> 2) & 0x7FFFF)
+		adrpNew := uint32(0x90000000) | (immlo << 29) | (immhi << 5) | rd
+		e.asm.Patch(fix.offset, adrpNew)
+
+		// ADD: Add offset within page
+		// ADD Xd, Xd, #pageOffset
+		pageOffset12 := uint32(strVMAddr & 0xFFF)
+
+		// Encode ADD: sf=1, 00, S=0, 10001, sh=00, imm12, Rn, Rd
+		addInstr := uint32(0x91000000) | (pageOffset12 << 10) | (rd << 5) | rd
+		e.asm.Patch(fix.offset+4, addInstr)
 	}
 }
 
@@ -279,7 +292,7 @@ func typeSize(t types.Type) int {
 		case types.Int:
 			return 8
 		case types.String:
-			return 16 // string = pointer (8) + length (8)
+			return 8 // pointer to null-terminated string
 		default:
 			return 8
 		}
@@ -2395,12 +2408,15 @@ func (e *Emitter) loadOperand(op ir.Operand, scratch Reg) Reg {
 		e.asm.MOVimm(scratch, op.Imm)
 		return scratch
 	case ir.OpndStr:
-		// String constant - emit ADR with placeholder, fixup later
+		// String constant - use ADRP+ADD (standard ARM64 approach)
+		// ADRP loads page address, ADD adds offset within page
+		adrpOffset := e.asm.Offset()
+		e.asm.ADRP(scratch, 0)          // placeholder - will be fixed up
+		e.asm.ADDi(scratch, scratch, 0) // placeholder - will be fixed up
 		e.strFixups = append(e.strFixups, strFixup{
-			offset: e.asm.Offset(),
+			offset: adrpOffset, // Store ADRP offset for fixup
 			strIdx: op.StrIdx,
 		})
-		e.asm.ADR(scratch, 0) // placeholder
 		return scratch
 	case ir.OpndGlobal:
 		// Load global variable address using ADRP+ADD (for full 64-bit address)
@@ -2640,7 +2656,8 @@ func (e *Emitter) emitArrayPush(instr *ir.Instr) {
 	fatPtr := e.loadOperand(instr.Args[0], X19)
 	e.asm.MOV(X19, fatPtr) // X19 = fat pointer address
 	elem := e.loadOperand(instr.Args[1], X20)
-	e.asm.MOV(X20, elem) // X20 = element (value or ptr to struct)
+	e.asm.MOV(X20, elem)  // X20 = element (value or ptr to struct)
+	e.asm.MOV(X15, X20)   // X15 = backup of element (X15 is caller-saved, safe across mmap)
 
 	// Load len and cap from fat pointer
 	e.asm.LDR(X21, X19, 8)  // X21 = len
@@ -2674,9 +2691,10 @@ func (e *Emitter) emitArrayPush(instr *ir.Instr) {
 	e.asm.MOVimm(X24, int64(elemSizeVal))
 	e.asm.MUL(X0, X23, X24) // X0 = new_cap * elemSize = allocation size
 
-	// Save registers before heap allocation (it uses X25 as heap pointer)
-	e.asm.STPpre(X19, X20, SP, -16) // save fat_ptr and elem (16 bytes)
-	e.asm.STPpre(X21, X23, SP, -16) // save len and new_cap (16 bytes)
+	// Save registers before heap allocation
+	// Note: X20 (element) is NOT saved - will be reloaded after mmap
+	e.asm.STPpre(X19, X21, SP, -16) // save fat_ptr and len (16 bytes)
+	e.asm.STPpre(X23, XZR, SP, -16) // save new_cap (16 bytes, pad with zero)
 
 	// Call heap allocator inline (similar to emitHeapAlloc but simplified)
 	// X0 already has size, just need to do the allocation
@@ -2700,8 +2718,11 @@ func (e *Emitter) emitArrayPush(instr *ir.Instr) {
 	e.asm.MOV(X24, X0) // X24 = new buffer pointer
 
 	// Restore saved registers
-	e.asm.LDPpost(X21, X23, SP, 16) // restore len and new_cap (16 bytes)
-	e.asm.LDPpost(X19, X20, SP, 16) // restore fat_ptr and elem (16 bytes)
+	e.asm.LDPpost(X23, X0, SP, 16)  // restore new_cap (16 bytes, discard padding)
+	e.asm.LDPpost(X19, X21, SP, 16) // restore fat_ptr and len (16 bytes)
+
+	// Restore element from X15 (it was backed up before mmap)
+	e.asm.MOV(X20, X15)
 
 	// Copy old data to new buffer if len > 0
 	e.asm.CMP(X21, XZR)

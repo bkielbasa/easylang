@@ -217,7 +217,24 @@ Progress on implementing the Ease compiler in Ease itself:
 - Implemented proper sret (struct return) calling convention
   - Caller sets X8 to result buffer, callee writes to [X8], saves X8 at FP+16
 - Fixed struct parameter passing to copy data to callee's stack frame
-- Fixed string size to 16 bytes (pointer + length) in type calculations
+- Fixed string size to 8 bytes (pointer to null-terminated data)
+  - Changed from 16-byte fat pointer to match runtime implementation
+  - All string operations use null-terminated C strings
+
+**String Constant Loading (Feb 2026):**
+- Implemented ADRP+ADD for string constants (ARM64 production standard)
+  - Replaces single ADR with ADRP (page address) + ADD (page offset)
+  - More reliable than ADR for position-independent code
+  - Standard approach used by LLVM and GCC
+- Fixed codeVMAddr mismatch between compiler and Mach-O writer
+  - main.go calculated codeFileOff=1024, but writer used codeFileOff=768
+  - Added CodeVMAddr() method to get actual address from writer
+  - All fixups now use consistent VM addresses
+- Fixed string size inconsistency causing array push crashes
+  - pkg/types/types.go still returned 16 bytes while emit.go/builder.go used 8 bytes
+  - Caused push to copy 16 bytes from 8-byte pointer, corrupting memory
+  - Changed Basic.Size() for String to return 8 bytes consistently
+  - All string array operations now work correctly
 
 **Compilation and Symbol Resolution:**
 - Fixed forward function references in IR generation
@@ -242,9 +259,10 @@ Progress on implementing the Ease compiler in Ease itself:
     fn main() { init(); ... }
     ```
   - Needs deep debugging: IR dump, assembly inspection, or debugger to trace actual addresses
-- Bootstrap semantic analyzer (sema.ease) crashes during types_equal check in binary operator analysis
-  - Tests start running but segfault partway through test 2
-  - Likely another struct-related or recursion issue
+- **Bootstrap semantic analyzer**: Passing 6/8 tests, 2 logical failures (not crashes)
+  - String array push bug is fixed
+  - Remaining test failures are semantic logic issues, not memory corruption
+  - Significant progress: no longer crashing, most core functionality works
 - **Array operations on returned structs**: When a struct containing an array is returned from a function, then passed to another function that reads from AND pushes to that array, it crashes
   - Pattern: `struct S { arr: []int }; fn make() -> S { ... }; fn use(s: S) { let x = s.arr[0]; push(s.arr, x+1); }`
   - Workaround: Avoid combining struct returns with complex array operations in the same function

@@ -673,11 +673,14 @@ func compile(inputFile, output string, verbose, dumpIR bool) error {
 
 	codeSize := uint64(emitter.CodeSize())
 
-	// Calculate code VM address (will be at some offset after headers)
-	// For now, estimate ~1KB for headers and load commands
-	headerSize := uint64(1024)
-	codeFileOff := (headerSize + 255) & ^uint64(255) // Align to 256 bytes
-	codeVMAddr := baseAddr + codeFileOff
+	// Create Mach-O writer early to get code VM address for fixups
+	writer := macho.NewWriter()
+	code := emitter.Code() // Get code before fixups
+	writer.SetCode(code)
+	writer.SetStrings(irProg.Strings)
+
+	// Get the actual code VM address from the writer
+	codeVMAddr := writer.CodeVMAddr()
 
 	// Fixup string addresses (strings are in __TEXT segment after code)
 	if len(irProg.Strings) > 0 {
@@ -687,8 +690,12 @@ func compile(inputFile, output string, verbose, dumpIR bool) error {
 			stringOffsets[i] = offset
 			offset += uint64(len(s) + 1)
 		}
-		emitter.FixupStrings(stringOffsets)
+		emitter.FixupStrings(stringOffsets, codeVMAddr)
 	}
+
+	// Update code after fixups
+	code = emitter.Code()
+	writer.SetCode(code)
 
 	// Calculate global VM addresses (globals are in __DATA segment)
 	if len(irProg.GlobalVars) > 0 {
@@ -699,6 +706,7 @@ func compile(inputFile, output string, verbose, dumpIR bool) error {
 		}
 
 		// __TEXT segment size (code + strings, page-aligned)
+		codeFileOff := codeVMAddr - baseAddr
 		textSegSize := ((codeFileOff + codeSize + stringsSize + pageSize - 1) / pageSize) * pageSize
 
 		// __DATA segment starts at next page boundary
@@ -718,9 +726,14 @@ func compile(inputFile, output string, verbose, dumpIR bool) error {
 
 		// Fixup global variable addresses
 		emitter.FixupGlobals(globalAddrs, codeVMAddr)
+
+		// Update code after global fixups
+		code = emitter.Code()
+		writer.SetCode(code)
 	}
 
-	code := emitter.Code()
+	// Set main offset
+	writer.SetMainOffset(mainOff)
 
 	if verbose {
 		fmt.Printf("Generated %d bytes of ARM64 code\n", len(code))
@@ -729,12 +742,6 @@ func compile(inputFile, output string, verbose, dumpIR bool) error {
 		}
 		fmt.Printf("main function at offset %d\n", mainOff)
 	}
-
-	// Mach-O generation
-	writer := macho.NewWriter()
-	writer.SetCode(code)
-	writer.SetStrings(irProg.Strings)
-	writer.SetMainOffset(mainOff)
 
 	// Set global variables with calculated offsets
 	if len(irProg.GlobalVars) > 0 {
