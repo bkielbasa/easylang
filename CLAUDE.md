@@ -130,12 +130,9 @@ ease test -v                 # Verbose output
 ease version                 # Print version
 ```
 
-## Commits
+## Rules
 
-Never add information to commits that I used Claude
-
-## Using tools
-
+ - Never add information to commits that I used Claude
  - never use `cat` to create file
  - alwasy save temporary files into `./tmp/` folder (create if not exists)
 
@@ -196,6 +193,13 @@ Progress on implementing the Ease compiler in Ease itself:
 
 ### Recent Fixes
 
+**Heap Allocator (Jan 2026):**
+- Fixed heap state corruption by removing X25/X26 save/restore
+  - X25/X26 hold global heap state (heap_ptr, heap_end) across all functions
+  - Previously saved in prologue and restored in epilogue, causing corruption
+  - Solution: Treat X25/X26 as truly global, no save/restore needed
+  - Heap state now persists correctly across function calls
+
 **ARM64 Code Generation:**
 - Fixed modulo operator (%) returning incorrect values
   - SDIV was overwriting left operand when it was in X16
@@ -222,6 +226,11 @@ Progress on implementing the Ease compiler in Ease itself:
   - Bootstrap parser tests now all pass (5/5)
 
 ### Known Issues
+- **Global structs with array fields crash on array indexing**
+  - Symptom: `let mut s = S { a: []int{1,2,3} }; s.a[0]` crashes with SIGSEGV
+  - Works: Local structs with arrays, global arrays (not in structs), array length access
+  - Fails: Indexing into array field of global struct
+  - Root cause: Under investigation - fat pointer corruption during global initialization
 - Bootstrap semantic analyzer (sema.ease) crashes during types_equal check in binary operator analysis
   - Tests start running but segfault partway through test 2
   - Likely another struct-related or recursion issue

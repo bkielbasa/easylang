@@ -43,6 +43,7 @@ type Emitter struct {
 	strFixups         []strFixup     // string address fixups
 	globalFixups      []globalFixup  // global variable address fixups
 	stackSize         int            // total stack size
+	usesHeapAlloc     bool           // whether function uses heap allocation (needs to save X25/X26)
 }
 
 type strFixup struct {
@@ -313,6 +314,21 @@ func (e *Emitter) addImm(rd, rn Reg, imm int) {
 func (e *Emitter) calculateStackLayout() {
 	debugFn := debugEmit
 
+	// Check if this function uses heap allocation (needs to save/restore X25/X26)
+	usesHeapAlloc := false
+	for _, block := range e.fn.Blocks {
+		for _, instr := range block.Instrs {
+			if instr.Op == ir.OpHeapAlloc {
+				usesHeapAlloc = true
+				break
+			}
+		}
+		if usesHeapAlloc {
+			break
+		}
+	}
+	e.usesHeapAlloc = usesHeapAlloc
+
 	// Check if this function returns a struct (needs to save X8)
 	sretSize := 0
 	if e.fn.Result != nil {
@@ -320,6 +336,9 @@ func (e *Emitter) calculateStackLayout() {
 			sretSize = 8 // Reserve 8 bytes at FP+16 to save the X8 sret pointer
 		}
 	}
+
+	// NOTE: We no longer save X25/X26 on the stack - they persist as global heap state
+	heapRegsSize := 0
 
 	// Count how many vregs we need to spill
 	maxVReg := e.fn.NextVReg
@@ -335,10 +354,10 @@ func (e *Emitter) calculateStackLayout() {
 		if vreg < numTempRegs {
 			e.vregToReg[vreg] = Reg(X9 + Reg(vreg))
 		} else {
-			e.vregSpill[vreg] = sretSize + numSpills*8
+			e.vregSpill[vreg] = heapRegsSize + sretSize + numSpills*8
 			if debugFn {
-				fmt.Printf("DEBUG %s: vreg %d spills to offset %d (FP+16+%d = FP+%d)\n",
-					e.fn.Name, vreg, sretSize+numSpills*8, sretSize+numSpills*8, 16+sretSize+numSpills*8)
+				fmt.Printf("DEBUG %s: vreg %d spills to offset %d (FP+16+heapRegs+%d = FP+%d)\n",
+					e.fn.Name, vreg, heapRegsSize+sretSize+numSpills*8, heapRegsSize+sretSize+numSpills*8, 16+heapRegsSize+sretSize+numSpills*8)
 			}
 			numSpills++
 		}
@@ -348,6 +367,7 @@ func (e *Emitter) calculateStackLayout() {
 	// [sp]        saved x29, x30 (16 bytes)
 	// [sp+16]     saved X8 (8 bytes, only for sret functions)
 	// [sp+16+sretSize]     spilled vregs
+	// NOTE: X25/X26 (heap state) are NOT saved on stack - they persist as global state
 	spillSize := sretSize + numSpills*8
 
 	if debugFn {
@@ -361,7 +381,7 @@ func (e *Emitter) calculateStackLayout() {
 			if instr.Op == ir.OpAlloc {
 				// Track the allocation offset for this vreg
 				// Allocations come after spills
-				e.allocOffset[instr.Dest.VReg] = 16 + spillSize + allocSize
+				e.allocOffset[instr.Dest.VReg] = 16 + heapRegsSize + spillSize + allocSize
 
 				// Get allocation size from the immediate argument
 				size := int(instr.Args[0].Imm)
@@ -369,7 +389,7 @@ func (e *Emitter) calculateStackLayout() {
 				alignedSize := (size + 7) & ^7
 				if debugFn {
 					fmt.Printf("DEBUG %s: alloc vreg %d at offset %d (size %d)\n",
-						e.fn.Name, instr.Dest.VReg, 16+spillSize+allocSize, alignedSize)
+						e.fn.Name, instr.Dest.VReg, 16+heapRegsSize+spillSize+allocSize, alignedSize)
 				}
 				allocSize += alignedSize
 			}
@@ -390,7 +410,7 @@ func (e *Emitter) calculateStackLayout() {
 				size := getStructSize(instr.Dest.Type)
 				if size > 0 {
 					// Allocate space for struct return copy
-					offset := 16 + spillSize + allocSize + structRetSize
+					offset := 16 + heapRegsSize + spillSize + allocSize + structRetSize
 					e.structRetOffset[instr.Dest.VReg] = offset
 					e.structRetSize[instr.Dest.VReg] = size
 					alignedSize := (size + 7) & ^7
@@ -414,7 +434,7 @@ func (e *Emitter) calculateStackLayout() {
 		size := getStructSize(param.Type)
 		if size > 0 {
 			// This parameter is a struct - allocate local space for it
-			offset := 16 + spillSize + allocSize + structRetSize + structParamSize
+			offset := 16 + heapRegsSize + spillSize + allocSize + structRetSize + structParamSize
 			e.structParamOffset[param.VReg] = offset
 			e.structParamSize[param.VReg] = size
 			alignedSize := (size + 7) & ^7
@@ -430,7 +450,7 @@ func (e *Emitter) calculateStackLayout() {
 		fmt.Printf("DEBUG %s: structParamSize=%d\n", e.fn.Name, structParamSize)
 	}
 
-	e.stackSize = 16 + spillSize + allocSize + structRetSize + structParamSize
+	e.stackSize = 16 + heapRegsSize + spillSize + allocSize + structRetSize + structParamSize
 
 	// Align to 16 bytes
 	e.stackSize = (e.stackSize + 15) & ^15
@@ -462,13 +482,21 @@ func (e *Emitter) emitPrologue() {
 	// Need to use ADD since MOV(x29, SP) doesn't work correctly with SP
 	e.asm.ADDi(X29, SP, 0)
 
+	// NOTE: X25/X26 are used as global heap state (heap_ptr and heap_end) and
+	// are NOT saved/restored in prologue/epilogue. They persist across all function
+	// calls as part of the bump allocator design.
+
 	// For functions returning structs, save X8 (the sret pointer from caller)
 	// X8 may be clobbered by nested function calls, so save it at a known location
 	if e.fn.Result != nil {
 		if structSize := getStructSize(e.fn.Result); structSize > 0 {
-			// Save X8 at FP+16 (the first slot after saved FP/LR)
+			// Save X8 at FP+16+heapRegsSize (after saved FP/LR and heap registers)
 			// This is within our spill area but we reserve it for X8
-			e.asm.STR(X8, X29, 16)
+			heapRegsSize := 0
+			if e.usesHeapAlloc {
+				heapRegsSize = 16
+			}
+			e.asm.STR(X8, X29, uint16(16+heapRegsSize))
 		}
 	}
 }
@@ -477,6 +505,8 @@ func (e *Emitter) emitEpilogue() {
 	// Restore SP from FP in case of dynamic stack allocation
 	// FP points to where we saved FP/LR, SP might have been modified
 	e.asm.ADDi(SP, X29, 0) // Use ADDi since MOV treats r31 as XZR, not SP
+
+	// NOTE: X25/X26 (heap state) are NOT restored - they persist as global state
 
 	// LDP post-index has limited range (-512 to 504 bytes)
 	// For larger stacks, we need to adjust SP separately
@@ -2280,8 +2310,12 @@ func (e *Emitter) emitReturn(instr *ir.Instr) {
 					fmt.Printf("DEBUG %s: emitReturn arg[0]=%v\n", e.fn.Name, instr.Args[0])
 				}
 			}
-			// Load saved X8 from FP+16 (saved in prologue)
-			e.asm.LDR(X8, X29, 16)
+			// Load saved X8 from FP+16+heapRegsSize (saved in prologue)
+			heapRegsSize := 0
+			if e.usesHeapAlloc {
+				heapRegsSize = 16
+			}
+			e.asm.LDR(X8, X29, uint16(16+heapRegsSize))
 
 			// Returning a struct - copy it to [X8] (caller's buffer)
 			// src contains pointer to the struct on our local stack

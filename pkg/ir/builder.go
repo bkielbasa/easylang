@@ -419,8 +419,14 @@ func (b *Builder) buildLetStmt(s *ast.LetStmt, savedVars map[string]Operand) {
 			savedVars[name] = None()
 		}
 
-		// For struct types, allocate space and copy the struct data
-		if _, isStruct := varType.Underlying().(*types.Struct); isStruct {
+		// For struct and array types, allocate space and copy the data
+		// Arrays need special handling because they're 24-byte fat pointers
+		underlying := varType.Underlying()
+		_, isStruct := underlying.(*types.Struct)
+		_, isArray := underlying.(*types.Array)
+		_, isSlice := underlying.(*types.Slice)
+
+		if isStruct || isArray || isSlice {
 			size := b.typeSize(varType)
 			dest := b.fn.NewVReg(types.NewPointer(varType, false))
 			b.emit(&Instr{
@@ -428,7 +434,7 @@ func (b *Builder) buildLetStmt(s *ast.LetStmt, savedVars map[string]Operand) {
 				Dest: dest,
 				Args: []Operand{Imm(int64(size), types.Typ[types.Int])},
 			})
-			// Copy struct data from source to destination
+			// Copy data from source to destination (struct or fat pointer)
 			b.emit(&Instr{
 				Op:   OpMemCopy,
 				Args: []Operand{val, dest, Imm(int64(size), types.Typ[types.Int])},
@@ -702,8 +708,17 @@ func (b *Builder) buildIdent(ident *ast.Ident) Operand {
 			}
 
 			size := b.calculateTypeSize(op.Type)
-			if size > 8 {
-				// Complex type (array, struct)
+			// Check if this is actually a complex type (struct, array, slice)
+			// Don't just check size, as 8-byte structs need address semantics
+			isComplexType := false
+			underlying := op.Type.Underlying()
+			switch underlying.(type) {
+			case *types.Struct, *types.Array, *types.Slice:
+				isComplexType = true
+			}
+
+			if isComplexType || size > 8 {
+				// Complex type (array, struct) - return address
 				if sym != nil && sym.Mutable {
 					// Mutable: return the global address directly
 					// This allows in-place modifications (like push) to persist
@@ -1983,7 +1998,10 @@ func (b *Builder) typeSize(t types.Type) int {
 func (b *Builder) structSize(s *types.Struct) int {
 	size := 0
 	for _, f := range s.Fields {
-		size += b.typeSize(f.Type)
+		// Each field is 8-byte aligned
+		fieldSize := b.typeSize(f.Type)
+		alignedSize := (fieldSize + 7) & ^7
+		size += alignedSize
 	}
 	return size
 }
@@ -1995,7 +2013,10 @@ func (b *Builder) fieldOffset(s *types.Struct, fieldName string) int {
 		if f.Name == fieldName {
 			return offset
 		}
-		offset += b.typeSize(f.Type)
+		// Each field is 8-byte aligned
+		fieldSize := b.typeSize(f.Type)
+		alignedSize := (fieldSize + 7) & ^7
+		offset += alignedSize
 	}
 	return -1 // field not found
 }
@@ -2862,12 +2883,8 @@ func (b *Builder) calculateTypeSize(t types.Type) int {
 	case *types.Array, *types.Slice:
 		return 24 // fat pointer: ptr + len + cap
 	case *types.Struct:
-		// Sum of field sizes (simplified, no padding/alignment)
-		size := 0
-		for _, field := range typ.Fields {
-			size += b.calculateTypeSize(field.Type)
-		}
-		return size
+		// Use structSize which properly aligns fields
+		return b.structSize(typ)
 	default:
 		return 8 // default to pointer size
 	}
