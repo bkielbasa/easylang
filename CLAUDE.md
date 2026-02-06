@@ -158,7 +158,8 @@ Never add information to commits that I used Claude
   - Semantic analysis: type checking, mutability, symbol registration
   - IR: OpLoad/OpStore for mutable globals, immediates for immutable literals
   - Codegen: __DATA segment with ADRP+ADD addressing, LDRx/STRx for reads/writes
-  - Limitation: complex initializers (arrays/structs) not yet supported
+  - Initial values: Non-zero initialization for int/bool (`let mut x = 42` works)
+  - Limitation: array/struct globals partially implemented but crash on access
 - [x] Bootstrap lexer and token modules (in Ease)
 - [x] Bootstrap parser (in Ease) - all 5 tests pass ✅
 
@@ -215,6 +216,11 @@ Progress on implementing the Ease compiler in Ease itself:
   - Bootstrap parser tests now all pass (5/5)
 
 ### Known Issues
+- **Array global variables crash on access**: `let mut nums = []int{1,2,3}` compiles and initializes but crashes when accessed
+  - Runtime initialization code generates correctly (heap alloc, element stores, fat pointer creation)
+  - Issue is in loading 24-byte fat pointers from globals using OpMemCopy
+  - Local arrays work fine, only global arrays affected
+  - Workaround: Use global pointers or initialize arrays in main() instead
 - Bootstrap semantic analyzer (sema.ease) crashes during types_equal check in binary operator analysis
   - Tests start running but segfault partway through test 2
   - Likely another struct-related or recursion issue
