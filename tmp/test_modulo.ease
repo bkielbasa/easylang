@@ -1,0 +1,37 @@
+fn main() -> int {
+    // Test modulo with various values
+    let a = 17 % 5
+    if a != 2 {
+        print("FAIL: 17 % 5 should be 2, got ")
+        print(strconv.Itoa(a))
+        print("\n")
+        return 1
+    }
+
+    let b = 100 % 7
+    if b != 2 {
+        print("FAIL: 100 % 7 should be 2, got ")
+        print(strconv.Itoa(b))
+        print("\n")
+        return 1
+    }
+
+    let c = 32 % 16
+    if c != 0 {
+        print("FAIL: 32 % 16 should be 0, got ")
+        print(strconv.Itoa(c))
+        print("\n")
+        return 1
+    }
+
+    let d = 1000 % 13
+    if d != 12 {
+        print("FAIL: 1000 % 13 should be 12, got ")
+        print(strconv.Itoa(d))
+        print("\n")
+        return 1
+    }
+
+    print("All modulo tests passed!\n")
+    return 0
+}

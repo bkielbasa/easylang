@@ -1,0 +1,40 @@
+struct Container {
+    values: []int,
+}
+
+fn make_container() -> Container {
+    let mut c = Container { values: []int{} }
+    push(c.values, 1)
+    return c
+}
+
+fn add_to_container(c: Container) {
+    print("In add_to_container, len=")
+    print(strconv.Itoa(len(c.values)))
+    print("\n")
+
+    print("Pushing 2\n")
+    push(c.values, 2)
+
+    print("Done, len=")
+    print(strconv.Itoa(len(c.values)))
+    print("\n")
+}
+
+fn main() -> int {
+    print("Making container\n")
+    let c = make_container()
+
+    print("Got container, len=")
+    print(strconv.Itoa(len(c.values)))
+    print("\n")
+
+    print("Calling add_to_container\n")
+    add_to_container(c)
+
+    print("Back in main, len=")
+    print(strconv.Itoa(len(c.values)))
+    print("\n")
+
+    return 0
+}

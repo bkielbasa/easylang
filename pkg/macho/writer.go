@@ -430,18 +430,27 @@ func (w *Writer) Write() []byte {
 			panic(fmt.Sprintf("Data offset mismatch: expected %d, got %d", dataFileOff, w.buf.Len()))
 		}
 
-		// Write each global variable (zero-initialized for now)
+		// Write each global variable with initial values
 		for _, gv := range w.globalVars {
 			// Pad to alignment
 			for w.buf.Len() < int(dataFileOff)+gv.Offset {
 				w.buf.WriteByte(0)
 			}
 
-			// Write initial value (zero for now)
-			// For simple int globals, we could write gv.Value here
-			// For now, just write zeros
-			for i := 0; i < gv.Size; i++ {
-				w.buf.WriteByte(0)
+			// Write initial value based on size
+			switch gv.Size {
+			case 1:
+				// Boolean or byte: write as single byte
+				w.buf.WriteByte(byte(gv.Value & 0xFF))
+			case 8:
+				// 64-bit integer: write in little-endian format
+				w.writeU64(uint64(gv.Value))
+			default:
+				// Other sizes: zero-initialize for now
+				// This handles complex types that need runtime initialization
+				for i := 0; i < gv.Size; i++ {
+					w.buf.WriteByte(0)
+				}
 			}
 		}
 	}

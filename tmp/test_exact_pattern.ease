@@ -1,0 +1,36 @@
+struct Builder {
+    next_vreg: []int,
+}
+
+fn new_builder() -> Builder {
+    let mut b = Builder { next_vreg: []int{} }
+    push(b.next_vreg, 0)
+    return b
+}
+
+fn test_func(b: Builder) {
+    let idx = len(b.next_vreg) - 1
+    let vreg = b.next_vreg[idx]
+
+    print("vreg = ")
+    print(strconv.Itoa(vreg))
+    print("\n")
+
+    print("Computing new_val\n")
+    let new_val = vreg + 1
+
+    print("new_val = ")
+    print(strconv.Itoa(new_val))
+    print("\n")
+
+    print("Pushing to array\n")
+    push(b.next_vreg, new_val)
+
+    print("Done\n")
+}
+
+fn main() -> int {
+    let builder = new_builder()
+    test_func(builder)
+    return 0
+}

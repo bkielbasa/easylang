@@ -1,0 +1,16 @@
+// Test global variable declarations
+
+let x = 42
+let mut y = 100
+
+fn main() -> int {
+    print("x = ")
+    print(strconv.Itoa(x))
+    print("\n")
+
+    print("y = ")
+    print(strconv.Itoa(y))
+    print("\n")
+
+    return 0
+}

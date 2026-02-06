@@ -1,0 +1,30 @@
+fn main() -> int {
+    // Test how Ease handles large integers
+    let val1 = 2332164128  // 0x8b020020 (ADD instruction)
+    print("val1 = ")
+    print(strconv.Itoa(val1))
+    print("\n")
+
+    let mod_val = val1 % 16
+    print("val1 % 16 = ")
+    print(strconv.Itoa(mod_val))
+    print("\n")
+
+    let div_val = val1 / 16
+    print("val1 / 16 = ")
+    print(strconv.Itoa(div_val))
+    print("\n")
+
+    // Try with a small positive number
+    let val2 = 32
+    print("\nval2 = ")
+    print(strconv.Itoa(val2))
+    print("\n")
+
+    let mod_val2 = val2 % 16
+    print("val2 % 16 = ")
+    print(strconv.Itoa(mod_val2))
+    print("\n")
+
+    return 0
+}

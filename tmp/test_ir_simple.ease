@@ -1,0 +1,38 @@
+struct Builder {
+    next_vreg: []int,
+}
+
+fn new_builder() -> Builder {
+    let mut b = Builder {
+        next_vreg: []int{},
+    }
+    push(b.next_vreg, 0)
+    return b
+}
+
+fn alloc_vreg(b: Builder) -> int {
+    let vreg = b.next_vreg[len(b.next_vreg) - 1]
+    let new_val = vreg + 1
+    push(b.next_vreg, new_val)
+    return vreg
+}
+
+fn main() -> int {
+    print("Creating builder\n")
+    let mut builder = new_builder()
+
+    print("Allocating vreg 1\n")
+    let v1 = alloc_vreg(builder)
+    print("Got: ")
+    print(strconv.Itoa(v1))
+    print("\n")
+
+    print("Allocating vreg 2\n")
+    let v2 = alloc_vreg(builder)
+    print("Got: ")
+    print(strconv.Itoa(v2))
+    print("\n")
+
+    print("Success!\n")
+    return 0
+}

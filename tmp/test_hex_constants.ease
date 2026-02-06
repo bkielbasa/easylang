@@ -1,0 +1,71 @@
+fn digit_to_char(d: int) -> string {
+    if d == 0 { return "0" }
+    if d == 1 { return "1" }
+    if d == 2 { return "2" }
+    if d == 3 { return "3" }
+    if d == 4 { return "4" }
+    if d == 5 { return "5" }
+    if d == 6 { return "6" }
+    if d == 7 { return "7" }
+    if d == 8 { return "8" }
+    if d == 9 { return "9" }
+    if d == 10 { return "a" }
+    if d == 11 { return "b" }
+    if d == 12 { return "c" }
+    if d == 13 { return "d" }
+    if d == 14 { return "e" }
+    if d == 15 { return "f" }
+    return "?"
+}
+
+fn int_to_hex(n: int) -> string {
+    let mut val = n
+
+    let d0 = val % 16
+    val = val / 16
+    let d1 = val % 16
+    val = val / 16
+    let d2 = val % 16
+    val = val / 16
+    let d3 = val % 16
+    val = val / 16
+    let d4 = val % 16
+    val = val / 16
+    let d5 = val % 16
+    val = val / 16
+    let d6 = val % 16
+    val = val / 16
+    let d7 = val % 16
+
+    let mut result = "0x"
+    result = str_concat(result, digit_to_char(d7))
+    result = str_concat(result, digit_to_char(d6))
+    result = str_concat(result, digit_to_char(d5))
+    result = str_concat(result, digit_to_char(d4))
+    result = str_concat(result, digit_to_char(d3))
+    result = str_concat(result, digit_to_char(d2))
+    result = str_concat(result, digit_to_char(d1))
+    result = str_concat(result, digit_to_char(d0))
+
+    return result
+}
+
+fn main() -> int {
+    // Check MUL base constant
+    let mul_base = 2600992768
+    print("MUL base (2600992768) = ")
+    print(int_to_hex(mul_base))
+    print("\n")
+
+    // Check RET constant
+    let ret_val = 3587538880
+    print("RET (3587538880) = ")
+    print(int_to_hex(ret_val))
+    print("\n")
+
+    // What should they be?
+    print("Expected MUL base: 0x9b007c00\n")
+    print("Expected RET: 0xd65f03c0\n")
+
+    return 0
+}

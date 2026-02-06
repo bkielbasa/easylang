@@ -745,11 +745,25 @@ func compile(inputFile, output string, verbose, dumpIR bool) error {
 			if offset%8 != 0 {
 				offset += 8 - (offset % 8)
 			}
+
+			// Extract initial value for simple types
+			var initVal int64 = 0
+			if gv.InitVal != nil {
+				switch val := gv.InitVal.(type) {
+				case *ast.IntLit:
+					initVal = val.Value
+				case *ast.BoolLit:
+					if val.Value {
+						initVal = 1
+					}
+				}
+			}
+
 			machoGlobals = append(machoGlobals, macho.GlobalVar{
 				Name:   gv.Name,
 				Offset: offset,
 				Size:   gv.Size,
-				Value:  0, // TODO: support initial values
+				Value:  initVal,
 			})
 			offset += gv.Size
 		}

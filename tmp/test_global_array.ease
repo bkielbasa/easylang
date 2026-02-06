@@ -1,0 +1,45 @@
+// Test global array for sema registry pattern
+
+struct Sema {
+    value: int,
+}
+
+let mut g_semas = []Sema{}
+
+fn add_sema(val: int) {
+    let s = Sema { value: val }
+    push(g_semas, s)
+}
+
+fn get_sema_value(idx: int) -> int {
+    if idx >= 0 && idx < len(g_semas) {
+        return g_semas[idx].value
+    }
+    return -1
+}
+
+fn main() -> int {
+    print("Testing global array registry pattern:\n")
+
+    add_sema(42)
+    add_sema(100)
+    add_sema(200)
+
+    print("Sema 0 value: ")
+    print(strconv.Itoa(get_sema_value(0)))
+    print("\n")
+
+    print("Sema 1 value: ")
+    print(strconv.Itoa(get_sema_value(1)))
+    print("\n")
+
+    print("Sema 2 value: ")
+    print(strconv.Itoa(get_sema_value(2)))
+    print("\n")
+
+    print("Array length: ")
+    print(strconv.Itoa(len(g_semas)))
+    print("\n")
+
+    return 0
+}

@@ -1,0 +1,77 @@
+// Simplified test to isolate sema crash
+
+struct Sema {
+    type_tags: []int,
+}
+
+fn TY_INT() -> int { return 2 }
+
+fn is_numeric(s: Sema, t: int) -> bool {
+    print("is_numeric called with t=")
+    print(strconv.Itoa(t))
+    print("\n")
+
+    if t < 0 {
+        print("t < 0\n")
+        return false
+    }
+
+    if t >= len(s.type_tags) {
+        print("t >= len (len=")
+        print(strconv.Itoa(len(s.type_tags)))
+        print(")\n")
+        return false
+    }
+
+    print("accessing s.type_tags[t]\n")
+    let tag = s.type_tags[t]
+
+    print("got tag=")
+    print(strconv.Itoa(tag))
+    print("\n")
+
+    let ty_int = TY_INT()
+    print("TY_INT()=")
+    print(strconv.Itoa(ty_int))
+    print("\n")
+
+    let result = tag == ty_int
+    print("result=")
+    if result {
+        print("true")
+    } else {
+        print("false")
+    }
+    print("\n")
+
+    return result
+}
+
+fn main() -> int {
+    let mut s = Sema { type_tags: []int{} }
+    push(s.type_tags, 0)  // type 0
+    push(s.type_tags, 1)  // type 1
+    push(s.type_tags, 2)  // type 2 = int
+    push(s.type_tags, 3)  // type 3
+
+    print("Testing is_numeric with type 2:\n")
+    let result = is_numeric(s, 2)
+
+    print("Back in main, result=")
+    if result {
+        print("true")
+    } else {
+        print("false")
+    }
+    print("\n")
+
+    print("Now testing in if condition:\n")
+    if !is_numeric(s, 2) {
+        print("ERROR: is_numeric returned false!\n")
+    } else {
+        print("OK: is_numeric returned true\n")
+    }
+
+    print("Test completed\n")
+    return 0
+}

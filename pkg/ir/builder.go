@@ -188,6 +188,11 @@ func (b *Builder) buildFnDecl(fn *ast.FnDecl) {
 		b.prog.Globals[p.Name.Name] = vreg
 	}
 
+	// For main function, inject global initialization code
+	if fn.Name.Name == "main" {
+		b.buildGlobalInitializers()
+	}
+
 	// Build function body
 	if fn.Body != nil {
 		b.buildBlock(fn.Body)
@@ -689,11 +694,25 @@ func (b *Builder) buildIdent(ident *ast.Ident) Operand {
 		// For GlobalRef operands, we need to emit a Load instruction
 		if op.Kind == OpndGlobal {
 			result := b.fn.NewVReg(op.Type)
-			b.emit(&Instr{
-				Op:   OpLoad,
-				Dest: result,
-				Args: []Operand{op},
-			})
+
+			// For complex types (arrays, structs), use OpMemCopy
+			// For simple types, use OpLoad
+			size := b.calculateTypeSize(op.Type)
+			if size > 8 {
+				// Complex type: use OpMemCopy directly
+				// The vreg holds the fat pointer value (not a pointer to it)
+				b.emit(&Instr{
+					Op:   OpMemCopy,
+					Args: []Operand{op, result, Imm(int64(size), types.Typ[types.Int])},
+				})
+			} else {
+				// Simple type: use OpLoad
+				b.emit(&Instr{
+					Op:   OpLoad,
+					Dest: result,
+					Args: []Operand{op},
+				})
+			}
 			return result
 		}
 		return op
@@ -2826,4 +2845,120 @@ func (b *Builder) calculateTypeSize(t types.Type) int {
 	default:
 		return 8 // default to pointer size
 	}
+}
+
+// buildGlobalInitializers generates initialization code for complex globals
+// This is injected at the start of main() to initialize arrays, structs, etc.
+func (b *Builder) buildGlobalInitializers() {
+	for _, gv := range b.prog.GlobalVars {
+		// Only initialize globals with complex initializers
+		if gv.InitVal == nil {
+			continue
+		}
+
+		// Check if this is a complex type that needs initialization
+		switch gv.InitVal.(type) {
+		case *ast.ArrayExpr:
+			b.buildArrayGlobalInit(gv)
+		case *ast.IntLit, *ast.BoolLit, *ast.StringLit:
+			// Simple literals are initialized in the data section
+			continue
+		default:
+			// Other complex types (structs, function calls, etc.)
+			// For now, skip - can be added later
+			continue
+		}
+	}
+}
+
+// buildArrayGlobalInit generates initialization code for an array global
+func (b *Builder) buildArrayGlobalInit(gv *GlobalVar) {
+	arrayExpr, ok := gv.InitVal.(*ast.ArrayExpr)
+	if !ok {
+		return
+	}
+
+	// Get the array type
+	arrType, ok := gv.Type.(*types.Array)
+	if !ok {
+		return
+	}
+
+	elemType := arrType.Elem
+	elemSize := b.typeSize(elemType)
+	numElems := int(arrType.Len)
+
+	// Allocate heap space for array elements
+	elemDataSize := numElems * elemSize
+	elemPtr := b.fn.NewVReg(types.NewPointer(elemType, false))
+	b.emit(&Instr{
+		Op:   OpHeapAlloc,
+		Dest: elemPtr,
+		Args: []Operand{Imm(int64(elemDataSize), types.Typ[types.Int])},
+	})
+
+	// Store each element
+	if arrayExpr.Repeat != nil {
+		// [expr; count] syntax - same value repeated
+		val := b.buildExpr(arrayExpr.Repeat)
+		for i := 0; i < numElems; i++ {
+			offset := i * elemSize
+			addr := b.fn.NewVReg(types.NewPointer(elemType, false))
+			b.emit(&Instr{
+				Op:   OpIndexAddr,
+				Dest: addr,
+				Args: []Operand{
+					elemPtr,
+					Imm(int64(offset), types.Typ[types.Int]),
+				},
+			})
+			b.emit(&Instr{
+				Op:   OpStore,
+				Args: []Operand{val, addr},
+			})
+		}
+	} else {
+		// [elem1, elem2, ...] syntax
+		for i, elemExpr := range arrayExpr.Elements {
+			val := b.buildExpr(elemExpr)
+			offset := i * elemSize
+			addr := b.fn.NewVReg(types.NewPointer(elemType, false))
+			b.emit(&Instr{
+				Op:   OpIndexAddr,
+				Dest: addr,
+				Args: []Operand{
+					elemPtr,
+					Imm(int64(offset), types.Typ[types.Int]),
+				},
+			})
+			b.emit(&Instr{
+				Op:   OpStore,
+				Args: []Operand{val, addr},
+			})
+		}
+	}
+
+	// Create fat pointer (ptr, len, cap)
+	fatPtr := b.fn.NewVReg(gv.Type)
+	b.emit(&Instr{
+		Op:   OpMakeArray,
+		Dest: fatPtr,
+		Args: []Operand{
+			elemPtr,
+			Imm(int64(numElems), types.Typ[types.Int]),
+			Imm(int64(numElems), types.Typ[types.Int]),
+		},
+	})
+
+	// Store the fat pointer to the global variable
+	// Use OpMemCopy since fat pointer is 24 bytes (3 x 8-byte fields)
+	globalRef := GlobalRef(gv.Name, gv.Type)
+	b.emit(&Instr{
+		Op:   OpMemCopy,
+		Args: []Operand{
+			fatPtr,
+			globalRef,
+			Imm(24, types.Typ[types.Int]), // fat pointer size
+		},
+	})
 }
