@@ -228,9 +228,15 @@ Progress on implementing the Ease compiler in Ease itself:
 ### Known Issues
 - **Global structs with array fields crash on array indexing**
   - Symptom: `let mut s = S { a: []int{1,2,3} }; s.a[0]` crashes with SIGSEGV
-  - Works: Local structs with arrays, global arrays (not in structs), array length access
-  - Fails: Indexing into array field of global struct
-  - Root cause: Under investigation - fat pointer corruption during global initialization
+  - Works: Local structs with arrays, global arrays (not in structs), array length access, manual initialization in function body
+  - Fails: Only when array fields are initialized during global initialization (injected at start of main)
+  - Root cause: Fat pointer data pointer (offset+0) corrupted during `buildStructGlobalInit`, but length (offset+8) correct
+  - Workaround: Initialize array fields to empty `[]int{}`, then populate in init function
+    ```ease
+    let mut g_s = S { a: []int{} }
+    fn init() { g_s.a = []int{1, 2, 3} }
+    fn main() { init(); ... }
+    ```
 - Bootstrap semantic analyzer (sema.ease) crashes during types_equal check in binary operator analysis
   - Tests start running but segfault partway through test 2
   - Likely another struct-related or recursion issue
