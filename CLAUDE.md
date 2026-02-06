@@ -210,11 +210,8 @@ Progress on implementing the Ease compiler in Ease itself:
 - [x] **Parser** - All language constructs (bootstrap/parser.ease)
   - ✅ All 5 tests passing
 - [x] **Semantic Analysis** - Type checking and name resolution (bootstrap/sema.ease)
-  - ✅ 6/8 tests passing
-  - ⚠️ Tests 7-8 (function/struct declarations) fail due to stack corruption under high pressure
-  - Root cause: Large functions (177+ vregs) with deep call chains trigger local variable corruption
-  - Symptom: Local variables (e.g., `lt` in analyze_binary) corrupted between assignment and use
-  - Related to known struct return buffer corruption issue - stack frame management needs investigation
+  - ✅ All 8 tests passing!
+  - Fixed by correcting OpMemCopy usage for struct assignments and array fields (see Recent Fixes #4)
 - [x] **IR Generation** - 3-address code with simplified instruction format (bootstrap/ir.ease)
   - IRInstr struct with op, dest, arg1, arg2 fields
   - Operations: ADD, SUB, MUL, DIV, EQ, NE, LT, GT, LOADCONST, CALL, RETURN
@@ -256,6 +253,17 @@ Progress on implementing the Ease compiler in Ease itself:
   - Simplified logic in emitPrologue and emitReturn
   - File: pkg/codegen/arm64/emit.go lines 502-514, 2323-2328
   - This fixed one source of corruption, but tests 7-8 still fail due to struct assignment bug
+- **CRITICAL FIX #4**: Fixed global struct assignment and array field storage (Feb 6, 2026)
+  - Root cause #1: Array/slice fields in structs used OpStore (8 bytes) instead of OpMemCopy (24 bytes)
+    - Arrays are 24-byte fat pointers [ptr, len, cap], not 8-byte values
+    - OpStore only copied first 8 bytes (pointer), leaving len/cap uninitialized
+    - Solution: Use OpMemCopy for array/slice fields like we do for struct fields
+  - Root cause #2: Global struct assignments used OpStore instead of OpMemCopy
+    - OpStore copies 8 bytes (pointer to struct), not entire struct data
+    - When reassigning `g_s = S { a: []int{} }`, only pointer was copied, not struct content
+    - Solution: Use OpMemCopy for global struct assignments, same as local variables
+  - File: pkg/ir/builder.go lines 995-1010 (global assignment), 2093-2111 (struct field storage)
+  - Result: Bootstrap sema now 8/8 tests passing! All array operations in structs work correctly
 
 **Heap Allocator (Jan 2026):**
 - Fixed heap state corruption by removing X25/X26 save/restore
@@ -323,35 +331,6 @@ Progress on implementing the Ease compiler in Ease itself:
     fn main() { init(); ... }
     ```
   - Needs deep debugging: IR dump, assembly inspection, or debugger to trace actual addresses
-- **Global struct assignment with array fields copies stale stack pointers (CRITICAL)**: Cannot reassign global structs with array/slice fields - old data persists
-  - **Symptom**: `g_s = S { a: []int{} }` doesn't create new array - old length/data remains after reassignment
-  - **Evidence**: After `push` twice (len=2), reassigning `g_s = S { a: []int{} }` still shows len=2 instead of 0
-  - **Root Cause**: Stack pointer reuse - arrays allocate on stack, struct copies stack addresses to global, stack memory reused with old data
-    1. `buildArrayExpr` uses `OpAlloc` (stack allocation) for array fat pointers
-    2. Struct literal embeds stack pointer to array
-    3. `OpStore` copies struct bytes (including stack pointer) to global
-    4. Next function call reuses same stack offset with old array data
-    5. Global struct's pointer still points to stack location, sees stale data
-  - **Impact**: Cannot reinitialize global structs with array fields - affects bootstrap sema tests 7-8
-  - **Affects**: `bootstrap/sema.ease` - tests 7 and 8 fail due to corrupted arrays (6/8 passing)
-  - **File**: pkg/ir/builder.go `buildArrayExpr` (uses OpAlloc), `buildIdentAssignment` (OpStore)
-  - **Workaround**: Manually reassign each array field instead of whole struct:
-    ```ease
-    // DON'T: g_sema = Sema { type_tags: []int{}, type_names: []string{}, ... }
-    // DO:
-    g_sema.type_tags = []int{}
-    g_sema.type_names = []string{}
-    // ... (reassign each field individually)
-    ```
-  - **Proper Fix**: Use `OpHeapAlloc` for arrays in global struct contexts, or implement deep copy with heap allocation
-    - Corruption happens even with global array storage and re-analysis workarounds
-  - **Investigation findings** (Feb 2026):
-    - Simple test cases (<20 vregs) work perfectly - no corruption
-    - Only manifests with very large stack frames (bootstrap code with 100+ vregs)
-    - Code generation appears correct: stack layout, LDR/STR encoding, prologue/epilogue all verified
-    - Likely issue: register allocator, calling convention edge case, or memory ordering with large frames
-  - **Workaround**: Break large functions into smaller ones to reduce vreg count
-  - **Status**: Requires deep debugging with assembly inspection and debugger tracing
 - **Array operations on returned structs**: When a struct containing an array is returned from a function, then passed to another function that reads from AND pushes to that array, it crashes
   - Pattern: `struct S { arr: []int }; fn make() -> S { ... }; fn use(s: S) { let x = s.arr[0]; push(s.arr, x+1); }`
   - Workaround: Avoid combining struct returns with complex array operations in the same function

@@ -993,7 +993,17 @@ func (b *Builder) buildIdentAssignment(ident *ast.Ident, right Operand) Operand 
 			Args: []Operand{right},
 		})
 	} else if oldOp.Kind == OpndGlobal {
-		// For GlobalRef operands, emit a Store instruction
+		// For GlobalRef operands, use OpMemCopy for structs, OpStore otherwise
+		if varType != nil {
+			if _, isStruct := varType.Underlying().(*types.Struct); isStruct {
+				size := b.typeSize(varType)
+				b.emit(&Instr{
+					Op:   OpMemCopy,
+					Args: []Operand{right, oldOp, Imm(int64(size), types.Typ[types.Int])},
+				})
+				return None()
+			}
+		}
 		b.emit(&Instr{
 			Op:   OpStore,
 			Args: []Operand{right, oldOp},
@@ -2079,15 +2089,20 @@ func (b *Builder) buildStructExpr(e *ast.StructExpr) Operand {
 			Args: []Operand{structPtr, Imm(int64(offset), types.Typ[types.Int])},
 		})
 
-		// For struct-typed fields, copy the entire struct data
-		if _, isStruct := field.Type.Underlying().(*types.Struct); isStruct {
+		// For struct-typed fields, arrays, and slices, copy the entire data
+		fieldUnderlying := field.Type.Underlying()
+		_, isStruct := fieldUnderlying.(*types.Struct)
+		_, isArray := fieldUnderlying.(*types.Array)
+		_, isSlice := fieldUnderlying.(*types.Slice)
+
+		if isStruct || isArray || isSlice {
 			size := b.typeSize(field.Type)
 			b.emit(&Instr{
 				Op:   OpMemCopy,
 				Args: []Operand{val, fieldAddr, Imm(int64(size), types.Typ[types.Int])},
 			})
 		} else {
-			// Store the value for non-struct types
+			// Store the value for primitive types
 			b.emit(&Instr{
 				Op:   OpStore,
 				Args: []Operand{val, fieldAddr},
