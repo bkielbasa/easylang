@@ -248,9 +248,14 @@ Progress on implementing the Ease compiler in Ease itself:
   - Solution: Remove workaround, call types_equal directly
   - Result: Bootstrap sema now 6/8 tests passing
   - File: bootstrap/sema.ease - removed types_equal_safe function
-  - Remaining: Tests 7-8 (function/struct decl) fail due to DIFFERENT stack corruption issue
-  - New symptom: Local variables corrupted between assignment and use in analyze_binary
-  - Investigation shows AST construction was fixed, but runtime corruption persists under high stack pressure
+  - Remaining: Tests 7-8 fail due to struct assignment bug (see Known Issues)
+- **CRITICAL FIX #3**: Fixed X8/vreg stack collision in sret functions (Feb 6, 2026)
+  - Root cause: X8 (struct return pointer) saved at FP+32 when usesHeapAlloc=true, but vreg 8 also at FP+32
+  - Prologue used conditional heapRegsSize=16, but spill offset calculation used heapRegsSize=0
+  - Solution: Always save X8 at FP+16 to match spill offset calculation
+  - Simplified logic in emitPrologue and emitReturn
+  - File: pkg/codegen/arm64/emit.go lines 502-514, 2323-2328
+  - This fixed one source of corruption, but tests 7-8 still fail due to struct assignment bug
 
 **Heap Allocator (Jan 2026):**
 - Fixed heap state corruption by removing X25/X26 save/restore
@@ -318,9 +323,14 @@ Progress on implementing the Ease compiler in Ease itself:
     fn main() { init(); ... }
     ```
   - Needs deep debugging: IR dump, assembly inspection, or debugger to trace actual addresses
-- **Large stack frame corruption (CRITICAL)**: Functions with >100 vregs and >1KB stack frames exhibit value corruption
-  - **Symptom**: Function return values stored in local variables get corrupted between assignment and use
-  - **Affects**: `bootstrap/sema.ease` - tests 7 and 8 fail (6/8 passing)
+- **Struct assignment with array fields does shallow copy (CRITICAL)**: Assigning structs that contain array fields performs shallow copy of array pointers, not deep copy
+  - **Symptom**: `g_sema = Sema { type_tags: []int{}, ... }` doesn't create new empty arrays - old data persists!
+  - **Evidence**: After "reset", `len(type_tags) = 2` instead of 0, accessing elements returns garbage or old values
+  - **Root Cause**: OpMemCopy copies struct bytes including array pointers, but not array contents
+  - **Impact**: Cannot reinitialize global structs with array fields
+  - **Affects**: `bootstrap/sema.ease` - tests 7 and 8 fail due to corrupted arrays (6/8 passing)
+  - **File**: pkg/ir/builder.go lines 981-988
+  - **Workaround**: None currently - needs fix in IR builder or codegen
   - **Example**: `analyze_binary` has 177 vregs, 1520-byte stack frame
     - `let x = analyze_expr(...)` returns 1, but later reading `x` gives 0 or garbage
     - Corruption happens even with global array storage and re-analysis workarounds
