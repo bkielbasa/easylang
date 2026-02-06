@@ -691,29 +691,47 @@ func (b *Builder) buildExpr(expr ast.Expr) Operand {
 func (b *Builder) buildIdent(ident *ast.Ident) Operand {
 	// Look up the variable
 	if op, ok := b.prog.Globals[ident.Name]; ok {
-		// For GlobalRef operands, we need to emit a Load instruction
+		// For GlobalRef operands, check if it's mutable
 		if op.Kind == OpndGlobal {
-			result := b.fn.NewVReg(op.Type)
+			// Check if this is a mutable global
+			// For mutable globals, we want to return the address so modifications persist
+			// For immutable globals, we can load the value
+			sym := b.info.Uses[ident]
+			if sym == nil {
+				sym = b.info.Defs[ident]
+			}
 
-			// For complex types (arrays, structs), use OpMemCopy
-			// For simple types, use OpLoad
 			size := b.calculateTypeSize(op.Type)
 			if size > 8 {
-				// Complex type: use OpMemCopy directly
-				// The vreg holds the fat pointer value (not a pointer to it)
-				b.emit(&Instr{
-					Op:   OpMemCopy,
-					Args: []Operand{op, result, Imm(int64(size), types.Typ[types.Int])},
-				})
+				// Complex type (array, struct)
+				if sym != nil && sym.Mutable {
+					// Mutable: return the global address directly
+					// This allows in-place modifications (like push) to persist
+					return op
+				} else {
+					// Immutable: create a local copy
+					result := b.fn.NewVReg(types.NewPointer(op.Type, false))
+					b.emit(&Instr{
+						Op:   OpAlloc,
+						Dest: result,
+						Args: []Operand{Imm(int64(size), types.Typ[types.Int])},
+					})
+					b.emit(&Instr{
+						Op:   OpMemCopy,
+						Args: []Operand{op, result, Imm(int64(size), types.Typ[types.Int])},
+					})
+					return result
+				}
 			} else {
 				// Simple type: use OpLoad
+				result := b.fn.NewVReg(op.Type)
 				b.emit(&Instr{
 					Op:   OpLoad,
 					Dest: result,
 					Args: []Operand{op},
 				})
+				return result
 			}
-			return result
 		}
 		return op
 	}
@@ -2938,27 +2956,37 @@ func (b *Builder) buildArrayGlobalInit(gv *GlobalVar) {
 		}
 	}
 
-	// Create fat pointer (ptr, len, cap)
-	fatPtr := b.fn.NewVReg(gv.Type)
+	// Build fat pointer directly in global storage
+	// Get the global address
+	globalRef := GlobalRef(gv.Name, gv.Type)
+
+	// Store ptr at offset 0
 	b.emit(&Instr{
-		Op:   OpMakeArray,
-		Dest: fatPtr,
-		Args: []Operand{
-			elemPtr,
-			Imm(int64(numElems), types.Typ[types.Int]),
-			Imm(int64(numElems), types.Typ[types.Int]),
-		},
+		Op:   OpStore,
+		Args: []Operand{elemPtr, globalRef},
 	})
 
-	// Store the fat pointer to the global variable
-	// Use OpMemCopy since fat pointer is 24 bytes (3 x 8-byte fields)
-	globalRef := GlobalRef(gv.Name, gv.Type)
+	// Store len at offset 8
+	lenAddr := b.fn.NewVReg(types.NewPointer(types.Typ[types.Int], false))
 	b.emit(&Instr{
-		Op:   OpMemCopy,
-		Args: []Operand{
-			fatPtr,
-			globalRef,
-			Imm(24, types.Typ[types.Int]), // fat pointer size
-		},
+		Op:   OpIndexAddr,
+		Dest: lenAddr,
+		Args: []Operand{globalRef, Imm(8, types.Typ[types.Int])},
+	})
+	b.emit(&Instr{
+		Op:   OpStore,
+		Args: []Operand{Imm(int64(numElems), types.Typ[types.Int]), lenAddr},
+	})
+
+	// Store cap at offset 16
+	capAddr := b.fn.NewVReg(types.NewPointer(types.Typ[types.Int], false))
+	b.emit(&Instr{
+		Op:   OpIndexAddr,
+		Dest: capAddr,
+		Args: []Operand{globalRef, Imm(16, types.Typ[types.Int])},
+	})
+	b.emit(&Instr{
+		Op:   OpStore,
+		Args: []Operand{Imm(int64(numElems), types.Typ[types.Int]), capAddr},
 	})
 }
