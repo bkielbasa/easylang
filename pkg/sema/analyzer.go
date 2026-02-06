@@ -315,6 +315,7 @@ func (a *Analyzer) collectVarDecl(v *ast.VarDecl) {
 	}
 
 	sym := symbols.NewSymbol(name, kind, varType, v.Pos())
+	sym.Mutable = v.Mutable  // Set mutability
 	a.table.Global.Define(sym)
 	a.info.Defs[v.Name] = sym
 }

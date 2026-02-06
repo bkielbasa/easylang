@@ -38,6 +38,7 @@ type Emitter struct {
 	structParamSize   map[int]int    // param vreg to struct size (for struct parameter copies)
 	labels            map[string]int // label to code offset (block labels)
 	funcOffsets       map[string]int // function name to code offset
+	globalOffsets     map[string]int // global variable name to data section offset
 	fixups            []fixup        // branch fixups
 	strFixups         []strFixup     // string address fixups
 	globalFixups      []globalFixup  // global variable address fixups
@@ -50,8 +51,9 @@ type strFixup struct {
 }
 
 type globalFixup struct {
-	offset int    // offset of ADR instruction
-	name   string // global variable name
+	adrpOffset int    // offset of ADRP instruction
+	addOffset  int    // offset of ADD instruction
+	name       string // global variable name
 }
 
 type fixup struct {
@@ -71,11 +73,12 @@ const (
 // NewEmitter creates a new code emitter.
 func NewEmitter() *Emitter {
 	return &Emitter{
-		asm:         NewAssembler(),
-		vregToReg:   make(map[int]Reg),
-		vregSpill:   make(map[int]int),
-		labels:      make(map[string]int),
-		funcOffsets: make(map[string]int),
+		asm:           NewAssembler(),
+		vregToReg:     make(map[int]Reg),
+		vregSpill:     make(map[int]int),
+		labels:        make(map[string]int),
+		funcOffsets:   make(map[string]int),
+		globalOffsets: make(map[string]int),
 	}
 }
 
@@ -84,6 +87,9 @@ func NewEmitter() *Emitter {
 func (e *Emitter) EmitProgram(prog *ir.Program, funcOffsets map[string]int64) []byte {
 	e.funcOffsets = make(map[string]int)
 	e.prog = prog
+
+	// Calculate global variable offsets (will be placed after code + strings)
+	e.calculateGlobalOffsets()
 
 	// First pass: emit all functions and record their offsets
 	for _, fn := range prog.Functions {
@@ -147,6 +153,65 @@ func (e *Emitter) FixupStrings(stringOffsets []uint64) {
 		rd := oldInstr & 0x1F
 		instr := uint32(0x10000000) | (immlo << 29) | (immhi << 5) | rd
 		e.asm.Patch(fix.offset, instr)
+	}
+}
+
+// FixupGlobals patches ADRP+ADD instructions for global variables.
+// globalAddrs is a map from global variable name to its VM address.
+// codeVMAddr is the VM address of the start of the code section.
+func (e *Emitter) FixupGlobals(globalAddrs map[string]uint64, codeVMAddr uint64) {
+	for _, fix := range e.globalFixups {
+		targetAddr, ok := globalAddrs[fix.name]
+		if !ok {
+			continue // Global not found, skip
+		}
+
+		// Calculate PC for ADRP instruction
+		adrpPC := codeVMAddr + uint64(fix.adrpOffset)
+
+		// ADRP: compute page-aligned offset (4KB pages)
+		// Target page = targetAddr & ~0xFFF
+		// Source page = adrpPC & ~0xFFF
+		// Page offset = (target page - source page) >> 12
+		targetPage := targetAddr & ^uint64(0xFFF)
+		sourcePage := adrpPC & ^uint64(0xFFF)
+		pageOffset := int64(targetPage) - int64(sourcePage)
+
+		// ADRP immediate is page offset / 4096, but encoded specially
+		// immhi:immlo represents the offset in pages
+		// We need to shift right by 12 to get page count
+		pageCount := int32(pageOffset >> 12)
+
+		// Encode ADRP: immlo is bits [1:0] of pageCount, immhi is bits [20:2]
+		immlo := uint32(pageCount & 0x3)
+		immhi := uint32((pageCount >> 2) & 0x7FFFF)
+
+		// Read existing ADRP instruction to get Rd
+		oldAdrp := uint32(e.asm.code[fix.adrpOffset]) |
+			uint32(e.asm.code[fix.adrpOffset+1])<<8 |
+			uint32(e.asm.code[fix.adrpOffset+2])<<16 |
+			uint32(e.asm.code[fix.adrpOffset+3])<<24
+		rd := oldAdrp & 0x1F
+
+		// Re-encode ADRP
+		adrpInstr := uint32(0x90000000) | (immlo << 29) | (immhi << 5) | rd
+		e.asm.Patch(fix.adrpOffset, adrpInstr)
+
+		// ADD: compute offset within page (bits [11:0] of target address)
+		pageOffsetLow := uint16(targetAddr & 0xFFF)
+
+		// Read existing ADD instruction to get Rd and Rn
+		oldAdd := uint32(e.asm.code[fix.addOffset]) |
+			uint32(e.asm.code[fix.addOffset+1])<<8 |
+			uint32(e.asm.code[fix.addOffset+2])<<16 |
+			uint32(e.asm.code[fix.addOffset+3])<<24
+		rdAdd := oldAdd & 0x1F
+		rnAdd := (oldAdd >> 5) & 0x1F
+
+		// Re-encode ADD immediate
+		// ADDi format: sf=1, op=0, S=0, 100010, shift=00, imm12, Rn, Rd
+		addInstr := uint32(0x91000000) | (uint32(pageOffsetLow) << 10) | (rnAdd << 5) | rdAdd
+		e.asm.Patch(fix.addOffset, addInstr)
 	}
 }
 
@@ -2304,15 +2369,19 @@ func (e *Emitter) loadOperand(op ir.Operand, scratch Reg) Reg {
 		e.asm.ADR(scratch, 0) // placeholder
 		return scratch
 	case ir.OpndGlobal:
-		// Load global variable address using ADR
+		// Load global variable address using ADRP+ADD (for full 64-bit address)
 		// This will be fixed up later with the actual global address
+		// Returns the ADDRESS of the global, not its value
+		// (OpLoad/OpStore will do the actual memory access)
+		adrpOff := e.asm.Offset()
+		e.asm.ADRP(scratch, 0) // placeholder for page address
+		addOff := e.asm.Offset()
+		e.asm.ADDi(scratch, scratch, 0) // placeholder for page offset
 		e.globalFixups = append(e.globalFixups, globalFixup{
-			offset: e.asm.Offset(),
-			name:   op.Global,
+			adrpOffset: adrpOff,
+			addOffset:  addOff,
+			name:       op.Global,
 		})
-		e.asm.ADR(scratch, 0) // placeholder for global address
-		// Load the value from the global
-		e.asm.LDR(scratch, scratch, 0)
 		return scratch
 	default:
 		return scratch
@@ -3800,3 +3869,32 @@ func (e *Emitter) emitMapLen(instr *ir.Instr) {
 	e.storeToVReg(instr.Dest.VReg, X0)
 }
 
+
+// calculateGlobalOffsets computes the offset for each global variable
+// Globals are placed after code and strings in the binary
+func (e *Emitter) calculateGlobalOffsets() {
+	// We don't know the final code size yet, but we'll calculate relative offsets
+	// The actual addresses will be fixed up later
+	offset := 0
+	for _, gv := range e.prog.GlobalVars {
+		// Align to 8-byte boundary
+		if offset%8 != 0 {
+			offset += 8 - (offset % 8)
+		}
+		e.globalOffsets[gv.Name] = offset
+		offset += gv.Size
+	}
+}
+
+// GlobalsSize returns the total size of the global variables section
+func (e *Emitter) GlobalsSize() int {
+	size := 0
+	for _, gv := range e.prog.GlobalVars {
+		// Align to 8-byte boundary
+		if size%8 != 0 {
+			size += 8 - (size % 8)
+		}
+		size += gv.Size
+	}
+	return size
+}

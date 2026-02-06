@@ -23,28 +23,34 @@ if flag { ... }           // Works!
 print(name)               // Works!
 ```
 
-## ⚠️ Limitations
-
-### Mutable Globals
-While reads work, **writes to mutable globals are not yet implemented**:
+## ✅ Mutable Simple Globals (NEW)
+Mutable simple types now work correctly:
 ```ease
 let mut count = 0
-count = count + 1         // Won't actually update the global
+count = count + 1         // Works! Updates the global
 ```
 
-**Reason**: Immutables are compile-time constants (no storage). Mutables need runtime storage in a data section.
+**How it works**:
+- Mutable globals are stored in __DATA segment with zero-initialization
+- ADRP+ADD instructions compute the address (fixed up at compile time)
+- OpLoad emits LDRx to read from global address
+- OpStore emits STRx to write to global address
 
-### Complex Initializers
+**Test**: `tmp/test_mutable_int.ease` - all tests pass ✓
+
+## ⚠️ Limitations
+
+### Complex Initializers (Still TODO)
 Arrays, structs, and expressions don't work as globals yet:
 ```ease
-let mut arr = []int{}     // Crashes - needs storage
-let config = Config {...} // Crashes - needs storage
-let computed = f()        // Crashes - needs init code
+let mut arr = []int{}     // Not implemented yet
+let config = Config {...} // Not implemented yet
+let computed = f()        // Not implemented yet
 ```
 
-**Reason**: These need either:
-1. Data section allocation (compile-time)
-2. Runtime initialization code (at program start)
+**Reason**: These need:
+1. Data section allocation (✓ implemented)
+2. Runtime initialization code (at program start) - NOT YET IMPLEMENTED
 
 ## Implementation Details
 
@@ -101,6 +107,8 @@ But this defeats the purpose of avoiding pass-by-value.
 
 ## Summary
 
-✅ **Phase 1 Complete**: Parser, Sema, IR, simple literal globals
-⚠️ **Phase 2 Needed**: Data section + complex globals for full functionality
-🎯 **Goal**: Enable `let mut g_semas = []Sema{}` pattern
+✅ **Phase 1 Complete**: Parser, Sema, IR for global variables
+✅ **Phase 2 Complete**: Code generation for simple globals (immutable and mutable)
+✅ **Phase 3 Complete**: Data section, ADRP+ADD addressing, OpLoad/OpStore for mutable globals
+⚠️ **Phase 4 Needed**: Runtime initialization for complex globals (arrays, structs)
+🎯 **Goal**: Enable `let mut g_semas = []Sema{}` pattern (needs Phase 4)

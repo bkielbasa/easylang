@@ -153,11 +153,12 @@ Never add information to commits that I used Claude
 - [x] String builtins: `str_concat`, `str_substring`, `str_index_of`, `str_contains`, `str_starts_with`, `str_ends_with`, `str_char_at`, `str_trim`, `str_replace`, `str_split`
 - [x] Short-circuit logical operators (`&&`, `||`)
 - [x] Struct returns from functions (proper sret calling convention)
-- [x] Global variables (simple literals: int, string, bool)
+- [x] Global variables (simple types: int, string, bool)
   - Parser: `let x = 42` and `let mut y = 100`
-  - Semantic analysis: type checking and symbol registration
-  - IR/Codegen: simple literals work as compile-time constants
-  - Limitation: arrays/structs as globals not yet supported
+  - Semantic analysis: type checking, mutability, symbol registration
+  - IR: OpLoad/OpStore for mutable globals, immediates for immutable literals
+  - Codegen: __DATA segment with ADRP+ADD addressing, LDRx/STRx for reads/writes
+  - Limitation: complex initializers (arrays/structs) not yet supported
 - [x] Bootstrap lexer and token modules (in Ease)
 - [x] Bootstrap parser (in Ease) - all 5 tests pass ✅
 

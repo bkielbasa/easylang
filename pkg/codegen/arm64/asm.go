@@ -450,6 +450,16 @@ func (a *Assembler) ADR(rd Reg, imm21 int32) {
 	a.emit(instr)
 }
 
+// ADRP Xd, label (form PC-relative address to 4KB page)
+func (a *Assembler) ADRP(rd Reg, imm21 int32) {
+	// op=1, immlo[1:0], 10000, immhi[18:0], Rd[4:0]
+	// Address = PC + (immhi << 14) | (immlo << 12)
+	immlo := uint32(imm21 & 0x3)
+	immhi := uint32((imm21 >> 2) & 0x7FFFF)
+	instr := uint32(0x90000000) | (immlo << 29) | (immhi << 5) | uint32(rd)
+	a.emit(instr)
+}
+
 // ============================================
 // Load/Store
 // ============================================

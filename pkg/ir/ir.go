@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	"ease/pkg/ast"
 	"ease/pkg/types"
 )
 
@@ -366,10 +367,20 @@ func (f *Function) NewVReg(typ types.Type) Operand {
 }
 
 // Program represents an entire IR program.
+// GlobalVar represents a global variable that needs storage
+type GlobalVar struct {
+	Name    string
+	Type    types.Type
+	InitVal ast.Expr // initialization expression (nil for zero-init)
+	Mutable bool
+	Size    int // size in bytes
+}
+
 type Program struct {
-	Functions []*Function
-	Globals   map[string]Operand // global variables/constants
-	Strings   []string           // string constant table
+	Functions  []*Function
+	Globals    map[string]Operand // global variables/constants
+	GlobalVars []*GlobalVar       // globals that need storage allocation
+	Strings    []string           // string constant table
 }
 
 // NewProgram creates a new IR program.

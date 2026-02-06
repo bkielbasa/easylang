@@ -4,6 +4,7 @@ package macho
 import (
 	"bytes"
 	"encoding/binary"
+	"fmt"
 )
 
 // Mach-O constants
@@ -46,14 +47,22 @@ const (
 	PageSize = 0x4000 // 16KB
 )
 
+// GlobalVar represents a global variable in the data section.
+type GlobalVar struct {
+	Name   string
+	Offset int    // offset within data section
+	Size   int    // size in bytes
+	Value  int64  // initial value (for simple types)
+}
+
 // Writer writes Mach-O binary files.
 type Writer struct {
-	buf     bytes.Buffer
-	code    []byte
-	strings []string       // string constants (will be placed after code)
-	globals map[string]int64 // global variables (name -> initial value)
-	symbols []Symbol
-	mainOff int64
+	buf        bytes.Buffer
+	code       []byte
+	strings    []string     // string constants (will be placed after code)
+	globalVars []GlobalVar  // global variables (will be in __DATA section)
+	symbols    []Symbol
+	mainOff    int64
 }
 
 // Symbol represents a symbol in the binary.
@@ -66,9 +75,7 @@ type Symbol struct {
 
 // NewWriter creates a new Mach-O writer.
 func NewWriter() *Writer {
-	return &Writer{
-		globals: make(map[string]int64),
-	}
+	return &Writer{}
 }
 
 // SetCode sets the executable code.
@@ -100,33 +107,30 @@ func (w *Writer) StringsSize() uint64 {
 	return size
 }
 
-// SetGlobal sets a global variable with its initial value.
-func (w *Writer) SetGlobal(name string, value int64) {
-	w.globals[name] = value
+// SetGlobalVars sets the global variables with their sizes and initial values.
+func (w *Writer) SetGlobalVars(globals []GlobalVar) {
+	w.globalVars = globals
 }
 
-// GlobalOffset returns the file offset of a global variable (relative to code start).
-// Globals are placed after strings in memory.
-func (w *Writer) GlobalOffset(name string) uint64 {
-	// Start after code and strings
-	offset := uint64(len(w.code)) + w.StringsSize()
-
-	// Add padding to align to 8-byte boundary
-	if offset%8 != 0 {
-		offset += 8 - (offset % 8)
+// GlobalVMAddr returns the VM address of a global variable by name.
+// This is used by the code generator to fix up global references.
+func (w *Writer) GlobalVMAddr(name string, dataVMAddr uint64) uint64 {
+	for _, gv := range w.globalVars {
+		if gv.Name == name {
+			return dataVMAddr + uint64(gv.Offset)
+		}
 	}
-
-	// For now, allocate globals sequentially (8 bytes each for int64)
-	// In a real implementation, we'd track each global's offset properly
-	// For simplicity, just return a placeholder offset
-	// TODO: Implement proper global allocation
-	return offset
+	return 0
 }
 
 // GlobalsSize returns the total size of all global variables.
 func (w *Writer) GlobalsSize() uint64 {
-	// Each global is 8 bytes (int64)
-	return uint64(len(w.globals) * 8)
+	if len(w.globalVars) == 0 {
+		return 0
+	}
+	// Find the last global and return its offset + size
+	lastGlobal := w.globalVars[len(w.globalVars)-1]
+	return uint64(lastGlobal.Offset + lastGlobal.Size)
 }
 
 // SetMainOffset sets the offset of the main function within the code.
@@ -180,10 +184,15 @@ func (w *Writer) Write() []byte {
 		numSyms = 1
 	}
 
+	// Calculate data section size
+	dataSize := w.GlobalsSize()
+	hasData := dataSize > 0
+
 	// Calculate load commands size
 	// Header: 32 bytes
 	// __PAGEZERO: 72 bytes
 	// __TEXT + 1 section: 72 + 80 = 152 bytes
+	// __DATA + 1 section: 72 + 80 = 152 bytes (if we have globals)
 	// __LINKEDIT: 72 bytes
 	// LC_SYMTAB: 24 bytes
 	// LC_DYSYMTAB: 80 bytes
@@ -191,10 +200,13 @@ func (w *Writer) Write() []byte {
 	// LC_MAIN: 24 bytes
 	// LC_BUILD_VERSION: 24 bytes
 	// LC_SOURCE_VERSION: 16 bytes
-	// Reserve 16 bytes for LC_CODE_SIGNATURE (added by codesign)
 	headerSize := uint64(32)
 	loadCmdsSize := uint64(72 + 152 + 72 + 24 + 80 + 32 + 24 + 24 + 16)
 	numCmds := uint32(9)
+	if hasData {
+		loadCmdsSize += 152 // Add __DATA segment + section
+		numCmds++
+	}
 
 	// Code starts well after load commands to leave room for codesign to add LC_CODE_SIGNATURE
 	// Align to 256 bytes to be safe (C binaries typically have code at ~800+ offset)
@@ -206,8 +218,18 @@ func (w *Writer) Write() []byte {
 	textSegFileSize := alignUp(codeFileOff+codeSize, uint64(PageSize))
 	textSegVMSize := textSegFileSize
 
-	// __LINKEDIT comes after __TEXT
+	// __DATA segment comes after __TEXT (if we have globals)
+	var dataFileOff, dataVMAddr uint64
+	if hasData {
+		dataFileOff = textSegFileSize
+		dataVMAddr = uint64(0x100000000) + dataFileOff
+	}
+
+	// __LINKEDIT comes after __DATA (or __TEXT if no data)
 	linkeditFileOff := textSegFileSize
+	if hasData {
+		linkeditFileOff = alignUp(dataFileOff+dataSize, uint64(PageSize))
+	}
 	linkeditVMAddr := uint64(0x100000000) + linkeditFileOff
 
 	symtabOff := linkeditFileOff
@@ -264,6 +286,35 @@ func (w *Writer) Write() []byte {
 	w.writeU32(0) // reserved2
 	w.writeU32(0) // reserved3
 
+	// LC_SEGMENT_64 __DATA (if we have global variables)
+	if hasData {
+		w.writeU32(LC_SEGMENT_64)
+		w.writeU32(152) // 72 + 80 for one section
+		w.writeSegName("__DATA")
+		w.writeU64(dataVMAddr) // vmaddr
+		w.writeU64(alignUp(dataSize, uint64(PageSize))) // vmsize (page-aligned)
+		w.writeU64(dataFileOff) // fileoff
+		w.writeU64(dataSize)     // filesize
+		w.writeU32(VM_PROT_READ | VM_PROT_WRITE)
+		w.writeU32(VM_PROT_READ | VM_PROT_WRITE)
+		w.writeU32(1) // nsects
+		w.writeU32(0) // flags
+
+		// Section __data
+		w.writeSectName("__data")
+		w.writeSegName("__DATA")
+		w.writeU64(dataVMAddr)          // addr
+		w.writeU64(dataSize)            // size
+		w.writeU32(uint32(dataFileOff)) // offset
+		w.writeU32(3)                   // align (2^3 = 8)
+		w.writeU32(0)                   // reloff
+		w.writeU32(0)                   // nreloc
+		w.writeU32(S_REGULAR)           // flags
+		w.writeU32(0)                   // reserved1
+		w.writeU32(0)                   // reserved2
+		w.writeU32(0)                   // reserved3
+	}
+
 	// LC_SEGMENT_64 __LINKEDIT
 	w.writeU32(LC_SEGMENT_64)
 	w.writeU32(72)
@@ -316,7 +367,13 @@ func (w *Writer) Write() []byte {
 	w.buf.WriteString(dylinker)
 	w.buf.WriteByte(0)
 	// Pad to dylinkerCmdSize
-	for w.buf.Len() < int(headerSize)+72+152+72+24+80+dylinkerCmdSize {
+	// Calculate expected offset: header + PAGEZERO + TEXT + [DATA] + LINKEDIT + SYMTAB + DYSYMTAB + dylinker
+	expectedOff := int(headerSize) + 72 + 152
+	if hasData {
+		expectedOff += 152 // Add __DATA segment
+	}
+	expectedOff += 72 + 24 + 80 + dylinkerCmdSize
+	for w.buf.Len() < expectedOff {
 		w.buf.WriteByte(0)
 	}
 
@@ -359,6 +416,34 @@ func (w *Writer) Write() []byte {
 	for _, s := range w.strings {
 		w.buf.WriteString(s)
 		w.buf.WriteByte(0)
+	}
+
+	// Pad to end of __TEXT segment
+	for uint64(w.buf.Len()) < textSegFileSize {
+		w.buf.WriteByte(0)
+	}
+
+	// Write __DATA segment (global variables)
+	if hasData {
+		// Verify we're at the right offset
+		if uint64(w.buf.Len()) != dataFileOff {
+			panic(fmt.Sprintf("Data offset mismatch: expected %d, got %d", dataFileOff, w.buf.Len()))
+		}
+
+		// Write each global variable (zero-initialized for now)
+		for _, gv := range w.globalVars {
+			// Pad to alignment
+			for w.buf.Len() < int(dataFileOff)+gv.Offset {
+				w.buf.WriteByte(0)
+			}
+
+			// Write initial value (zero for now)
+			// For simple int globals, we could write gv.Value here
+			// For now, just write zeros
+			for i := 0; i < gv.Size; i++ {
+				w.buf.WriteByte(0)
+			}
+		}
 	}
 
 	// Pad to linkedit

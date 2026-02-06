@@ -87,29 +87,53 @@ func (b *Builder) buildVarDecl(v *ast.VarDecl) {
 		return
 	}
 
-	// For simple literals, store the value directly as an immediate
-	// TODO: Implement proper mutable globals with data section storage
+	// Determine if this global needs storage allocation
+	needsStorage := false
 	var op Operand
+
 	switch val := v.Value.(type) {
 	case *ast.IntLit:
-		// For now, treat all literal int globals as immediates
-		// This means mutable globals won't actually be mutable yet
-		op = Imm(val.Value, sym.Type)
+		if v.Mutable {
+			// Mutable globals need storage
+			needsStorage = true
+		} else {
+			// Immutable literals can be immediate values
+			op = Imm(val.Value, sym.Type)
+		}
 	case *ast.StringLit:
-		// Strings are always immutable in our current model
+		// Strings use the string table
 		idx := len(b.prog.Strings)
 		b.prog.Strings = append(b.prog.Strings, val.Value)
 		op = StrConst(idx)
 	case *ast.BoolLit:
-		// Booleans as immediates
-		intVal := int64(0)
-		if val.Value {
-			intVal = 1
+		if v.Mutable {
+			needsStorage = true
+		} else {
+			intVal := int64(0)
+			if val.Value {
+				intVal = 1
+			}
+			op = Imm(intVal, sym.Type)
 		}
-		op = Imm(intVal, sym.Type)
 	default:
-		// Complex expressions need storage and initialization
-		// For now, use GlobalRef as placeholder
+		// Complex expressions (arrays, structs, etc.) need storage
+		needsStorage = true
+	}
+
+	if needsStorage {
+		// Calculate size of the global
+		size := b.calculateTypeSize(sym.Type)
+
+		// Add to globals that need storage
+		b.prog.GlobalVars = append(b.prog.GlobalVars, &GlobalVar{
+			Name:    v.Name.Name,
+			Type:    sym.Type,
+			InitVal: v.Value,
+			Mutable: v.Mutable,
+			Size:    size,
+		})
+
+		// Create a GlobalRef operand
 		op = GlobalRef(v.Name.Name, sym.Type)
 	}
 
@@ -662,6 +686,16 @@ func (b *Builder) buildExpr(expr ast.Expr) Operand {
 func (b *Builder) buildIdent(ident *ast.Ident) Operand {
 	// Look up the variable
 	if op, ok := b.prog.Globals[ident.Name]; ok {
+		// For GlobalRef operands, we need to emit a Load instruction
+		if op.Kind == OpndGlobal {
+			result := b.fn.NewVReg(op.Type)
+			b.emit(&Instr{
+				Op:   OpLoad,
+				Dest: result,
+				Args: []Operand{op},
+			})
+			return result
+		}
 		return op
 	}
 
@@ -908,8 +942,14 @@ func (b *Builder) buildIdentAssignment(ident *ast.Ident, right Operand) Operand 
 			Dest: oldOp,
 			Args: []Operand{right},
 		})
+	} else if oldOp.Kind == OpndGlobal {
+		// For GlobalRef operands, emit a Store instruction
+		b.emit(&Instr{
+			Op:   OpStore,
+			Args: []Operand{right, oldOp},
+		})
 	} else {
-		// Update the binding to point to the new value
+		// Update the binding to point to the new value (for immediates/constants)
 		b.prog.Globals[ident.Name] = right
 	}
 
@@ -2756,4 +2796,34 @@ func (b *Builder) buildStrSplit(e *ast.CallExpr) Operand {
 		Args: []Operand{s, sep},
 	})
 	return dest
+}
+
+// calculateTypeSize returns the size in bytes for a type
+func (b *Builder) calculateTypeSize(t types.Type) int {
+	switch typ := t.(type) {
+	case *types.Basic:
+		switch typ.Kind {
+		case types.Int, types.Int64:
+			return 8
+		case types.Bool:
+			return 1
+		case types.String:
+			return 16 // pointer + length
+		default:
+			return 8
+		}
+	case *types.Pointer:
+		return 8
+	case *types.Array, *types.Slice:
+		return 24 // fat pointer: ptr + len + cap
+	case *types.Struct:
+		// Sum of field sizes (simplified, no padding/alignment)
+		size := 0
+		for _, field := range typ.Fields {
+			size += b.calculateTypeSize(field.Type)
+		}
+		return size
+	default:
+		return 8 // default to pointer size
+	}
 }

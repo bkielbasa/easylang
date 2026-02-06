@@ -665,8 +665,21 @@ func compile(inputFile, output string, verbose, dumpIR bool) error {
 		return fmt.Errorf("error: no main function found")
 	}
 
-	// Fixup string addresses
+	// Calculate memory layout for fixups
+	const (
+		baseAddr = 0x100000000 // Base VM address
+		pageSize = 0x4000      // 16KB pages on Apple Silicon
+	)
+
 	codeSize := uint64(emitter.CodeSize())
+
+	// Calculate code VM address (will be at some offset after headers)
+	// For now, estimate ~1KB for headers and load commands
+	headerSize := uint64(1024)
+	codeFileOff := (headerSize + 255) & ^uint64(255) // Align to 256 bytes
+	codeVMAddr := baseAddr + codeFileOff
+
+	// Fixup string addresses (strings are in __TEXT segment after code)
 	if len(irProg.Strings) > 0 {
 		stringOffsets := make([]uint64, len(irProg.Strings))
 		offset := codeSize
@@ -675,6 +688,36 @@ func compile(inputFile, output string, verbose, dumpIR bool) error {
 			offset += uint64(len(s) + 1)
 		}
 		emitter.FixupStrings(stringOffsets)
+	}
+
+	// Calculate global VM addresses (globals are in __DATA segment)
+	if len(irProg.GlobalVars) > 0 {
+		// Calculate strings size
+		stringsSize := uint64(0)
+		for _, s := range irProg.Strings {
+			stringsSize += uint64(len(s) + 1)
+		}
+
+		// __TEXT segment size (code + strings, page-aligned)
+		textSegSize := ((codeFileOff + codeSize + stringsSize + pageSize - 1) / pageSize) * pageSize
+
+		// __DATA segment starts at next page boundary
+		dataVMAddr := baseAddr + textSegSize
+
+		// Calculate each global's VM address
+		globalAddrs := make(map[string]uint64)
+		offset := 0
+		for _, gv := range irProg.GlobalVars {
+			// Align to 8-byte boundary
+			if offset%8 != 0 {
+				offset += 8 - (offset % 8)
+			}
+			globalAddrs[gv.Name] = dataVMAddr + uint64(offset)
+			offset += gv.Size
+		}
+
+		// Fixup global variable addresses
+		emitter.FixupGlobals(globalAddrs, codeVMAddr)
 	}
 
 	code := emitter.Code()
@@ -692,6 +735,26 @@ func compile(inputFile, output string, verbose, dumpIR bool) error {
 	writer.SetCode(code)
 	writer.SetStrings(irProg.Strings)
 	writer.SetMainOffset(mainOff)
+
+	// Set global variables with calculated offsets
+	if len(irProg.GlobalVars) > 0 {
+		machoGlobals := make([]macho.GlobalVar, 0, len(irProg.GlobalVars))
+		offset := 0
+		for _, gv := range irProg.GlobalVars {
+			// Align to 8-byte boundary
+			if offset%8 != 0 {
+				offset += 8 - (offset % 8)
+			}
+			machoGlobals = append(machoGlobals, macho.GlobalVar{
+				Name:   gv.Name,
+				Offset: offset,
+				Size:   gv.Size,
+				Value:  0, // TODO: support initial values
+			})
+			offset += gv.Size
+		}
+		writer.SetGlobalVars(machoGlobals)
+	}
 
 	// Add symbols
 	for name, offset := range funcOffsets {
