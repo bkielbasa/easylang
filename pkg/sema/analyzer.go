@@ -2054,6 +2054,102 @@ func (a *Analyzer) analyzeStrconvAtoi(e *ast.MethodExpr) types.Type {
 	return types.Typ[types.Int]
 }
 
+func (a *Analyzer) analyzeSyscallOpen(e *ast.MethodExpr) types.Type {
+	if len(e.Args) != 3 {
+		a.error(e.Pos(), "syscall.open requires exactly 3 arguments (path, flags, mode)")
+		return types.Typ[types.Int]
+	}
+
+	// Check path is string
+	pathType := a.analyzeExpr(e.Args[0])
+	if basic, ok := pathType.Underlying().(*types.Basic); !ok || basic.Kind != types.String {
+		a.error(e.Args[0].Pos(), "syscall.open path must be string; got %s", pathType)
+	}
+
+	// Check flags is int
+	flagsType := a.analyzeExpr(e.Args[1])
+	if basic, ok := flagsType.Underlying().(*types.Basic); !ok || basic.Kind != types.Int {
+		a.error(e.Args[1].Pos(), "syscall.open flags must be int; got %s", flagsType)
+	}
+
+	// Check mode is int
+	modeType := a.analyzeExpr(e.Args[2])
+	if basic, ok := modeType.Underlying().(*types.Basic); !ok || basic.Kind != types.Int {
+		a.error(e.Args[2].Pos(), "syscall.open mode must be int; got %s", modeType)
+	}
+
+	return types.Typ[types.Int] // returns file descriptor
+}
+
+func (a *Analyzer) analyzeSyscallRead(e *ast.MethodExpr) types.Type {
+	if len(e.Args) != 3 {
+		a.error(e.Pos(), "syscall.read requires exactly 3 arguments (fd, buf, count)")
+		return types.Typ[types.Int]
+	}
+
+	// Check fd is int
+	fdType := a.analyzeExpr(e.Args[0])
+	if basic, ok := fdType.Underlying().(*types.Basic); !ok || basic.Kind != types.Int {
+		a.error(e.Args[0].Pos(), "syscall.read fd must be int; got %s", fdType)
+	}
+
+	// Check buf is string or int (buffer pointer)
+	bufType := a.analyzeExpr(e.Args[1])
+	if basic, ok := bufType.Underlying().(*types.Basic); !ok || (basic.Kind != types.String && basic.Kind != types.Int) {
+		a.error(e.Args[1].Pos(), "syscall.read buf must be string or int (pointer); got %s", bufType)
+	}
+
+	// Check count is int
+	countType := a.analyzeExpr(e.Args[2])
+	if basic, ok := countType.Underlying().(*types.Basic); !ok || basic.Kind != types.Int {
+		a.error(e.Args[2].Pos(), "syscall.read count must be int; got %s", countType)
+	}
+
+	return types.Typ[types.Int] // returns bytes read
+}
+
+func (a *Analyzer) analyzeSyscallWrite(e *ast.MethodExpr) types.Type {
+	if len(e.Args) != 3 {
+		a.error(e.Pos(), "syscall.write requires exactly 3 arguments (fd, buf, count)")
+		return types.Typ[types.Int]
+	}
+
+	// Check fd is int
+	fdType := a.analyzeExpr(e.Args[0])
+	if basic, ok := fdType.Underlying().(*types.Basic); !ok || basic.Kind != types.Int {
+		a.error(e.Args[0].Pos(), "syscall.write fd must be int; got %s", fdType)
+	}
+
+	// Check buf is string or int (buffer pointer)
+	bufType := a.analyzeExpr(e.Args[1])
+	if basic, ok := bufType.Underlying().(*types.Basic); !ok || (basic.Kind != types.String && basic.Kind != types.Int) {
+		a.error(e.Args[1].Pos(), "syscall.write buf must be string or int (pointer); got %s", bufType)
+	}
+
+	// Check count is int
+	countType := a.analyzeExpr(e.Args[2])
+	if basic, ok := countType.Underlying().(*types.Basic); !ok || basic.Kind != types.Int {
+		a.error(e.Args[2].Pos(), "syscall.write count must be int; got %s", countType)
+	}
+
+	return types.Typ[types.Int] // returns bytes written
+}
+
+func (a *Analyzer) analyzeSyscallClose(e *ast.MethodExpr) types.Type {
+	if len(e.Args) != 1 {
+		a.error(e.Pos(), "syscall.close requires exactly 1 argument (fd)")
+		return types.Typ[types.Int]
+	}
+
+	// Check fd is int
+	fdType := a.analyzeExpr(e.Args[0])
+	if basic, ok := fdType.Underlying().(*types.Basic); !ok || basic.Kind != types.Int {
+		a.error(e.Args[0].Pos(), "syscall.close fd must be int; got %s", fdType)
+	}
+
+	return types.Typ[types.Int] // returns 0 on success, -1 on error
+}
+
 func (a *Analyzer) analyzeFieldExpr(e *ast.FieldExpr) types.Type {
 	// Check if base expression is a module identifier BEFORE analyzing it
 	// This prevents "undefined: math" errors for module-qualified names
@@ -2891,6 +2987,17 @@ func (a *Analyzer) analyzeMethodExpr(e *ast.MethodExpr) types.Type {
 				return a.analyzeStrconvItoa(e)
 			case "Atoi":
 				return a.analyzeStrconvAtoi(e)
+			}
+		case "syscall":
+			switch e.Method.Name {
+			case "open":
+				return a.analyzeSyscallOpen(e)
+			case "read":
+				return a.analyzeSyscallRead(e)
+			case "write":
+				return a.analyzeSyscallWrite(e)
+			case "close":
+				return a.analyzeSyscallClose(e)
 			}
 		}
 	}

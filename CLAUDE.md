@@ -171,6 +171,10 @@ ease version                 # Print version
 - [x] String builtins: `str_concat`, `str_substring`, `str_index_of`, `str_contains`, `str_starts_with`, `str_ends_with`, `str_char_at`, `str_trim`, `str_replace`, `str_split`
 - [x] Short-circuit logical operators (`&&`, `||`)
 - [x] Struct returns from functions (proper sret calling convention)
+- [x] File I/O (syscalls: `syscall.open`, `syscall.read`, `syscall.write`, `syscall.close`)
+  - Low-level syscalls for direct file operations
+  - Proper ARM64 syscall implementation with error handling
+  - See `examples/file_io.ease` for usage examples
 - [x] Global variables (simple and complex types)
   - Parser: `let x = 42`, `let mut y = 100`, `let mut arr = []int{1,2,3}`
   - Semantic analysis: type checking, mutability, symbol registration
@@ -196,6 +200,8 @@ ease version                 # Print version
   - `strings` module: Split, Join, Contains, StartsWith, EndsWith, IndexOf, Substring, CharAt, Trim, Replace, Concat
   - `strconv` module: Itoa, Atoi, ParseInt (with base 2-36), FormatInt (with base 2-36)
   - `io` module: ReadFile, WriteFile
+  - `syscall` module: open, read, write, close (low-level file operations)
+  - `os` module: ReadFile, WriteFile, Argc, Argv (high-level OS operations)
   - Architecture: Low-level builtins (`str_*`, `os.*`) as implementation primitives
   - User-facing: Stdlib modules provide clean API (e.g., `strings.Split` instead of `str_split`)
   - All string/file operations now go through stdlib modules
@@ -231,6 +237,19 @@ Progress on implementing the Ease compiler in Ease itself:
 - [ ] Full self-hosting - Bootstrap compiler compiling itself
 
 ### Recent Fixes
+
+**File I/O Implementation (Feb 6, 2026):**
+- Implemented complete file I/O syscall support for macOS ARM64
+  - `syscall.open(path, flags, mode)` - open file with proper flag/mode handling
+  - `syscall.read(fd, buf, count)` - read bytes from file descriptor
+  - `syscall.write(fd, buf, count)` - write bytes to file descriptor
+  - `syscall.close(fd)` - close file descriptor
+- Added semantic analysis for syscall package with type checking
+- Added IR builder support for syscall method expressions
+- Codegen already had full ARM64 syscall implementations
+- Buffer parameters accept both string and int (pointer) types
+- Example: `examples/file_io.ease` demonstrates usage
+- Files: pkg/sema/analyzer.go, pkg/ir/builder.go, examples/file_io.ease
 
 **Array Push Corruption & Bootstrap Sema Fix (Feb 6, 2026):**
 - **CRITICAL FIX #1**: Fixed array push corrupting element values during growth

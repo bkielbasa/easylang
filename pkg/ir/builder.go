@@ -2685,6 +2685,17 @@ func (b *Builder) buildMethodExpr(e *ast.MethodExpr) Operand {
 			case "Atoi":
 				return b.buildStrconvAtoi(e)
 			}
+		case "syscall":
+			switch e.Method.Name {
+			case "open":
+				return b.buildSyscallOpen(&ast.CallExpr{Func: e.Method, Args: e.Args})
+			case "read":
+				return b.buildSyscallRead(&ast.CallExpr{Func: e.Method, Args: e.Args})
+			case "write":
+				return b.buildSyscallWrite(&ast.CallExpr{Func: e.Method, Args: e.Args})
+			case "close":
+				return b.buildSyscallClose(&ast.CallExpr{Func: e.Method, Args: e.Args})
+			}
 		}
 	}
 
