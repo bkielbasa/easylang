@@ -627,15 +627,7 @@ fn analyze_binary(nodes: []AstNode, idx: int) -> int {
     print(strconv.Itoa(node.right))
     print("]")
 
-    print("[left:]")
-    analyze_expr(nodes, node.left)
-    print("[right:]")
-    analyze_expr(nodes, node.right)
-    print("[both done]")
-    print("[check EQ]")
-
     // Assignment
-    // Workaround for stack corruption: re-analyze expressions inline
     if op == TK_EQ() {
         let lt = analyze_expr(nodes, node.left)
         let rt = analyze_expr(nodes, node.right)
@@ -648,7 +640,6 @@ fn analyze_binary(nodes: []AstNode, idx: int) -> int {
     }
 
     // Plus: arithmetic or string concat
-    // Workaround for stack corruption: re-analyze inline
     print("[check PLUS]")
     if op == TK_PLUS() {
         print("[is PLUS]")
@@ -1249,14 +1240,41 @@ fn test_undefined_var() -> bool {
 fn test_function_decl() -> bool {
     print("Test: Function declaration... ")
 
+    // Reset sema state for clean test
+    g_sema = Sema {
+        type_tags: []int{},
+        type_names: []string{},
+        type_elem: []int{},
+        type_fields_start: []int{},
+        type_fields_count: []int{},
+        type_params_start: []int{},
+        type_params_count: []int{},
+        type_result: []int{},
+        field_names: []string{},
+        field_types: []int{},
+        sym_names: []string{},
+        sym_types: []int{},
+        sym_scopes: []int{},
+        sym_kinds: []int{},
+        sym_mutable: []int{},
+        scope_parents: []int{},
+        scope_names: []string{},
+        errors: []string{},
+        current_scope: []int{},
+        current_func: []int{},
+    }
+    init_sema()
+
     let mut nodes = []AstNode{}
 
-    // Type nodes
+    // Type nodes for parameters (need to be before param nodes for resolution)
     push(nodes, AstNode { tag: TYPE_IDENT(), str_val: "int", int_val: 0, left: -1, right: -1, extra: -1, children_start: -1, children_count: 0 })
+    push(nodes, AstNode { tag: TYPE_IDENT(), str_val: "int", int_val: 0, left: -1, right: -1, extra: -1, children_start: -1, children_count: 0 })
+    push(nodes, AstNode { tag: TYPE_IDENT(), str_val: "int", int_val: 0, left: -1, right: -1, extra: -1, children_start: -1, children_count: 0 })
+
+    // Parameter nodes (must be consecutive for children_start/children_count)
     push(nodes, AstNode { tag: TYPE_IDENT(), str_val: "a", int_val: 0, left: 0, right: -1, extra: -1, children_start: -1, children_count: 0 })
-    push(nodes, AstNode { tag: TYPE_IDENT(), str_val: "int", int_val: 0, left: -1, right: -1, extra: -1, children_start: -1, children_count: 0 })
-    push(nodes, AstNode { tag: TYPE_IDENT(), str_val: "b", int_val: 0, left: 2, right: -1, extra: -1, children_start: -1, children_count: 0 })
-    push(nodes, AstNode { tag: TYPE_IDENT(), str_val: "int", int_val: 0, left: -1, right: -1, extra: -1, children_start: -1, children_count: 0 })
+    push(nodes, AstNode { tag: TYPE_IDENT(), str_val: "b", int_val: 0, left: 1, right: -1, extra: -1, children_start: -1, children_count: 0 })
 
     // Expression nodes
     push(nodes, AstNode { tag: EXPR_IDENT(), str_val: "a", int_val: 0, left: -1, right: -1, extra: -1, children_start: -1, children_count: 0 })
@@ -1267,8 +1285,8 @@ fn test_function_decl() -> bool {
     push(nodes, AstNode { tag: STMT_RETURN(), str_val: "", int_val: 0, left: 7, right: -1, extra: -1, children_start: -1, children_count: 0 })
     push(nodes, AstNode { tag: STMT_BLOCK(), str_val: "", int_val: 0, left: -1, right: -1, extra: -1, children_start: 8, children_count: 1 })
 
-    // Function declaration
-    push(nodes, AstNode { tag: DECL_FN(), str_val: "add", int_val: 0, left: 4, right: 9, extra: -1, children_start: 1, children_count: 2 })
+    // Function declaration (return type at index 2, params at 3-4)
+    push(nodes, AstNode { tag: DECL_FN(), str_val: "add", int_val: 0, left: 2, right: 9, extra: -1, children_start: 3, children_count: 2 })
     analyze_program(nodes)
 
     if len(g_sema.errors) > 0 {
@@ -1305,13 +1323,43 @@ fn test_function_decl() -> bool {
 fn test_struct_decl() -> bool {
     print("Test: Struct declaration... ")
 
+    // Reset sema state for clean test
+    g_sema = Sema {
+        type_tags: []int{},
+        type_names: []string{},
+        type_elem: []int{},
+        type_fields_start: []int{},
+        type_fields_count: []int{},
+        type_params_start: []int{},
+        type_params_count: []int{},
+        type_result: []int{},
+        field_names: []string{},
+        field_types: []int{},
+        sym_names: []string{},
+        sym_types: []int{},
+        sym_scopes: []int{},
+        sym_kinds: []int{},
+        sym_mutable: []int{},
+        scope_parents: []int{},
+        scope_names: []string{},
+        errors: []string{},
+        current_scope: []int{},
+        current_func: []int{},
+    }
+    init_sema()
+
     let mut nodes = []AstNode{}
 
+    // Type nodes for fields (indices 0-1)
     push(nodes, AstNode { tag: TYPE_IDENT(), str_val: "int", int_val: 0, left: -1, right: -1, extra: -1, children_start: -1, children_count: 0 })
+    push(nodes, AstNode { tag: TYPE_IDENT(), str_val: "int", int_val: 0, left: -1, right: -1, extra: -1, children_start: -1, children_count: 0 })
+
+    // Field nodes (MUST be consecutive for children_start/children_count, indices 2-3)
     push(nodes, AstNode { tag: TYPE_IDENT(), str_val: "x", int_val: 0, left: 0, right: -1, extra: -1, children_start: -1, children_count: 0 })
-    push(nodes, AstNode { tag: TYPE_IDENT(), str_val: "int", int_val: 0, left: -1, right: -1, extra: -1, children_start: -1, children_count: 0 })
-    push(nodes, AstNode { tag: TYPE_IDENT(), str_val: "y", int_val: 0, left: 2, right: -1, extra: -1, children_start: -1, children_count: 0 })
-    push(nodes, AstNode { tag: DECL_STRUCT(), str_val: "Point", int_val: 0, left: -1, right: -1, extra: -1, children_start: 1, children_count: 2 })
+    push(nodes, AstNode { tag: TYPE_IDENT(), str_val: "y", int_val: 0, left: 1, right: -1, extra: -1, children_start: -1, children_count: 0 })
+
+    // Struct declaration (fields at indices 2-3)
+    push(nodes, AstNode { tag: DECL_STRUCT(), str_val: "Point", int_val: 0, left: -1, right: -1, extra: -1, children_start: 2, children_count: 2 })
     collect_declarations(nodes)
 
     if len(g_sema.errors) > 0 {

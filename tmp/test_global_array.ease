@@ -1,45 +1,46 @@
-// Test global array for sema registry pattern
+// Test global array access pattern like bootstrap sema
+import ("strconv")
 
-struct Sema {
-    value: int,
+let mut g_array = []int{}
+
+fn check_equal(a: int, b: int) -> bool {
+    print("check_equal: a=")
+    print(strconv.Itoa(a))
+    print(", b=")
+    print(strconv.Itoa(b))
+    print("\n")
+    return a == b
 }
 
-let mut g_semas = []Sema{}
+fn test_global_array() -> int {
+    // Initialize global array with same value
+    g_array = []int{}
+    push(g_array, 42)
+    push(g_array, 42)
 
-fn add_sema(val: int) {
-    let s = Sema { value: val }
-    push(g_semas, s)
-}
+    print("Reading from global array...\n")
+    let x = g_array[0]
+    print("x = ")
+    print(strconv.Itoa(x))
+    print("\n")
 
-fn get_sema_value(idx: int) -> int {
-    if idx >= 0 && idx < len(g_semas) {
-        return g_semas[idx].value
+    let y = g_array[1]
+    print("y = ")
+    print(strconv.Itoa(y))
+    print("\n")
+
+    print("Calling check_equal(g_array[0], g_array[1])...\n")
+    let result = check_equal(g_array[0], g_array[1])
+
+    if !result {
+        print("ERROR: values should be equal!\n")
+        return 1
     }
-    return -1
+
+    print("Success!\n")
+    return 0
 }
 
 fn main() -> int {
-    print("Testing global array registry pattern:\n")
-
-    add_sema(42)
-    add_sema(100)
-    add_sema(200)
-
-    print("Sema 0 value: ")
-    print(strconv.Itoa(get_sema_value(0)))
-    print("\n")
-
-    print("Sema 1 value: ")
-    print(strconv.Itoa(get_sema_value(1)))
-    print("\n")
-
-    print("Sema 2 value: ")
-    print(strconv.Itoa(get_sema_value(2)))
-    print("\n")
-
-    print("Array length: ")
-    print(strconv.Itoa(len(g_semas)))
-    print("\n")
-
-    return 0
+    return test_global_array()
 }

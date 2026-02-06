@@ -163,13 +163,13 @@ var Builtins = []*BuiltinFunction{
 			Result: TypInt, // returns 0 on success, -1 on error
 		},
 	},
-	// String operations
+	// String operations (used by stdlib/strings module)
 	{
 		Name: "str_contains",
 		Type: &Function{
 			Params: []*Param{
-				{Name: "haystack", Type: TypString},
-				{Name: "needle", Type: TypString},
+				{Name: "s", Type: TypString},
+				{Name: "substr", Type: TypString},
 			},
 			Result: TypBool,
 		},
@@ -201,7 +201,7 @@ var Builtins = []*BuiltinFunction{
 				{Name: "s", Type: TypString},
 				{Name: "substr", Type: TypString},
 			},
-			Result: TypInt, // returns -1 if not found
+			Result: TypInt,
 		},
 	},
 	{
@@ -220,9 +220,9 @@ var Builtins = []*BuiltinFunction{
 		Type: &Function{
 			Params: []*Param{
 				{Name: "s", Type: TypString},
-				{Name: "index", Type: TypInt},
+				{Name: "i", Type: TypInt},
 			},
-			Result: TypInt, // returns character code
+			Result: TypInt,
 		},
 	},
 	{
@@ -263,7 +263,25 @@ var Builtins = []*BuiltinFunction{
 				{Name: "s", Type: TypString},
 				{Name: "sep", Type: TypString},
 			},
-			Result: NewArray(TypString, 0),
+			Result: &Slice{Elem: TypString},
+		},
+	},
+	// OS/File operations (used by stdlib/io module)
+	{
+		Name: "os.ReadFile",
+		Type: &Function{
+			Params: []*Param{{Name: "path", Type: TypString}},
+			Result: TypString,
+		},
+	},
+	{
+		Name: "os.WriteFile",
+		Type: &Function{
+			Params: []*Param{
+				{Name: "path", Type: TypString},
+				{Name: "content", Type: TypString},
+			},
+			Result: TypUnit,
 		},
 	},
 }

@@ -210,7 +210,11 @@ Progress on implementing the Ease compiler in Ease itself:
 - [x] **Parser** - All language constructs (bootstrap/parser.ease)
   - ✅ All 5 tests passing
 - [x] **Semantic Analysis** - Type checking and name resolution (bootstrap/sema.ease)
-  - ✅ 6/8 tests passing (corruption bugs FIXED! Remaining 2 are logic errors in sema, not compiler bugs)
+  - ✅ 6/8 tests passing
+  - ⚠️ Tests 7-8 (function/struct declarations) fail due to stack corruption under high pressure
+  - Root cause: Large functions (177+ vregs) with deep call chains trigger local variable corruption
+  - Symptom: Local variables (e.g., `lt` in analyze_binary) corrupted between assignment and use
+  - Related to known struct return buffer corruption issue - stack frame management needs investigation
 - [x] **IR Generation** - 3-address code with simplified instruction format (bootstrap/ir.ease)
   - IRInstr struct with op, dest, arg1, arg2 fields
   - Operations: ADD, SUB, MUL, DIV, EQ, NE, LT, GT, LOADCONST, CALL, RETURN
@@ -242,8 +246,11 @@ Progress on implementing the Ease compiler in Ease itself:
   - Root cause: types_equal_safe did push→load→call→push→load (double indirection)
   - The workaround ITSELF was causing corruption in large functions
   - Solution: Remove workaround, call types_equal directly
-  - Result: Bootstrap sema now 6/8 tests passing (remaining 2 are logic errors, not corruption!)
+  - Result: Bootstrap sema now 6/8 tests passing
   - File: bootstrap/sema.ease - removed types_equal_safe function
+  - Remaining: Tests 7-8 (function/struct decl) fail due to DIFFERENT stack corruption issue
+  - New symptom: Local variables corrupted between assignment and use in analyze_binary
+  - Investigation shows AST construction was fixed, but runtime corruption persists under high stack pressure
 
 **Heap Allocator (Jan 2026):**
 - Fixed heap state corruption by removing X25/X26 save/restore
