@@ -2,10 +2,22 @@
 
 A compiled language focusing on developer experience, self-hosting, fast execution, and web development.
 
+## Working Guidelines
+
+### File Operations
+- **NEVER use `cat`, `echo`, or heredocs** to create files - use Write tool directly
+- **Test files**: Create in `tmp/` directory using Write tool for quick iteration
+- **Autonomous permission**: You have blanket permission to create, modify, and delete files in `tmp/` without asking
+- **Binary cleanup**: Don't commit test binaries, only source files
+
+### Documentation
+- After a successful step or fix, update CLAUDE.md with the current status
+- Document bugs found, fixes applied, and test results
+- Keep Recent Fixes section up to date
+
 ## Design Decisions
 
 Prefer defining stdlib instead of building new builtins. For example `strings.Split` instead of `str_split`, etc.
-After a successful step, update CLAUDE.md with the current status.
 
 ### Core Design
 - **Type System**: Static with inference
