@@ -323,16 +323,27 @@ Progress on implementing the Ease compiler in Ease itself:
     fn main() { init(); ... }
     ```
   - Needs deep debugging: IR dump, assembly inspection, or debugger to trace actual addresses
-- **Struct assignment with array fields does shallow copy (CRITICAL)**: Assigning structs that contain array fields performs shallow copy of array pointers, not deep copy
-  - **Symptom**: `g_sema = Sema { type_tags: []int{}, ... }` doesn't create new empty arrays - old data persists!
-  - **Evidence**: After "reset", `len(type_tags) = 2` instead of 0, accessing elements returns garbage or old values
-  - **Root Cause**: OpMemCopy copies struct bytes including array pointers, but not array contents
-  - **Impact**: Cannot reinitialize global structs with array fields
+- **Global struct assignment with array fields copies stale stack pointers (CRITICAL)**: Cannot reassign global structs with array/slice fields - old data persists
+  - **Symptom**: `g_s = S { a: []int{} }` doesn't create new array - old length/data remains after reassignment
+  - **Evidence**: After `push` twice (len=2), reassigning `g_s = S { a: []int{} }` still shows len=2 instead of 0
+  - **Root Cause**: Stack pointer reuse - arrays allocate on stack, struct copies stack addresses to global, stack memory reused with old data
+    1. `buildArrayExpr` uses `OpAlloc` (stack allocation) for array fat pointers
+    2. Struct literal embeds stack pointer to array
+    3. `OpStore` copies struct bytes (including stack pointer) to global
+    4. Next function call reuses same stack offset with old array data
+    5. Global struct's pointer still points to stack location, sees stale data
+  - **Impact**: Cannot reinitialize global structs with array fields - affects bootstrap sema tests 7-8
   - **Affects**: `bootstrap/sema.ease` - tests 7 and 8 fail due to corrupted arrays (6/8 passing)
-  - **File**: pkg/ir/builder.go lines 981-988
-  - **Workaround**: None currently - needs fix in IR builder or codegen
-  - **Example**: `analyze_binary` has 177 vregs, 1520-byte stack frame
-    - `let x = analyze_expr(...)` returns 1, but later reading `x` gives 0 or garbage
+  - **File**: pkg/ir/builder.go `buildArrayExpr` (uses OpAlloc), `buildIdentAssignment` (OpStore)
+  - **Workaround**: Manually reassign each array field instead of whole struct:
+    ```ease
+    // DON'T: g_sema = Sema { type_tags: []int{}, type_names: []string{}, ... }
+    // DO:
+    g_sema.type_tags = []int{}
+    g_sema.type_names = []string{}
+    // ... (reassign each field individually)
+    ```
+  - **Proper Fix**: Use `OpHeapAlloc` for arrays in global struct contexts, or implement deep copy with heap allocation
     - Corruption happens even with global array storage and re-analysis workarounds
   - **Investigation findings** (Feb 2026):
     - Simple test cases (<20 vregs) work perfectly - no corruption
