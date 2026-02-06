@@ -503,13 +503,10 @@ func (e *Emitter) emitPrologue() {
 	// X8 may be clobbered by nested function calls, so save it at a known location
 	if e.fn.Result != nil {
 		if structSize := getStructSize(e.fn.Result); structSize > 0 {
-			// Save X8 at FP+16+heapRegsSize (after saved FP/LR and heap registers)
-			// This is within our spill area but we reserve it for X8
-			heapRegsSize := 0
-			if e.usesHeapAlloc {
-				heapRegsSize = 16
-			}
-			e.asm.STR(X8, X29, uint16(16+heapRegsSize))
+			// Save X8 at FP+16 (after saved FP/LR)
+			// This is the sret save slot allocated in calculateStackLayout
+			// NOTE: X25/X26 (heap state) are NOT saved on stack - they persist globally
+			e.asm.STR(X8, X29, 16)
 		}
 	}
 }
@@ -2323,12 +2320,9 @@ func (e *Emitter) emitReturn(instr *ir.Instr) {
 					fmt.Printf("DEBUG %s: emitReturn arg[0]=%v\n", e.fn.Name, instr.Args[0])
 				}
 			}
-			// Load saved X8 from FP+16+heapRegsSize (saved in prologue)
-			heapRegsSize := 0
-			if e.usesHeapAlloc {
-				heapRegsSize = 16
-			}
-			e.asm.LDR(X8, X29, uint16(16+heapRegsSize))
+			// Load saved X8 from FP+16 (saved in prologue)
+			// NOTE: X25/X26 (heap state) are NOT saved on stack - they persist globally
+			e.asm.LDR(X8, X29, 16)
 
 			// Returning a struct - copy it to [X8] (caller's buffer)
 			// src contains pointer to the struct on our local stack
