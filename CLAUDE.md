@@ -27,7 +27,7 @@ After a successful step, update CLAUDE.md with the current status.
 ### Imports
 ```
 import (
-    "io"                          // stdlib - bare name (TODO: not yet implemented)
+    "io"                          // stdlib - bare name ✅ IMPLEMENTED
     "./config"                    // local - starts with ./ ✅ IMPLEMENTED
     "github.com/user/pkg" as p    // external - URL style (TODO)
 )
@@ -38,7 +38,7 @@ import (
 - Imported functions compiled into the binary ✅
 - Unused imports = compile error (TODO)
 
-**Status**: Local imports with `./ ` fully working! Stdlib and external imports coming soon.
+**Status**: Local imports and stdlib imports fully working! External imports coming soon.
 
 ### Loops (Go-style, only `for`)
 ```
@@ -173,12 +173,20 @@ ease version                 # Print version
   - See `bootstrap/README.md` for details ✅
 - [x] Module/Import system
   - Local imports: `import ("./math", "./geometry" as geo)`
+  - Stdlib imports: `import ("strings", "io")` - bare names resolve to `stdlib/`
   - Visibility rules: Uppercase = exported, lowercase = private
   - Qualified function calls: `math.Add(5, 3)`, `geo.Area(5, 8)`
   - Automatic parsing and analysis of imported modules
   - Cross-module symbol resolution and type checking
   - Imported functions compiled into binary
-  - TODO: stdlib imports, external imports, unused import detection
+  - TODO: external imports, unused import detection
+- [x] Standard library foundation
+  - `strings` module: Split, Join, Contains, StartsWith, EndsWith, IndexOf, Substring, CharAt, Trim, Replace, Concat
+  - `strconv` module: Itoa, Atoi, ParseInt (with base 2-36), FormatInt (with base 2-36)
+  - `io` module: ReadFile, WriteFile
+  - Architecture: Low-level builtins (`str_*`, `os.*`) as implementation primitives
+  - User-facing: Stdlib modules provide clean API (e.g., `strings.Split` instead of `str_split`)
+  - All string/file operations now go through stdlib modules
 
 ### Bootstrap Compiler (Self-Hosting)
 
@@ -210,6 +218,15 @@ Progress on implementing the Ease compiler in Ease itself:
 - [ ] Full self-hosting - Bootstrap compiler compiling itself
 
 ### Recent Fixes
+
+**Array Push Corruption (Feb 6, 2026):**
+- **CRITICAL FIX**: Fixed array push corrupting element values during growth
+  - Root cause: emitArrayPush backed up element in X15 (caller-saved register)
+  - mmap syscall during array growth would clobber X15, corrupting element
+  - ARM64 calling convention: X0-X18 are caller-saved, X19-X28 are callee-saved
+  - Solution: Save X20 (element) on stack before mmap, restore after
+  - File: pkg/codegen/arm64/emit.go lines 2697-2726
+  - Simple tests now pass, but bootstrap sema still shows corruption (investigating)
 
 **Heap Allocator (Jan 2026):**
 - Fixed heap state corruption by removing X25/X26 save/restore
@@ -277,16 +294,29 @@ Progress on implementing the Ease compiler in Ease itself:
     fn main() { init(); ... }
     ```
   - Needs deep debugging: IR dump, assembly inspection, or debugger to trace actual addresses
-- **Bootstrap semantic analyzer**: Passing 6/8 tests, 2 logical failures (not crashes)
-  - String array push bug is fixed
-  - Remaining test failures are semantic logic issues, not memory corruption
-  - Significant progress: no longer crashing, most core functionality works
+- **Large stack frame corruption (CRITICAL)**: Functions with >100 vregs and >1KB stack frames exhibit value corruption
+  - **Symptom**: Function return values stored in local variables get corrupted between assignment and use
+  - **Affects**: `bootstrap/sema.ease` - tests 7 and 8 fail (6/8 passing)
+  - **Example**: `analyze_binary` has 177 vregs, 1520-byte stack frame
+    - `let x = analyze_expr(...)` returns 1, but later reading `x` gives 0 or garbage
+    - Corruption happens even with global array storage and re-analysis workarounds
+  - **Investigation findings** (Feb 2026):
+    - Simple test cases (<20 vregs) work perfectly - no corruption
+    - Only manifests with very large stack frames (bootstrap code with 100+ vregs)
+    - Code generation appears correct: stack layout, LDR/STR encoding, prologue/epilogue all verified
+    - Likely issue: register allocator, calling convention edge case, or memory ordering with large frames
+  - **Workaround**: Break large functions into smaller ones to reduce vreg count
+  - **Status**: Requires deep debugging with assembly inspection and debugger tracing
 - **Array operations on returned structs**: When a struct containing an array is returned from a function, then passed to another function that reads from AND pushes to that array, it crashes
   - Pattern: `struct S { arr: []int }; fn make() -> S { ... }; fn use(s: S) { let x = s.arr[0]; push(s.arr, x+1); }`
   - Workaround: Avoid combining struct returns with complex array operations in the same function
 
 ### Future
-- [ ] Standard library
+- [ ] Standard library expansion (strings, strconv, and io complete)
+  - [x] strconv - string/number conversions (Itoa, Atoi, ParseInt, FormatInt)
+  - [ ] os - process, environment, command execution
+  - [ ] path - file path manipulation
+  - [ ] More as needed for self-hosting
 - [ ] WebAssembly backend
 - [ ] x86_64 backend
 

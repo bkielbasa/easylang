@@ -2656,8 +2656,7 @@ func (e *Emitter) emitArrayPush(instr *ir.Instr) {
 	fatPtr := e.loadOperand(instr.Args[0], X19)
 	e.asm.MOV(X19, fatPtr) // X19 = fat pointer address
 	elem := e.loadOperand(instr.Args[1], X20)
-	e.asm.MOV(X20, elem)  // X20 = element (value or ptr to struct)
-	e.asm.MOV(X15, X20)   // X15 = backup of element (X15 is caller-saved, safe across mmap)
+	e.asm.MOV(X20, elem) // X20 = element (value or ptr to struct)
 
 	// Load len and cap from fat pointer
 	e.asm.LDR(X21, X19, 8)  // X21 = len
@@ -2692,7 +2691,8 @@ func (e *Emitter) emitArrayPush(instr *ir.Instr) {
 	e.asm.MUL(X0, X23, X24) // X0 = new_cap * elemSize = allocation size
 
 	// Save registers before heap allocation
-	// Note: X20 (element) is NOT saved - will be reloaded after mmap
+	// IMPORTANT: X20 (element) is caller-saved and WILL be clobbered by mmap!
+	e.asm.STPpre(X20, XZR, SP, -16) // save element (16 bytes, pad with zero)
 	e.asm.STPpre(X19, X21, SP, -16) // save fat_ptr and len (16 bytes)
 	e.asm.STPpre(X23, XZR, SP, -16) // save new_cap (16 bytes, pad with zero)
 
@@ -2717,12 +2717,10 @@ func (e *Emitter) emitArrayPush(instr *ir.Instr) {
 
 	e.asm.MOV(X24, X0) // X24 = new buffer pointer
 
-	// Restore saved registers
+	// Restore saved registers (in reverse order from saves)
 	e.asm.LDPpost(X23, X0, SP, 16)  // restore new_cap (16 bytes, discard padding)
 	e.asm.LDPpost(X19, X21, SP, 16) // restore fat_ptr and len (16 bytes)
-
-	// Restore element from X15 (it was backed up before mmap)
-	e.asm.MOV(X20, X15)
+	e.asm.LDPpost(X20, X0, SP, 16)  // restore element (16 bytes, discard padding)
 
 	// Copy old data to new buffer if len > 0
 	e.asm.CMP(X21, XZR)
