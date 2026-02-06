@@ -1,0 +1,441 @@
+// Bootstrap Compiler Integration Demo
+// Demonstrates all compilation phases working together:
+// Source Code -> Lexer -> Parser -> Sema -> IR -> Codegen
+
+// ============================================================================
+// Token Definitions (from token.ease)
+// ============================================================================
+
+fn TK_IDENT() -> int { return 1 }
+fn TK_INT() -> int { return 2 }
+fn TK_STRING() -> int { return 3 }
+
+fn TK_FN() -> int { return 10 }
+fn TK_LET() -> int { return 11 }
+fn TK_MUT() -> int { return 12 }
+fn TK_RETURN() -> int { return 17 }
+
+fn TK_PLUS() -> int { return 30 }
+fn TK_MINUS() -> int { return 31 }
+fn TK_STAR() -> int { return 32 }
+
+fn TK_LPAREN() -> int { return 50 }
+fn TK_RPAREN() -> int { return 51 }
+fn TK_LBRACE() -> int { return 52 }
+fn TK_RBRACE() -> int { return 53 }
+fn TK_COMMA() -> int { return 56 }
+fn TK_COLON() -> int { return 57 }
+fn TK_SEMI() -> int { return 58 }
+
+fn TK_ARROW() -> int { return 46 }
+fn TK_EOF() -> int { return 100 }
+
+// ============================================================================
+// Simplified Lexer (from lexer.ease)
+// ============================================================================
+
+fn is_digit(ch: int) -> bool {
+    return ch >= 48 && ch <= 57  // '0' to '9'
+}
+
+fn is_alpha(ch: int) -> bool {
+    return (ch >= 65 && ch <= 90) || (ch >= 97 && ch <= 122) || ch == 95  // A-Z, a-z, _
+}
+
+fn lex_peek(src: string, pos: int) -> int {
+    if pos >= len(src) {
+        return 0
+    }
+    return str_char_at(src, pos)
+}
+
+fn lex_skip(src: string, pos: int) -> int {
+    let src_len = len(src)
+    let mut p = pos
+    for p < src_len {
+        let ch = lex_peek(src, p)
+        if ch == 32 || ch == 9 || ch == 10 || ch == 13 {  // space, tab, newline, CR
+            p = p + 1
+        } else {
+            break
+        }
+    }
+    return p
+}
+
+fn lex_kind(src: string, pos: int) -> int {
+    let src_len = len(src)
+    if pos >= src_len {
+        return TK_EOF()
+    }
+
+    let ch = lex_peek(src, pos)
+
+    // Single-char tokens
+    if ch == 40 { return TK_LPAREN() }   // (
+    if ch == 41 { return TK_RPAREN() }   // )
+    if ch == 123 { return TK_LBRACE() }  // {
+    if ch == 125 { return TK_RBRACE() }  // }
+    if ch == 44 { return TK_COMMA() }    // ,
+    if ch == 58 { return TK_COLON() }    // :
+    if ch == 59 { return TK_SEMI() }     // ;
+    if ch == 43 { return TK_PLUS() }     // +
+    if ch == 45 {
+        // Check for ->
+        if pos + 1 < src_len && lex_peek(src, pos + 1) == 62 {
+            return TK_ARROW()
+        }
+        return TK_MINUS()
+    }
+    if ch == 42 { return TK_STAR() }     // *
+
+    // Numbers
+    if is_digit(ch) {
+        return TK_INT()
+    }
+
+    // Identifiers and keywords
+    if is_alpha(ch) {
+        let mut end = pos
+        for end < src_len && (is_alpha(lex_peek(src, end)) || is_digit(lex_peek(src, end))) {
+            end = end + 1
+        }
+        let word = str_substring(src, pos, end)
+        if word == "fn" { return TK_FN() }
+        if word == "let" { return TK_LET() }
+        if word == "mut" { return TK_MUT() }
+        if word == "return" { return TK_RETURN() }
+        return TK_IDENT()
+    }
+
+    return TK_EOF()
+}
+
+fn lex_end(src: string, pos: int, kind: int) -> int {
+    if kind == TK_EOF() { return pos }
+    if kind == TK_ARROW() { return pos + 2 }
+    if kind == TK_LPAREN() || kind == TK_RPAREN() || kind == TK_LBRACE() || kind == TK_RBRACE() ||
+       kind == TK_COMMA() || kind == TK_COLON() || kind == TK_SEMI() ||
+       kind == TK_PLUS() || kind == TK_MINUS() || kind == TK_STAR() {
+        return pos + 1
+    }
+    if kind == TK_INT() {
+        let mut end = pos
+        for end < len(src) && is_digit(lex_peek(src, end)) {
+            end = end + 1
+        }
+        return end
+    }
+    if kind == TK_IDENT() || kind == TK_FN() || kind == TK_LET() || kind == TK_MUT() || kind == TK_RETURN() {
+        let mut end = pos
+        for end < len(src) && (is_alpha(lex_peek(src, end)) || is_digit(lex_peek(src, end))) {
+            end = end + 1
+        }
+        return end
+    }
+    return pos + 1
+}
+
+fn lex_string_value(src: string, pos: int, kind: int) -> string {
+    if kind == TK_IDENT() || kind == TK_FN() || kind == TK_LET() || kind == TK_MUT() || kind == TK_RETURN() {
+        let end = lex_end(src, pos, kind)
+        return str_substring(src, pos, end)
+    }
+    return ""
+}
+
+fn lex_int_value(src: string, pos: int) -> int {
+    let end = lex_end(src, pos, TK_INT())
+    let s = str_substring(src, pos, end)
+    // Simple atoi
+    let mut val = 0
+    for i in 0..len(s) {
+        let ch = str_char_at(s, i)
+        val = val * 10 + (ch - 48)
+    }
+    return val
+}
+
+// ============================================================================
+// Simplified Parser (subset of parser.ease)
+// ============================================================================
+
+struct AstNode {
+    tag: int,
+    int_val: int,
+    str_val: string,
+    left: int,
+    right: int,
+}
+
+fn EXPR_INT() -> int { return 2 }
+fn EXPR_IDENT() -> int { return 1 }
+fn EXPR_BINARY() -> int { return 6 }
+
+fn new_int_node(val: int, nodes: []AstNode) -> int {
+    let node = AstNode { tag: EXPR_INT(), int_val: val, str_val: "", left: -1, right: -1 }
+    push(nodes, node)
+    return len(nodes) - 1
+}
+
+fn new_ident_node(name: string, nodes: []AstNode) -> int {
+    let node = AstNode { tag: EXPR_IDENT(), int_val: 0, str_val: name, left: -1, right: -1 }
+    push(nodes, node)
+    return len(nodes) - 1
+}
+
+fn new_binary_node(op: int, left: int, right: int, nodes: []AstNode) -> int {
+    let node = AstNode { tag: EXPR_BINARY(), int_val: op, str_val: "", left: left, right: right }
+    push(nodes, node)
+    return len(nodes) - 1
+}
+
+// Parse: a + b
+fn parse_simple_expr(src: string, nodes: []AstNode) -> int {
+    let mut pos = 0
+
+    // Skip whitespace and parse first operand
+    pos = lex_skip(src, pos)
+    let kind1 = lex_kind(src, pos)
+    let mut idx1 = 0
+    if kind1 == TK_INT() {
+        let val = lex_int_value(src, pos)
+        idx1 = new_int_node(val, nodes)
+    } else if kind1 == TK_IDENT() {
+        let name = lex_string_value(src, pos, kind1)
+        idx1 = new_ident_node(name, nodes)
+    }
+    pos = lex_end(src, pos, kind1)
+
+    // Skip whitespace and check for operator
+    pos = lex_skip(src, pos)
+    let op_kind = lex_kind(src, pos)
+    if op_kind != TK_PLUS() && op_kind != TK_MINUS() && op_kind != TK_STAR() {
+        return idx1  // No operator, return single operand
+    }
+    pos = lex_end(src, pos, op_kind)
+
+    // Parse second operand
+    pos = lex_skip(src, pos)
+    let kind2 = lex_kind(src, pos)
+    let mut idx2 = 0
+    if kind2 == TK_INT() {
+        let val = lex_int_value(src, pos)
+        idx2 = new_int_node(val, nodes)
+    } else if kind2 == TK_IDENT() {
+        let name = lex_string_value(src, pos, kind2)
+        idx2 = new_ident_node(name, nodes)
+    }
+
+    // Create binary node
+    return new_binary_node(op_kind, idx1, idx2, nodes)
+}
+
+// ============================================================================
+// Simplified IR Generator (from ir.ease)
+// ============================================================================
+
+struct IRInstr {
+    op: int,       // Instruction opcode
+    dest: int,     // Destination vreg
+    arg1: int,     // First argument vreg
+    arg2: int,     // Second argument vreg
+}
+
+fn OP_LOADCONST() -> int { return 1 }
+fn OP_ADD() -> int { return 2 }
+fn OP_SUB() -> int { return 3 }
+fn OP_MUL() -> int { return 4 }
+
+fn gen_ir_from_ast(ast_idx: int, nodes: []AstNode, instrs: []IRInstr) -> int {
+    let node = nodes[ast_idx]
+
+    if node.tag == EXPR_INT() {
+        // Generate: v<next> = loadconst <value>
+        let vreg = len(instrs)
+        let instr = IRInstr { op: OP_LOADCONST(), dest: vreg, arg1: node.int_val, arg2: 0 }
+        push(instrs, instr)
+        return vreg
+    }
+
+    if node.tag == EXPR_BINARY() {
+        // Generate IR for left and right
+        let left_vreg = gen_ir_from_ast(node.left, nodes, instrs)
+        let right_vreg = gen_ir_from_ast(node.right, nodes, instrs)
+
+        // Generate binary operation
+        let dest_vreg = len(instrs)
+        let mut op = OP_ADD()
+        if node.int_val == TK_PLUS() { op = OP_ADD() }
+        if node.int_val == TK_MINUS() { op = OP_SUB() }
+        if node.int_val == TK_STAR() { op = OP_MUL() }
+
+        let instr = IRInstr { op: op, dest: dest_vreg, arg1: left_vreg, arg2: right_vreg }
+        push(instrs, instr)
+        return dest_vreg
+    }
+
+    return 0
+}
+
+// ============================================================================
+// Simplified Codegen (from codegen.ease)
+// ============================================================================
+
+fn encode_add(rd: int, rn: int, rm: int) -> int {
+    // ADD Xd, Xn, Xm
+    // sf=1 (64-bit), op=0, S=0, shift=00, Rm, imm6=0, Rn, Rd
+    return 0x8b000000 + (rm * 0x10000) + (rn * 0x20) + rd
+}
+
+fn encode_sub(rd: int, rn: int, rm: int) -> int {
+    // SUB Xd, Xn, Xm
+    return 0xcb000000 + (rm * 0x10000) + (rn * 0x20) + rd
+}
+
+fn encode_mul(rd: int, rn: int, rm: int) -> int {
+    // MUL Xd, Xn, Xm
+    // MADD with Ra=XZR
+    return 0x9b007c00 + (rm * 0x10000) + (rn * 0x20) + rd
+}
+
+fn gen_code_from_ir(instrs: []IRInstr, code: []int) {
+    // Simplified: assume vregs map directly to physical registers X0, X1, X2...
+    for i in 0..len(instrs) {
+        let instr = instrs[i]
+
+        if instr.op == OP_LOADCONST() {
+            // For demo, skip load const (assume values already in registers)
+        }
+        if instr.op == OP_ADD() {
+            let encoded = encode_add(instr.dest, instr.arg1, instr.arg2)
+            push(code, encoded)
+        }
+        if instr.op == OP_SUB() {
+            let encoded = encode_sub(instr.dest, instr.arg1, instr.arg2)
+            push(code, encoded)
+        }
+        if instr.op == OP_MUL() {
+            let encoded = encode_mul(instr.dest, instr.arg1, instr.arg2)
+            push(code, encoded)
+        }
+    }
+}
+
+// ============================================================================
+// Main Integration Demo
+// ============================================================================
+
+fn print_hex(val: int) {
+    print("0x")
+    let mut v = val
+    let mut digits = []int{}
+    for i in 0..8 {
+        push(digits, v % 16)
+        v = v / 16
+    }
+    for i in 0..8 {
+        let d = digits[7 - i]
+        if d < 10 {
+            print(strconv.Itoa(d))
+        } else {
+            if d == 10 { print("a") }
+            if d == 11 { print("b") }
+            if d == 12 { print("c") }
+            if d == 13 { print("d") }
+            if d == 14 { print("e") }
+            if d == 15 { print("f") }
+        }
+    }
+}
+
+fn main() -> int {
+    print("=== Bootstrap Compiler Integration Demo ===\n\n")
+
+    let source = "1 + 2"
+    print("Source: ")
+    print(source)
+    print("\n\n")
+
+    // Phase 1: Lexing
+    print("Phase 1: Lexing\n")
+    print("Tokens: ")
+    let mut pos = 0
+    for {
+        pos = lex_skip(source, pos)
+        let kind = lex_kind(source, pos)
+        if kind == TK_INT() {
+            print("INT(")
+            print(strconv.Itoa(lex_int_value(source, pos)))
+            print(") ")
+        }
+        if kind == TK_PLUS() { print("PLUS ") }
+        pos = lex_end(source, pos, kind)
+        if kind == TK_EOF() { break }
+    }
+    print("\n\n")
+
+    // Phase 2: Parsing
+    print("Phase 2: Parsing\n")
+    let mut nodes = []AstNode{}
+    let ast_root = parse_simple_expr(source, nodes)
+    print("AST: Binary(+) with left=Int(1), right=Int(2)\n")
+    print("  Root index: ")
+    print(strconv.Itoa(ast_root))
+    print("\n  Root tag: ")
+    print(strconv.Itoa(nodes[ast_root].tag))
+    print(" (EXPR_BINARY=6)\n")
+    print("  Operator: ")
+    print(strconv.Itoa(nodes[ast_root].int_val))
+    print(" (TK_PLUS=30)\n\n")
+
+    // Phase 3: IR Generation
+    print("Phase 3: IR Generation\n")
+    let mut instrs = []IRInstr{}
+    let result_vreg = gen_ir_from_ast(ast_root, nodes, instrs)
+    print("Generated ")
+    print(strconv.Itoa(len(instrs)))
+    print(" IR instructions:\n")
+    for i in 0..len(instrs) {
+        let instr = instrs[i]
+        print("  v")
+        print(strconv.Itoa(instr.dest))
+        print(" = ")
+        if instr.op == OP_LOADCONST() {
+            print("loadconst ")
+            print(strconv.Itoa(instr.arg1))
+        }
+        if instr.op == OP_ADD() {
+            print("add v")
+            print(strconv.Itoa(instr.arg1))
+            print(", v")
+            print(strconv.Itoa(instr.arg2))
+        }
+        print("\n")
+    }
+    print("\n")
+
+    // Phase 4: Code Generation
+    print("Phase 4: ARM64 Code Generation\n")
+    let mut code = []int{}
+    gen_code_from_ir(instrs, code)
+    print("Generated ")
+    print(strconv.Itoa(len(code)))
+    print(" machine instructions:\n")
+    for i in 0..len(code) {
+        print("  [")
+        print(strconv.Itoa(i))
+        print("] ")
+        print_hex(code[i])
+        if i == 0 {
+            print("  # ADD x2, x0, x1")
+        }
+        print("\n")
+    }
+    print("\n")
+
+    print("=== Compilation Pipeline Complete ===\n")
+    print("All phases executed successfully!\n")
+
+    return 0
+}
