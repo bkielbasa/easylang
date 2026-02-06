@@ -210,7 +210,7 @@ Progress on implementing the Ease compiler in Ease itself:
 - [x] **Parser** - All language constructs (bootstrap/parser.ease)
   - ✅ All 5 tests passing
 - [x] **Semantic Analysis** - Type checking and name resolution (bootstrap/sema.ease)
-  - ✅ 6/8 tests passing (2 logic issues, no crashes after string fix)
+  - ✅ 6/8 tests passing (corruption bugs FIXED! Remaining 2 are logic errors in sema, not compiler bugs)
 - [x] **IR Generation** - 3-address code with simplified instruction format (bootstrap/ir.ease)
   - IRInstr struct with op, dest, arg1, arg2 fields
   - Operations: ADD, SUB, MUL, DIV, EQ, NE, LT, GT, LOADCONST, CALL, RETURN
@@ -231,14 +231,19 @@ Progress on implementing the Ease compiler in Ease itself:
 
 ### Recent Fixes
 
-**Array Push Corruption (Feb 6, 2026):**
-- **CRITICAL FIX**: Fixed array push corrupting element values during growth
+**Array Push Corruption & Bootstrap Sema Fix (Feb 6, 2026):**
+- **CRITICAL FIX #1**: Fixed array push corrupting element values during growth
   - Root cause: emitArrayPush backed up element in X15 (caller-saved register)
   - mmap syscall during array growth would clobber X15, corrupting element
   - ARM64 calling convention: X0-X18 are caller-saved, X19-X28 are callee-saved
   - Solution: Save X20 (element) on stack before mmap, restore after
   - File: pkg/codegen/arm64/emit.go lines 2697-2726
-  - Simple tests now pass, but bootstrap sema still shows corruption (investigating)
+- **CRITICAL FIX #2**: Fixed bootstrap sema corruption from convoluted workaround
+  - Root cause: types_equal_safe did push→load→call→push→load (double indirection)
+  - The workaround ITSELF was causing corruption in large functions
+  - Solution: Remove workaround, call types_equal directly
+  - Result: Bootstrap sema now 6/8 tests passing (remaining 2 are logic errors, not corruption!)
+  - File: bootstrap/sema.ease - removed types_equal_safe function
 
 **Heap Allocator (Jan 2026):**
 - Fixed heap state corruption by removing X25/X26 save/restore
