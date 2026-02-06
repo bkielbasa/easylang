@@ -2612,6 +2612,43 @@ func (b *Builder) buildPathExpr(e *ast.PathExpr) Operand {
 
 // buildMethodExpr builds a method call expression (e.g., p.sum()).
 func (b *Builder) buildMethodExpr(e *ast.MethodExpr) Operand {
+	// Check if this is a module-qualified function call (e.g., math.Add)
+	// Module functions are resolved by sema and recorded in Uses
+	if sym := b.info.Uses[e.Method]; sym != nil {
+		// This is a qualified function call to an imported module function
+		// Generate a regular function call using the fully qualified name
+		funcName := sym.Name
+
+		// Build arguments
+		args := make([]Operand, len(e.Args)+1)
+		args[0] = FuncRef(funcName, nil)
+		for i, arg := range e.Args {
+			args[i+1] = b.buildExpr(arg)
+		}
+
+		// Get result type from type info
+		resultType := b.info.Types[e]
+		if resultType == nil {
+			resultType = types.Typ[types.Unit]
+		}
+
+		if resultType.Equals(types.Typ[types.Unit]) {
+			b.emit(&Instr{
+				Op:   OpCall,
+				Args: args,
+			})
+			return None()
+		}
+
+		dest := b.fn.NewVReg(resultType)
+		b.emit(&Instr{
+			Op:   OpCall,
+			Dest: dest,
+			Args: args,
+		})
+		return dest
+	}
+
 	// Handle package-qualified builtins (e.g., os.ReadFile, strconv.Itoa)
 	if ident, ok := e.Expr.(*ast.Ident); ok {
 		switch ident.Name {
@@ -2636,7 +2673,7 @@ func (b *Builder) buildMethodExpr(e *ast.MethodExpr) Operand {
 		}
 	}
 
-	// Build the receiver expression
+	// Build the receiver expression for actual methods
 	receiver := b.buildExpr(e.Expr)
 
 	// Get the receiver type to determine the method name

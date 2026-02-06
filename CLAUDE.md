@@ -27,14 +27,18 @@ After a successful step, update CLAUDE.md with the current status.
 ### Imports
 ```
 import (
-    "io"                          // stdlib - bare name
-    "./config"                    // local - starts with ./
-    "github.com/user/pkg" as p    // external - URL style, optional alias
+    "io"                          // stdlib - bare name (TODO: not yet implemented)
+    "./config"                    // local - starts with ./ ✅ IMPLEMENTED
+    "github.com/user/pkg" as p    // external - URL style (TODO)
 )
 ```
 - Always use `()` syntax
-- Reference by last path segment (or alias)
-- Unused imports = compile error
+- Reference by last path segment (or alias) ✅
+- Visibility: Uppercase names are exported, lowercase are private ✅
+- Imported functions compiled into the binary ✅
+- Unused imports = compile error (TODO)
+
+**Status**: Local imports with `./ ` fully working! Stdlib and external imports coming soon.
 
 ### Loops (Go-style, only `for`)
 ```
@@ -167,6 +171,14 @@ ease version                 # Print version
   - Lexer, parser, sema, IR, codegen all working independently
   - Integrated compiler demo chains all phases successfully
   - See `bootstrap/README.md` for details ✅
+- [x] Module/Import system
+  - Local imports: `import ("./math", "./geometry" as geo)`
+  - Visibility rules: Uppercase = exported, lowercase = private
+  - Qualified function calls: `math.Add(5, 3)`, `geo.Area(5, 8)`
+  - Automatic parsing and analysis of imported modules
+  - Cross-module symbol resolution and type checking
+  - Imported functions compiled into binary
+  - TODO: stdlib imports, external imports, unused import detection
 
 ### Bootstrap Compiler (Self-Hosting)
 

@@ -3,8 +3,11 @@ package sema
 
 import (
 	"fmt"
+	"os"
 
 	"ease/pkg/ast"
+	"ease/pkg/lexer"
+	"ease/pkg/parser"
 	"ease/pkg/symbols"
 	"ease/pkg/token"
 	"ease/pkg/types"
@@ -34,6 +37,14 @@ type TypeInfo struct {
 	// GenericCalls maps call expressions to their monomorphized function names
 	// This is used by the IR builder to call the correct specialized function
 	GenericCalls map[*ast.CallExpr]string
+}
+
+// ModuleInfo stores information about an imported module.
+type ModuleInfo struct {
+	Name    string           // module name (last path segment or alias)
+	Path    string           // full import path
+	Program *ast.Program     // parsed AST
+	Symbols map[string]*symbols.Symbol  // exported symbols
 }
 
 // NewTypeInfo creates a new TypeInfo.
@@ -75,6 +86,12 @@ type Analyzer struct {
 
 	// Program reference for adding monomorphized declarations
 	prog *ast.Program
+
+	// Module system
+	modules        map[string]*ModuleInfo    // module name -> module info
+	importAliases  map[string]string         // alias -> module name
+	currentFile    string                    // current file being analyzed
+	loadedFiles    map[string]*ast.Program   // file path -> parsed program
 }
 
 // New creates a new Analyzer.
@@ -94,6 +111,9 @@ func New() *Analyzer {
 		genericEnums:   make(map[string]*ast.EnumDecl),
 		instantiations: make(map[string]types.Type),
 		typeParamScope: make(map[string]*types.TypeParam),
+		modules:        make(map[string]*ModuleInfo),
+		importAliases:  make(map[string]string),
+		loadedFiles:    make(map[string]*ast.Program),
 	}
 }
 
@@ -101,6 +121,9 @@ func New() *Analyzer {
 func (a *Analyzer) Analyze(prog *ast.Program) (*TypeInfo, []Error) {
 	// Store program reference for adding monomorphized declarations
 	a.prog = prog
+
+	// Process imports first
+	a.processImports(prog)
 
 	// First pass: collect all declarations (forward references)
 	a.collectDeclarations(prog)
@@ -124,6 +147,154 @@ func (a *Analyzer) error(pos token.Position, format string, args ...interface{})
 		Pos:     pos,
 		Message: fmt.Sprintf(format, args...),
 	})
+}
+
+// ============================================
+// Module System
+// ============================================
+
+// processImports loads and analyzes all imported modules.
+func (a *Analyzer) processImports(prog *ast.Program) {
+	for _, imp := range prog.Imports {
+		for _, spec := range imp.Imports {
+			a.loadModule(spec)
+		}
+	}
+}
+
+// loadModule loads and analyzes an imported module.
+func (a *Analyzer) loadModule(spec ast.ImportSpec) {
+	// Resolve import path to file path (relative to current file)
+	filePath := a.resolveImportPath(spec.Path, spec.Token.Pos.Filename)
+	if filePath == "" {
+		a.error(spec.Token.Pos, "cannot resolve import path '%s'", spec.Path)
+		return
+	}
+
+	// Check if already loaded
+	if _, loaded := a.loadedFiles[filePath]; loaded {
+		return
+	}
+
+	// Parse the module
+	prog, err := a.parseModule(filePath)
+	if err != nil {
+		a.error(spec.Token.Pos, "cannot load module '%s': %v", spec.Path, err)
+		return
+	}
+
+	a.loadedFiles[filePath] = prog
+
+	// Determine module name (last path segment or alias)
+	moduleName := a.getModuleName(spec)
+
+	// Analyze the module recursively
+	moduleAnalyzer := New()
+	moduleAnalyzer.currentFile = filePath
+	_, errors := moduleAnalyzer.Analyze(prog)
+
+	if len(errors) > 0 {
+		// Report errors from imported module
+		for _, e := range errors {
+			a.errors = append(a.errors, e)
+		}
+		return
+	}
+
+	// Collect exported symbols (uppercase names only)
+	exported := make(map[string]*symbols.Symbol)
+	for name, sym := range moduleAnalyzer.table.Global.Symbols {
+		if len(name) > 0 && 'A' <= name[0] && name[0] <= 'Z' {
+			exported[name] = sym
+		}
+	}
+
+	// Add exported function declarations to the main program
+	// This allows them to be compiled and linked
+	for _, decl := range prog.Decls {
+		if fnDecl, ok := decl.(*ast.FnDecl); ok {
+			// Only add exported (uppercase) functions
+			if len(fnDecl.Name.Name) > 0 && 'A' <= fnDecl.Name.Name[0] && fnDecl.Name.Name[0] <= 'Z' {
+				a.prog.Decls = append(a.prog.Decls, fnDecl)
+			}
+		}
+	}
+
+	// Store module info
+	a.modules[moduleName] = &ModuleInfo{
+		Name:    moduleName,
+		Path:    spec.Path,
+		Program: prog,
+		Symbols: exported,
+	}
+
+	// Store alias mapping if present
+	if spec.Alias != "" {
+		a.importAliases[spec.Alias] = moduleName
+	}
+}
+
+// resolveImportPath converts an import path to a file path.
+func (a *Analyzer) resolveImportPath(importPath string, currentFile string) string {
+	// Local imports (start with ./ or ../)
+	if len(importPath) > 0 && importPath[0] == '.' {
+		// Resolve relative to the importing file's directory
+		// Get directory of current file
+		dir := ""
+		for i := len(currentFile) - 1; i >= 0; i-- {
+			if currentFile[i] == '/' {
+				dir = currentFile[:i+1]
+				break
+			}
+		}
+		// Append import path and .ease extension
+		return dir + importPath + ".ease"
+	}
+
+	// Stdlib imports (bare names like "io", "strings")
+	// TODO: Implement stdlib path resolution
+	// For now, look in stdlib/ directory
+	return "stdlib/" + importPath + ".ease"
+}
+
+// parseModule parses a module file.
+func (a *Analyzer) parseModule(filePath string) (*ast.Program, error) {
+	// Read the file
+	content, err := os.ReadFile(filePath)
+	if err != nil {
+		return nil, fmt.Errorf("cannot read file: %w", err)
+	}
+
+	// Create lexer
+	l := lexer.New(string(content), filePath)
+
+	// Create parser and parse
+	p := parser.New(l)
+	prog := p.ParseProgram()
+
+	// Check for parse errors
+	if len(p.Errors()) > 0 {
+		return nil, fmt.Errorf("parse errors: %v", p.Errors()[0])
+	}
+
+	return prog, nil
+}
+
+// getModuleName extracts the module name from an import spec.
+func (a *Analyzer) getModuleName(spec ast.ImportSpec) string {
+	// If alias is provided, use it
+	if spec.Alias != "" {
+		return spec.Alias
+	}
+
+	// Otherwise use last path segment
+	path := spec.Path
+	for i := len(path) - 1; i >= 0; i-- {
+		if path[i] == '/' {
+			return path[i+1:]
+		}
+	}
+	return path
 }
 
 // collectDeclarations performs the first pass to collect all declarations.
@@ -1884,6 +2055,25 @@ func (a *Analyzer) analyzeStrconvAtoi(e *ast.MethodExpr) types.Type {
 }
 
 func (a *Analyzer) analyzeFieldExpr(e *ast.FieldExpr) types.Type {
+	// Check if base expression is a module identifier BEFORE analyzing it
+	// This prevents "undefined: math" errors for module-qualified names
+	if ident, ok := e.Expr.(*ast.Ident); ok {
+		if module, exists := a.modules[ident.Name]; exists {
+			// Qualified name: module.Symbol
+			symbol, found := module.Symbols[e.Field.Name]
+			if !found {
+				a.error(e.Field.Pos(), "module %s has no exported symbol %s", ident.Name, e.Field.Name)
+				return types.Typ[types.Invalid]
+			}
+
+			// Record the use of this symbol
+			a.info.Uses[e.Field] = symbol
+
+			return symbol.Type
+		}
+	}
+
+	// Otherwise, it's a struct field access - analyze the base expression
 	exprType := a.analyzeExpr(e.Expr)
 
 	// Automatically dereference pointers for field access
@@ -2644,8 +2834,45 @@ func (a *Analyzer) analyzePathExpr(e *ast.PathExpr) types.Type {
 }
 
 func (a *Analyzer) analyzeMethodExpr(e *ast.MethodExpr) types.Type {
-	// Handle package-qualified builtins (e.g., os.ReadFile, strconv.Itoa)
+	// Handle imported modules (e.g., math.Add, strings.Split)
 	if ident, ok := e.Expr.(*ast.Ident); ok {
+		if module, exists := a.modules[ident.Name]; exists {
+			// Module-qualified function call
+			symbol, found := module.Symbols[e.Method.Name]
+			if !found {
+				a.error(e.Method.Pos(), "module %s has no exported symbol %s", ident.Name, e.Method.Name)
+				return types.Typ[types.Invalid]
+			}
+
+			// Get function type
+			fnType, ok := symbol.Type.(*types.Function)
+			if !ok {
+				a.error(e.Method.Pos(), "%s.%s is not a function", ident.Name, e.Method.Name)
+				return types.Typ[types.Invalid]
+			}
+
+			// Check argument count
+			if len(e.Args) != len(fnType.Params) {
+				a.error(e.Pos(), "wrong number of arguments: expected %d, got %d", len(fnType.Params), len(e.Args))
+				return fnType.Result
+			}
+
+			// Check argument types
+			for i, arg := range e.Args {
+				argType := a.analyzeExpr(arg)
+				if !types.IsAssignableTo(argType, fnType.Params[i].Type) {
+					a.error(arg.Pos(), "cannot use %s as %s in argument to %s.%s",
+						argType, fnType.Params[i].Type, ident.Name, e.Method.Name)
+				}
+			}
+
+			// Record the use of this symbol
+			a.info.Uses[e.Method] = symbol
+
+			return fnType.Result
+		}
+
+		// Handle built-in package-qualified functions (e.g., os.ReadFile, strconv.Itoa)
 		switch ident.Name {
 		case "os":
 			switch e.Method.Name {
