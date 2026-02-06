@@ -60,15 +60,28 @@ let mut g_semas = []Sema{}
 fn add_sema(s: Sema) { push(g_semas, s) }
 ```
 
-## ⚠️ Limitations
-
-### Struct Literals as Globals
-Struct literals not yet implemented:
+## ✅ Struct Globals (NEW!)
+Struct literals as globals are fully functional:
 ```ease
-let config = Config { ... } // Not implemented
+let mut g_sema = Sema {
+    type_tags: []int{},
+    sym_names: []string{},
+    errors: []string{},
+}
+
+fn process() {
+    push(g_sema.type_tags, 1)
+    push(g_sema.sym_names, "main")
+}
 ```
 
-**Reason**: Need struct initialization code generation (similar to arrays)
+**How it works**:
+- Runtime initialization at start of main()
+- Simple fields (int, bool) stored directly
+- Array fields initialized with heap allocation + fat pointer setup
+- Field access returns address for complex types (enables len/push/indexing)
+
+**Test**: Bootstrap Sema pattern works - can use `let mut g_sema = Sema { ... }` directly
 
 ## Implementation Details
 

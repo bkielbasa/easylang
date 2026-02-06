@@ -134,6 +134,11 @@ ease version                 # Print version
 
 Never add information to commits that I used Claude
 
+## Using tools
+
+ - never use `cat` to create file
+ - alwasy save temporary files into `./tmp/` folder (create if not exists)
+
 ## Implementation Status
 
 ### Completed

@@ -2121,13 +2121,21 @@ func (b *Builder) buildFieldExpr(e *ast.FieldExpr) Operand {
 		Args: []Operand{structPtr, Imm(int64(offset), types.Typ[types.Int])},
 	})
 
-	// For struct types, return the address (pointer semantics)
-	// This allows proper copying of the entire struct rather than just 8 bytes
-	if _, isStruct := field.Type.Underlying().(*types.Struct); isStruct {
+	// For complex types (struct, array), return the address (pointer semantics)
+	// - Structs: allows proper copying of the entire struct rather than just 8 bytes
+	// - Arrays: len/cap/indexing operations expect a pointer to the fat pointer
+	fieldUnderlying := field.Type.Underlying()
+	if _, isStruct := fieldUnderlying.(*types.Struct); isStruct {
+		return fieldAddr
+	}
+	if _, isArray := fieldUnderlying.(*types.Array); isArray {
+		return fieldAddr
+	}
+	if _, isSlice := fieldUnderlying.(*types.Slice); isSlice {
 		return fieldAddr
 	}
 
-	// Load and return the field value for non-struct types
+	// Load and return the field value for simple types (int, bool, etc.)
 	result := b.fn.NewVReg(field.Type)
 	b.emit(&Instr{
 		Op:   OpLoad,
@@ -2878,11 +2886,13 @@ func (b *Builder) buildGlobalInitializers() {
 		switch gv.InitVal.(type) {
 		case *ast.ArrayExpr:
 			b.buildArrayGlobalInit(gv)
+		case *ast.StructExpr:
+			b.buildStructGlobalInit(gv)
 		case *ast.IntLit, *ast.BoolLit, *ast.StringLit:
 			// Simple literals are initialized in the data section
 			continue
 		default:
-			// Other complex types (structs, function calls, etc.)
+			// Other complex types (function calls, etc.)
 			// For now, skip - can be added later
 			continue
 		}
@@ -2966,27 +2976,209 @@ func (b *Builder) buildArrayGlobalInit(gv *GlobalVar) {
 		Args: []Operand{elemPtr, globalRef},
 	})
 
+	// Reuse a single temp vreg for address calculations to reduce vreg count
+	tempAddr := b.fn.NewVReg(types.NewPointer(types.Typ[types.Int], false))
+
 	// Store len at offset 8
-	lenAddr := b.fn.NewVReg(types.NewPointer(types.Typ[types.Int], false))
 	b.emit(&Instr{
 		Op:   OpIndexAddr,
-		Dest: lenAddr,
+		Dest: tempAddr,
 		Args: []Operand{globalRef, Imm(8, types.Typ[types.Int])},
 	})
 	b.emit(&Instr{
 		Op:   OpStore,
-		Args: []Operand{Imm(int64(numElems), types.Typ[types.Int]), lenAddr},
+		Args: []Operand{Imm(int64(numElems), types.Typ[types.Int]), tempAddr},
 	})
 
-	// Store cap at offset 16
-	capAddr := b.fn.NewVReg(types.NewPointer(types.Typ[types.Int], false))
+	// Store cap at offset 16 (reuse tempAddr)
 	b.emit(&Instr{
 		Op:   OpIndexAddr,
-		Dest: capAddr,
+		Dest: tempAddr,
 		Args: []Operand{globalRef, Imm(16, types.Typ[types.Int])},
 	})
 	b.emit(&Instr{
 		Op:   OpStore,
-		Args: []Operand{Imm(int64(numElems), types.Typ[types.Int]), capAddr},
+		Args: []Operand{Imm(int64(numElems), types.Typ[types.Int]), tempAddr},
+	})
+}
+// buildStructGlobalInit generates initialization code for a struct global
+func (b *Builder) buildStructGlobalInit(gv *GlobalVar) {
+	structExpr, ok := gv.InitVal.(*ast.StructExpr)
+	if !ok {
+		return
+	}
+
+	// Get the struct type
+	structType, ok := gv.Type.(*types.Struct)
+	if !ok {
+		return
+	}
+
+	// Get the global address
+	globalRef := GlobalRef(gv.Name, gv.Type)
+
+	// For each field in the struct literal, store its value to the global
+	for _, fieldInit := range structExpr.Fields {
+		// Find the field in the struct type
+		fieldName := fieldInit.Name.Name
+		fieldIndex := -1
+		var fieldType types.Type
+		var fieldOffset int
+
+		currentOffset := 0
+		for i, field := range structType.Fields {
+			if field.Name == fieldName {
+				fieldIndex = i
+				fieldType = field.Type
+				fieldOffset = currentOffset
+				break
+			}
+			// Accumulate offset (8-byte aligned)
+			fieldSize := b.typeSize(field.Type)
+			alignedSize := (fieldSize + 7) & ^7
+			currentOffset += alignedSize
+		}
+
+		if fieldIndex == -1 {
+			// Field not found - this should have been caught by sema
+			continue
+		}
+
+		// Calculate address of this field in the global
+		tempAddr := b.fn.NewVReg(types.NewPointer(fieldType, false))
+		if fieldOffset == 0 {
+			// First field - get global address
+			b.emit(&Instr{
+				Op:   OpIndexAddr,
+				Dest: tempAddr,
+				Args: []Operand{globalRef, Imm(0, types.Typ[types.Int])},
+			})
+		} else {
+			// Add offset to global address
+			b.emit(&Instr{
+				Op:   OpIndexAddr,
+				Dest: tempAddr,
+				Args: []Operand{globalRef, Imm(int64(fieldOffset), types.Typ[types.Int])},
+			})
+		}
+		fieldAddr := Operand(tempAddr)
+
+		// Check if this field is an array literal that needs special handling
+		if arrayExpr, ok := fieldInit.Value.(*ast.ArrayExpr); ok {
+			// Initialize array field directly in global storage
+			b.buildArrayFieldInit(arrayExpr, fieldAddr, fieldType)
+		} else {
+			// Build the initializer expression
+			fieldValue := b.buildExpr(fieldInit.Value)
+
+			// Store the field value
+			fieldSize := b.typeSize(fieldType)
+			if fieldSize <= 8 {
+				// Simple types (int, bool, pointer) - direct store
+				b.emit(&Instr{
+					Op:   OpStore,
+					Args: []Operand{fieldValue, fieldAddr},
+				})
+			} else {
+				// Complex types (nested structs) - memcopy
+				b.emit(&Instr{
+					Op:   OpMemCopy,
+					Args: []Operand{fieldValue, fieldAddr, Imm(int64(fieldSize), types.Typ[types.Int])},
+				})
+			}
+		}
+	}
+}
+// buildArrayFieldInit initializes an array field within a struct global
+func (b *Builder) buildArrayFieldInit(arrayExpr *ast.ArrayExpr, fieldAddr Operand, fieldType types.Type) {
+	arrType, ok := fieldType.(*types.Array)
+	if !ok {
+		return
+	}
+
+	elemType := arrType.Elem
+	elemSize := b.typeSize(elemType)
+	numElems := int(arrType.Len)
+
+	// Allocate heap space for array elements
+	elemDataSize := numElems * elemSize
+	elemPtr := b.fn.NewVReg(types.NewPointer(elemType, false))
+	b.emit(&Instr{
+		Op:   OpHeapAlloc,
+		Dest: elemPtr,
+		Args: []Operand{Imm(int64(elemDataSize), types.Typ[types.Int])},
+	})
+
+	// Store each element (if array has elements)
+	if arrayExpr.Repeat != nil {
+		// [expr; count] syntax - same value repeated
+		val := b.buildExpr(arrayExpr.Repeat)
+		for i := 0; i < numElems; i++ {
+			offset := i * elemSize
+			addr := b.fn.NewVReg(types.NewPointer(elemType, false))
+			b.emit(&Instr{
+				Op:   OpIndexAddr,
+				Dest: addr,
+				Args: []Operand{
+					elemPtr,
+					Imm(int64(offset), types.Typ[types.Int]),
+				},
+			})
+			b.emit(&Instr{
+				Op:   OpStore,
+				Args: []Operand{val, addr},
+			})
+		}
+	} else if len(arrayExpr.Elements) > 0 {
+		// [elem1, elem2, ...] syntax
+		for i, elemExpr := range arrayExpr.Elements {
+			val := b.buildExpr(elemExpr)
+			offset := i * elemSize
+			addr := b.fn.NewVReg(types.NewPointer(elemType, false))
+			b.emit(&Instr{
+				Op:   OpIndexAddr,
+				Dest: addr,
+				Args: []Operand{
+					elemPtr,
+					Imm(int64(offset), types.Typ[types.Int]),
+				},
+			})
+			b.emit(&Instr{
+				Op:   OpStore,
+				Args: []Operand{val, addr},
+			})
+		}
+	}
+
+	// Build fat pointer directly at field address
+	// Store ptr at offset 0
+	b.emit(&Instr{
+		Op:   OpStore,
+		Args: []Operand{elemPtr, fieldAddr},
+	})
+
+	// Reuse a single temp vreg for len/cap calculations
+	tempAddr := b.fn.NewVReg(types.NewPointer(types.Typ[types.Int], false))
+
+	// Store len at offset 8
+	b.emit(&Instr{
+		Op:   OpIndexAddr,
+		Dest: tempAddr,
+		Args: []Operand{fieldAddr, Imm(8, types.Typ[types.Int])},
+	})
+	b.emit(&Instr{
+		Op:   OpStore,
+		Args: []Operand{Imm(int64(numElems), types.Typ[types.Int]), tempAddr},
+	})
+
+	// Store cap at offset 16 (reuse tempAddr)
+	b.emit(&Instr{
+		Op:   OpIndexAddr,
+		Dest: tempAddr,
+		Args: []Operand{fieldAddr, Imm(16, types.Typ[types.Int])},
+	})
+	b.emit(&Instr{
+		Op:   OpStore,
+		Args: []Operand{Imm(int64(numElems), types.Typ[types.Int]), tempAddr},
 	})
 }
