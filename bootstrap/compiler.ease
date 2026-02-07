@@ -1794,6 +1794,8 @@ fn OP_STORE() -> int { return 21 }
 fn OP_LOAD() -> int { return 22 }
 fn OP_INDEXADDR() -> int { return 23 }  // Pointer arithmetic: base + offset
 fn OP_MEMCOPY() -> int { return 24 }    // Memory copy: src, dest, size
+fn OP_ARRAY_PUSH() -> int { return 25 } // Array push: array, elem, elem_size
+fn OP_ARRAY_LEN() -> int { return 26 }  // Array length: returns len from fat pointer
 fn OP_RET() -> int { return 30 }
 
 // Struct definitions and offsets (hardcoded for known structs)
@@ -1909,7 +1911,60 @@ fn gen_ir_from_ast_with_symtab(ast_idx: int, nodes: []AstNode, instrs: []IRInstr
         // node.right = first argument expression index (or -1 if no arguments)
         // node.int_val = argument count
 
+        let func_name = node.str_val
         let arg_count = node.int_val
+
+        // Check for builtin functions
+        if func_name == "len" {
+            // len(array) - returns length from fat pointer
+            // Get argument indices
+            let arg_indices = get_call_args(ast_idx)
+            if len(arg_indices) != 1 {
+                // Error: len takes exactly 1 argument
+                return -1
+            }
+
+            // Evaluate array argument
+            let array_vreg = gen_ir_from_ast_with_symtab(arg_indices[0], nodes, instrs, symtab_names, symtab_vregs)
+
+            // Generate OP_ARRAY_LEN instruction
+            let result_vreg = len(instrs)
+            let len_instr = IRInstr {
+                op: OP_ARRAY_LEN(),
+                dest: result_vreg,
+                arg1: array_vreg,
+                arg2: 0,
+                str_val: ""
+            }
+            push(instrs, len_instr)
+            return result_vreg
+        }
+
+        if func_name == "push" {
+            // push(array, elem) - appends element to array
+            // Get argument indices
+            let arg_indices = get_call_args(ast_idx)
+            if len(arg_indices) != 2 {
+                // Error: push takes exactly 2 arguments
+                return -1
+            }
+
+            // Evaluate array and element arguments
+            let array_vreg = gen_ir_from_ast_with_symtab(arg_indices[0], nodes, instrs, symtab_names, symtab_vregs)
+            let elem_vreg = gen_ir_from_ast_with_symtab(arg_indices[1], nodes, instrs, symtab_names, symtab_vregs)
+
+            // Generate OP_ARRAY_PUSH instruction
+            // For bootstrap: assume element size = 8 bytes (int, pointer, etc.)
+            let push_instr = IRInstr {
+                op: OP_ARRAY_PUSH(),
+                dest: -1,  // push returns void
+                arg1: array_vreg,
+                arg2: elem_vreg,
+                str_val: ""
+            }
+            push(instrs, push_instr)
+            return -1  // No return value
+        }
 
         // Evaluate all arguments
         // Get argument indices from global storage
@@ -2211,6 +2266,13 @@ fn gen_ir_from_ast_with_symtab(ast_idx: int, nodes: []AstNode, instrs: []IRInstr
         return value_vreg
     }
 
+    if node.tag == STMT_EXPR() {
+        // Expression statement (e.g., function call without using result)
+        // node.left = expression
+        // Just evaluate the expression and return its vreg
+        return gen_ir_from_ast_with_symtab(node.left, nodes, instrs, symtab_names, symtab_vregs)
+    }
+
     if node.tag == STMT_IF() {
         // Generate if/else statement
         // node.left = condition, node.right = then block, node.extra = else block
@@ -2388,6 +2450,21 @@ fn encode_mul(rd: int, rn: int, rm: int) -> int {
     return 0x9b007c00 + (rm * 0x10000) + (rn * 0x20) + rd
 }
 
+fn encode_lsl(rd: int, rn: int, shift: int) -> int {
+    // LSL Xd, Xn, #shift (Logical Shift Left)
+    // Encoded as UBFM with specific immr and imms values
+    // sf=1, opc=10, N=1, immr=(64-shift)%64, imms=63-shift, Rn, Rd
+    let immr = (64 - shift) % 64
+    let imms = 63 - shift
+    return 0xd3400000 + (immr * 0x10000) + (imms * 0x400) + (rn * 0x20) + rd
+}
+
+fn encode_add_imm(rd: int, rn: int, imm: int) -> int {
+    // ADD Xd, Xn, #imm (immediate addition)
+    // sf=1 (64-bit), op=0, S=0, shift=00, imm12, Rn, Rd
+    return 0x91000000 + ((imm % 4096) * 0x400) + (rn * 0x20) + rd
+}
+
 fn encode_ret() -> int {
     // RET (return, defaults to X30/LR)
     return 0xd65f03c0
@@ -2552,6 +2629,57 @@ fn gen_code_from_ir(instrs: []IRInstr, code: []int) {
             // STR Xvalue, [Xaddr]
             let encoded = encode_str_offset(instr.arg2, instr.arg1, 0)
             push(code, encoded)
+            instr_count = instr_count + 1
+        }
+        if instr.op == OP_ARRAY_LEN() {
+            // Load length from fat pointer at offset 8
+            // LDR Xdest, [Xarray, #8]
+            let encoded = encode_ldr_offset(instr.dest, instr.arg1, 8)
+            push(code, encoded)
+            instr_count = instr_count + 1
+        }
+        if instr.op == OP_ARRAY_PUSH() {
+            // Simplified push (no growth): load len, store elem, increment len
+            // For bootstrap: assume 8-byte elements (int, pointer, etc.)
+            let array_reg = instr.arg1
+            let elem_reg = instr.arg2
+
+            // Load len from fat pointer at offset 8
+            // LDR X16, [Xarray, #8]
+            let load_len = encode_ldr_offset(16, array_reg, 8)
+            push(code, load_len)
+            instr_count = instr_count + 1
+
+            // Load data pointer from offset 0
+            // LDR X17, [Xarray, #0]
+            let load_ptr = encode_ldr_offset(17, array_reg, 0)
+            push(code, load_ptr)
+            instr_count = instr_count + 1
+
+            // Calculate element address: X18 = X17 + (X16 * 8)
+            // LSL X18, X16, #3  (multiply by 8)
+            let shift = encode_lsl(18, 16, 3)
+            push(code, shift)
+            instr_count = instr_count + 1
+
+            // ADD X18, X17, X18
+            let add_addr = encode_add(18, 17, 18)
+            push(code, add_addr)
+            instr_count = instr_count + 1
+
+            // Store element: STR Xelem, [X18]
+            let store_elem = encode_str_offset(elem_reg, 18, 0)
+            push(code, store_elem)
+            instr_count = instr_count + 1
+
+            // Increment length: ADD X16, X16, #1
+            let inc_len = encode_add_imm(16, 16, 1)
+            push(code, inc_len)
+            instr_count = instr_count + 1
+
+            // Store new length back: STR X16, [Xarray, #8]
+            let store_len = encode_str_offset(16, array_reg, 8)
+            push(code, store_len)
             instr_count = instr_count + 1
         }
         if instr.op == OP_CALL() {
@@ -2833,8 +2961,8 @@ fn write_main_cmd(buf: int, entry_offset: int) -> int {
 fn main() -> int {
     print("=== Bootstrap Ease Compiler ===\n\n")
 
-    // Test: Struct literal construction
-    let source = "fn main() -> int { let result = ParseResult { node_idx: 42, new_pos: 100 } return result.node_idx }"
+    // Test: Array operations (len and push)
+    let source = "fn main() -> int { let mut arr = []int{10, 20} push(arr, 30) return len(arr) }"
     print("Compiling: ")
     print(source)
     print("\n\n")
@@ -3117,6 +3245,18 @@ fn main() -> int {
                 print(" to [v")
                 print(strconv.Itoa(instr.arg1))
                 print("]")
+            }
+            if instr.op == OP_ARRAY_LEN() {
+                print("v")
+                print(strconv.Itoa(instr.dest))
+                print(" = array_len v")
+                print(strconv.Itoa(instr.arg1))
+            }
+            if instr.op == OP_ARRAY_PUSH() {
+                print("array_push v")
+                print(strconv.Itoa(instr.arg1))
+                print(", v")
+                print(strconv.Itoa(instr.arg2))
             }
             print("\n")
         }
