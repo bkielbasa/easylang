@@ -462,6 +462,16 @@ The bootstrap compiler can compile simple programs but not yet itself. Key missi
 
 ### Recent Fixes
 
+**Global Struct Slice Field Initialization (Feb 7, 2026):**
+- Fixed global structs with slice fields not being initialized properly
+  - Root cause: buildArrayFieldInit only handled `*types.Array`, but `[]int` is `*types.Slice`
+  - Symptom: `let mut g_s = S { x: 42, a: []int{1,2,3} }` would show len=0, crash on access
+  - The fat pointer (data, len, cap) was never being initialized for slice fields
+  - Solution: Extended buildArrayFieldInit to handle both `*types.Array` and `*types.Slice`
+  - File: pkg/ir/builder.go lines 3255-3276
+  - Result: All global struct slice fields now initialize correctly with proper len/cap
+  - Test: Created /tmp/test_array_field.ease demonstrating fix
+
 **Comprehensive Mach-O Writer (Feb 6, 2026):**
 - Implemented complete Mach-O binary generator in Ease (bootstrap/macho_writer.ease)
 - Generates structurally valid Mach-O 64-bit ARM64 executables with 13 load commands
@@ -594,22 +604,6 @@ The bootstrap compiler can compile simple programs but not yet itself. Key missi
   - Bootstrap parser tests now all pass (5/5)
 
 ### Known Issues
-- **Global structs with array fields crash on array indexing**
-  - Symptom: `let mut s = S { a: []int{1,2,3} }; s.a[0]` crashes with SIGSEGV
-  - Works: Local structs with arrays, global arrays (not in structs), array length access, manual initialization in function body
-  - Fails: Only when array fields are initialized during global initialization (injected at start of main)
-  - Root cause: Fat pointer data pointer (offset+0) corrupted during `buildStructGlobalInit`
-    - `OpStore(elemPtr, fieldAddr)` where `fieldAddr` from `OpIndexAddr(GlobalRef, offset)` fails
-    - Same operation works in regular function body, only fails during global init
-    - Length field (offset+8) correct, suggesting partial write or addressing issue
-    - Likely vreg spilling/loading bug or GlobalRef+offset materialization issue during initialization
-  - **Workaround**: Initialize array fields to empty `[]int{}`, then populate in init function
-    ```ease
-    let mut g_s = S { a: []int{} }
-    fn init() { g_s.a = []int{1, 2, 3} }
-    fn main() { init(); ... }
-    ```
-  - Needs deep debugging: IR dump, assembly inspection, or debugger to trace actual addresses
 - **Array operations on returned structs**: When a struct containing an array is returned from a function, then passed to another function that reads from AND pushes to that array, it crashes
   - Pattern: `struct S { arr: []int }; fn make() -> S { ... }; fn use(s: S) { let x = s.arr[0]; push(s.arr, x+1); }`
   - Workaround: Avoid combining struct returns with complex array operations in the same function

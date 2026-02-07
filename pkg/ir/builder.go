@@ -3244,14 +3244,28 @@ func (b *Builder) buildStructGlobalInit(gv *GlobalVar) {
 }
 // buildArrayFieldInit initializes an array field within a struct global
 func (b *Builder) buildArrayFieldInit(arrayExpr *ast.ArrayExpr, fieldAddr Operand, fieldType types.Type) {
-	arrType, ok := fieldType.(*types.Array)
-	if !ok {
+	var elemType types.Type
+	var numElems int
+
+	// Handle both fixed-size arrays and slices
+	switch t := fieldType.(type) {
+	case *types.Array:
+		elemType = t.Elem
+		numElems = int(t.Len)
+	case *types.Slice:
+		elemType = t.Elem
+		// For slice initializers, count the elements
+		if arrayExpr.Repeat != nil {
+			// [expr; count] syntax - not typically used with slices but handle it
+			numElems = len(arrayExpr.Elements)
+		} else {
+			numElems = len(arrayExpr.Elements)
+		}
+	default:
 		return
 	}
 
-	elemType := arrType.Elem
 	elemSize := b.typeSize(elemType)
-	numElems := int(arrType.Len)
 
 	// Allocate heap space for array elements
 	elemDataSize := numElems * elemSize
