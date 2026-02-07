@@ -471,6 +471,10 @@ The bootstrap compiler can compile simple programs but not yet itself. Key missi
   - File: pkg/ir/builder.go lines 3255-3276
   - Result: All global struct slice fields now initialize correctly with proper len/cap
   - Test: Created /tmp/test_array_field.ease demonstrating fix
+  - **Bonus**: This fix also resolved the "array operations on returned structs" issue
+    - Previously: `fn make() -> S { ... }; fn use(s: S) { push(s.arr, x) }` would crash
+    - Now works correctly for both simple and nested structs with arrays
+    - Verified with /tmp/test_struct_return_array.ease and /tmp/test_nested_struct_array.ease
 
 **Comprehensive Mach-O Writer (Feb 6, 2026):**
 - Implemented complete Mach-O binary generator in Ease (bootstrap/macho_writer.ease)
@@ -604,9 +608,7 @@ The bootstrap compiler can compile simple programs but not yet itself. Key missi
   - Bootstrap parser tests now all pass (5/5)
 
 ### Known Issues
-- **Array operations on returned structs**: When a struct containing an array is returned from a function, then passed to another function that reads from AND pushes to that array, it crashes
-  - Pattern: `struct S { arr: []int }; fn make() -> S { ... }; fn use(s: S) { let x = s.arr[0]; push(s.arr, x+1); }`
-  - Workaround: Avoid combining struct returns with complex array operations in the same function
+None currently! All previously documented issues have been resolved.
 
 ### Future
 - [ ] Standard library expansion (strings, strconv, and io complete)
