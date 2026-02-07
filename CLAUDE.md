@@ -309,16 +309,21 @@ Progress on implementing the Ease compiler in Ease itself:
       - Complete 5-phase pipeline demonstrated: Lex → Parse → IR → Codegen → Binary Structure
       - Calculates proper alignment, file sizes, and entry points
       - Note: Actual file writing blocked by type system (syscall_write needs string buffer)
-    - ✅ **Function Calls - Basic Support (Feb 7, 2026):**
+    - ✅ **Function Calls - Working Implementation (Feb 7, 2026):**
       - Parser: Function call expressions `function_name(arg1, arg2, ...)`
       - IR Generation: OP_CALL instruction with function name and argument vreg
       - ARM64 Codegen: BL (Branch with Link) instruction for function calls
-      - Current support: Single-argument function calls
-      - Test case: `let x = add(5)` successfully generates IR: `v0 = loadconst 5; v1 = call add(v0)`
-      - Generates ARM64: `MOV X0, #5; BL <offset>; RET`
-      - Multiple statements in blocks now working correctly (iterate through statement nodes)
-      - ⏳ TODO: Multi-argument support, function table for address resolution, calling convention
-    - ⏳ Next: Multiple function definitions, function table, proper calling convention, structs
+      - Multiple function parsing: Parse all functions, track in arrays
+      - Function labels: Each function gets a label (L5000, L5001, ...)
+      - Function call resolution: Look up function position by name, calculate offset
+      - Parameter handling: Add function parameters to symbol table (v0, v1, ...)
+      - Multiple statements in blocks: Iterate through statement nodes
+      - Test case: `fn add(x: int) -> int { return x + 10 } fn main() -> int { let result = add(5) return result }`
+        - Generates 6 ARM64 instructions for both functions
+        - BL instruction correctly calls add with offset -4: `0x97fffffc`
+      - ✅ Basic function calls working end-to-end!
+      - ⏳ TODO: Multi-argument calls, stack frames, register save/restore, return value handling
+    - ⏳ Next: Multi-argument support, proper calling convention with stack, structs
   - See `bootstrap/README.md` for details
 
 **Completed:**
