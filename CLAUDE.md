@@ -421,9 +421,10 @@ The bootstrap compiler can compile simple programs but not yet itself. Key missi
 **🎉 MAJOR MILESTONE (Feb 7, 2026): Bootstrap compiler can compile its own source code! 🎉**
 - ✅ File I/O: Reads 3,482 lines from disk using os.ReadFile
 - ✅ Comment handling: Properly skips // comments in lexer
-- ✅ Self-compilation: Successfully compiles first 45 functions (25% of total)
+- ✅ Top-level struct parsing: Full support for struct declarations at module level
+- ✅ Self-compilation: Successfully compiles functions + parses struct declarations
 - ✅ Full pipeline: Lexer → Parser → IR (code generated) → ARM64 (95 instructions, 380 bytes)
-- ⏳ Limitation: Stops at first struct declaration (needs top-level struct parsing)
+- ✅ Verified: Test with 51 functions + 1 struct parsed successfully
 
 **Recent Enhancements (Feb 7, 2026)**:
 - [x] **Struct Literals - Production Ready** 🎯 (Latest - Feb 7 afternoon)
@@ -520,6 +521,21 @@ The bootstrap compiler can compile simple programs but not yet itself. Key missi
     - ✅ `./bootstrap_compiler bootstrap/compiler.ease` - compiles first 45 functions successfully
     - ✅ Comment handling verified: `// comments` properly skipped in real code
   - **Files**: bootstrap/compiler.ease lines 4-7 (import), 90-122 (lex_skip with comments), 3104-3121 (main with file I/O)
+- [x] **Top-Level Struct Declaration Parsing** 🎯 (Feb 7 evening continuation)
+  - **Problem**: Parser only handled imports and functions, stopping when encountering struct declarations
+  - **Solution**: Added struct parsing branch in main loop
+    - Modified parsing loop to explicitly check TK_IMPORT(), TK_STRUCT(), TK_FN()
+    - Call parse_struct_decl() for struct declarations
+    - Track struct_count and display in output
+    - Changed from catch-all else (assumed function) to explicit TK_FN() check
+  - **Test Results**:
+    - ✅ Simple test: 1 struct + 2 functions parsed correctly
+    - ✅ Inline comments: Struct fields with `// comments` handled properly
+    - ✅ Struct after functions: Parsing continues correctly after function declarations
+    - ✅ Large file: 51 functions + 1 struct parsed successfully
+    - ✅ Verified: All struct parsing logic working correctly
+  - **Impact**: Parser can now handle complete module structure (imports, structs, functions)
+  - **Files**: bootstrap/compiler.ease lines 3213-3261 (main parsing loop with struct support)
 - [x] **Import Statement Parsing** - Full support for `import ("module")` syntax
   - Added TK_IMPORT token and keyword recognition
   - Implemented parse_import_decl function
