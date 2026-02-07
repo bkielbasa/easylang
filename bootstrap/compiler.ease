@@ -3209,9 +3209,10 @@ fn main() -> int {
     let mut func_names = []string{}
     let mut func_indices = []int{}
 
-    // Parse all top-level declarations (imports and functions)
+    // Parse all top-level declarations (imports, structs, and functions)
     let mut parse_pos = 0
     let mut import_count = 0
+    let mut struct_count = 0
     for {
         parse_pos = lex_skip(source, parse_pos)
         let kind = lex_kind(source, parse_pos)
@@ -3229,8 +3230,19 @@ fn main() -> int {
             } else {
                 break
             }
-        } else {
-            // Otherwise, parse as function
+        } else if kind == TK_STRUCT() {
+            // Parse struct declaration
+            let struct_result = parse_struct_decl(source, parse_pos, nodes)
+            if struct_result.node_idx >= 0 {
+                // Struct parsed successfully, continue to next declaration
+                struct_count = struct_count + 1
+                parse_pos = struct_result.new_pos
+                parse_pos = lex_skip(source, parse_pos)
+            } else {
+                break
+            }
+        } else if kind == TK_FN() {
+            // Parse function declaration
             let parse_result = parse_func_decl(source, parse_pos, nodes)
             if parse_result.node_idx < 0 {
                 break
@@ -3243,6 +3255,9 @@ fn main() -> int {
 
             parse_pos = parse_result.new_pos
             parse_pos = lex_skip(source, parse_pos)
+        } else {
+            // Unknown top-level declaration, stop parsing
+            break
         }
     }
 
@@ -3250,6 +3265,12 @@ fn main() -> int {
         print("Parsed ")
         print(strconv.Itoa(import_count))
         print(" imports\n")
+    }
+
+    if struct_count > 0 {
+        print("Parsed ")
+        print(strconv.Itoa(struct_count))
+        print(" structs\n")
     }
 
     print("Parsed ")
