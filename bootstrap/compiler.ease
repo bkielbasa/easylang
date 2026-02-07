@@ -1864,6 +1864,16 @@ fn encode_bl(offset: int) -> int {
     return 0x94000000 + masked_offset
 }
 
+fn encode_ldr_offset(rt: int, rn: int, offset: int) -> int {
+    // LDR Xt, [Xn, #offset]
+    // Load 64-bit register from memory address [Xn + offset]
+    // size=11 (64-bit), V=0, opc=01, imm12 (unsigned offset / 8), Rn, Rt
+    // Encoding: 11 111 0 01 01 imm12(12) Rn(5) Rt(5)
+    // imm12 is offset >> 3 (divided by 8, must be 8-byte aligned)
+    let imm12 = (offset / 8) % 4096
+    return 0xf9400000 + (imm12 * 0x400) + (rn * 0x20) + rt
+}
+
 fn gen_code_from_ir(instrs: []IRInstr, code: []int) {
     // Two-pass approach:
     // Pass 1: Build label map (label_id -> instruction_index) and function map (name -> position)
@@ -1911,6 +1921,17 @@ fn gen_code_from_ir(instrs: []IRInstr, code: []int) {
         }
         if instr.op == OP_MUL() {
             let encoded = encode_mul(instr.dest, instr.arg1, instr.arg2)
+            push(code, encoded)
+            instr_count = instr_count + 1
+        }
+        if instr.op == OP_LOAD() {
+            // LDR Xdest, [Xbase, #offset]
+            // For now, simplified: assume arg1 is base register, arg2 is offset
+            // In real implementation, would handle array indexing differently
+            let base_reg = instr.arg1
+            let offset = instr.arg2
+            let dest_reg = instr.dest
+            let encoded = encode_ldr_offset(dest_reg, base_reg, offset)
             push(code, encoded)
             instr_count = instr_count + 1
         }
