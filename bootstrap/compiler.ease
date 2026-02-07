@@ -23,6 +23,7 @@ fn TK_BREAK() -> int { return 18 }
 fn TK_STRUCT() -> int { return 19 }
 fn TK_TRUE() -> int { return 20 }
 fn TK_FALSE() -> int { return 21 }
+fn TK_IMPORT() -> int { return 22 }
 
 // Arithmetic operators
 fn TK_PLUS() -> int { return 30 }
@@ -162,6 +163,7 @@ fn lex_kind(src: string, pos: int) -> int {
         if word == "struct" { return TK_STRUCT() }
         if word == "true" { return TK_TRUE() }
         if word == "false" { return TK_FALSE() }
+        if word == "import" { return TK_IMPORT() }
         return TK_IDENT()
     }
 
@@ -274,6 +276,7 @@ fn DECL_FUNC() -> int { return 40 }
 fn DECL_STRUCT() -> int { return 41 }
 fn DECL_PARAM() -> int { return 42 }
 fn DECL_FIELD() -> int { return 43 }
+fn DECL_IMPORT() -> int { return 44 }
 
 // Type tags
 fn TYPE_UNKNOWN() -> int { return 0 }

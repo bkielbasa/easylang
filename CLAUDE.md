@@ -415,8 +415,19 @@ The bootstrap compiler can compile simple programs but not yet itself. Key missi
     - Production binaries signed by Go compiler via exec.Command
   - **Status**: Mach-O generation complete; binaries execute successfully!
 
-**Not Started:**
-- [ ] Full self-hosting - Bootstrap compiler compiling itself
+**Milestone Achieved (Feb 7, 2026):**
+- [x] **Go Implementation Compiles Bootstrap Compiler** ✅
+  - The Go compiler successfully compiles `bootstrap/compiler.ease` (2500+ lines, 93KB source)
+  - Produces working 151KB ARM64 binary
+  - Self-compiled binary runs and can compile programs
+  - Proves: All core language features work correctly on complex real-world code
+  - **Status**: Go-to-Ease self-compilation working!
+
+**Not Yet Achieved:**
+- [ ] Bootstrap compiler compiling itself (Ease-to-Ease self-hosting)
+  - Blocked on: imports, string builtins, memory management, globals
+  - Bootstrap compiler can compile simple programs but not its own source yet
+  - Next step: Incrementally add missing features
 
 ### Recent Fixes
 
