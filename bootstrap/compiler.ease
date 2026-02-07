@@ -144,6 +144,11 @@ fn lex_kind(src: string, pos: int) -> int {
         return TK_INT()
     }
 
+    // String literals
+    if ch == 34 {  // " character
+        return TK_STRING()
+    }
+
     // Identifiers and keywords
     if is_alpha(ch) {
         let mut end = pos
@@ -198,6 +203,23 @@ fn lex_end(src: string, pos: int, kind: int) -> int {
         return end
     }
 
+    // String literals
+    if kind == TK_STRING() {
+        let mut end = pos + 1  // Skip opening quote
+        for end < len(src) {
+            let ch = lex_peek(src, end)
+            if ch == 34 {  // Closing quote
+                return end + 1  // Include closing quote
+            }
+            if ch == 92 {  // Backslash (escape)
+                end = end + 2  // Skip escape sequence
+            } else {
+                end = end + 1
+            }
+        }
+        return end  // Unterminated string (return what we have)
+    }
+
     // Identifiers and keywords
     if kind == TK_IDENT() || kind == TK_FN() || kind == TK_LET() || kind == TK_MUT() ||
        kind == TK_IF() || kind == TK_ELSE() || kind == TK_FOR() || kind == TK_IN() ||
@@ -220,6 +242,11 @@ fn lex_string_value(src: string, pos: int, kind: int) -> string {
        kind == TK_TRUE() || kind == TK_FALSE() || kind == TK_IMPORT() {
         let end = lex_end(src, pos, kind)
         return str_substring(src, pos, end)
+    }
+    if kind == TK_STRING() {
+        // Extract string content without quotes
+        let end = lex_end(src, pos, kind)
+        return str_substring(src, pos + 1, end - 1)  // Skip opening and closing quotes
     }
     return ""
 }
@@ -2643,6 +2670,11 @@ fn main() -> int {
         if kind == TK_INT() {
             print("INT(")
             print(strconv.Itoa(lex_int_value(source, pos)))
+            print(") ")
+        }
+        if kind == TK_STRING() {
+            print("STRING(")
+            print(lex_string_value(source, pos, kind))
             print(") ")
         }
         if kind == TK_IDENT() {
