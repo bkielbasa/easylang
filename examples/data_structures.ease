@@ -1,0 +1,101 @@
+// Data structures demonstration - structs and arrays
+
+import ("strconv")
+
+struct Point {
+    x: int,
+    y: int,
+}
+
+struct Rectangle {
+    top_left: Point,
+    width: int,
+    height: int,
+}
+
+fn make_point(x: int, y: int) -> Point {
+    return Point { x: x, y: y }
+}
+
+fn area(rect: Rectangle) -> int {
+    return rect.width * rect.height
+}
+
+fn perimeter(rect: Rectangle) -> int {
+    return 2 * (rect.width + rect.height)
+}
+
+fn sum_array(arr: []int) -> int {
+    let mut total = 0
+    for i in 0..len(arr) {
+        total = total + arr[i]
+    }
+    return total
+}
+
+fn find_max(arr: []int) -> int {
+    if len(arr) == 0 {
+        return 0
+    }
+
+    let mut max_val = arr[0]
+    for i in 1..len(arr) {
+        if arr[i] > max_val {
+            max_val = arr[i]
+        }
+    }
+    return max_val
+}
+
+fn main() -> int {
+    print("=== Data Structures Demo ===\n\n")
+
+    // Points
+    let p1 = make_point(10, 20)
+    let p2 = Point { x: 30, y: 40 }
+
+    print("Point 1: (")
+    print(strconv.Itoa(p1.x))
+    print(", ")
+    print(strconv.Itoa(p1.y))
+    print(")\n")
+
+    print("Point 2: (")
+    print(strconv.Itoa(p2.x))
+    print(", ")
+    print(strconv.Itoa(p2.y))
+    print(")\n\n")
+
+    // Rectangle
+    let rect = Rectangle {
+        top_left: p1,
+        width: 50,
+        height: 30,
+    }
+
+    print("Rectangle:\n")
+    print("  Area: ")
+    print(strconv.Itoa(area(rect)))
+    print("\n")
+    print("  Perimeter: ")
+    print(strconv.Itoa(perimeter(rect)))
+    print("\n\n")
+
+    // Arrays
+    let numbers = []int{5, 2, 8, 1, 9, 3, 7}
+    print("Array: [5, 2, 8, 1, 9, 3, 7]\n")
+
+    print("  Sum: ")
+    print(strconv.Itoa(sum_array(numbers)))
+    print("\n")
+
+    print("  Max: ")
+    print(strconv.Itoa(find_max(numbers)))
+    print("\n")
+
+    print("  Length: ")
+    print(strconv.Itoa(len(numbers)))
+    print("\n")
+
+    return 0
+}
