@@ -323,7 +323,17 @@ Progress on implementing the Ease compiler in Ease itself:
         - BL instruction correctly calls add with offset -4: `0x97fffffc`
       - ✅ Basic function calls working end-to-end!
       - ⏳ TODO: Multi-argument calls, stack frames, register save/restore, return value handling
-    - ⏳ Next: Multi-argument support, proper calling convention with stack, structs
+    - ⏸️ **Struct Field Access - Partial Implementation (Feb 7, 2026):**
+      - Parser: Field access expressions `base.field_name`
+      - Lexer: TK_DOT token recognition working
+      - EXPR_FIELD AST nodes: Store base expression and field name
+      - IR Generation: OP_LOAD with field offset calculation
+      - Field offsets: Hardcoded for common structs (tag=0, int_val=8, etc.)
+      - IR output: `v1 = load [base_vreg + offset] // field_name`
+      - Test: `node.tag` parses and generates IR correctly
+      - ⏳ TODO: Struct literals, memory allocation, ARM64 LDR instruction, type-based offsets
+      - Status: Foundation in place, needs memory management for completion
+    - ⏳ Next: Struct literals and memory, or multi-argument calls, or type checking
   - See `bootstrap/README.md` for details
 
 **Completed:**
