@@ -202,7 +202,7 @@ fn lex_end(src: string, pos: int, kind: int) -> int {
     if kind == TK_IDENT() || kind == TK_FN() || kind == TK_LET() || kind == TK_MUT() ||
        kind == TK_IF() || kind == TK_ELSE() || kind == TK_FOR() || kind == TK_IN() ||
        kind == TK_RETURN() || kind == TK_BREAK() || kind == TK_STRUCT() ||
-       kind == TK_TRUE() || kind == TK_FALSE() {
+       kind == TK_TRUE() || kind == TK_FALSE() || kind == TK_IMPORT() {
         let mut end = pos
         for end < len(src) && (is_alpha(lex_peek(src, end)) || is_digit(lex_peek(src, end))) {
             end = end + 1
@@ -217,7 +217,7 @@ fn lex_string_value(src: string, pos: int, kind: int) -> string {
     if kind == TK_IDENT() || kind == TK_FN() || kind == TK_LET() || kind == TK_MUT() ||
        kind == TK_IF() || kind == TK_ELSE() || kind == TK_FOR() || kind == TK_IN() ||
        kind == TK_RETURN() || kind == TK_BREAK() || kind == TK_STRUCT() ||
-       kind == TK_TRUE() || kind == TK_FALSE() {
+       kind == TK_TRUE() || kind == TK_FALSE() || kind == TK_IMPORT() {
         let end = lex_end(src, pos, kind)
         return str_substring(src, pos, end)
     }
@@ -877,6 +877,56 @@ fn parse_block(src: string, pos: int, nodes: []AstNode) -> ParseResult {
         type_tag: TYPE_UNKNOWN()
     }
     push(nodes, block)
+    return ParseResult { node_idx: len(nodes) - 1, new_pos: p }
+}
+
+// Parse import declaration: import ("path")
+fn parse_import_decl(src: string, pos: int, nodes: []AstNode) -> ParseResult {
+    let mut p = pos
+    p = lex_skip(src, p)
+
+    // Expect 'import'
+    let import_kind = lex_kind(src, p)
+    if import_kind != TK_IMPORT() {
+        return ParseResult { node_idx: -1, new_pos: p }
+    }
+    p = lex_end(src, p, import_kind)
+    p = lex_skip(src, p)
+
+    // Expect '('
+    if lex_kind(src, p) != TK_LPAREN() {
+        return ParseResult { node_idx: -1, new_pos: p }
+    }
+    p = lex_end(src, p, TK_LPAREN())
+    p = lex_skip(src, p)
+
+    // Parse import path (string literal)
+    let path_kind = lex_kind(src, p)
+    if path_kind != TK_STRING() {
+        return ParseResult { node_idx: -1, new_pos: p }
+    }
+    let import_path = lex_string_value(src, p, path_kind)
+    p = lex_end(src, p, path_kind)
+    p = lex_skip(src, p)
+
+    // Expect ')'
+    if lex_kind(src, p) != TK_RPAREN() {
+        return ParseResult { node_idx: -1, new_pos: p }
+    }
+    p = lex_end(src, p, TK_RPAREN())
+
+    // Create import declaration node
+    // str_val = import path
+    let import_node = AstNode {
+        tag: DECL_IMPORT(),
+        int_val: 0,
+        str_val: import_path,
+        left: -1,
+        right: -1,
+        extra: -1,
+        type_tag: TYPE_UNKNOWN()
+    }
+    push(nodes, import_node)
     return ParseResult { node_idx: len(nodes) - 1, new_pos: p }
 }
 
@@ -2577,8 +2627,8 @@ fn write_main_cmd(buf: int, entry_offset: int) -> int {
 fn main() -> int {
     print("=== Bootstrap Ease Compiler ===\n\n")
 
-    // Test: Array literal
-    let source = "fn main() -> int { let arr = []int{1, 2, 3} return arr[1] }"
+    // Test: Import statement and array literal
+    let source = "import (\"strings\") fn main() -> int { let arr = []int{1, 2, 3} return arr[1] }"
     print("Compiling: ")
     print(source)
     print("\n\n")
@@ -2609,6 +2659,7 @@ fn main() -> int {
         if kind == TK_IN() { print("IN ") }
         if kind == TK_RETURN() { print("RETURN ") }
         if kind == TK_STRUCT() { print("STRUCT ") }
+        if kind == TK_IMPORT() { print("IMPORT ") }
         if kind == TK_ASSIGN() { print("ASSIGN ") }
         if kind == TK_ARROW() { print("ARROW ") }
         if kind == TK_LBRACE() { print("LBRACE ") }
@@ -2641,26 +2692,47 @@ fn main() -> int {
     let mut func_names = []string{}
     let mut func_indices = []int{}
 
-    // Parse all functions in the source
+    // Parse all top-level declarations (imports and functions)
     let mut parse_pos = 0
+    let mut import_count = 0
     for {
         parse_pos = lex_skip(source, parse_pos)
-        if lex_kind(source, parse_pos) == TK_EOF() {
+        let kind = lex_kind(source, parse_pos)
+        if kind == TK_EOF() {
             break
         }
 
-        let parse_result = parse_func_decl(source, parse_pos, nodes)
-        if parse_result.node_idx < 0 {
-            break
+        // Try parsing import first
+        if kind == TK_IMPORT() {
+            let import_result = parse_import_decl(source, parse_pos, nodes)
+            if import_result.node_idx >= 0 {
+                import_count = import_count + 1
+                parse_pos = import_result.new_pos
+                parse_pos = lex_skip(source, parse_pos)
+            } else {
+                break
+            }
+        } else {
+            // Otherwise, parse as function
+            let parse_result = parse_func_decl(source, parse_pos, nodes)
+            if parse_result.node_idx < 0 {
+                break
+            }
+
+            let func_idx = parse_result.node_idx
+            let func_node = nodes[func_idx]
+            push(func_names, func_node.str_val)
+            push(func_indices, func_idx)
+
+            parse_pos = parse_result.new_pos
+            parse_pos = lex_skip(source, parse_pos)
         }
+    }
 
-        let func_idx = parse_result.node_idx
-        let func_node = nodes[func_idx]
-        push(func_names, func_node.str_val)
-        push(func_indices, func_idx)
-
-        parse_pos = parse_result.new_pos
-        parse_pos = lex_skip(source, parse_pos)
+    if import_count > 0 {
+        print("Parsed ")
+        print(strconv.Itoa(import_count))
+        print(" imports\n")
     }
 
     print("Parsed ")
