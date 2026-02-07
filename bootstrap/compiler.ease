@@ -1275,102 +1275,147 @@ fn parse_primary_expr(src: string, pos: int, nodes: []AstNode) -> ParseResult {
         return atom_result
     }
 
-    // Check if this is a function call (identifier followed by '(')
+    // Handle postfix operators (function calls, array indexing, field access) in a loop for chaining
+    let mut current_node = atom_result.node_idx
     p = atom_result.new_pos
-    p = lex_skip(src, p)
-    let next_kind = lex_kind(src, p)
 
-    if next_kind == TK_LPAREN() {
-        // It's a function call
-        let func_name_node = atom_result.node_idx
-        p = lex_end(src, p, next_kind)  // Skip '('
+    for {
         p = lex_skip(src, p)
+        let next_kind = lex_kind(src, p)
 
-        // Parse arguments
-        let mut first_arg = -1
-        let mut last_arg = -1
-        let mut arg_count = 0
+        if next_kind == TK_LPAREN() {
+            // It's a function call
+            let func_name_node = current_node
+            p = lex_end(src, p, next_kind)  // Skip '('
+            p = lex_skip(src, p)
 
-        // Check if there are any arguments
-        if lex_kind(src, p) != TK_RPAREN() {
-            for {
-                let arg_result = parse_expr_with_pos(src, p, nodes)
-                if arg_result.node_idx < 0 {
-                    break
+            // Parse arguments
+            let mut first_arg = -1
+            let mut last_arg = -1
+            let mut arg_count = 0
+
+            // Check if there are any arguments
+            if lex_kind(src, p) != TK_RPAREN() {
+                for {
+                    let arg_result = parse_expr_with_pos(src, p, nodes)
+                    if arg_result.node_idx < 0 {
+                        break
+                    }
+
+                    if first_arg < 0 {
+                        first_arg = arg_result.node_idx
+                    }
+                    last_arg = arg_result.node_idx
+                    arg_count = arg_count + 1
+
+                    p = arg_result.new_pos
+                    p = lex_skip(src, p)
+
+                    // Check for comma
+                    if lex_kind(src, p) == TK_COMMA() {
+                        p = lex_end(src, p, TK_COMMA())
+                        p = lex_skip(src, p)
+                    } else {
+                        break
+                    }
                 }
+            }
 
-                if first_arg < 0 {
-                    first_arg = arg_result.node_idx
-                }
-                last_arg = arg_result.node_idx
-                arg_count = arg_count + 1
+            // Expect ')'
+            p = lex_skip(src, p)
+            if lex_kind(src, p) != TK_RPAREN() {
+                return ParseResult { node_idx: -1, new_pos: p }
+            }
+            p = lex_end(src, p, TK_RPAREN())
 
-                p = arg_result.new_pos
+            // Create call expression node
+            // left = function name node, right = first argument, int_val = arg count
+            let func_name = nodes[func_name_node].str_val
+            let call_node = AstNode {
+                tag: EXPR_CALL(),
+                int_val: arg_count,
+                str_val: func_name,
+                left: func_name_node,
+                right: first_arg,
+                extra: -1,
+                type_tag: TYPE_UNKNOWN()
+            }
+            push(nodes, call_node)
+            current_node = len(nodes) - 1
+            // Continue to check for more postfix operators
+        } else {
+            if next_kind == TK_LBRACKET() {
+                // Array indexing
+                let array_node = current_node
+                p = lex_end(src, p, next_kind)  // Skip '['
                 p = lex_skip(src, p)
 
-                // Check for comma
-                if lex_kind(src, p) == TK_COMMA() {
-                    p = lex_end(src, p, TK_COMMA())
+                // Parse index expression
+                let index_result = parse_expr_with_pos(src, p, nodes)
+                if index_result.node_idx < 0 {
+                    return ParseResult { node_idx: -1, new_pos: p }
+                }
+                p = index_result.new_pos
+                p = lex_skip(src, p)
+
+                // Expect ']'
+                if lex_kind(src, p) != TK_RBRACKET() {
+                    return ParseResult { node_idx: -1, new_pos: p }
+                }
+                p = lex_end(src, p, TK_RBRACKET())
+
+                // Create array index node
+                // left = array expression, right = index expression
+                let index_node = AstNode {
+                    tag: EXPR_INDEX(),
+                    int_val: 0,
+                    str_val: "",
+                    left: array_node,
+                    right: index_result.node_idx,
+                    extra: -1,
+                    type_tag: TYPE_UNKNOWN()
+                }
+                push(nodes, index_node)
+                current_node = len(nodes) - 1
+                // Continue to check for more postfix operators
+            } else {
+                if next_kind == TK_DOT() {
+                    // Field access
+                    let base_node = current_node
+                    p = lex_end(src, p, next_kind)  // Skip '.'
                     p = lex_skip(src, p)
+
+                    // Parse field name
+                    let field_kind = lex_kind(src, p)
+                    if field_kind != TK_IDENT() {
+                        return ParseResult { node_idx: -1, new_pos: p }
+                    }
+                    let field_name = lex_string_value(src, p, field_kind)
+                    p = lex_end(src, p, field_kind)
+
+                    // Create field access node
+                    // left = base expression, str_val = field name
+                    let field_node = AstNode {
+                        tag: EXPR_FIELD(),
+                        int_val: 0,
+                        str_val: field_name,
+                        left: base_node,
+                        right: -1,
+                        extra: -1,
+                        type_tag: TYPE_UNKNOWN()
+                    }
+                    push(nodes, field_node)
+                    current_node = len(nodes) - 1
+                    // Continue to check for more postfix operators
                 } else {
+                    // No more postfix operators, break the loop
                     break
                 }
             }
         }
-
-        // Expect ')'
-        p = lex_skip(src, p)
-        if lex_kind(src, p) != TK_RPAREN() {
-            return ParseResult { node_idx: -1, new_pos: p }
-        }
-        p = lex_end(src, p, TK_RPAREN())
-
-        // Create call expression node
-        // left = function name node, right = first argument, int_val = arg count
-        let func_name = nodes[func_name_node].str_val
-        let call_node = AstNode {
-            tag: EXPR_CALL(),
-            int_val: arg_count,
-            str_val: func_name,
-            left: func_name_node,
-            right: first_arg,
-            extra: -1,
-            type_tag: TYPE_UNKNOWN()
-        }
-        push(nodes, call_node)
-        return ParseResult { node_idx: len(nodes) - 1, new_pos: p }
     }
 
-    // Check if this is field access (identifier followed by '.')
-    if next_kind == TK_DOT() {
-        let base_node = atom_result.node_idx
-        p = lex_end(src, p, next_kind)  // Skip '.'
-        p = lex_skip(src, p)
-
-        // Parse field name
-        let field_kind = lex_kind(src, p)
-        if field_kind != TK_IDENT() {
-            return ParseResult { node_idx: -1, new_pos: p }
-        }
-        let field_name = lex_string_value(src, p, field_kind)
-        p = lex_end(src, p, field_kind)
-
-        // Create field access node
-        // left = base expression, str_val = field name
-        let field_node = AstNode {
-            tag: EXPR_FIELD(),
-            int_val: 0,
-            str_val: field_name,
-            left: base_node,
-            right: -1,
-            extra: -1,
-            type_tag: TYPE_UNKNOWN()
-        }
-        push(nodes, field_node)
-        return ParseResult { node_idx: len(nodes) - 1, new_pos: p }
-    }
-
-    return atom_result
+    return ParseResult { node_idx: current_node, new_pos: p }
 }
 
 // Wrapper for backward compatibility
@@ -1532,6 +1577,35 @@ fn gen_ir_from_ast_with_symtab(ast_idx: int, nodes: []AstNode, instrs: []IRInstr
             str_val: node.str_val
         }
         push(instrs, call_instr)
+        return result_vreg
+    }
+
+    if node.tag == EXPR_INDEX() {
+        // Generate array indexing: array[index]
+        // node.left = array expression
+        // node.right = index expression
+
+        // For now, simplified: assume arrays are built-in and we have direct access
+        // In full implementation, would calculate: base_addr + (index * element_size)
+
+        // Evaluate array (get array identifier/vreg)
+        let array_vreg = gen_ir_from_ast_with_symtab(node.left, nodes, instrs, symtab_names, symtab_vregs)
+
+        // Evaluate index
+        let index_vreg = gen_ir_from_ast_with_symtab(node.right, nodes, instrs, symtab_names, symtab_vregs)
+
+        // For bootstrap demo: array[index] returns the indexed value
+        // In real impl: generate code to calculate address and load
+        // For now, create a special "ARRAY_INDEX" operation
+        let result_vreg = len(instrs)
+        let index_instr = IRInstr {
+            op: OP_LOAD(),  // Reuse LOAD for array indexing
+            dest: result_vreg,
+            arg1: array_vreg,   // array base
+            arg2: index_vreg,   // index (not offset!)
+            str_val: "array_index"
+        }
+        push(instrs, index_instr)
         return result_vreg
     }
 
@@ -2119,8 +2193,8 @@ fn write_main_cmd(buf: int, entry_offset: int) -> int {
 fn main() -> int {
     print("=== Bootstrap Ease Compiler ===\n\n")
 
-    // Test: Field access (demonstrates parser, IR incomplete)
-    let source = "fn main() -> int { return node.tag }"
+    // Test: Array indexing + field access (what bootstrap compiler needs!)
+    let source = "fn main() -> int { return nodes[0].tag }"
     print("Compiling: ")
     print(source)
     print("\n\n")
@@ -2155,6 +2229,8 @@ fn main() -> int {
         if kind == TK_ARROW() { print("ARROW ") }
         if kind == TK_LBRACE() { print("LBRACE ") }
         if kind == TK_RBRACE() { print("RBRACE ") }
+        if kind == TK_LBRACKET() { print("LBRACKET ") }
+        if kind == TK_RBRACKET() { print("RBRACKET ") }
         if kind == TK_COLON() { print("COLON ") }
         if kind == TK_PLUS() { print("PLUS ") }
         if kind == TK_MINUS() { print("MINUS ") }
