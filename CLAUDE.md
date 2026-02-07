@@ -309,7 +309,16 @@ Progress on implementing the Ease compiler in Ease itself:
       - Complete 5-phase pipeline demonstrated: Lex → Parse → IR → Codegen → Binary Structure
       - Calculates proper alignment, file sizes, and entry points
       - Note: Actual file writing blocked by type system (syscall_write needs string buffer)
-    - ⏳ Next: Range-based for loops (`for x in 0..10`), break/continue, semantic analysis integration
+    - ✅ **Function Calls - Basic Support (Feb 7, 2026):**
+      - Parser: Function call expressions `function_name(arg1, arg2, ...)`
+      - IR Generation: OP_CALL instruction with function name and argument vreg
+      - ARM64 Codegen: BL (Branch with Link) instruction for function calls
+      - Current support: Single-argument function calls
+      - Test case: `let x = add(5)` successfully generates IR: `v0 = loadconst 5; v1 = call add(v0)`
+      - Generates ARM64: `MOV X0, #5; BL <offset>; RET`
+      - Multiple statements in blocks now working correctly (iterate through statement nodes)
+      - ⏳ TODO: Multi-argument support, function table for address resolution, calling convention
+    - ⏳ Next: Multiple function definitions, function table, proper calling convention, structs
   - See `bootstrap/README.md` for details
 
 **Completed:**

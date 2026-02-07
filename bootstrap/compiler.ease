@@ -1270,7 +1270,78 @@ fn parse_primary_expr(src: string, pos: int, nodes: []AstNode) -> ParseResult {
     }
 
     // Otherwise, parse atom (literal or identifier)
-    return parse_atom(src, pos, nodes)
+    let atom_result = parse_atom(src, pos, nodes)
+    if atom_result.node_idx < 0 {
+        return atom_result
+    }
+
+    // Check if this is a function call (identifier followed by '(')
+    p = atom_result.new_pos
+    p = lex_skip(src, p)
+    let next_kind = lex_kind(src, p)
+
+    if next_kind == TK_LPAREN() {
+        // It's a function call
+        let func_name_node = atom_result.node_idx
+        p = lex_end(src, p, next_kind)  // Skip '('
+        p = lex_skip(src, p)
+
+        // Parse arguments
+        let mut first_arg = -1
+        let mut last_arg = -1
+        let mut arg_count = 0
+
+        // Check if there are any arguments
+        if lex_kind(src, p) != TK_RPAREN() {
+            for {
+                let arg_result = parse_expr_with_pos(src, p, nodes)
+                if arg_result.node_idx < 0 {
+                    break
+                }
+
+                if first_arg < 0 {
+                    first_arg = arg_result.node_idx
+                }
+                last_arg = arg_result.node_idx
+                arg_count = arg_count + 1
+
+                p = arg_result.new_pos
+                p = lex_skip(src, p)
+
+                // Check for comma
+                if lex_kind(src, p) == TK_COMMA() {
+                    p = lex_end(src, p, TK_COMMA())
+                    p = lex_skip(src, p)
+                } else {
+                    break
+                }
+            }
+        }
+
+        // Expect ')'
+        p = lex_skip(src, p)
+        if lex_kind(src, p) != TK_RPAREN() {
+            return ParseResult { node_idx: -1, new_pos: p }
+        }
+        p = lex_end(src, p, TK_RPAREN())
+
+        // Create call expression node
+        // left = function name node, right = first argument, int_val = arg count
+        let func_name = nodes[func_name_node].str_val
+        let call_node = AstNode {
+            tag: EXPR_CALL(),
+            int_val: arg_count,
+            str_val: func_name,
+            left: func_name_node,
+            right: first_arg,
+            extra: -1,
+            type_tag: TYPE_UNKNOWN()
+        }
+        push(nodes, call_node)
+        return ParseResult { node_idx: len(nodes) - 1, new_pos: p }
+    }
+
+    return atom_result
 }
 
 // Wrapper for backward compatibility
@@ -1409,6 +1480,32 @@ fn gen_ir_from_ast_with_symtab(ast_idx: int, nodes: []AstNode, instrs: []IRInstr
         return dest_vreg
     }
 
+    if node.tag == EXPR_CALL() {
+        // Generate function call
+        // node.str_val = function name
+        // node.right = first argument (or -1 if no arguments)
+        // node.int_val = argument count
+
+        // For now, support 0 or 1 argument functions
+        let mut arg_vreg = -1
+        if node.right >= 0 {
+            arg_vreg = gen_ir_from_ast_with_symtab(node.right, nodes, instrs, symtab_names, symtab_vregs)
+        }
+
+        // Generate CALL instruction
+        // dest = result vreg, arg1 = first argument vreg, arg2 = arg count, str_val = function name
+        let result_vreg = len(instrs)
+        let call_instr = IRInstr {
+            op: OP_CALL(),
+            dest: result_vreg,
+            arg1: arg_vreg,
+            arg2: node.int_val,
+            str_val: node.str_val
+        }
+        push(instrs, call_instr)
+        return result_vreg
+    }
+
     // Handle statements
     if node.tag == STMT_RETURN() {
         // Generate return instruction
@@ -1519,15 +1616,22 @@ fn gen_ir_from_ast_with_symtab(ast_idx: int, nodes: []AstNode, instrs: []IRInstr
 
     if node.tag == STMT_BLOCK() {
         // Generate IR for statements in the block
-        // node.left = first statement index
-        // NOTE: Without proper statement chaining (extra field),
-        // we can only reliably process single-statement blocks
+        // node.left = first statement index, node.right = last statement index
         let first_stmt = node.left
+        let last_stmt = node.right
         let mut last_vreg = -1
 
-        // Process the first statement only
+        // Process all statements from first to last
+        // Since statements aren't linked, we iterate through nodes array
+        // and check if each node is a statement
         if first_stmt >= 0 {
-            last_vreg = gen_ir_from_ast_with_symtab(first_stmt, nodes, instrs, symtab_names, symtab_vregs)
+            for i in first_stmt..(last_stmt + 1) {
+                let stmt_node = nodes[i]
+                // Check if this is a statement node (tag >= 20 = STMT_LET)
+                if stmt_node.tag >= STMT_LET() {
+                    last_vreg = gen_ir_from_ast_with_symtab(i, nodes, instrs, symtab_names, symtab_vregs)
+                }
+            }
         }
         return last_vreg
     }
@@ -1593,6 +1697,14 @@ fn encode_b(offset: int) -> int {
     return 0x14000000 + (offset % 67108864)
 }
 
+fn encode_bl(offset: int) -> int {
+    // BL label (Branch with Link - function call)
+    // op=100101, imm26
+    // offset is in instructions (divide by 4 for byte offset)
+    // Saves return address in X30 (LR) and branches to target
+    return 0x94000000 + (offset % 67108864)
+}
+
 fn gen_code_from_ir(instrs: []IRInstr, code: []int) {
     // Two-pass approach:
     // Pass 1: Build label map (label_id -> instruction_index)
@@ -1633,6 +1745,15 @@ fn gen_code_from_ir(instrs: []IRInstr, code: []int) {
         }
         if instr.op == OP_MUL() {
             let encoded = encode_mul(instr.dest, instr.arg1, instr.arg2)
+            push(code, encoded)
+            instr_count = instr_count + 1
+        }
+        if instr.op == OP_CALL() {
+            // BL <function> - Branch with Link (function call)
+            // For now, use offset 0 as placeholder (needs function table)
+            // TODO: Implement function table to resolve function addresses
+            let offset = 0
+            let encoded = encode_bl(offset)
             push(code, encoded)
             instr_count = instr_count + 1
         }
@@ -1900,7 +2021,7 @@ fn main() -> int {
     print("=== Bootstrap Ease Compiler ===\n\n")
 
     // Test: For loop
-    let source = "fn main() -> int { for 1 { return 42 } }"
+    let source = "fn main() -> int { let x = add(5) return x }"
     print("Compiling: ")
     print(source)
     print("\n\n")
@@ -2070,6 +2191,18 @@ fn main() -> int {
                 print(strconv.Itoa(instr.dest))
                 print(", L")
                 print(strconv.Itoa(instr.arg1))
+            }
+            if instr.op == OP_CALL() {
+                print("v")
+                print(strconv.Itoa(instr.dest))
+                print(" = call ")
+                print(instr.str_val)
+                print("(")
+                if instr.arg1 >= 0 {
+                    print("v")
+                    print(strconv.Itoa(instr.arg1))
+                }
+                print(")")
             }
             print("\n")
         }
