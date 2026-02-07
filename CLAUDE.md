@@ -336,7 +336,51 @@ Progress on implementing the Ease compiler in Ease itself:
         * v3 = load [v2 + offset] (field access)
       - **This is the exact pattern the bootstrap compiler uses!**
       - ⏳ TODO: ARM64 LDR instruction for OP_LOAD, actual memory access
-    - ⏳ Next: Code generation for loads, or multi-argument calls, or integration
+    - ✅ **ARM64 LDR Instruction (Feb 7, 2026):**
+      - Added encode_ldr_offset for LDR Xt, [Xn, #offset]
+      - Code generation for OP_LOAD instructions
+      - Array indexing and field access now generate working ARM64 LDR
+      - Test: `nodes[0].tag` generates complete instruction sequence
+      - Status: Memory loads working in generated code
+
+## Bootstrap Compiler - Current Capabilities (Feb 7, 2026)
+
+The bootstrap compiler now has substantial language support:
+
+**Completed Features:**
+- ✅ Lexer: Full tokenization including DOT, brackets, keywords
+- ✅ Parser: Expressions with precedence, statements, declarations
+- ✅ Chained postfix operators: function_call()[index].field
+- ✅ Multiple functions with forward references
+- ✅ Function calls with single argument
+- ✅ Array indexing: arr[index]
+- ✅ Field access: struct.field
+- ✅ Control flow: if/else, for loops (infinite and conditional)
+- ✅ Variables with symbol table
+- ✅ IR generation: 3-address code for all constructs
+- ✅ ARM64 codegen: MOV, ADD, SUB, MUL, LDR, BL, B, CBZ, RET
+- ✅ Function resolution: name → address mapping, correct BL offsets
+- ✅ Label resolution: two-pass for branches and calls
+
+**Current Limitations:**
+- ⏳ Semantic analysis: Implemented separately (bootstrap/sema.ease) but not integrated
+- ⏳ Type checking: No type tracking in compiler (but sema.ease has it)
+- ⏳ Multi-argument functions: Parser and IR support only single arg
+- ⏳ Struct literals: Not implemented (would need memory allocation)
+- ⏳ Memory model: No heap allocation in generated code
+- ⏳ Arrays: No runtime array support in generated code
+- ⏳ Complete calling convention: No stack frames, register save/restore
+
+**Gap to Self-Hosting:**
+The bootstrap compiler can compile simple programs but not yet itself. Key missing pieces:
+1. Semantic analysis integration (type checking during compilation)
+2. Struct literal support with memory allocation
+3. Multi-argument function calls
+4. Complete memory model for arrays and structs
+5. More IR operations (store, alloca, proper array access)
+6. Standard library integration
+
+**Estimated Completion:** 60-70% of features needed for self-hosting
   - See `bootstrap/README.md` for details
 
 **Completed:**
