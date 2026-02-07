@@ -1637,8 +1637,23 @@ fn gen_ir_from_ast_with_symtab(ast_idx: int, nodes: []AstNode, instrs: []IRInstr
     }
 
     if node.tag == DECL_FUNC() {
-        // Generate function prologue
-        // For now, just generate the body
+        // Generate function with parameters
+        // node.left = first parameter index (or -1 if no parameters)
+        // node.right = body node
+
+        // Add parameters to symbol table (using v0, v1, ... for parameter vregs)
+        if node.left >= 0 {
+            // For simplicity, assume single parameter at node.left
+            // In full implementation, would iterate through linked parameter list
+            let param_node = nodes[node.left]
+            if param_node.tag == DECL_PARAM() {
+                // Assign parameter to virtual register v0 (standard calling convention)
+                push(symtab_names, param_node.str_val)
+                push(symtab_vregs, 0)  // Parameters start at v0
+            }
+        }
+
+        // Generate body
         if node.right >= 0 {
             return gen_ir_from_ast_with_symtab(node.right, nodes, instrs, symtab_names, symtab_vregs)
         }
@@ -1702,14 +1717,21 @@ fn encode_bl(offset: int) -> int {
     // op=100101, imm26
     // offset is in instructions (divide by 4 for byte offset)
     // Saves return address in X30 (LR) and branches to target
-    return 0x94000000 + (offset % 67108864)
+    // Mask offset to 26 bits to handle negative offsets correctly
+    let mut masked_offset = offset % 67108864
+    if masked_offset < 0 {
+        masked_offset = masked_offset + 67108864
+    }
+    return 0x94000000 + masked_offset
 }
 
 fn gen_code_from_ir(instrs: []IRInstr, code: []int) {
     // Two-pass approach:
-    // Pass 1: Build label map (label_id -> instruction_index)
+    // Pass 1: Build label map (label_id -> instruction_index) and function map (name -> position)
     let mut label_ids = []int{}
     let mut label_positions = []int{}
+    let mut func_names = []string{}
+    let mut func_positions = []int{}
     let mut instr_count = 0
 
     for i in 0..len(instrs) {
@@ -1717,6 +1739,11 @@ fn gen_code_from_ir(instrs: []IRInstr, code: []int) {
         if instr.op == OP_LABEL() {
             push(label_ids, instr.dest)
             push(label_positions, instr_count)
+            // If this label has a function name (str_val), track it
+            if instr.str_val != "" {
+                push(func_names, instr.str_val)
+                push(func_positions, instr_count)
+            }
         } else {
             instr_count = instr_count + 1
         }
@@ -1750,9 +1777,16 @@ fn gen_code_from_ir(instrs: []IRInstr, code: []int) {
         }
         if instr.op == OP_CALL() {
             // BL <function> - Branch with Link (function call)
-            // For now, use offset 0 as placeholder (needs function table)
-            // TODO: Implement function table to resolve function addresses
-            let offset = 0
+            // Look up function position by name
+            let mut target_pos = 0
+            for j in 0..len(func_names) {
+                if func_names[j] == instr.str_val {
+                    target_pos = func_positions[j]
+                    break
+                }
+            }
+            // Calculate offset from current instruction to function start
+            let offset = target_pos - instr_count
             let encoded = encode_bl(offset)
             push(code, encoded)
             instr_count = instr_count + 1
@@ -2020,8 +2054,8 @@ fn write_main_cmd(buf: int, entry_offset: int) -> int {
 fn main() -> int {
     print("=== Bootstrap Ease Compiler ===\n\n")
 
-    // Test: For loop
-    let source = "fn main() -> int { let x = add(5) return x }"
+    // Test: Function calls with multiple function definitions
+    let source = "fn add(x: int) -> int { return x + 10 } fn main() -> int { let result = add(5) return result }"
     print("Compiling: ")
     print(source)
     print("\n\n")
@@ -2075,55 +2109,91 @@ fn main() -> int {
     }
     print("\n\n")
 
-    // Phase 2: Parsing
+    // Phase 2: Parsing (Multiple Functions)
     print("Phase 2: Parsing\n")
     let mut nodes = []AstNode{}
-    let parse_result = parse_func_decl(source, 0, nodes)
-    let ast_root = parse_result.node_idx
-    if ast_root >= 0 {
-        print("AST root index: ")
-        print(strconv.Itoa(ast_root))
-        print("\n")
-        print("AST root tag: ")
-        print(strconv.Itoa(nodes[ast_root].tag))
-        print(" (")
-        if nodes[ast_root].tag == DECL_FUNC() { print("DECL_FUNC") }
-        if nodes[ast_root].tag == DECL_STRUCT() { print("DECL_STRUCT") }
-        print(")\n")
-        if nodes[ast_root].tag == DECL_FUNC() {
-            print("Function name: ")
-            print(nodes[ast_root].str_val)
-            print("\n")
-            print("Params node: ")
-            print(strconv.Itoa(nodes[ast_root].left))
-            print("\n")
-            print("Body node: ")
-            print(strconv.Itoa(nodes[ast_root].right))
-            print("\n")
-            if nodes[ast_root].right >= 0 {
-                let body = nodes[nodes[ast_root].right]
-                print("Body tag: ")
-                print(strconv.Itoa(body.tag))
-                print(" (STMT_BLOCK=")
-                print(strconv.Itoa(STMT_BLOCK()))
-                print(")\n")
-                print("First statement: ")
-                print(strconv.Itoa(body.left))
-                print("\n")
-            }
+    let mut func_names = []string{}
+    let mut func_indices = []int{}
+
+    // Parse all functions in the source
+    let mut parse_pos = 0
+    for {
+        parse_pos = lex_skip(source, parse_pos)
+        if lex_kind(source, parse_pos) == TK_EOF() {
+            break
         }
-    } else {
-        print("Parse failed\n")
+
+        let parse_result = parse_func_decl(source, parse_pos, nodes)
+        if parse_result.node_idx < 0 {
+            break
+        }
+
+        let func_idx = parse_result.node_idx
+        let func_node = nodes[func_idx]
+        push(func_names, func_node.str_val)
+        push(func_indices, func_idx)
+
+        parse_pos = parse_result.new_pos
+        parse_pos = lex_skip(source, parse_pos)
+    }
+
+    print("Parsed ")
+    print(strconv.Itoa(len(func_names)))
+    print(" functions:\n")
+    for i in 0..len(func_names) {
+        print("  [")
+        print(strconv.Itoa(i))
+        print("] ")
+        print(func_names[i])
+        print(" (AST index: ")
+        print(strconv.Itoa(func_indices[i]))
+        print(")\n")
     }
     print("\n")
 
-    // Phase 3: IR Generation
+    // Find main function for compilation
+    let mut main_idx = -1
+    for i in 0..len(func_names) {
+        if func_names[i] == "main" {
+            main_idx = func_indices[i]
+            break
+        }
+    }
+
+    let ast_root = main_idx
+
+    // Phase 3: IR Generation (All Functions)
     print("Phase 3: IR Generation\n")
-    if ast_root >= 0 {
-        let mut instrs = []IRInstr{}
+    let mut instrs = []IRInstr{}
+    let mut func_label_ids = []int{}
+    let mut func_label_names = []string{}
+
+    // Generate IR for all functions
+    for i in 0..len(func_names) {
+        let func_idx = func_indices[i]
+        let func_name = func_names[i]
+
+        // Add function label (using index 5000 + i to avoid conflicts)
+        let func_label = 5000 + i
+        push(func_label_ids, func_label)
+        push(func_label_names, func_name)
+
+        let label_instr = IRInstr {
+            op: OP_LABEL(),
+            dest: func_label,
+            arg1: 0,
+            arg2: 0,
+            str_val: func_name
+        }
+        push(instrs, label_instr)
+
+        // Generate IR for function body
         let mut symtab_names = []string{}
         let mut symtab_vregs = []int{}
-        let result_vreg = gen_ir_from_ast_with_symtab(ast_root, nodes, instrs, symtab_names, symtab_vregs)
+        gen_ir_from_ast_with_symtab(func_idx, nodes, instrs, symtab_names, symtab_vregs)
+    }
+
+    if len(instrs) > 0 {
         print("Generated ")
         print(strconv.Itoa(len(instrs)))
         print(" IR instructions:\n")
@@ -2211,13 +2281,9 @@ fn main() -> int {
 
     // Phase 4: Code Generation
     print("Phase 4: ARM64 Code Generation\n")
-    if ast_root >= 0 {
-        let mut instrs = []IRInstr{}
-        let mut symtab_names = []string{}
-        let mut symtab_vregs = []int{}
-        let result_vreg = gen_ir_from_ast_with_symtab(ast_root, nodes, instrs, symtab_names, symtab_vregs)
-        let mut code = []int{}
-        gen_code_from_ir(instrs, code)
+    // Use the IR generated in Phase 3 for all functions
+    let mut code = []int{}
+    gen_code_from_ir(instrs, code)
         print("Generated ")
         print(strconv.Itoa(len(code)))
         print(" machine instructions:\n")
@@ -2264,7 +2330,6 @@ fn main() -> int {
         print(strconv.Itoa(code_size))
         print(" bytes)\n")
         print("\n")
-    }
 
     print("=== Compilation Pipeline Complete ===\n")
     print("All phases: Lex → Parse → IR → Codegen → Binary!\n")
