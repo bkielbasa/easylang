@@ -323,17 +323,20 @@ Progress on implementing the Ease compiler in Ease itself:
         - BL instruction correctly calls add with offset -4: `0x97fffffc`
       - ✅ Basic function calls working end-to-end!
       - ⏳ TODO: Multi-argument calls, stack frames, register save/restore, return value handling
-    - ⏸️ **Struct Field Access - Partial Implementation (Feb 7, 2026):**
-      - Parser: Field access expressions `base.field_name`
-      - Lexer: TK_DOT token recognition working
-      - EXPR_FIELD AST nodes: Store base expression and field name
-      - IR Generation: OP_LOAD with field offset calculation
-      - Field offsets: Hardcoded for common structs (tag=0, int_val=8, etc.)
-      - IR output: `v1 = load [base_vreg + offset] // field_name`
-      - Test: `node.tag` parses and generates IR correctly
-      - ⏳ TODO: Struct literals, memory allocation, ARM64 LDR instruction, type-based offsets
-      - Status: Foundation in place, needs memory management for completion
-    - ⏳ Next: Struct literals and memory, or multi-argument calls, or type checking
+    - ✅ **Array Indexing and Field Access - Working (Feb 7, 2026):**
+      - Parser: Array indexing `array[index]` with LBRACKET/RBRACKET
+      - Parser: Field access `base.field` with DOT operator
+      - Parser: Chained postfix operators `nodes[0].tag` with loop-based parsing
+      - EXPR_INDEX AST nodes: Store array and index expressions
+      - EXPR_FIELD AST nodes: Store base and field name
+      - IR Generation: Nested OP_LOAD for array indexing and field access
+      - Test: `nodes[0].tag` generates correct IR chain:
+        * v1 = loadconst 0 (index)
+        * v2 = load [array + index] (array indexing)
+        * v3 = load [v2 + offset] (field access)
+      - **This is the exact pattern the bootstrap compiler uses!**
+      - ⏳ TODO: ARM64 LDR instruction for OP_LOAD, actual memory access
+    - ⏳ Next: Code generation for loads, or multi-argument calls, or integration
   - See `bootstrap/README.md` for details
 
 **Completed:**
