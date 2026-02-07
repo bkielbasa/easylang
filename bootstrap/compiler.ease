@@ -1425,12 +1425,13 @@ fn parse_expr_simple(src: string, nodes: []AstNode) -> int {
 }
 
 // ============================================================================
-// Symbol Table for Variables
+// Symbol Table for Variables (with Type Tracking)
 // ============================================================================
 
 struct SymbolTable {
     names: []string,  // Variable names
     vregs: []int,     // Corresponding virtual registers
+    types: []int,     // Type tags (TYPE_INT, TYPE_BOOL, etc.)
 }
 
 fn symtab_new() -> SymbolTable {
@@ -1555,25 +1556,59 @@ fn gen_ir_from_ast_with_symtab(ast_idx: int, nodes: []AstNode, instrs: []IRInstr
     }
 
     if node.tag == EXPR_CALL() {
-        // Generate function call
+        // Generate function call with multiple arguments
         // node.str_val = function name
-        // node.right = first argument (or -1 if no arguments)
+        // node.right = first argument expression index (or -1 if no arguments)
         // node.int_val = argument count
 
-        // For now, support 0 or 1 argument functions
-        let mut arg_vreg = -1
-        if node.right >= 0 {
-            arg_vreg = gen_ir_from_ast_with_symtab(node.right, nodes, instrs, symtab_names, symtab_vregs)
+        let arg_count = node.int_val
+
+        // Evaluate all arguments
+        // Arguments are consecutive expression nodes starting at node.right
+        // We need to find expression nodes, not intermediate nodes
+        let mut arg_vregs = []int{}
+
+        if arg_count > 0 && node.right >= 0 {
+            // Find argument expression nodes starting from node.right
+            // They should be consecutive expression nodes
+            let mut found_args = 0
+            for i in node.right..len(nodes) {
+                if found_args >= arg_count {
+                    break
+                }
+                let arg_node = nodes[i]
+                // Check if this is an expression node (tag < 20)
+                if arg_node.tag < STMT_LET() {
+                    // Evaluate this argument
+                    let arg_vreg = gen_ir_from_ast_with_symtab(i, nodes, instrs, symtab_names, symtab_vregs)
+                    push(arg_vregs, arg_vreg)
+                    found_args = found_args + 1
+                }
+            }
+        }
+
+        // Move evaluated arguments to parameter registers (v0, v1, v2, ...)
+        // This matches the calling convention where params are in v0, v1, etc.
+        for i in 0..len(arg_vregs) {
+            // Generate a MOV to place arg in parameter register
+            // Using ADD with 0 as a MOV (dest = src + 0)
+            let mov_instr = IRInstr {
+                op: OP_ADD(),
+                dest: i,              // Target: v0, v1, v2, ...
+                arg1: arg_vregs[i],   // Source vreg
+                arg2: -1,             // Flag: -1 means this is actually a MOV (will gen MOV in codegen)
+                str_val: ""
+            }
+            push(instrs, mov_instr)
         }
 
         // Generate CALL instruction
-        // dest = result vreg, arg1 = first argument vreg, arg2 = arg count, str_val = function name
         let result_vreg = len(instrs)
         let call_instr = IRInstr {
             op: OP_CALL(),
             dest: result_vreg,
-            arg1: arg_vreg,
-            arg2: node.int_val,
+            arg1: 0,
+            arg2: arg_count,
             str_val: node.str_val
         }
         push(instrs, call_instr)
@@ -1780,15 +1815,25 @@ fn gen_ir_from_ast_with_symtab(ast_idx: int, nodes: []AstNode, instrs: []IRInstr
         // node.left = first parameter index (or -1 if no parameters)
         // node.right = body node
 
-        // Add parameters to symbol table (using v0, v1, ... for parameter vregs)
+        // Add all parameters to symbol table (using v0, v1, v2, ... for parameter vregs)
+        // Parameters are stored consecutively in nodes array starting at node.left
         if node.left >= 0 {
-            // For simplicity, assume single parameter at node.left
-            // In full implementation, would iterate through linked parameter list
-            let param_node = nodes[node.left]
-            if param_node.tag == DECL_PARAM() {
-                // Assign parameter to virtual register v0 (standard calling convention)
-                push(symtab_names, param_node.str_val)
-                push(symtab_vregs, 0)  // Parameters start at v0
+            // Iterate through consecutive parameter nodes
+            let mut param_idx = node.left
+            let mut param_reg = 0  // v0, v1, v2, etc.
+
+            // Find how many consecutive DECL_PARAM nodes there are
+            for i in node.left..len(nodes) {
+                let param_node = nodes[i]
+                if param_node.tag == DECL_PARAM() {
+                    // Add parameter to symbol table
+                    push(symtab_names, param_node.str_val)
+                    push(symtab_vregs, param_reg)
+                    param_reg = param_reg + 1
+                } else {
+                    // Stop when we hit a non-parameter node
+                    break
+                }
             }
         }
 
@@ -1819,6 +1864,12 @@ fn encode_add(rd: int, rn: int, rm: int) -> int {
     // ADD Xd, Xn, Xm
     // sf=1 (64-bit), op=0, S=0, shift=00, Rm, imm6=0, Rn, Rd
     return 0x8b000000 + (rm * 0x10000) + (rn * 0x20) + rd
+}
+
+fn encode_mov_reg(rd: int, rm: int) -> int {
+    // MOV Xd, Xm (implemented as ORR Xd, XZR, Xm)
+    // sf=1 (64-bit), opc=01, shift=00, N=0, Rm, imm6=0, Rn=31 (XZR), Rd
+    return 0xaa0003e0 + (rm * 0x10000) + rd
 }
 
 fn encode_sub(rd: int, rn: int, rm: int) -> int {
@@ -1910,7 +1961,15 @@ fn gen_code_from_ir(instrs: []IRInstr, code: []int) {
             instr_count = instr_count + 1
         }
         if instr.op == OP_ADD() {
-            let encoded = encode_add(instr.dest, instr.arg1, instr.arg2)
+            // Check if this is actually a MOV (arg2 = -1 flag)
+            let mut encoded = 0
+            if instr.arg2 == -1 {
+                // This is a register move: dest = arg1
+                encoded = encode_mov_reg(instr.dest, instr.arg1)
+            } else {
+                // Normal ADD
+                encoded = encode_add(instr.dest, instr.arg1, instr.arg2)
+            }
             push(code, encoded)
             instr_count = instr_count + 1
         }
@@ -2214,8 +2273,8 @@ fn write_main_cmd(buf: int, entry_offset: int) -> int {
 fn main() -> int {
     print("=== Bootstrap Ease Compiler ===\n\n")
 
-    // Test: Array indexing + field access (what bootstrap compiler needs!)
-    let source = "fn main() -> int { return nodes[0].tag }"
+    // Test: Multi-argument function call
+    let source = "fn add(x: int, y: int) -> int { return x + y } fn main() -> int { return add(10, 20) }"
     print("Compiling: ")
     print(source)
     print("\n\n")
