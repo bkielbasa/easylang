@@ -216,8 +216,9 @@ Progress on implementing the Ease compiler in Ease itself:
 - [x] **Parser** - All language constructs (bootstrap/parser.ease)
   - ✅ All 5 tests passing
 - [x] **Semantic Analysis** - Type checking and name resolution (bootstrap/sema.ease)
-  - ✅ All 8 tests passing!
+  - ✅ All 8 tests passing! (Fully complete as of Feb 6, 2026)
   - Fixed by correcting OpMemCopy usage for struct assignments and array fields (see Recent Fixes #4)
+  - Ready for integration into full self-hosting compiler
 - [x] **IR Generation** - 3-address code with simplified instruction format (bootstrap/ir.ease)
   - IRInstr struct with op, dest, arg1, arg2 fields
   - Operations: ADD, SUB, MUL, DIV, EQ, NE, LT, GT, LOADCONST, CALL, RETURN
@@ -230,13 +231,138 @@ Progress on implementing the Ease compiler in Ease itself:
   - ✅ All phases connected: Lexer → Parser → IR → Codegen
   - ✅ Successfully compiles expressions like `1 + 2` to ARM64 machine code
   - ✅ Example: generates `0x8b010002` (ADD x2, x0, x1) from `1 + 2`
+  - **Recent expansion (Feb 6, 2026):**
+    - ✅ Added all missing tokens (comparisons, logical ops, keywords, delimiters)
+    - ✅ Expanded AST structure to support multiple node types (expressions, statements, declarations)
+    - ✅ Implemented expression parser with ParseResult for position tracking
+    - ✅ Handles: arithmetic (+,-,*,/), comparisons (<,>,<=,>=,==,!=), logical (&&,||), booleans
+    - ✅ Implemented statement parser:
+      - Variable declarations: `let x = 42`, `let mut y = 10`
+      - Return statements: `return 42`
+      - Assignment statements: `x = 100`
+      - Expression statements
+    - ✅ Implemented declaration parser:
+      - Function declarations: `fn name(params) -> type { body }`
+      - Parameter lists with types: `x: int, y: int`
+      - Block statements: `{ stmt; stmt; ... }`
+      - Struct declarations: `struct Name { fields }`
+      - Field declarations: `field: type`
+    - ✅ Updated all parsers to return ParseResult for proper position tracking
+    - ✅ Verified: `fn main() -> int { return 42 }` ✅ and `fn add(x: int, y: int) -> int { return x }` ✅
+    - ✅ Expanded IR instruction set:
+      - Arithmetic: ADD, SUB, MUL, DIV
+      - Comparisons: CMP_LT, CMP_GT, CMP_LE, CMP_GE, CMP_EQ, CMP_NE
+      - Logical: AND, OR, NOT
+      - Memory: ALLOCA, STORE, LOAD
+      - Control: RET, CALL, LABEL, JUMP, BRANCH
+    - ✅ Implemented IR generation for:
+      - Expressions (literals, binary ops, comparisons, logical ops)
+      - Statements (return, blocks)
+      - Functions (body generation)
+    - ✅ Expanded ARM64 code generation:
+      - MOV immediate (MOVZ instruction)
+      - RET instruction
+      - Proper register allocation (vregs → physical registers)
+    - ✅ **Full compilation pipeline working!**
+      - Test 1: `fn main() -> int { return 42 }`
+        - Output: `MOV X0, #42; RET`
+      - Test 2: `fn main() -> int { return 1 + 2 * 3 }` ✅
+        - Correctly handles operator precedence
+        - Result: 7 (correct! 1 + (2 * 3) = 7)
+      - Test 3: `fn main() -> int { return (1 + 2) * 3 }` ✅
+        - Parentheses override precedence
+        - IR: loadconst 1, loadconst 2, add → v2, loadconst 3, mul v2 v3 → v4, ret v4
+        - Result: 9 (correct! (1 + 2) * 3 = 9)
+    - ✅ **Test Suite: 10/10 PASS (100%)**
+      - All arithmetic expressions working correctly
+      - Operator precedence: ✅
+      - Parentheses support: ✅
+      - Chained operations: ✅
+    - ✅ **Variable Support (Feb 6, 2026):**
+      - Symbol table implementation using separate arrays (names and vregs)
+      - Variable declarations: `let x = 42`, `let y = 10 + 20`
+      - Variable usage in expressions: `return x + y`, `return x * y + 2`
+      - Multiple statements in blocks: `let x = 5; let y = 3; let z = x * y + 2; return z`
+      - Proper scope tracking and name resolution
+      - Fixed struct-by-value semantics issue by passing arrays directly instead of wrapping in struct
+      - All variable tests passing: simple variables, multiple variables, complex expressions
+    - ✅ **Control Flow - If/Else (Feb 6, 2026):**
+      - Parser: `if <condition> { <then> } else { <else> }` syntax support
+      - IR Generation: LABEL, JUMP, BRANCH instructions for control flow
+      - ARM64 Codegen: CBZ (compare and branch if zero), B (unconditional branch)
+      - Two-pass code generation: label resolution, then code emission with correct offsets
+      - Test cases: conditions with literals, expressions, both branches taken
+      - All if/else tests passing: `if 1 { return 10 } else { return 20 }` ✅
+    - ✅ **Control Flow - For Loops (Feb 6, 2026):**
+      - Parser: `for { }` (infinite) and `for condition { }` (conditional) syntax support
+      - IR Generation: Loop start label, condition check, body, back jump to start
+      - Label scheme: L3000 for loop start, L4000 for loop end
+      - Control flow: start → condition check → branch to end if false → body → jump to start
+      - Test cases: infinite loops, true/false conditions, expression conditions
+      - All for loop tests passing: `for 1 { return 42 }` ✅, `for { return 42 }` ✅
+    - ⏳ Next: Mach-O binary writing, semantic analysis integration
   - See `bootstrap/README.md` for details
 
+**Completed:**
+- [x] **Mach-O Generation** - Comprehensive binary output writer (bootstrap/macho_writer.ease)
+  - ✅ Complete Mach-O header generation (32 bytes) with all fields
+  - ✅ **14 load commands** fully implemented:
+    - `__PAGEZERO` segment (72 bytes) - Memory protection
+    - `__TEXT` segment (152 bytes) with `__text` section - Executable code
+    - `__LINKEDIT` segment (72 bytes) - Dynamic linking data
+    - `LC_MAIN` (24 bytes) - Entry point
+    - `LC_SYMTAB` (24 bytes) - Symbol table pointer
+    - `LC_DYSYMTAB` (80 bytes) - Dynamic symbol table
+    - `LC_LOAD_DYLINKER` (32 bytes) - `/usr/lib/dyld` path
+    - `LC_UUID` (24 bytes) - Unique identifier
+    - `LC_BUILD_VERSION` (24 bytes) - macOS 11.0 minimum version
+    - `LC_LOAD_DYLIB` (56 bytes) - `libSystem.B.dylib` linkage
+    - `LC_SOURCE_VERSION` (16 bytes) - Source version info
+    - `LC_FUNCTION_STARTS` (16 bytes) - Function boundary data
+    - `LC_DATA_IN_CODE` (16 bytes) - Data-in-code markers
+    - `LC_CODE_SIGNATURE` (16 bytes) - Code signature pointer
+  - ✅ __LINKEDIT data: symbol table, string table, function starts, code signature blob
+  - ✅ Ad-hoc signature structure: SuperBlob with CodeDirectory and Requirements
+  - ✅ Binary writing utilities: write_u32_le, write_u32_be, write_u64_le, write_zeros
+  - ✅ Correct page alignment (16KB) and segment layout
+  - ✅ Successfully generates valid Mach-O structure verified by `otool -l`
+  - ✅ ARM64 instructions correctly embedded and disassemble properly
+  - ✅ **Code signing fully resolved** (Feb 6, 2026)
+    - Integrated system `codesign` tool in cmd/ease/main.go (3 locations: build, run, test)
+    - Command: `codesign -s - -f <binary>` for ad-hoc signing
+    - Binaries now execute successfully with proper ad-hoc signatures
+    - Signature structure in bootstrap still generates dummy hashes (structural placeholder)
+    - Production binaries signed by Go compiler via exec.Command
+  - **Status**: Mach-O generation complete; binaries execute successfully!
+
 **Not Started:**
-- [ ] Mach-O generation - Binary output writer (needs file I/O)
 - [ ] Full self-hosting - Bootstrap compiler compiling itself
 
 ### Recent Fixes
+
+**Comprehensive Mach-O Writer (Feb 6, 2026):**
+- Implemented complete Mach-O binary generator in Ease (bootstrap/macho_writer.ease)
+- Generates structurally valid Mach-O 64-bit ARM64 executables with 13 load commands
+- **Phase 1**: Basic structure
+  - Header generation: magic (0xfeedfacf), cputype, cpusubtype, filetype, flags
+  - Initial load commands: __PAGEZERO, __TEXT, LC_MAIN
+  - Binary utilities: write_u32_le, write_u64_le for little-endian encoding
+  - Fixed instruction bug: 0xd2800210 (MOV X16, #16) → 0xd2800030 (MOV X16, #1)
+- **Phase 2**: Added all macOS-required load commands
+  - __LINKEDIT segment with symbol table, string table, function starts data
+  - LC_SYMTAB, LC_DYSYMTAB for symbol tables
+  - LC_LOAD_DYLINKER (/usr/lib/dyld) for dynamic linking
+  - LC_UUID for unique identification
+  - LC_BUILD_VERSION (macOS 11.0) for OS compatibility
+  - LC_LOAD_DYLIB (libSystem.B.dylib) for system library linkage
+  - LC_SOURCE_VERSION, LC_FUNCTION_STARTS, LC_DATA_IN_CODE
+  - Fixed LC_BUILD_VERSION size: 32 bytes → 24 bytes (when ntools=0)
+- **Verification**: `otool -l` confirms all 13 load commands present and valid
+- **Limitation**: macOS signing requires LC_CODE_SIGNATURE with embedded crypto signature
+  - `codesign` fails "strict validation" without signature blob
+  - Binary structure correct but cannot execute (SIGKILL exit 137)
+  - Solution for self-hosting: use system `ld` for final linking
+- Files: bootstrap/macho_writer.ease (500+ lines), bootstrap/binary.ease
 
 **Memory Operations for Binary Writing (Feb 6, 2026):**
 - Added low-level memory operations for Mach-O binary generation
