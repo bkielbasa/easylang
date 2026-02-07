@@ -205,6 +205,18 @@ ease version                 # Print version
   - Architecture: Low-level builtins (`str_*`, `os.*`) as implementation primitives
   - User-facing: Stdlib modules provide clean API (e.g., `strings.Split` instead of `str_split`)
   - All string/file operations now go through stdlib modules
+- [x] **Comprehensive Examples** (Feb 7, 2026)
+  - `examples/calculator.ease` - Arithmetic, recursion (factorial, fibonacci)
+  - `examples/string_demo.ease` - String operations, stdlib usage
+  - `examples/data_structures.ease` - Structs, arrays, algorithms
+  - `examples/file_io.ease` - File I/O operations
+  - `examples/README.md` - Documentation and feature matrix
+  - All examples tested and working ✅
+- [x] **Integration Test Suite** (Feb 7, 2026)
+  - 6 automated tests in `tests/` directory
+  - Test runner: `./tests/run_tests.sh`
+  - Coverage: arithmetic, functions, arrays, strings, structs, loops
+  - All tests passing (6/6) ✅
 
 ### Bootstrap Compiler (Self-Hosting)
 
@@ -383,7 +395,26 @@ The bootstrap compiler can compile simple programs but not yet itself. Key missi
 **Estimated Completion:** 60-70% of features needed for self-hosting
   - See `bootstrap/README.md` for details
 
-**Completed:**
+**Recent Enhancements (Feb 7, 2026)**:
+- [x] **Import Statement Parsing** - Full support for `import ("module")` syntax
+  - Added TK_IMPORT token and keyword recognition
+  - Implemented parse_import_decl function
+  - Modified main parsing loop to handle imports
+  - Import count reporting in output
+- [x] **String Literal Support** 🌟 - Major capability unlock!
+  - Lexer now tokenizes string literals: `"text"`
+  - Escape sequence handling (\\", \\\\, etc.)
+  - String value extraction (without quotes)
+  - Enables imports and string constants
+  - **Impact**: Unlocked entire class of programs with strings
+- [x] **Multi-Function Compilation** - Multiple functions with calls working
+  - Compiles: `fn add(x: int, y: int) -> int { return x + y } fn main() -> int { return add(5, 10) }`
+  - Generates correct function labels (L5000, L5001)
+  - Parameter passing via MOV instructions
+  - BL (branch-link) for function calls
+  - Full compilation pipeline: 32 bytes ARM64 code generated
+
+**Completed (Earlier):**
 - [x] **Mach-O Generation** - Comprehensive binary output writer (bootstrap/macho_writer.ease)
   - ✅ Complete Mach-O header generation (32 bytes) with all fields
   - ✅ **14 load commands** fully implemented:
