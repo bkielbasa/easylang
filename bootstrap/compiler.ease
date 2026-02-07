@@ -2,6 +2,10 @@
 // Demonstrates all compilation phases working together:
 // Source Code -> Lexer -> Parser -> Sema -> IR -> Codegen
 
+import (
+    "strconv"
+)
+
 // ============================================================================
 // Token Definitions (from token.ease)
 // ============================================================================
@@ -88,10 +92,30 @@ fn lex_skip(src: string, pos: int) -> int {
     let mut p = pos
     for p < src_len {
         let ch = lex_peek(src, p)
+
+        // Skip whitespace
         if ch == 32 || ch == 9 || ch == 10 || ch == 13 {  // space, tab, newline, CR
             p = p + 1
         } else {
-            break
+            // Check for comments: //
+            if ch == 47 && p + 1 < src_len {  // '/' character
+                let next_ch = lex_peek(src, p + 1)
+                if next_ch == 47 {  // Second '/' - it's a comment
+                    // Skip until end of line
+                    p = p + 2  // Skip //
+                    for p < src_len {
+                        let comment_ch = lex_peek(src, p)
+                        if comment_ch == 10 || comment_ch == 13 {  // newline or CR
+                            break
+                        }
+                        p = p + 1
+                    }
+                } else {
+                    break  // Not a comment, stop skipping
+                }
+            } else {
+                break  // Not whitespace or comment
+            }
         }
     }
     return p
@@ -3099,11 +3123,27 @@ fn write_main_cmd(buf: int, entry_offset: int) -> int {
 fn main() -> int {
     print("=== Bootstrap Ease Compiler ===\n\n")
 
-    // Test: Comprehensive features - functions, structs, arrays
-    let source = "fn add(x: int, y: int) -> int { return x + y } fn main() -> int { let p = ParseResult { node_idx: 5, new_pos: 10 } let mut arr = []int{1, 2} push(arr, p.node_idx) return add(len(arr), p.new_pos) }"
-    print("Compiling: ")
-    print(source)
-    print("\n\n")
+    // Get command-line arguments
+    let argc = os.Argc()
+    let mut source = ""
+
+    if argc > 1 {
+        // Read source from file
+        let filename = os.Argv(1)
+        print("Reading file: ")
+        print(filename)
+        print("\n")
+
+        source = os.ReadFile(filename)
+        print("File loaded successfully\n\n")
+    } else {
+        // Fall back to hardcoded test for demo
+        source = "fn add(x: int, y: int) -> int { return x + y } fn main() -> int { let p = ParseResult { node_idx: 5, new_pos: 10 } let mut arr = []int{1, 2} push(arr, p.node_idx) return add(len(arr), p.new_pos) }"
+        print("No file specified, using test program\n")
+        print("Compiling: ")
+        print(source)
+        print("\n\n")
+    }
 
     // Phase 1: Lexing
     print("Phase 1: Lexing\n")
