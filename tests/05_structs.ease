@@ -1,0 +1,48 @@
+// Test 5: Struct operations
+struct Point {
+    x: int,
+    y: int,
+}
+
+struct Rectangle {
+    width: int,
+    height: int,
+}
+
+fn make_point(x: int, y: int) -> Point {
+    return Point { x: x, y: y }
+}
+
+fn area(r: Rectangle) -> int {
+    return r.width * r.height
+}
+
+fn main() -> int {
+    // Test struct literal
+    let p1 = Point { x: 10, y: 20 }
+    
+    if p1.x != 10 {
+        return 1
+    }
+    if p1.y != 20 {
+        return 2
+    }
+    
+    // Test struct from function
+    let p2 = make_point(5, 15)
+    if p2.x != 5 {
+        return 3
+    }
+    if p2.y != 15 {
+        return 4
+    }
+    
+    // Test struct passed to function
+    let rect = Rectangle { width: 8, height: 12 }
+    let a = area(rect)
+    if a != 96 {
+        return 5
+    }
+    
+    return 0
+}

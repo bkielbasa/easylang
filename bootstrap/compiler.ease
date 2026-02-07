@@ -1096,6 +1096,84 @@ fn parse_atom(src: string, pos: int, nodes: []AstNode) -> ParseResult {
         p = lex_end(src, p, kind)
         return ParseResult { node_idx: node, new_pos: p }
     }
+    if kind == TK_LBRACKET() {
+        // Array literal: []Type{elem1, elem2, ...}
+        // For bootstrap: simplified to []int{...}
+        p = lex_end(src, p, kind)  // Skip '['
+        p = lex_skip(src, p)
+
+        // Expect ']'
+        if lex_kind(src, p) != TK_RBRACKET() {
+            return ParseResult { node_idx: -1, new_pos: p }
+        }
+        p = lex_end(src, p, TK_RBRACKET())
+        p = lex_skip(src, p)
+
+        // Expect type name (for now, just skip - assume 'int')
+        if lex_kind(src, p) == TK_IDENT() {
+            p = lex_end(src, p, TK_IDENT())
+            p = lex_skip(src, p)
+        }
+
+        // Expect '{'
+        if lex_kind(src, p) != TK_LBRACE() {
+            return ParseResult { node_idx: -1, new_pos: p }
+        }
+        p = lex_end(src, p, TK_LBRACE())
+        p = lex_skip(src, p)
+
+        // Parse elements
+        let mut elem_count = 0
+        let mut first_elem_idx = -1
+
+        for {
+            p = lex_skip(src, p)
+            if lex_kind(src, p) == TK_RBRACE() {
+                break
+            }
+
+            // Parse element expression
+            let elem_result = parse_expr_with_pos(src, p, nodes)
+            if elem_result.node_idx < 0 {
+                break
+            }
+
+            if elem_count == 0 {
+                first_elem_idx = elem_result.node_idx
+            }
+            elem_count = elem_count + 1
+
+            p = elem_result.new_pos
+            p = lex_skip(src, p)
+
+            // Check for comma
+            if lex_kind(src, p) == TK_COMMA() {
+                p = lex_end(src, p, TK_COMMA())
+                p = lex_skip(src, p)
+            } else {
+                break
+            }
+        }
+
+        // Expect '}'
+        if lex_kind(src, p) != TK_RBRACE() {
+            return ParseResult { node_idx: -1, new_pos: p }
+        }
+        p = lex_end(src, p, TK_RBRACE())
+
+        // Create array literal node
+        let array_node = AstNode {
+            tag: EXPR_ARRAY_LIT(),
+            int_val: elem_count,
+            str_val: "int",  // element type
+            left: -1,
+            right: first_elem_idx,
+            extra: -1,
+            type_tag: TYPE_UNKNOWN()
+        }
+        push(nodes, array_node)
+        return ParseResult { node_idx: len(nodes) - 1, new_pos: p }
+    }
 
     return ParseResult { node_idx: -1, new_pos: p }
 }
@@ -1344,72 +1422,148 @@ fn parse_primary_expr(src: string, pos: int, nodes: []AstNode) -> ParseResult {
             current_node = len(nodes) - 1
             // Continue to check for more postfix operators
         } else {
-            if next_kind == TK_LBRACKET() {
-                // Array indexing
-                let array_node = current_node
-                p = lex_end(src, p, next_kind)  // Skip '['
+            if next_kind == TK_LBRACE() {
+                // Struct literal: StructName { field1: value1, field2: value2 }
+                let struct_name_node = current_node
+                let struct_name = nodes[struct_name_node].str_val
+                p = lex_end(src, p, next_kind)  // Skip '{'
                 p = lex_skip(src, p)
 
-                // Parse index expression
-                let index_result = parse_expr_with_pos(src, p, nodes)
-                if index_result.node_idx < 0 {
+                // Parse field initializers (simplified - just count them for now)
+                let mut field_count = 0
+                let mut first_field_idx = -1
+
+                for {
+                    p = lex_skip(src, p)
+                    if lex_kind(src, p) == TK_RBRACE() {
+                        break
+                    }
+
+                    // Parse field name
+                    if lex_kind(src, p) != TK_IDENT() {
+                        break
+                    }
+                    let field_name = lex_string_value(src, p, TK_IDENT())
+                    p = lex_end(src, p, TK_IDENT())
+                    p = lex_skip(src, p)
+
+                    // Expect ':'
+                    if lex_kind(src, p) != TK_COLON() {
+                        break
+                    }
+                    p = lex_end(src, p, TK_COLON())
+                    p = lex_skip(src, p)
+
+                    // Parse field value expression
+                    let value_result = parse_expr_with_pos(src, p, nodes)
+                    if value_result.node_idx < 0 {
+                        break
+                    }
+
+                    if field_count == 0 {
+                        first_field_idx = value_result.node_idx
+                    }
+                    field_count = field_count + 1
+
+                    p = value_result.new_pos
+                    p = lex_skip(src, p)
+
+                    // Check for comma
+                    if lex_kind(src, p) == TK_COMMA() {
+                        p = lex_end(src, p, TK_COMMA())
+                        p = lex_skip(src, p)
+                    } else {
+                        break
+                    }
+                }
+
+                // Expect '}'
+                if lex_kind(src, p) != TK_RBRACE() {
                     return ParseResult { node_idx: -1, new_pos: p }
                 }
-                p = index_result.new_pos
-                p = lex_skip(src, p)
+                p = lex_end(src, p, TK_RBRACE())
 
-                // Expect ']'
-                if lex_kind(src, p) != TK_RBRACKET() {
-                    return ParseResult { node_idx: -1, new_pos: p }
-                }
-                p = lex_end(src, p, TK_RBRACKET())
-
-                // Create array index node
-                // left = array expression, right = index expression
-                let index_node = AstNode {
-                    tag: EXPR_INDEX(),
-                    int_val: 0,
-                    str_val: "",
-                    left: array_node,
-                    right: index_result.node_idx,
+                // Create struct literal node
+                let struct_lit_node = AstNode {
+                    tag: EXPR_STRUCT_LIT(),
+                    int_val: field_count,
+                    str_val: struct_name,
+                    left: struct_name_node,
+                    right: first_field_idx,
                     extra: -1,
                     type_tag: TYPE_UNKNOWN()
                 }
-                push(nodes, index_node)
+                push(nodes, struct_lit_node)
                 current_node = len(nodes) - 1
                 // Continue to check for more postfix operators
             } else {
-                if next_kind == TK_DOT() {
-                    // Field access
-                    let base_node = current_node
-                    p = lex_end(src, p, next_kind)  // Skip '.'
+                if next_kind == TK_LBRACKET() {
+                    // Array indexing
+                    let array_node = current_node
+                    p = lex_end(src, p, next_kind)  // Skip '['
                     p = lex_skip(src, p)
 
-                    // Parse field name
-                    let field_kind = lex_kind(src, p)
-                    if field_kind != TK_IDENT() {
+                    // Parse index expression
+                    let index_result = parse_expr_with_pos(src, p, nodes)
+                    if index_result.node_idx < 0 {
                         return ParseResult { node_idx: -1, new_pos: p }
                     }
-                    let field_name = lex_string_value(src, p, field_kind)
-                    p = lex_end(src, p, field_kind)
+                    p = index_result.new_pos
+                    p = lex_skip(src, p)
 
-                    // Create field access node
-                    // left = base expression, str_val = field name
-                    let field_node = AstNode {
-                        tag: EXPR_FIELD(),
+                    // Expect ']'
+                    if lex_kind(src, p) != TK_RBRACKET() {
+                        return ParseResult { node_idx: -1, new_pos: p }
+                    }
+                    p = lex_end(src, p, TK_RBRACKET())
+
+                    // Create array index node
+                    // left = array expression, right = index expression
+                    let index_node = AstNode {
+                        tag: EXPR_INDEX(),
                         int_val: 0,
-                        str_val: field_name,
-                        left: base_node,
-                        right: -1,
+                        str_val: "",
+                        left: array_node,
+                        right: index_result.node_idx,
                         extra: -1,
                         type_tag: TYPE_UNKNOWN()
                     }
-                    push(nodes, field_node)
+                    push(nodes, index_node)
                     current_node = len(nodes) - 1
                     // Continue to check for more postfix operators
                 } else {
-                    // No more postfix operators, break the loop
-                    break
+                    if next_kind == TK_DOT() {
+                        // Field access
+                        let base_node = current_node
+                        p = lex_end(src, p, next_kind)  // Skip '.'
+                        p = lex_skip(src, p)
+
+                        // Parse field name
+                        let field_kind = lex_kind(src, p)
+                        if field_kind != TK_IDENT() {
+                            return ParseResult { node_idx: -1, new_pos: p }
+                        }
+                        let field_name = lex_string_value(src, p, field_kind)
+                        p = lex_end(src, p, field_kind)
+
+                        // Create field access node
+                        // left = base expression, str_val = field name
+                        let field_node = AstNode {
+                            tag: EXPR_FIELD(),
+                            int_val: 0,
+                            str_val: field_name,
+                            left: base_node,
+                            right: -1,
+                            extra: -1,
+                            type_tag: TYPE_UNKNOWN()
+                        }
+                        push(nodes, field_node)
+                        current_node = len(nodes) - 1
+                        // Continue to check for more postfix operators
+                    } else {
+                        // No more postfix operators, break the loop
+                        break
+                    }
                 }
             }
         }
@@ -1615,6 +1769,50 @@ fn gen_ir_from_ast_with_symtab(ast_idx: int, nodes: []AstNode, instrs: []IRInstr
         return result_vreg
     }
 
+    if node.tag == EXPR_ARRAY_LIT() {
+        // Generate array literal: []int{elem1, elem2, ...}
+        // node.int_val = element count
+        // node.right = first element expression index
+        //
+        // For bootstrap: allocate consecutive vregs for elements
+        // and return first vreg as array "pointer"
+        // Real implementation would heap_alloc array memory
+
+        let elem_count = node.int_val
+        let mut first_vreg = -1
+
+        if elem_count > 0 && node.right >= 0 {
+            // Evaluate each element expression
+            let mut found_elems = 0
+            for i in node.right..len(nodes) {
+                if found_elems >= elem_count {
+                    break
+                }
+                let elem_node = nodes[i]
+                // Elements are expression nodes (tag < 20)
+                if elem_node.tag < STMT_LET() {
+                    let elem_vreg = gen_ir_from_ast_with_symtab(i, nodes, instrs, symtab_names, symtab_vregs)
+                    if found_elems == 0 {
+                        first_vreg = elem_vreg
+                    }
+                    found_elems = found_elems + 1
+                }
+            }
+        }
+
+        // For now, return first element's vreg as array "reference"
+        // Real implementation would allocate array and return pointer
+        if first_vreg >= 0 {
+            return first_vreg
+        }
+
+        // Empty array: return 0
+        let vreg = len(instrs)
+        let instr = IRInstr { op: OP_LOADCONST(), dest: vreg, arg1: 0, arg2: 0, str_val: "" }
+        push(instrs, instr)
+        return vreg
+    }
+
     if node.tag == EXPR_INDEX() {
         // Generate array indexing: array[index]
         // node.left = array expression
@@ -1680,6 +1878,51 @@ fn gen_ir_from_ast_with_symtab(ast_idx: int, nodes: []AstNode, instrs: []IRInstr
         return result_vreg
     }
 
+    if node.tag == EXPR_STRUCT_LIT() {
+        // Generate struct literal: StructName { field1: val1, field2: val2, ... }
+        // node.str_val = struct name
+        // node.int_val = field count
+        // node.right = first field value expression index
+        //
+        // For bootstrap simplicity: allocate consecutive vregs for fields
+        // and return the first one as a "struct reference"
+        // In full implementation, would heap_alloc and store fields
+
+        let field_count = node.int_val
+        let mut first_vreg = -1
+
+        if field_count > 0 && node.right >= 0 {
+            // Evaluate each field value expression (they're consecutive nodes)
+            let mut found_fields = 0
+            for i in node.right..len(nodes) {
+                if found_fields >= field_count {
+                    break
+                }
+                let field_node = nodes[i]
+                // Field values are expression nodes (tag < 20)
+                if field_node.tag < STMT_LET() {
+                    let field_vreg = gen_ir_from_ast_with_symtab(i, nodes, instrs, symtab_names, symtab_vregs)
+                    if found_fields == 0 {
+                        first_vreg = field_vreg
+                    }
+                    found_fields = found_fields + 1
+                }
+            }
+        }
+
+        // For now, just return the first field's vreg as a placeholder
+        // This is a simplification - real implementation would allocate struct memory
+        if first_vreg >= 0 {
+            return first_vreg
+        }
+
+        // If no fields, return a dummy constant
+        let vreg = len(instrs)
+        let instr = IRInstr { op: OP_LOADCONST(), dest: vreg, arg1: 0, arg2: 0, str_val: "" }
+        push(instrs, instr)
+        return vreg
+    }
+
     // Handle statements
     if node.tag == STMT_RETURN() {
         // Generate return instruction
@@ -1704,6 +1947,44 @@ fn gen_ir_from_ast_with_symtab(ast_idx: int, nodes: []AstNode, instrs: []IRInstr
         push(symtab_names, node.str_val)
         push(symtab_vregs, init_vreg)
         return init_vreg
+    }
+
+    if node.tag == STMT_ASSIGN() {
+        // Generate assignment: name = expr
+        // node.str_val = variable name
+        // node.right = value expression
+
+        // Evaluate the right-hand side expression
+        let value_vreg = gen_ir_from_ast_with_symtab(node.right, nodes, instrs, symtab_names, symtab_vregs)
+        if value_vreg < 0 {
+            return -1
+        }
+
+        // Look up the variable in symbol table to get its vreg/location
+        let mut target_vreg = -1
+        for i in 0..len(symtab_names) {
+            if symtab_names[i] == node.str_val {
+                target_vreg = symtab_vregs[i]
+                break
+            }
+        }
+
+        if target_vreg < 0 {
+            // Variable not found - error
+            return -1
+        }
+
+        // For bootstrap simplicity: Assignment in the current simple model
+        // just evaluates the RHS. Full implementation would need mutable
+        // symbol tables or memory-based variables with STORE operations.
+        // For now, just return the value_vreg as the result.
+
+        // Note: This doesn't properly implement mutation semantics, but
+        // allows the code to compile. A proper implementation needs either:
+        // 1. Mutable symbol tables (not available in bootstrap)
+        // 2. Memory-backed variables with actual STR instructions
+
+        return value_vreg
     }
 
     if node.tag == STMT_IF() {
@@ -1925,6 +2206,16 @@ fn encode_ldr_offset(rt: int, rn: int, offset: int) -> int {
     return 0xf9400000 + (imm12 * 0x400) + (rn * 0x20) + rt
 }
 
+fn encode_str_offset(rt: int, rn: int, offset: int) -> int {
+    // STR Xt, [Xn, #offset]
+    // Store 64-bit register to memory address [Xn + offset]
+    // size=11 (64-bit), V=0, opc=00, imm12 (unsigned offset / 8), Rn, Rt
+    // Encoding: 11 111 0 01 00 imm12(12) Rn(5) Rt(5)
+    // imm12 is offset >> 3 (divided by 8, must be 8-byte aligned)
+    let imm12 = (offset / 8) % 4096
+    return 0xf9000000 + (imm12 * 0x400) + (rn * 0x20) + rt
+}
+
 fn gen_code_from_ir(instrs: []IRInstr, code: []int) {
     // Two-pass approach:
     // Pass 1: Build label map (label_id -> instruction_index) and function map (name -> position)
@@ -1991,6 +2282,16 @@ fn gen_code_from_ir(instrs: []IRInstr, code: []int) {
             let offset = instr.arg2
             let dest_reg = instr.dest
             let encoded = encode_ldr_offset(dest_reg, base_reg, offset)
+            push(code, encoded)
+            instr_count = instr_count + 1
+        }
+        if instr.op == OP_STORE() {
+            // STR Xsrc, [Xbase, #offset]
+            // Store value from arg2 to memory at arg1 + offset
+            let base_reg = instr.arg1
+            let src_reg = instr.arg2
+            let offset = 0  // For now, store directly (no offset)
+            let encoded = encode_str_offset(src_reg, base_reg, offset)
             push(code, encoded)
             instr_count = instr_count + 1
         }
@@ -2273,8 +2574,8 @@ fn write_main_cmd(buf: int, entry_offset: int) -> int {
 fn main() -> int {
     print("=== Bootstrap Ease Compiler ===\n\n")
 
-    // Test: Multi-argument function call
-    let source = "fn add(x: int, y: int) -> int { return x + y } fn main() -> int { return add(10, 20) }"
+    // Test: Array literal
+    let source = "fn main() -> int { let arr = []int{1, 2, 3} return arr[1] }"
     print("Compiling: ")
     print(source)
     print("\n\n")

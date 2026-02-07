@@ -1,0 +1,45 @@
+// Test 4: String operations
+import ("strings")
+import ("strconv")
+
+fn main() -> int {
+    // Test string concatenation
+    let hello = "Hello"
+    let world = "World"
+    let mut greeting = strings.Concat(hello, " ")
+    greeting = strings.Concat(greeting, world)
+    
+    // Test string contains
+    if !strings.Contains(greeting, "World") {
+        return 1
+    }
+    
+    // Test string starts with
+    if !strings.StartsWith(greeting, "Hello") {
+        return 2
+    }
+    
+    // Test string ends with
+    if !strings.EndsWith(greeting, "World") {
+        return 3
+    }
+    
+    // Test string index of
+    let idx = strings.IndexOf(greeting, "World")
+    if idx != 6 {
+        return 4
+    }
+    
+    // Test strconv
+    let num_str = strconv.Itoa(42)
+    if num_str != "42" {
+        return 5
+    }
+    
+    let num = strconv.Atoi("123")
+    if num != 123 {
+        return 6
+    }
+    
+    return 0
+}

@@ -587,6 +587,24 @@ The bootstrap compiler can compile simple programs but not yet itself. Key missi
 go test ./pkg/... -v
 ```
 
+## Running Integration Tests
+
+End-to-end compiler tests that verify features work correctly:
+
+```bash
+./tests/run_tests.sh
+```
+
+The test suite includes:
+- Basic arithmetic and variables
+- Function calls and recursion
+- Array operations (literal, index, push, len)
+- String operations (strings and strconv modules)
+- Struct definitions and operations
+- Loop variants (range, condition)
+
+All tests return exit code 0 on success. See `tests/README.md` for details.
+
 ## Example Program
 
 ```
