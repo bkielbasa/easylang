@@ -300,7 +300,16 @@ Progress on implementing the Ease compiler in Ease itself:
       - Control flow: start → condition check → branch to end if false → body → jump to start
       - Test cases: infinite loops, true/false conditions, expression conditions
       - All for loop tests passing: `for 1 { return 42 }` ✅, `for { return 42 }` ✅
-    - ⏳ Next: Mach-O binary writing, semantic analysis integration
+    - ✅ **Mach-O Binary Structure (Feb 6, 2026):**
+      - Binary writing helpers: write_u32_le, write_u64_le, write_zeros using poke()
+      - Mach-O header generation (32 bytes): magic, cpu type, file type, load commands
+      - __PAGEZERO segment (72 bytes): 4GB zero-mapped memory for null pointer protection
+      - __TEXT segment (152 bytes): executable code segment with VM protection flags
+      - LC_MAIN command (24 bytes): entry point specification
+      - Complete 5-phase pipeline demonstrated: Lex → Parse → IR → Codegen → Binary Structure
+      - Calculates proper alignment, file sizes, and entry points
+      - Note: Actual file writing blocked by type system (syscall_write needs string buffer)
+    - ⏳ Next: Range-based for loops (`for x in 0..10`), break/continue, semantic analysis integration
   - See `bootstrap/README.md` for details
 
 **Completed:**
