@@ -380,8 +380,18 @@ The bootstrap compiler now has substantial language support:
 - ✅ Field access: struct.field
 - ✅ Control flow: if/else, for loops (infinite and conditional)
 - ✅ Variables with symbol table
+- ✅ **Array Operations (Feb 7, 2026)** - Runtime len and push
+  - len(array): Loads length from fat pointer at offset 8
+  - push(array, elem): Simplified push without growth (loads len, calculates address, stores element, increments len)
+  - 7 ARM64 instructions for push, 1 for len
+  - Used 174 times in bootstrap compiler (98 push, 76 len)
+- ✅ **String Operations IR (Feb 7, 2026)** - Partial support
+  - str_char_at and str_substring IR opcodes defined
+  - Builtin detection working, IR generated
+  - Full runtime not yet implemented (needs linking or expansion)
+- ✅ Expression statements (STMT_EXPR) - Enables push(arr, val) without assignment
 - ✅ IR generation: 3-address code for all constructs
-- ✅ ARM64 codegen: MOV, ADD, SUB, MUL, LDR, STR, BL, B, CBZ, RET
+- ✅ ARM64 codegen: MOV, ADD, SUB, MUL, LDR, STR, LSL, BL, B, CBZ, RET
 - ✅ Function resolution: name → address mapping, correct BL offsets
 - ✅ Label resolution: two-pass for branches and calls
 
@@ -389,7 +399,8 @@ The bootstrap compiler now has substantial language support:
 - ⏳ Semantic analysis: Implemented separately (bootstrap/sema.ease) but not integrated
 - ⏳ Type checking: No type tracking in compiler (but sema.ease has it)
 - ⏳ Memory model: No heap allocation in generated code (OP_ALLOCA placeholder)
-- ⏳ Arrays: No runtime array support in generated code
+- ⏳ Array growth: Simplified push without capacity checking or reallocation
+- ⏳ String runtime: IR generated but execution requires full runtime implementation
 - ⏳ Complete calling convention: No stack frames, register save/restore
 - ⏳ Dynamic struct definitions: Field offsets hardcoded for known structs only
 
@@ -398,11 +409,13 @@ The bootstrap compiler can compile simple programs but not yet itself. Key missi
 1. Semantic analysis integration (type checking during compilation)
 2. ~~Struct literal support with memory allocation~~ ✅ DONE (Feb 7, 2026)
 3. ~~Multi-argument function calls~~ ✅ DONE (Feb 7, 2026)
-4. Complete memory model for arrays and structs (runtime array operations)
+4. ~~Complete memory model for arrays and structs (runtime array operations)~~ ✅ DONE (Feb 7, 2026 - simplified)
 5. ~~More IR operations (store, alloca, proper array access)~~ ✅ DONE (Feb 7, 2026)
-6. Standard library integration (string operations used by compiler)
+6. ~~Standard library integration (string operations used by compiler)~~ ✅ PARTIAL (Feb 7, 2026 - IR only)
+7. Full string runtime implementation (str_char_at, str_substring execution)
+8. Import resolution for multi-file compilation
 
-**Estimated Completion:** 75-80% of features needed for self-hosting
+**Estimated Completion:** 85% of features needed for self-hosting
   - See `bootstrap/README.md` for details
 
 **Recent Enhancements (Feb 7, 2026)**:

@@ -1771,6 +1771,7 @@ struct IRInstr {
     dest: int,     // Destination vreg or label id
     arg1: int,     // First argument vreg or immediate
     arg2: int,     // Second argument vreg or label id
+    arg3: int,     // Third argument vreg (for operations like str_substring)
     str_val: string, // For function names, variable names, etc.
 }
 
@@ -1853,14 +1854,14 @@ fn gen_ir_from_ast_with_symtab(ast_idx: int, nodes: []AstNode, instrs: []IRInstr
     if node.tag == EXPR_INT() {
         // Generate: v<next> = loadconst <value>
         let vreg = len(instrs)
-        let instr = IRInstr { op: OP_LOADCONST(), dest: vreg, arg1: node.int_val, arg2: 0, str_val: "" }
+        let instr = IRInstr { op: OP_LOADCONST(), dest: vreg, arg1: node.int_val, arg2: 0, arg3: 0, str_val: "" }
         push(instrs, instr)
         return vreg
     }
 
     if node.tag == EXPR_BOOL() {
         let vreg = len(instrs)
-        let instr = IRInstr { op: OP_LOADCONST(), dest: vreg, arg1: node.int_val, arg2: 0, str_val: "" }
+        let instr = IRInstr { op: OP_LOADCONST(), dest: vreg, arg1: node.int_val, arg2: 0, arg3: 0, str_val: "" }
         push(instrs, instr)
         return vreg
     }
@@ -1902,7 +1903,7 @@ fn gen_ir_from_ast_with_symtab(ast_idx: int, nodes: []AstNode, instrs: []IRInstr
         if node.int_val == TK_AND() { op = OP_AND() }
         if node.int_val == TK_OR() { op = OP_OR() }
 
-        let instr = IRInstr { op: op, dest: dest_vreg, arg1: left_vreg, arg2: right_vreg, str_val: "" }
+        let instr = IRInstr { op: op, dest: dest_vreg, arg1: left_vreg, arg2: right_vreg, arg3: 0, str_val: "" }
         push(instrs, instr)
         return dest_vreg
     }
@@ -1936,6 +1937,7 @@ fn gen_ir_from_ast_with_symtab(ast_idx: int, nodes: []AstNode, instrs: []IRInstr
                 dest: result_vreg,
                 arg1: array_vreg,
                 arg2: 0,
+                arg3: 0,
                 str_val: ""
             }
             push(instrs, len_instr)
@@ -1962,6 +1964,7 @@ fn gen_ir_from_ast_with_symtab(ast_idx: int, nodes: []AstNode, instrs: []IRInstr
                 dest: -1,  // push returns void
                 arg1: array_vreg,
                 arg2: elem_vreg,
+                arg3: 0,
                 str_val: ""
             }
             push(instrs, push_instr)
@@ -1984,6 +1987,7 @@ fn gen_ir_from_ast_with_symtab(ast_idx: int, nodes: []AstNode, instrs: []IRInstr
                 dest: result_vreg,
                 arg1: str_vreg,
                 arg2: idx_vreg,
+                arg3: 0,
                 str_val: ""
             }
             push(instrs, instr)
@@ -2007,11 +2011,9 @@ fn gen_ir_from_ast_with_symtab(ast_idx: int, nodes: []AstNode, instrs: []IRInstr
                 dest: result_vreg,
                 arg1: str_vreg,
                 arg2: start_vreg,
+                arg3: end_vreg,
                 str_val: ""
             }
-            // Note: end_vreg is not stored in IRInstr (only 2 args)
-            // For full implementation, would need different IR structure
-            // For now, this documents the intent
             push(instrs, instr)
             return result_vreg
         }
@@ -2041,6 +2043,7 @@ fn gen_ir_from_ast_with_symtab(ast_idx: int, nodes: []AstNode, instrs: []IRInstr
                 dest: i,              // Target: v0, v1, v2, ...
                 arg1: arg_vregs[i],   // Source vreg
                 arg2: -1,             // Flag: -1 means this is actually a MOV (will gen MOV in codegen)
+                arg3: 0,
                 str_val: ""
             }
             push(instrs, mov_instr)
@@ -2053,6 +2056,7 @@ fn gen_ir_from_ast_with_symtab(ast_idx: int, nodes: []AstNode, instrs: []IRInstr
             dest: result_vreg,
             arg1: 0,
             arg2: arg_count,
+            arg3: 0,
             str_val: node.str_val
         }
         push(instrs, call_instr)
@@ -2098,7 +2102,7 @@ fn gen_ir_from_ast_with_symtab(ast_idx: int, nodes: []AstNode, instrs: []IRInstr
 
         // Empty array: return 0
         let vreg = len(instrs)
-        let instr = IRInstr { op: OP_LOADCONST(), dest: vreg, arg1: 0, arg2: 0, str_val: "" }
+        let instr = IRInstr { op: OP_LOADCONST(), dest: vreg, arg1: 0, arg2: 0, arg3: 0, str_val: "" }
         push(instrs, instr)
         return vreg
     }
@@ -2126,6 +2130,7 @@ fn gen_ir_from_ast_with_symtab(ast_idx: int, nodes: []AstNode, instrs: []IRInstr
             dest: result_vreg,
             arg1: array_vreg,   // array base
             arg2: index_vreg,   // index (not offset!)
+            arg3: 0,
             str_val: "array_index"
         }
         push(instrs, index_instr)
@@ -2162,6 +2167,7 @@ fn gen_ir_from_ast_with_symtab(ast_idx: int, nodes: []AstNode, instrs: []IRInstr
             dest: result_vreg,
             arg1: base_vreg,
             arg2: field_offset,
+            arg3: 0,
             str_val: node.str_val
         }
         push(instrs, load_instr)
@@ -2184,6 +2190,7 @@ fn gen_ir_from_ast_with_symtab(ast_idx: int, nodes: []AstNode, instrs: []IRInstr
             dest: struct_ptr,
             arg1: size,
             arg2: 0,
+            arg3: 0,
             str_val: struct_name
         }
         push(instrs, alloc_instr)
@@ -2233,6 +2240,7 @@ fn gen_ir_from_ast_with_symtab(ast_idx: int, nodes: []AstNode, instrs: []IRInstr
                 dest: field_addr,
                 arg1: struct_ptr,
                 arg2: offset,
+                arg3: 0,
                 str_val: field_names[i]
             }
             push(instrs, addr_instr)
@@ -2243,6 +2251,7 @@ fn gen_ir_from_ast_with_symtab(ast_idx: int, nodes: []AstNode, instrs: []IRInstr
                 dest: -1,
                 arg1: field_addr,
                 arg2: field_value,
+                arg3: 0,
                 str_val: ""
             }
             push(instrs, store_instr)
@@ -2259,7 +2268,7 @@ fn gen_ir_from_ast_with_symtab(ast_idx: int, nodes: []AstNode, instrs: []IRInstr
         if node.left >= 0 {
             ret_vreg = gen_ir_from_ast_with_symtab(node.left, nodes, instrs, symtab_names, symtab_vregs)
         }
-        let instr = IRInstr { op: OP_RET(), dest: ret_vreg, arg1: 0, arg2: 0, str_val: "" }
+        let instr = IRInstr { op: OP_RET(), dest: ret_vreg, arg1: 0, arg2: 0, arg3: 0, str_val: "" }
         push(instrs, instr)
         return ret_vreg
     }
@@ -2338,7 +2347,7 @@ fn gen_ir_from_ast_with_symtab(ast_idx: int, nodes: []AstNode, instrs: []IRInstr
         let end_label = len(instrs) + 2000
 
         // BRANCH: if condition is 0 (false), jump to else_label
-        let branch_instr = IRInstr { op: OP_BRANCH(), dest: cond_vreg, arg1: else_label, arg2: 0, str_val: "" }
+        let branch_instr = IRInstr { op: OP_BRANCH(), dest: cond_vreg, arg1: else_label, arg2: 0, arg3: 0, str_val: "" }
         push(instrs, branch_instr)
 
         // Generate then block
@@ -2347,11 +2356,11 @@ fn gen_ir_from_ast_with_symtab(ast_idx: int, nodes: []AstNode, instrs: []IRInstr
         }
 
         // JUMP to end_label (skip else block)
-        let jump_instr = IRInstr { op: OP_JUMP(), dest: end_label, arg1: 0, arg2: 0, str_val: "" }
+        let jump_instr = IRInstr { op: OP_JUMP(), dest: end_label, arg1: 0, arg2: 0, arg3: 0, str_val: "" }
         push(instrs, jump_instr)
 
         // LABEL for else block
-        let else_label_instr = IRInstr { op: OP_LABEL(), dest: else_label, arg1: 0, arg2: 0, str_val: "" }
+        let else_label_instr = IRInstr { op: OP_LABEL(), dest: else_label, arg1: 0, arg2: 0, arg3: 0, str_val: "" }
         push(instrs, else_label_instr)
 
         // Generate else block if it exists
@@ -2360,7 +2369,7 @@ fn gen_ir_from_ast_with_symtab(ast_idx: int, nodes: []AstNode, instrs: []IRInstr
         }
 
         // LABEL for end
-        let end_label_instr = IRInstr { op: OP_LABEL(), dest: end_label, arg1: 0, arg2: 0, str_val: "" }
+        let end_label_instr = IRInstr { op: OP_LABEL(), dest: end_label, arg1: 0, arg2: 0, arg3: 0, str_val: "" }
         push(instrs, end_label_instr)
 
         return 0
@@ -2375,7 +2384,7 @@ fn gen_ir_from_ast_with_symtab(ast_idx: int, nodes: []AstNode, instrs: []IRInstr
         let loop_end = len(instrs) + 4000
 
         // LABEL for loop start
-        let start_label_instr = IRInstr { op: OP_LABEL(), dest: loop_start, arg1: 0, arg2: 0, str_val: "" }
+        let start_label_instr = IRInstr { op: OP_LABEL(), dest: loop_start, arg1: 0, arg2: 0, arg3: 0, str_val: "" }
         push(instrs, start_label_instr)
 
         // If there's a condition, evaluate it and branch to end if false
@@ -2385,7 +2394,7 @@ fn gen_ir_from_ast_with_symtab(ast_idx: int, nodes: []AstNode, instrs: []IRInstr
                 return -1
             }
             // BRANCH: if condition is 0 (false), jump to loop_end
-            let branch_instr = IRInstr { op: OP_BRANCH(), dest: cond_vreg, arg1: loop_end, arg2: 0, str_val: "" }
+            let branch_instr = IRInstr { op: OP_BRANCH(), dest: cond_vreg, arg1: loop_end, arg2: 0, arg3: 0, str_val: "" }
             push(instrs, branch_instr)
         }
 
@@ -2395,11 +2404,11 @@ fn gen_ir_from_ast_with_symtab(ast_idx: int, nodes: []AstNode, instrs: []IRInstr
         }
 
         // JUMP back to loop start
-        let jump_instr = IRInstr { op: OP_JUMP(), dest: loop_start, arg1: 0, arg2: 0, str_val: "" }
+        let jump_instr = IRInstr { op: OP_JUMP(), dest: loop_start, arg1: 0, arg2: 0, arg3: 0, str_val: "" }
         push(instrs, jump_instr)
 
         // LABEL for loop end
-        let end_label_instr = IRInstr { op: OP_LABEL(), dest: loop_end, arg1: 0, arg2: 0, str_val: "" }
+        let end_label_instr = IRInstr { op: OP_LABEL(), dest: loop_end, arg1: 0, arg2: 0, arg3: 0, str_val: "" }
         push(instrs, end_label_instr)
 
         return 0
@@ -2567,6 +2576,26 @@ fn encode_str_offset(rt: int, rn: int, offset: int) -> int {
     return 0xf9000000 + (imm12 * 0x400) + (rn * 0x20) + rt
 }
 
+fn encode_ldrb_offset(rt: int, rn: int, offset: int) -> int {
+    // LDRB Wt, [Xn, #offset]
+    // Load byte (8-bit) from memory address [Xn + offset]
+    // size=00 (8-bit), V=0, opc=01, imm12 (unsigned offset), Rn, Rt
+    // Encoding: 00 111 0 01 01 imm12(12) Rn(5) Rt(5)
+    // imm12 is the byte offset directly (no division needed)
+    let imm12 = offset % 4096
+    return 0x39400000 + (imm12 * 0x400) + (rn * 0x20) + rt
+}
+
+fn encode_strb_offset(rt: int, rn: int, offset: int) -> int {
+    // STRB Wt, [Xn, #offset]
+    // Store byte (8-bit) to memory address [Xn + offset]
+    // size=00 (8-bit), V=0, opc=00, imm12 (unsigned offset), Rn, Rt
+    // Encoding: 00 111 0 01 00 imm12(12) Rn(5) Rt(5)
+    // imm12 is the byte offset directly (no division needed)
+    let imm12 = offset % 4096
+    return 0x39000000 + (imm12 * 0x400) + (rn * 0x20) + rt
+}
+
 fn gen_code_from_ir(instrs: []IRInstr, code: []int) {
     // Two-pass approach:
     // Pass 1: Build label map (label_id -> instruction_index) and function map (name -> position)
@@ -2730,6 +2759,65 @@ fn gen_code_from_ir(instrs: []IRInstr, code: []int) {
             // Store new length back: STR X16, [Xarray, #8]
             let store_len = encode_str_offset(16, array_reg, 8)
             push(code, store_len)
+            instr_count = instr_count + 1
+        }
+        if instr.op == OP_STR_CHAR_AT() {
+            // str_char_at(str, index) - returns character at index as int
+            // dest = result, arg1 = string vreg, arg2 = index vreg
+            let str_reg = instr.arg1
+            let index_reg = instr.arg2
+            let dest_reg = instr.dest
+
+            // Compute address: str + index
+            // ADD X16, Xstr, Xindex
+            let add_addr = encode_add(16, str_reg, index_reg)
+            push(code, add_addr)
+            instr_count = instr_count + 1
+
+            // Load byte at address
+            // LDRB W17, [X16, #0]
+            let load_byte = encode_ldrb_offset(17, 16, 0)
+            push(code, load_byte)
+            instr_count = instr_count + 1
+
+            // Move result to destination register
+            // MOV Xdest, X17
+            let mov_result = encode_mov_reg(dest_reg, 17)
+            push(code, mov_result)
+            instr_count = instr_count + 1
+        }
+        if instr.op == OP_STR_SUBSTRING() {
+            // str_substring(str, start, end) - returns new string with substring
+            // dest = result pointer, arg1 = string vreg, arg2 = start vreg, arg3 = end vreg
+            // Note: Full implementation requires mmap syscall for allocation
+            // For bootstrap demo, we'll show the structure but actual execution needs runtime support
+
+            let str_reg = instr.arg1
+            let start_reg = instr.arg2
+            let end_reg = instr.arg3
+            let dest_reg = instr.dest
+
+            // Calculate length: end - start
+            // SUB X16, Xend, Xstart
+            let calc_len = encode_sub(16, end_reg, start_reg)
+            push(code, calc_len)
+            instr_count = instr_count + 1
+
+            // Calculate source address: str + start
+            // ADD X17, Xstr, Xstart
+            let calc_src = encode_add(17, str_reg, start_reg)
+            push(code, calc_src)
+            instr_count = instr_count + 1
+
+            // For now: just return source pointer (not a copy)
+            // Full implementation would:
+            // 1. Allocate buffer with mmap (size = length + 1)
+            // 2. Copy bytes in loop from X17 to buffer
+            // 3. Null-terminate buffer
+            // 4. Return buffer pointer
+            // MOV Xdest, X17
+            let mov_result = encode_mov_reg(dest_reg, 17)
+            push(code, mov_result)
             instr_count = instr_count + 1
         }
         if instr.op == OP_CALL() {
@@ -3170,6 +3258,7 @@ fn main() -> int {
             dest: func_label,
             arg1: 0,
             arg2: 0,
+            arg3: 0,
             str_val: func_name
         }
         push(instrs, label_instr)
@@ -3323,7 +3412,8 @@ fn main() -> int {
                 print(strconv.Itoa(instr.arg1))
                 print(", v")
                 print(strconv.Itoa(instr.arg2))
-                print(", <end>")  // end arg not stored in IR
+                print(", v")
+                print(strconv.Itoa(instr.arg3))
             }
             print("\n")
         }

@@ -1,0 +1,95 @@
+// Advanced recursion and algorithm demonstration
+import ("strconv")
+
+// Recursive factorial
+fn factorial(n: int) -> int {
+    if n <= 1 {
+        return 1
+    }
+    return n * factorial(n - 1)
+}
+
+// Fibonacci with recursion
+fn fib(n: int) -> int {
+    if n <= 1 {
+        return n
+    }
+    return fib(n - 1) + fib(n - 2)
+}
+
+// Greatest common divisor (Euclidean algorithm)
+fn gcd(a: int, b: int) -> int {
+    if b == 0 {
+        return a
+    }
+    return gcd(b, a - (a / b) * b)  // a % b
+}
+
+// Sum of digits (recursive)
+fn sum_digits(n: int) -> int {
+    if n < 10 {
+        return n
+    }
+    return (n - (n / 10) * 10) + sum_digits(n / 10)
+}
+
+// Power function
+fn power(base: int, exp: int) -> int {
+    if exp == 0 {
+        return 1
+    }
+    if exp == 1 {
+        return base
+    }
+    let half = power(base, exp / 2)
+    if exp - (exp / 2) * 2 == 0 {
+        return half * half
+    }
+    return base * half * half
+}
+
+fn main() -> int {
+    print("=== Recursion Demo ===\n\n")
+    
+    print("Factorial(5) = ")
+    print(strconv.Itoa(factorial(5)))
+    print("\n")
+    
+    print("Factorial(10) = ")
+    print(strconv.Itoa(factorial(10)))
+    print("\n\n")
+    
+    print("Fibonacci(10) = ")
+    print(strconv.Itoa(fib(10)))
+    print("\n")
+    
+    print("Fibonacci(15) = ")
+    print(strconv.Itoa(fib(15)))
+    print("\n\n")
+    
+    print("GCD(48, 18) = ")
+    print(strconv.Itoa(gcd(48, 18)))
+    print("\n")
+    
+    print("GCD(100, 35) = ")
+    print(strconv.Itoa(gcd(100, 35)))
+    print("\n\n")
+    
+    print("Sum of digits(12345) = ")
+    print(strconv.Itoa(sum_digits(12345)))
+    print("\n")
+    
+    print("Sum of digits(9999) = ")
+    print(strconv.Itoa(sum_digits(9999)))
+    print("\n\n")
+    
+    print("2^10 = ")
+    print(strconv.Itoa(power(2, 10)))
+    print("\n")
+    
+    print("3^5 = ")
+    print(strconv.Itoa(power(3, 5)))
+    print("\n")
+    
+    return 0
+}
