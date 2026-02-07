@@ -1341,6 +1341,35 @@ fn parse_primary_expr(src: string, pos: int, nodes: []AstNode) -> ParseResult {
         return ParseResult { node_idx: len(nodes) - 1, new_pos: p }
     }
 
+    // Check if this is field access (identifier followed by '.')
+    if next_kind == TK_DOT() {
+        let base_node = atom_result.node_idx
+        p = lex_end(src, p, next_kind)  // Skip '.'
+        p = lex_skip(src, p)
+
+        // Parse field name
+        let field_kind = lex_kind(src, p)
+        if field_kind != TK_IDENT() {
+            return ParseResult { node_idx: -1, new_pos: p }
+        }
+        let field_name = lex_string_value(src, p, field_kind)
+        p = lex_end(src, p, field_kind)
+
+        // Create field access node
+        // left = base expression, str_val = field name
+        let field_node = AstNode {
+            tag: EXPR_FIELD(),
+            int_val: 0,
+            str_val: field_name,
+            left: base_node,
+            right: -1,
+            extra: -1,
+            type_tag: TYPE_UNKNOWN()
+        }
+        push(nodes, field_node)
+        return ParseResult { node_idx: len(nodes) - 1, new_pos: p }
+    }
+
     return atom_result
 }
 
@@ -1503,6 +1532,42 @@ fn gen_ir_from_ast_with_symtab(ast_idx: int, nodes: []AstNode, instrs: []IRInstr
             str_val: node.str_val
         }
         push(instrs, call_instr)
+        return result_vreg
+    }
+
+    if node.tag == EXPR_FIELD() {
+        // Generate field access: base.field
+        // node.left = base expression (variable)
+        // node.str_val = field name
+        // For now, simplified: assume base is a variable containing a struct
+        // and we know field offsets (hardcoded for demo)
+
+        // Get base vreg (should be pointer or struct value)
+        let base_vreg = gen_ir_from_ast_with_symtab(node.left, nodes, instrs, symtab_names, symtab_vregs)
+
+        // Calculate field offset (hardcoded for now - in real impl, lookup from type info)
+        // Example: AstNode struct has: tag(0), int_val(8), str_val(16), left(24), right(32), extra(40), type_tag(48)
+        // Assume 8-byte fields for simplicity
+        let mut field_offset = 0
+        if node.str_val == "tag" { field_offset = 0 }
+        if node.str_val == "int_val" { field_offset = 8 }
+        if node.str_val == "str_val" { field_offset = 16 }
+        if node.str_val == "left" { field_offset = 24 }
+        if node.str_val == "right" { field_offset = 32 }
+        if node.str_val == "extra" { field_offset = 40 }
+        if node.str_val == "type_tag" { field_offset = 48 }
+
+        // Generate LOAD instruction to read from base + offset
+        // OP_LOAD: dest = load from memory[arg1 + arg2]
+        let result_vreg = len(instrs)
+        let load_instr = IRInstr {
+            op: OP_LOAD(),
+            dest: result_vreg,
+            arg1: base_vreg,
+            arg2: field_offset,
+            str_val: node.str_val
+        }
+        push(instrs, load_instr)
         return result_vreg
     }
 
@@ -2054,8 +2119,8 @@ fn write_main_cmd(buf: int, entry_offset: int) -> int {
 fn main() -> int {
     print("=== Bootstrap Ease Compiler ===\n\n")
 
-    // Test: Function calls with multiple function definitions
-    let source = "fn add(x: int) -> int { return x + 10 } fn main() -> int { let result = add(5) return result }"
+    // Test: Field access (demonstrates parser, IR incomplete)
+    let source = "fn main() -> int { return node.tag }"
     print("Compiling: ")
     print(source)
     print("\n\n")
@@ -2098,6 +2163,7 @@ fn main() -> int {
         if kind == TK_LPAREN() { print("LPAREN ") }
         if kind == TK_RPAREN() { print("RPAREN ") }
         if kind == TK_COMMA() { print("COMMA ") }
+        if kind == TK_DOT() { print("DOT ") }
         if kind == TK_LT() { print("LT ") }
         if kind == TK_GT() { print("GT ") }
         if kind == TK_AND() { print("AND ") }
@@ -2273,6 +2339,16 @@ fn main() -> int {
                     print(strconv.Itoa(instr.arg1))
                 }
                 print(")")
+            }
+            if instr.op == OP_LOAD() {
+                print("v")
+                print(strconv.Itoa(instr.dest))
+                print(" = load [v")
+                print(strconv.Itoa(instr.arg1))
+                print(" + ")
+                print(strconv.Itoa(instr.arg2))
+                print("] // ")
+                print(instr.str_val)
             }
             print("\n")
         }
