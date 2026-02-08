@@ -34,37 +34,38 @@ fn TK_PLUS() -> int { return 30 }
 fn TK_MINUS() -> int { return 31 }
 fn TK_STAR() -> int { return 32 }
 fn TK_SLASH() -> int { return 33 }
+fn TK_PERCENT() -> int { return 34 }
 
 // Comparison operators
-fn TK_LT() -> int { return 34 }
-fn TK_GT() -> int { return 35 }
-fn TK_LE() -> int { return 36 }
-fn TK_GE() -> int { return 37 }
-fn TK_EQ() -> int { return 38 }
-fn TK_NE() -> int { return 39 }
+fn TK_LT() -> int { return 35 }
+fn TK_GT() -> int { return 36 }
+fn TK_LE() -> int { return 37 }
+fn TK_GE() -> int { return 38 }
+fn TK_EQ() -> int { return 39 }
+fn TK_NE() -> int { return 40 }
 
 // Logical operators
-fn TK_AND() -> int { return 40 }
-fn TK_OR() -> int { return 41 }
-fn TK_NOT() -> int { return 42 }
+fn TK_AND() -> int { return 41 }
+fn TK_OR() -> int { return 42 }
+fn TK_NOT() -> int { return 43 }
 
 // Assignment
-fn TK_ASSIGN() -> int { return 43 }
+fn TK_ASSIGN() -> int { return 44 }
 
 // Delimiters
-fn TK_ARROW() -> int { return 46 }
-fn TK_DOT() -> int { return 47 }
-fn TK_DOTDOT() -> int { return 48 }
+fn TK_ARROW() -> int { return 47 }
+fn TK_DOT() -> int { return 48 }
+fn TK_DOTDOT() -> int { return 49 }
 
-fn TK_LPAREN() -> int { return 50 }
-fn TK_RPAREN() -> int { return 51 }
-fn TK_LBRACE() -> int { return 52 }
-fn TK_RBRACE() -> int { return 53 }
-fn TK_LBRACKET() -> int { return 54 }
-fn TK_RBRACKET() -> int { return 55 }
-fn TK_COMMA() -> int { return 56 }
-fn TK_COLON() -> int { return 57 }
-fn TK_SEMI() -> int { return 58 }
+fn TK_LPAREN() -> int { return 51 }
+fn TK_RPAREN() -> int { return 52 }
+fn TK_LBRACE() -> int { return 53 }
+fn TK_RBRACE() -> int { return 54 }
+fn TK_LBRACKET() -> int { return 55 }
+fn TK_RBRACKET() -> int { return 56 }
+fn TK_COMMA() -> int { return 57 }
+fn TK_COLON() -> int { return 58 }
+fn TK_SEMI() -> int { return 59 }
 
 fn TK_EOF() -> int { return 100 }
 
@@ -162,6 +163,7 @@ fn lex_kind(src: string, pos: int) -> int {
     if ch == 45 { return TK_MINUS() }     // -
     if ch == 42 { return TK_STAR() }      // *
     if ch == 47 { return TK_SLASH() }     // /
+    if ch == 37 { return TK_PERCENT() }   // %
     if ch == 60 { return TK_LT() }        // <
     if ch == 62 { return TK_GT() }        // >
     if ch == 61 { return TK_ASSIGN() }    // =
@@ -218,7 +220,7 @@ fn lex_end(src: string, pos: int, kind: int) -> int {
        kind == TK_RBRACE() || kind == TK_LBRACKET() || kind == TK_RBRACKET() ||
        kind == TK_COMMA() || kind == TK_COLON() || kind == TK_SEMI() || kind == TK_DOT() ||
        kind == TK_PLUS() || kind == TK_MINUS() || kind == TK_STAR() || kind == TK_SLASH() ||
-       kind == TK_LT() || kind == TK_GT() || kind == TK_ASSIGN() || kind == TK_NOT() {
+       kind == TK_PERCENT() || kind == TK_LT() || kind == TK_GT() || kind == TK_ASSIGN() || kind == TK_NOT() {
         return pos + 1
     }
 
@@ -1566,7 +1568,7 @@ fn parse_multiplicative(src: string, start_pos: int, nodes: []AstNode) -> ParseR
     for {
         pos = lex_skip(src, pos)
         let op = lex_kind(src, pos)
-        if op != TK_STAR() && op != TK_SLASH() {
+        if op != TK_STAR() && op != TK_SLASH() && op != TK_PERCENT() {
             break
         }
 
