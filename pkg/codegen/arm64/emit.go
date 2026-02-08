@@ -2868,20 +2868,51 @@ func (e *Emitter) emitReadFile(instr *ir.Instr) {
 	e.asm.SVC(0x80)
 	e.asm.MOV(X20, X0)             // Save fd in X20
 
-	// Allocate buffer on heap (64KB, 8-byte aligned)
+	// Allocate buffer on heap (1MB, 8-byte aligned)
 	// Uses bump allocator so the string persists after function returns
 	// Use X23 for size (not X17) because emitBumpAlloc corrupts X17 internally
-	bufSize := int64(65536)
+	bufSize := int64(1048576) // 1MB - enough for large source files
 	e.asm.MOVimm(X23, bufSize)
 	e.emitBumpAlloc(X23, X21)      // Allocate X23 bytes, result in X21
 
-	// read(fd, buf, bufSize)
-	e.asm.MOV(X0, X20)             // fd
-	e.asm.MOV(X1, X21)             // buf
-	e.asm.MOVimm(X2, bufSize-1)    // count (leave room for null)
-	e.asm.MOVimm(X16, 0x2000003)   // syscall read
+	// Read file in loop until EOF or buffer full
+	// X21 = buffer start
+	// X22 = total bytes read so far
+	// X24 = buffer size - 1 (leave room for null)
+	e.asm.MOVimm(X22, 0)            // Total bytes read = 0
+	e.asm.MOVimm(X24, bufSize-1)    // Max bytes to read
+
+	// Read loop
+	readLoop := e.asm.Offset()
+
+	// Check if buffer is full
+	e.asm.CMP(X22, X24)
+	readDone := e.asm.Offset()
+	e.asm.Bcond(CondGE, 0)          // If bytes_read >= max, done (placeholder)
+
+	// Calculate: remaining = bufSize - 1 - total_read
+	e.asm.SUB(X2, X24, X22)         // X2 = remaining space in buffer
+
+	// read(fd, buf + offset, remaining)
+	e.asm.MOV(X0, X20)              // fd
+	e.asm.ADD(X1, X21, X22)         // buf + offset
+	// X2 already set to remaining
+	e.asm.MOVimm(X16, 0x2000003)    // syscall read
 	e.asm.SVC(0x80)
-	e.asm.MOV(X22, X0)             // Save bytes read in X22
+
+	// Check result (X0 = bytes read, or -1 on error)
+	e.asm.CMP(X0, XZR)
+	e.asm.Bcond(CondLE, int32(e.asm.Offset()-readDone)) // If <= 0, done (reuse readDone)
+
+	// Add bytes read to total
+	e.asm.ADD(X22, X22, X0)
+
+	// Loop back to read more
+	e.asm.B(int32(readLoop - e.asm.Offset()))
+
+	// Patch readDone branch target
+	readDoneLabel := e.asm.Offset()
+	e.asm.Patch(readDone, e.asm.Bcond_instr(CondGE, int32(readDoneLabel-readDone)>>2))
 
 	// Null-terminate the string
 	e.asm.ADD(X23, X21, X22)       // end of data
