@@ -308,23 +308,29 @@ The bootstrap compiler currently parses 79 out of 182 functions (43%). The next 
 
 **Bootstrap Compiler File Size Limit - FIXED (Feb 8, 2026):**
 - **Problem**: Bootstrap compiler stopped parsing at position 65,535 bytes
-  - Could only parse 146/206 functions in compiler.ease (71%)
+  - Could only parse 146/207 functions in compiler.ease (71%)
   - Appeared to be 16-bit integer overflow in position tracking
 - **Root Causes Identified**:
   1. `os.ReadFile` had hardcoded 64KB buffer limit (65,536 bytes) - files were truncated!
   2. Bootstrap compiler lexer didn't support hexadecimal literals (`0x...`)
+  3. Bootstrap compiler lexer/parser didn't support modulo operator (`%`)
 - **Solutions**:
   - Increased ReadFile buffer from 64KB to 1MB with read loop (pkg/codegen/arm64/emit.go)
   - Added hex literal support to bootstrap lexer:
     - `is_hex_digit()` helper function
     - Updated `lex_end()` to detect `0x` prefix and consume hex digits
     - Updated `lex_int_value()` to parse hex with base-16 conversion
+  - Added modulo operator support:
+    - Added `TK_PERCENT` token (value 34) and updated all subsequent token values
+    - Added lexing support for '%' character (ASCII 37)
+    - Added parsing support in `parse_multiplicative` function
 - **Results**:
   - ✅ Can now read files up to 1MB (was 64KB limit)
-  - ✅ Bootstrap compiler parses 166/206 functions (80%, was 71%)
-  - ✅ Successfully handles ARM64 instruction hex encodings
+  - ✅ Bootstrap compiler parses 182/207 functions (88%, was 71%)
+  - ✅ Successfully handles ARM64 instruction hex encodings and modulo operations
   - ✅ File reading no longer truncates at 65,535 bytes
-- **Testing**: Created comprehensive tests for large files (148KB+) and hex parsing
+  - ✅ Codegen functions now parse correctly (15/15 with hex and modulo)
+- **Testing**: Created comprehensive tests for large files (148KB+), hex parsing, and modulo expressions
 - **Status**: ✅ RESOLVED - Major progress toward self-hosting!
 
 **Continued Progress Session (Feb 7, 2026 - Part 2):**
@@ -383,7 +389,7 @@ The bootstrap compiler currently parses 79 out of 182 functions (43%). The next 
 - None currently! If statement parsing bug resolved.
 
 **Minor:**
-- Bootstrap compiler parses only 46/182 functions (25%) - need to identify next parsing blocker
+- Bootstrap compiler parses 182/207 functions (88%) - 25 functions still need investigation
 - Struct literals disabled as postfix operators (causes ambiguity with blocks)
 
 ## Future Work
