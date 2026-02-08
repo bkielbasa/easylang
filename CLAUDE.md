@@ -119,17 +119,19 @@ ease/
 ├── CLAUDE.md             # This file
 ├── cmd/
 │   └── ease/             # CLI tool
-└── pkg/
-    ├── token/            # Token types and keywords
-    ├── lexer/            # Tokenizer
-    ├── ast/              # AST node definitions
-    ├── parser/           # Recursive descent parser
-    ├── types/            # Type system
-    ├── symbols/          # Symbol table
-    ├── sema/             # Semantic analysis
-    ├── ir/               # Intermediate representation
-    ├── codegen/arm64/    # ARM64 code generation
-    └── macho/            # Mach-O binary writer
+├── pkg/
+│   ├── token/            # Token types and keywords
+│   ├── lexer/            # Tokenizer
+│   ├── ast/              # AST node definitions
+│   ├── parser/           # Recursive descent parser
+│   ├── types/            # Type system
+│   ├── symbols/          # Symbol table
+│   ├── sema/             # Semantic analysis
+│   ├── ir/               # Intermediate representation
+│   ├── codegen/arm64/    # ARM64 code generation
+│   └── macho/            # Mach-O binary writer
+└── bootstrap/            # Self-hosting compiler in Ease
+    └── compiler.ease     # Bootstrap compiler (3,543 lines)
 ```
 
 ## CLI Usage
@@ -154,626 +156,288 @@ ease version                 # Print version
 
 ## Implementation Status
 
-### Completed
-- [x] Grammar specification (grammar.ebnf)
-- [x] Lexer with full token support
-- [x] Parser (functions, structs, enums, traits, loops, etc.)
-- [x] Semantic analysis (type checking, name resolution)
-- [x] IR generation (3-address code)
-- [x] ARM64 code generation (Apple Silicon)
-- [x] Mach-O binary output
-- [x] If/else statements and expressions
-- [x] For loops (condition, infinite, range)
-- [x] Arrays with Go-style syntax: `[]int{1, 2, 3}`
-- [x] `len()` builtin for arrays
-- [x] Strings (basic support)
-- [x] Test runner (discovery, filtering, execution)
-- [x] String builtins: `str_concat`, `str_substring`, `str_index_of`, `str_contains`, `str_starts_with`, `str_ends_with`, `str_char_at`, `str_trim`, `str_replace`, `str_split`
-- [x] Short-circuit logical operators (`&&`, `||`)
-- [x] Struct returns from functions (proper sret calling convention)
-- [x] File I/O (syscalls: `syscall.open`, `syscall.read`, `syscall.write`, `syscall.close`)
-  - Low-level syscalls for direct file operations
-  - Proper ARM64 syscall implementation with error handling
-  - See `examples/file_io.ease` for usage examples
-- [x] Global variables (simple and complex types)
-  - Parser: `let x = 42`, `let mut y = 100`, `let mut arr = []int{1,2,3}`
-  - Semantic analysis: type checking, mutability, symbol registration
-  - IR: OpLoad/OpStore for mutable globals, runtime initialization for arrays
-  - Codegen: __DATA segment with ADRP+ADD addressing, heap allocation for array data
-  - Mutable globals: return address directly (not copy) to allow in-place modifications
-  - Working: int, bool, string, arrays with push/read/write operations
-  - Limitation: struct literals as globals not yet implemented
-- [x] Bootstrap compiler components (in Ease)
-  - Lexer, parser, sema, IR, codegen all working independently
-  - Integrated compiler demo chains all phases successfully
-  - See `bootstrap/README.md` for details ✅
-- [x] Module/Import system
-  - Local imports: `import ("./math", "./geometry" as geo)`
-  - Stdlib imports: `import ("strings", "io")` - bare names resolve to `stdlib/`
-  - Visibility rules: Uppercase = exported, lowercase = private
-  - Qualified function calls: `math.Add(5, 3)`, `geo.Area(5, 8)`
-  - Automatic parsing and analysis of imported modules
-  - Cross-module symbol resolution and type checking
-  - Imported functions compiled into binary
-  - TODO: external imports, unused import detection
-- [x] Standard library foundation
-  - `strings` module: Split, Join, Contains, StartsWith, EndsWith, IndexOf, Substring, CharAt, Trim, Replace, Concat
-  - `strconv` module: Itoa, Atoi, ParseInt (with base 2-36), FormatInt (with base 2-36)
-  - `io` module: ReadFile, WriteFile
-  - `syscall` module: open, read, write, close (low-level file operations)
-  - `os` module: ReadFile, WriteFile, Argc, Argv (high-level OS operations)
-  - Architecture: Low-level builtins (`str_*`, `os.*`) as implementation primitives
-  - User-facing: Stdlib modules provide clean API (e.g., `strings.Split` instead of `str_split`)
-  - All string/file operations now go through stdlib modules
-- [x] **Comprehensive Examples** (Feb 7, 2026)
-  - `examples/calculator.ease` - Arithmetic, recursion (factorial, fibonacci)
-  - `examples/string_demo.ease` - String operations, stdlib usage
-  - `examples/data_structures.ease` - Structs, arrays, algorithms
-  - `examples/file_io.ease` - File I/O operations
-  - `examples/README.md` - Documentation and feature matrix
-  - All examples tested and working ✅
-- [x] **Integration Test Suite** (Feb 7, 2026)
-  - 6 automated tests in `tests/` directory
-  - Test runner: `./tests/run_tests.sh`
-  - Coverage: arithmetic, functions, arrays, strings, structs, loops
-  - All tests passing (6/6) ✅
+### Go Compiler (Production Compiler) - ✅ Complete
 
-### Bootstrap Compiler (Self-Hosting)
+The Go implementation is the production compiler with all core features working:
+- ✅ Full lexer, parser, semantic analysis, IR, ARM64 codegen
+- ✅ Control flow (if/else, for loops), arrays, strings, structs
+- ✅ Module/import system (local and stdlib imports)
+- ✅ Standard library (strings, strconv, io, os, syscall modules)
+- ✅ Global variables (mutable and immutable)
+- ✅ File I/O and command-line arguments
+- ✅ Integration test suite (6/6 passing)
+- ✅ Example programs demonstrating features
 
-Progress on implementing the Ease compiler in Ease itself:
+See `tests/README.md` for test coverage and `examples/README.md` for example programs.
+
+### Bootstrap Compiler (Self-Hosting) - 🚧 In Progress
+
+**Goal**: Ease compiler that can compile itself (written in Ease, compiles Ease)
+
+**Current Status**: ~70% complete
+
+The Go compiler successfully compiles `bootstrap/compiler.ease` (3,543 lines) into a working 151KB ARM64 binary. The bootstrap compiler can:
+- ✅ Read source files from disk (os.ReadFile, os.Argc, os.Argv)
+- ✅ Lex files (10,646+ tokens including comments)
+- ✅ Parse functions, structs, imports
+- ✅ Generate IR for expressions and statements
+- ✅ Generate ARM64 machine code
+- ✅ Output Mach-O binary structure
 
 **Completed Components:**
-- [x] **Lexer** - Tokenization with full token support (bootstrap/lexer.ease)
-  - ✅ All tests passing
-- [x] **Parser** - All language constructs (bootstrap/parser.ease)
-  - ✅ All 5 tests passing
-- [x] **Semantic Analysis** - Type checking and name resolution (bootstrap/sema.ease)
-  - ✅ All 8 tests passing! (Fully complete as of Feb 6, 2026)
-  - Fixed by correcting OpMemCopy usage for struct assignments and array fields (see Recent Fixes #4)
-  - Ready for integration into full self-hosting compiler
-- [x] **IR Generation** - 3-address code with simplified instruction format (bootstrap/ir.ease)
-  - IRInstr struct with op, dest, arg1, arg2 fields
-  - Operations: ADD, SUB, MUL, DIV, EQ, NE, LT, GT, LOADCONST, CALL, RETURN
-  - ✅ Tests passing
-- [x] **Code Generation** - ARM64 instruction encoding (bootstrap/codegen.ease)
-  - Instruction encoders: ADD, SUB, MUL, RET
-  - Register constants and hex display utilities
-  - ✅ All encodings verified correct
-- [x] **Integration** - Full compilation pipeline (bootstrap/compiler.ease)
-  - ✅ All phases connected: Lexer → Parser → IR → Codegen
-  - ✅ Successfully compiles expressions like `1 + 2` to ARM64 machine code
-  - ✅ Example: generates `0x8b010002` (ADD x2, x0, x1) from `1 + 2`
-  - **Recent expansion (Feb 6, 2026):**
-    - ✅ Added all missing tokens (comparisons, logical ops, keywords, delimiters)
-    - ✅ Expanded AST structure to support multiple node types (expressions, statements, declarations)
-    - ✅ Implemented expression parser with ParseResult for position tracking
-    - ✅ Handles: arithmetic (+,-,*,/), comparisons (<,>,<=,>=,==,!=), logical (&&,||), booleans
-    - ✅ Implemented statement parser:
-      - Variable declarations: `let x = 42`, `let mut y = 10`
-      - Return statements: `return 42`
-      - Assignment statements: `x = 100`
-      - Expression statements
-    - ✅ Implemented declaration parser:
-      - Function declarations: `fn name(params) -> type { body }`
-      - Parameter lists with types: `x: int, y: int`
-      - Block statements: `{ stmt; stmt; ... }`
-      - Struct declarations: `struct Name { fields }`
-      - Field declarations: `field: type`
-    - ✅ Updated all parsers to return ParseResult for proper position tracking
-    - ✅ Verified: `fn main() -> int { return 42 }` ✅ and `fn add(x: int, y: int) -> int { return x }` ✅
-    - ✅ Expanded IR instruction set:
-      - Arithmetic: ADD, SUB, MUL, DIV
-      - Comparisons: CMP_LT, CMP_GT, CMP_LE, CMP_GE, CMP_EQ, CMP_NE
-      - Logical: AND, OR, NOT
-      - Memory: ALLOCA, STORE, LOAD
-      - Control: RET, CALL, LABEL, JUMP, BRANCH
-    - ✅ Implemented IR generation for:
-      - Expressions (literals, binary ops, comparisons, logical ops)
-      - Statements (return, blocks)
-      - Functions (body generation)
-    - ✅ Expanded ARM64 code generation:
-      - MOV immediate (MOVZ instruction)
-      - RET instruction
-      - Proper register allocation (vregs → physical registers)
-    - ✅ **Full compilation pipeline working!**
-      - Test 1: `fn main() -> int { return 42 }`
-        - Output: `MOV X0, #42; RET`
-      - Test 2: `fn main() -> int { return 1 + 2 * 3 }` ✅
-        - Correctly handles operator precedence
-        - Result: 7 (correct! 1 + (2 * 3) = 7)
-      - Test 3: `fn main() -> int { return (1 + 2) * 3 }` ✅
-        - Parentheses override precedence
-        - IR: loadconst 1, loadconst 2, add → v2, loadconst 3, mul v2 v3 → v4, ret v4
-        - Result: 9 (correct! (1 + 2) * 3 = 9)
-    - ✅ **Test Suite: 10/10 PASS (100%)**
-      - All arithmetic expressions working correctly
-      - Operator precedence: ✅
-      - Parentheses support: ✅
-      - Chained operations: ✅
-    - ✅ **Variable Support (Feb 6, 2026):**
-      - Symbol table implementation using separate arrays (names and vregs)
-      - Variable declarations: `let x = 42`, `let y = 10 + 20`
-      - Variable usage in expressions: `return x + y`, `return x * y + 2`
-      - Multiple statements in blocks: `let x = 5; let y = 3; let z = x * y + 2; return z`
-      - Proper scope tracking and name resolution
-      - Fixed struct-by-value semantics issue by passing arrays directly instead of wrapping in struct
-      - All variable tests passing: simple variables, multiple variables, complex expressions
-    - ✅ **Control Flow - If/Else (Feb 6, 2026):**
-      - Parser: `if <condition> { <then> } else { <else> }` syntax support
-      - IR Generation: LABEL, JUMP, BRANCH instructions for control flow
-      - ARM64 Codegen: CBZ (compare and branch if zero), B (unconditional branch)
-      - Two-pass code generation: label resolution, then code emission with correct offsets
-      - Test cases: conditions with literals, expressions, both branches taken
-      - All if/else tests passing: `if 1 { return 10 } else { return 20 }` ✅
-    - ✅ **Control Flow - For Loops (Feb 6, 2026):**
-      - Parser: `for { }` (infinite) and `for condition { }` (conditional) syntax support
-      - IR Generation: Loop start label, condition check, body, back jump to start
-      - Label scheme: L3000 for loop start, L4000 for loop end
-      - Control flow: start → condition check → branch to end if false → body → jump to start
-      - Test cases: infinite loops, true/false conditions, expression conditions
-      - All for loop tests passing: `for 1 { return 42 }` ✅, `for { return 42 }` ✅
-    - ✅ **Mach-O Binary Structure (Feb 6, 2026):**
-      - Binary writing helpers: write_u32_le, write_u64_le, write_zeros using poke()
-      - Mach-O header generation (32 bytes): magic, cpu type, file type, load commands
-      - __PAGEZERO segment (72 bytes): 4GB zero-mapped memory for null pointer protection
-      - __TEXT segment (152 bytes): executable code segment with VM protection flags
-      - LC_MAIN command (24 bytes): entry point specification
-      - Complete 5-phase pipeline demonstrated: Lex → Parse → IR → Codegen → Binary Structure
-      - Calculates proper alignment, file sizes, and entry points
-      - Note: Actual file writing blocked by type system (syscall_write needs string buffer)
-    - ✅ **Function Calls - Working Implementation (Feb 7, 2026):**
-      - Parser: Function call expressions `function_name(arg1, arg2, ...)`
-      - IR Generation: OP_CALL instruction with function name and argument vreg
-      - ARM64 Codegen: BL (Branch with Link) instruction for function calls
-      - Multiple function parsing: Parse all functions, track in arrays
-      - Function labels: Each function gets a label (L5000, L5001, ...)
-      - Function call resolution: Look up function position by name, calculate offset
-      - Parameter handling: Add function parameters to symbol table (v0, v1, ...)
-      - Multiple statements in blocks: Iterate through statement nodes
-      - Test case: `fn add(x: int) -> int { return x + 10 } fn main() -> int { let result = add(5) return result }`
-        - Generates 6 ARM64 instructions for both functions
-        - BL instruction correctly calls add with offset -4: `0x97fffffc`
-      - ✅ Basic function calls working end-to-end!
-      - ⏳ TODO: Multi-argument calls, stack frames, register save/restore, return value handling
-    - ✅ **Array Indexing and Field Access - Working (Feb 7, 2026):**
-      - Parser: Array indexing `array[index]` with LBRACKET/RBRACKET
-      - Parser: Field access `base.field` with DOT operator
-      - Parser: Chained postfix operators `nodes[0].tag` with loop-based parsing
-      - EXPR_INDEX AST nodes: Store array and index expressions
-      - EXPR_FIELD AST nodes: Store base and field name
-      - IR Generation: Nested OP_LOAD for array indexing and field access
-      - Test: `nodes[0].tag` generates correct IR chain:
-        * v1 = loadconst 0 (index)
-        * v2 = load [array + index] (array indexing)
-        * v3 = load [v2 + offset] (field access)
-      - **This is the exact pattern the bootstrap compiler uses!**
-      - ⏳ TODO: ARM64 LDR instruction for OP_LOAD, actual memory access
-    - ✅ **ARM64 LDR Instruction (Feb 7, 2026):**
-      - Added encode_ldr_offset for LDR Xt, [Xn, #offset]
-      - Code generation for OP_LOAD instructions
-      - Array indexing and field access now generate working ARM64 LDR
-      - Test: `nodes[0].tag` generates complete instruction sequence
-      - Status: Memory loads working in generated code
+- [x] Lexer with comment handling (// comments)
+- [x] Parser for expressions, statements, declarations
+- [x] Symbol table with variable tracking
+- [x] IR generation (3-address code)
+- [x] ARM64 code generation (MOV, ADD, SUB, MUL, LDR, BL, B, CBZ, RET)
+- [x] Control flow (for loops work, if statements have parse issue - see below)
+- [x] Function calls with single argument
+- [x] Array indexing and field access
+- [x] Top-level struct declarations
+- [x] File I/O (reading source from disk)
+- [x] Mach-O binary generation framework
 
-## Bootstrap Compiler - Current Capabilities (Feb 7, 2026)
+**Progress Update: If Statements Now Working! ✅**
 
-The bootstrap compiler now has substantial language support:
+The critical if statement parsing bug has been fixed! The bootstrap compiler now successfully parses if statements. See "Recent Fixes" section for details.
 
-**Completed Features:**
-- ✅ Lexer: Full tokenization including DOT, brackets, keywords
-- ✅ Parser: Expressions with precedence, statements, declarations
-- ✅ Chained postfix operators: function_call()[index].field
-- ✅ Multiple functions with forward references
-- ✅ **Multi-argument function calls (Feb 7, 2026)** - Production-ready implementation
-  - Parser: Argument list collection with explicit tracking
-  - IR Generation: Proper argument evaluation and parameter register allocation
-  - Nested calls: `add(mul(2, 3), mul(4, 5))` fully working
-  - Calling convention: X0-X7 for first 8 arguments (ARM64 standard)
-- ✅ **Struct Literals (Feb 7, 2026)** - Production-ready implementation
-  - Parser: Field value tracking with explicit indices
-  - Memory allocation: OP_ALLOCA for struct instances
-  - Field storage: OP_INDEXADDR for pointer arithmetic, OP_STORE for values
-  - Nested structs: `Rectangle { top_left: Point { x: 0, y: 0 }, ... }` working
-  - Struct size/offset: Hardcoded for known structs (AstNode, IRInstr, ParseResult, Point, Rectangle)
-  - ARM64 codegen: STR for stores, ADD for pointer arithmetic
-- ✅ Array indexing: arr[index]
-- ✅ Field access: struct.field
-- ✅ Control flow: if/else, for loops (infinite and conditional)
-- ✅ Variables with symbol table
-- ✅ **Array Operations (Feb 7, 2026)** - Runtime len and push
-  - len(array): Loads length from fat pointer at offset 8
-  - push(array, elem): Simplified push without growth (loads len, calculates address, stores element, increments len)
-  - 7 ARM64 instructions for push, 1 for len
-  - Used 174 times in bootstrap compiler (98 push, 76 len)
-- ✅ **String Operations IR (Feb 7, 2026)** - Partial support
-  - str_char_at and str_substring IR opcodes defined
-  - Builtin detection working, IR generated
-  - Full runtime not yet implemented (needs linking or expansion)
-- ✅ Expression statements (STMT_EXPR) - Enables push(arr, val) without assignment
-- ✅ IR generation: 3-address code for all constructs
-- ✅ ARM64 codegen: MOV, ADD, SUB, MUL, LDR, STR, LSL, BL, B, CBZ, RET
-- ✅ Function resolution: name → address mapping, correct BL offsets
-- ✅ Label resolution: two-pass for branches and calls
+**Current Parsing Status**:
+- Initial: 45 functions (stopped at if statements)
+- After if-statement fix: 50 functions
+- After break statement support: 47 functions
+- After string literal support: 50 functions
+- After converting range-based for loops: 79 functions
+- After global variables + void functions + array types: 83 functions
+- Total functions in bootstrap/compiler.ease: 182
+- **Current progress: 46% of bootstrap compiler parsed (83/182)**
 
-**Current Limitations:**
-- ⏳ Semantic analysis: Implemented separately (bootstrap/sema.ease) but not integrated
-- ⏳ Type checking: No type tracking in compiler (but sema.ease has it)
-- ⏳ Memory model: No heap allocation in generated code (OP_ALLOCA placeholder)
-- ⏳ Array growth: Simplified push without capacity checking or reallocation
-- ⏳ String runtime: IR generated but execution requires full runtime implementation
-- ⏳ Complete calling convention: No stack frames, register save/restore
-- ⏳ Dynamic struct definitions: Field offsets hardcoded for known structs only
+**Remaining Parsing Challenges**:
+The bootstrap compiler currently parses 79 out of 182 functions (43%). The next blocker:
+- **Top-level global variables**: Parser stops at `let mut g_call_args = []int{}` (line 346)
+- Main parsing loop only handles: `import`, `struct`, `fn` declarations
+- Need to add `TK_LET` handling for module-level global variable declarations
+- Attempted skip-based workaround but complex expressions in initializers make this difficult
+- Remaining blockers after globals: More range-based for loops, additional language constructs
 
-**Gap to Self-Hosting:**
-The bootstrap compiler can compile simple programs but not yet itself. Key missing pieces:
-1. Semantic analysis integration (type checking during compilation)
-2. ~~Struct literal support with memory allocation~~ ✅ DONE (Feb 7, 2026)
-3. ~~Multi-argument function calls~~ ✅ DONE (Feb 7, 2026)
-4. ~~Complete memory model for arrays and structs (runtime array operations)~~ ✅ DONE (Feb 7, 2026 - simplified)
-5. ~~More IR operations (store, alloca, proper array access)~~ ✅ DONE (Feb 7, 2026)
-6. ~~String operations (str_char_at, str_substring)~~ ✅ DONE (Feb 7, 2026 - str_char_at fully working, str_substring structure complete)
-7. Full memory allocation (mmap integration for str_substring, dynamic arrays)
-8. Import resolution for multi-file compilation
+### Remaining Work for Self-Hosting
 
-**Estimated Completion:** 90-92% of features needed for self-hosting
-  - See `bootstrap/README.md` for details
+**High Priority (Blockers for Self-Compilation):**
 
-**🎉 MAJOR MILESTONE (Feb 7, 2026): Bootstrap compiler can compile its own source code! 🎉**
-- ✅ File I/O: Reads 3,482 lines from disk using os.ReadFile
-- ✅ Comment handling: Properly skips // comments in lexer
-- ✅ Top-level struct parsing: Full support for struct declarations at module level
-- ✅ Self-compilation: Successfully compiles functions + parses struct declarations
-- ✅ Full pipeline: Lexer → Parser → IR (code generated) → ARM64 (95 instructions, 380 bytes)
-- ✅ Verified: Test with 51 functions + 1 struct parsed successfully
+1. **Fix If Statement Parsing Bug** ⚠️ CRITICAL
+   - Root cause unknown, under active investigation
+   - Prevents bootstrap compiler from parsing most real-world code
+   - Go compiler works fine; issue is in bootstrap compiler runtime behavior
 
-**Recent Enhancements (Feb 7, 2026)**:
-- [x] **Struct Literals - Production Ready** 🎯 (Latest - Feb 7 afternoon)
-  - **Problem**: Bootstrap compiler uses structs everywhere (AstNode, IRInstr, ParseResult) but had no struct literal support
-  - **Solution**: Complete implementation following Go compiler pattern
-    - **Parser**: Field value tracking with `store_struct_fields()`/`get_struct_fields()`
-    - **IR Opcodes**: Added OP_ALLOCA, OP_INDEXADDR, OP_STORE for memory operations
-    - **IR Generation**:
-      * Allocate memory for struct (OP_ALLOCA with size)
-      * For each field: evaluate value, calculate address (base + offset), store value
-      * Return struct pointer
-    - **Struct metadata**: Hardcoded size/offset functions for known structs
-    - **ARM64 Codegen**:
-      * OP_ALLOCA → MOV (placeholder, size in register)
-      * OP_INDEXADDR → MOV/ADD for pointer arithmetic
-      * OP_STORE → STR instruction for memory writes
-  - **Result**: Struct literals fully working
-    - Test: `Point { x: 10, y: 20 }` → exit code 30 ✓
-    - Nested: `Rectangle { top_left: Point { x: 0, y: 0 }, width: 10, height: 5 }` ✓
-    - Complex: 3 structs with nested initialization → exit code 115 ✓
-    - Generated IR matches Go compiler pattern exactly
-  - **Bootstrap compiler IR example**:
-    ```
-    v1 = alloca 16 // ParseResult
-    v2 = loadconst 42
-    v3 = indexaddr v1 + 0 // node_idx
-    store v2 to [v3]
-    v5 = loadconst 100
-    v6 = indexaddr v1 + 8 // new_pos
-    store v5 to [v6]
-    ```
-  - **Files**: bootstrap/compiler.ease lines 349-381, 1585-1632, 1824-1836, 2066-2130, 2522-2549
-- [x] **Multi-Argument Function Calls - Production Ready** 🎯 (Feb 7 morning)
-  - **Problem**: Nested function calls like `add(mul(2, 3), mul(4, 5))` were broken
-    - Parser stored arguments in flat array, causing sub-expressions to be confused with arguments
-    - IR generator would evaluate INT(2), INT(3) instead of CALL(mul), CALL(mul)
-  - **Solution**: Explicit argument tracking system
-    - Global array `g_call_args` maps call node index → argument indices
-    - Parser collects argument node indices and stores via `store_call_args()`
-    - IR generator retrieves exact arguments via `get_call_args()`
-  - **Result**: Nested multi-arg calls fully working
-    - Test: `add(mul(2, 3), mul(4, 5))` correctly generates:
-      * `mul(2, 3)` → v11 = 6
-      * `mul(4, 5)` → v16 = 20
-      * `add(v11, v16)` → v19 = 26
-    - Proper ARM64 calling convention (X0-X7 for arguments)
-    - Verified with Go compiler: exit code 26 ✓
-  - **Files**: bootstrap/compiler.ease lines 314-356, 1486-1546, 1831-1845
-- [x] **String Operations - Production Ready** 🎯 (Feb 7 afternoon)
-  - **Problem**: Lexer uses str_char_at 47 times, str_substring 15 times
-    - IR structure only supported 2 arguments (arg1, arg2)
-    - str_substring needs 3 arguments (string, start, end)
-    - No ARM64 codegen for string operations
-  - **Solution**: Extended IR structure + byte-level ARM64 operations
-    - **IR Enhancement**: Added arg3 field to IRInstr struct
-    - Updated all 50+ IRInstr creations throughout compiler
-    - **New ARM64 Instructions**:
-      * `encode_ldrb_offset` - Load byte (8-bit) from memory
-      * `encode_strb_offset` - Store byte (8-bit) to memory
-    - **str_char_at Codegen** (3 instructions):
-      * ADD X16, Xstr, Xindex (compute address)
-      * LDRB W17, [X16, #0] (load byte)
-      * MOV Xdest, X17 (move result)
-    - **str_substring Codegen** (3 instructions, simplified):
-      * SUB X16, Xend, Xstart (calculate length)
-      * ADD X17, Xstr, Xstart (calculate source address)
-      * MOV Xdest, X17 (return pointer)
-      * Full implementation ready for mmap integration
-  - **Result**: String operations work end-to-end
-    - Test: `str_char_at("hello", 0)` → returns 104 ('h') ✓
-    - Test: `str_char_at("hello", 4)` → returns 111 ('o') ✓
-    - Combined with structs: `CharPair { first: str_char_at("hi", 0), second: str_char_at("hi", 1) }` ✓
-    - IR now properly stores all 3 arguments for substring operations
-  - **Files**: bootstrap/compiler.ease lines 1769-1775 (IRInstr struct), 2570-2593 (encoding), 2764-2817 (codegen)
-- [x] **File I/O and Self-Compilation** 🎯 (Feb 7 evening - MAJOR MILESTONE!)
-  - **Problem**: Bootstrap compiler had hardcoded test program, couldn't read actual source files
-  - **Solution**: Implemented file reading and comment handling
-    - **File I/O**: Added os.Argc() and os.Argv() for command-line arguments
-    - **File Reading**: Use os.ReadFile() builtin to load source from disk
-    - **Comment Handling**: Enhanced lex_skip() to recognize and skip // comments
-      * Check for '/' followed by '/' at start of potential comment
-      * Skip until end of line (newline or CR)
-      * Continue skipping whitespace and comments in loop
-  - **Self-Compilation Result**: Bootstrap compiler successfully compiles its own source!
-    - Reads bootstrap/compiler.ease (3,482 lines, 182 functions total)
-    - Lexes all tokens with proper comment handling
-    - Parses 45 functions + 1 import (first 25% of file)
-    - Generates complete IR for parsed functions
-    - Produces 95 ARM64 instructions (380 bytes of machine code)
-    - Creates valid Mach-O binary structure
-    - **Limitation**: Stops at line 294 (first struct declaration) - needs top-level struct parsing
-  - **Test Results**:
-    - ✅ `./bootstrap_compiler tmp/simple_test.ease` - works perfectly
-    - ✅ `./bootstrap_compiler bootstrap/compiler.ease` - compiles first 45 functions successfully
-    - ✅ Comment handling verified: `// comments` properly skipped in real code
-  - **Files**: bootstrap/compiler.ease lines 4-7 (import), 90-122 (lex_skip with comments), 3104-3121 (main with file I/O)
-- [x] **Top-Level Struct Declaration Parsing** 🎯 (Feb 7 evening continuation)
-  - **Problem**: Parser only handled imports and functions, stopping when encountering struct declarations
-  - **Solution**: Added struct parsing branch in main loop
-    - Modified parsing loop to explicitly check TK_IMPORT(), TK_STRUCT(), TK_FN()
-    - Call parse_struct_decl() for struct declarations
-    - Track struct_count and display in output
-    - Changed from catch-all else (assumed function) to explicit TK_FN() check
-  - **Test Results**:
-    - ✅ Simple test: 1 struct + 2 functions parsed correctly
-    - ✅ Inline comments: Struct fields with `// comments` handled properly
-    - ✅ Struct after functions: Parsing continues correctly after function declarations
-    - ✅ Large file: 51 functions + 1 struct parsed successfully
-    - ✅ Verified: All struct parsing logic working correctly
-  - **Impact**: Parser can now handle complete module structure (imports, structs, functions)
-  - **Files**: bootstrap/compiler.ease lines 3213-3261 (main parsing loop with struct support)
-- [x] **Import Statement Parsing** - Full support for `import ("module")` syntax
-  - Added TK_IMPORT token and keyword recognition
-  - Implemented parse_import_decl function
-  - Modified main parsing loop to handle imports
-  - Import count reporting in output
-- [x] **String Literal Support** 🌟 - Major capability unlock!
-  - Lexer now tokenizes string literals: `"text"`
-  - Escape sequence handling (\\", \\\\, etc.)
-  - String value extraction (without quotes)
-  - Enables imports and string constants
-  - **Impact**: Unlocked entire class of programs with strings
-- [x] **Multi-Function Compilation** - Multiple functions with calls working
-  - Compiles: `fn add(x: int, y: int) -> int { return x + y } fn main() -> int { return add(5, 10) }`
-  - Generates correct function labels (L5000, L5001)
-  - Parameter passing via MOV instructions
-  - BL (branch-link) for function calls
-  - Full compilation pipeline: 32 bytes ARM64 code generated
+2. **Multi-Argument Function Calls**
+   - Parser and IR currently support only single argument
+   - Need to extend to handle multiple arguments
+   - Requires: argument list parsing, stack frame setup, register allocation
 
-**Completed (Earlier):**
-- [x] **Mach-O Generation** - Comprehensive binary output writer (bootstrap/macho_writer.ease)
-  - ✅ Complete Mach-O header generation (32 bytes) with all fields
-  - ✅ **14 load commands** fully implemented:
-    - `__PAGEZERO` segment (72 bytes) - Memory protection
-    - `__TEXT` segment (152 bytes) with `__text` section - Executable code
-    - `__LINKEDIT` segment (72 bytes) - Dynamic linking data
-    - `LC_MAIN` (24 bytes) - Entry point
-    - `LC_SYMTAB` (24 bytes) - Symbol table pointer
-    - `LC_DYSYMTAB` (80 bytes) - Dynamic symbol table
-    - `LC_LOAD_DYLINKER` (32 bytes) - `/usr/lib/dyld` path
-    - `LC_UUID` (24 bytes) - Unique identifier
-    - `LC_BUILD_VERSION` (24 bytes) - macOS 11.0 minimum version
-    - `LC_LOAD_DYLIB` (56 bytes) - `libSystem.B.dylib` linkage
-    - `LC_SOURCE_VERSION` (16 bytes) - Source version info
-    - `LC_FUNCTION_STARTS` (16 bytes) - Function boundary data
-    - `LC_DATA_IN_CODE` (16 bytes) - Data-in-code markers
-    - `LC_CODE_SIGNATURE` (16 bytes) - Code signature pointer
-  - ✅ __LINKEDIT data: symbol table, string table, function starts, code signature blob
-  - ✅ Ad-hoc signature structure: SuperBlob with CodeDirectory and Requirements
-  - ✅ Binary writing utilities: write_u32_le, write_u32_be, write_u64_le, write_zeros
-  - ✅ Correct page alignment (16KB) and segment layout
-  - ✅ Successfully generates valid Mach-O structure verified by `otool -l`
-  - ✅ ARM64 instructions correctly embedded and disassemble properly
-  - ✅ **Code signing fully resolved** (Feb 6, 2026)
-    - Integrated system `codesign` tool in cmd/ease/main.go (3 locations: build, run, test)
-    - Command: `codesign -s - -f <binary>` for ad-hoc signing
-    - Binaries now execute successfully with proper ad-hoc signatures
-    - Signature structure in bootstrap still generates dummy hashes (structural placeholder)
-    - Production binaries signed by Go compiler via exec.Command
-  - **Status**: Mach-O generation complete; binaries execute successfully!
+3. **Struct Literals with Memory Allocation**
+   - Parser can parse struct declarations
+   - Need: struct literal syntax parsing, heap allocation for struct data
+   - Required for AST node creation and data structures
 
-**Milestone Achieved (Feb 7, 2026):**
-- [x] **Go Implementation Compiles Bootstrap Compiler** ✅
-  - The Go compiler successfully compiles `bootstrap/compiler.ease` (2500+ lines, 93KB source)
-  - Produces working 151KB ARM64 binary
-  - Self-compiled binary runs and can compile programs
-  - Proves: All core language features work correctly on complex real-world code
-  - **Status**: Go-to-Ease self-compilation working!
+4. **Complete Memory Model**
+   - Heap allocation for arrays and structs in generated code
+   - Stack frame management for local variables
+   - Proper calling convention with register save/restore
 
-**Not Yet Achieved:**
-- [ ] Bootstrap compiler compiling itself (Ease-to-Ease self-hosting)
-  - Blocked on: imports, string builtins, memory management, globals
-  - Bootstrap compiler can compile simple programs but not its own source yet
-  - Next step: Incrementally add missing features
+5. **Additional IR Operations**
+   - STORE (memory writes)
+   - ALLOCA (stack allocation)
+   - More complete array access operations
+   - String operations
 
-### Recent Fixes
+6. **Semantic Analysis Integration**
+   - bootstrap/sema.ease exists and works (8/8 tests passing)
+   - Need to integrate into main compilation pipeline
+   - Type checking during compilation, not just IR generation
+
+**Medium Priority:**
+
+7. **Standard Library Integration**
+   - Bootstrap compiler needs to import and use stdlib modules
+   - strings, strconv, io modules for string manipulation
+   - Module resolution and symbol lookup
+
+8. **More ARM64 Instructions**
+   - Division (SDIV, UDIV)
+   - Store instructions (STR, STRB)
+   - More addressing modes
+   - Floating point operations
+
+9. **Error Reporting**
+   - Line/column information in parse errors
+   - Better error messages for compilation failures
+   - Stack traces for runtime errors
+
+10. **Code Signing**
+    - Generate valid LC_CODE_SIGNATURE load command
+    - Compute proper code directory hashes
+    - Enable binaries to execute without external codesign tool
+
+**Low Priority (Nice to Have):**
+
+11. **Optimization**
+    - Dead code elimination
+    - Constant folding
+    - Register allocation improvements
+    - Peephole optimization
+
+12. **Debugging Support**
+    - DWARF debug information
+    - Line number tables
+    - Symbol information for debuggers
+
+13. **More Language Features**
+    - Range-based for loops (`for x in collection`)
+    - Enums with pattern matching
+    - Traits and implementations
+    - Generics
+
+**Estimated Progress**: 70% complete
+- Core infrastructure: ✅ Done
+- Basic code generation: ✅ Done
+- Critical bug fix: ⚠️ In progress
+- Multi-arg functions: 📋 TODO
+- Memory model: 📋 TODO
+- Full self-hosting: 📋 TODO (estimated 2-3 weeks of work remaining)
+
+## Recent Fixes
+
+**Bootstrap Compiler File Size Limit - FIXED (Feb 8, 2026):**
+- **Problem**: Bootstrap compiler stopped parsing at position 65,535 bytes
+  - Could only parse 146/206 functions in compiler.ease (71%)
+  - Appeared to be 16-bit integer overflow in position tracking
+- **Root Causes Identified**:
+  1. `os.ReadFile` had hardcoded 64KB buffer limit (65,536 bytes) - files were truncated!
+  2. Bootstrap compiler lexer didn't support hexadecimal literals (`0x...`)
+- **Solutions**:
+  - Increased ReadFile buffer from 64KB to 1MB with read loop (pkg/codegen/arm64/emit.go)
+  - Added hex literal support to bootstrap lexer:
+    - `is_hex_digit()` helper function
+    - Updated `lex_end()` to detect `0x` prefix and consume hex digits
+    - Updated `lex_int_value()` to parse hex with base-16 conversion
+- **Results**:
+  - ✅ Can now read files up to 1MB (was 64KB limit)
+  - ✅ Bootstrap compiler parses 166/206 functions (80%, was 71%)
+  - ✅ Successfully handles ARM64 instruction hex encodings
+  - ✅ File reading no longer truncates at 65,535 bytes
+- **Testing**: Created comprehensive tests for large files (148KB+) and hex parsing
+- **Status**: ✅ RESOLVED - Major progress toward self-hosting!
+
+**Continued Progress Session (Feb 7, 2026 - Part 2):**
+- **Global Variable Parsing**: Added `TK_LET` handling in main parsing loop using parse_let_stmt
+- **Optional Return Types**: Made return types optional for void functions
+- **Array Parameter Support**: Extended parse_param to handle `[]Type` syntax
+- **Array Return Types**: Extended parse_func_decl to handle `-> []Type` syntax
+- **Result**: Jumped from 79 to 83 functions (46% complete)
+
+**Major Progress Session (Feb 7, 2026 - Part 1):**
+- **Break Statement Support**: Added `STMT_BREAK` handling in parse_stmt
+- **String Literal Parsing**: Added `EXPR_STRING` support in parse_atom
+- **Range-Based For Loop Workaround**: Converted `for i in 0..X` to traditional for loops
+  - Issue: Bootstrap compiler's ARM64 code has bug with `..` operator recognition
+  - Solution: Manually converted range-based loops to `let mut i = 0; for i < limit`
+  - Converted: lex_int_value, store_call_args, get_call_args, store_struct_fields, get_struct_fields
+- **Result**: Jumped from 50 to 79 functions parsing (43% complete)
+
+**If Statement Parsing Bug - FIXED (Feb 7, 2026):**
+- **Problem**: Bootstrap compiler failed to parse if statements at runtime
+- **Root Cause**: parse_primary_expr tried to parse `condition { block }` as struct literal
+  - After parsing condition expression, parser checked for postfix operators
+  - Saw LBRACE and attempted to parse as `StructName { field: value }`
+  - Struct literal parsing failed (block contents aren't valid fields)
+  - Returned -1, causing entire function parse to fail
+- **Solution**:
+  - Disabled struct literal parsing as postfix operator (causes ambiguity)
+  - Struct literals must be parsed differently to avoid conflict with blocks
+- **Result**: If statements now parse correctly!
+  - Before: 0 functions parsed when if statements present
+  - After: All if statement tests passing
+  - Bootstrap compiler now parses 46/182 functions (was stuck at 45)
+- **Files**: bootstrap/compiler.ease line 1617 (added check to disable struct literal postfix)
+- **Status**: ✅ RESOLVED
 
 **Global Struct Slice Field Initialization (Feb 7, 2026):**
-- Fixed global structs with slice fields not being initialized properly
-  - Root cause: buildArrayFieldInit only handled `*types.Array`, but `[]int` is `*types.Slice`
-  - Symptom: `let mut g_s = S { x: 42, a: []int{1,2,3} }` would show len=0, crash on access
-  - The fat pointer (data, len, cap) was never being initialized for slice fields
-  - Solution: Extended buildArrayFieldInit to handle both `*types.Array` and `*types.Slice`
-  - File: pkg/ir/builder.go lines 3255-3276
-  - Result: All global struct slice fields now initialize correctly with proper len/cap
-  - Test: Created /tmp/test_array_field.ease demonstrating fix
-  - **Bonus**: This fix also resolved the "array operations on returned structs" issue
-    - Previously: `fn make() -> S { ... }; fn use(s: S) { push(s.arr, x) }` would crash
-    - Now works correctly for both simple and nested structs with arrays
-    - Verified with /tmp/test_struct_return_array.ease and /tmp/test_nested_struct_array.ease
+- Fixed global structs with slice fields not initializing properly
+- Root cause: buildArrayFieldInit only handled `*types.Array`, not `*types.Slice`
+- Solution: Extended to handle both array and slice types
+- File: pkg/ir/builder.go lines 3255-3276
+- Result: All global struct slice fields now initialize correctly
+- Bonus: Also fixed array operations on returned structs
 
-**Comprehensive Mach-O Writer (Feb 6, 2026):**
-- Implemented complete Mach-O binary generator in Ease (bootstrap/macho_writer.ease)
-- Generates structurally valid Mach-O 64-bit ARM64 executables with 13 load commands
-- **Phase 1**: Basic structure
-  - Header generation: magic (0xfeedfacf), cputype, cpusubtype, filetype, flags
-  - Initial load commands: __PAGEZERO, __TEXT, LC_MAIN
-  - Binary utilities: write_u32_le, write_u64_le for little-endian encoding
-  - Fixed instruction bug: 0xd2800210 (MOV X16, #16) → 0xd2800030 (MOV X16, #1)
-- **Phase 2**: Added all macOS-required load commands
-  - __LINKEDIT segment with symbol table, string table, function starts data
-  - LC_SYMTAB, LC_DYSYMTAB for symbol tables
-  - LC_LOAD_DYLINKER (/usr/lib/dyld) for dynamic linking
-  - LC_UUID for unique identification
-  - LC_BUILD_VERSION (macOS 11.0) for OS compatibility
-  - LC_LOAD_DYLIB (libSystem.B.dylib) for system library linkage
-  - LC_SOURCE_VERSION, LC_FUNCTION_STARTS, LC_DATA_IN_CODE
-  - Fixed LC_BUILD_VERSION size: 32 bytes → 24 bytes (when ntools=0)
-- **Verification**: `otool -l` confirms all 13 load commands present and valid
-- **Limitation**: macOS signing requires LC_CODE_SIGNATURE with embedded crypto signature
-  - `codesign` fails "strict validation" without signature blob
-  - Binary structure correct but cannot execute (SIGKILL exit 137)
-  - Solution for self-hosting: use system `ld` for final linking
-- Files: bootstrap/macho_writer.ease (500+ lines), bootstrap/binary.ease
+**Earlier Fixes (Condensed):**
+- Array push corruption (X15 register clobbering during mmap)
+- Struct assignment bug (OpMemCopy vs OpStore)
+- ARM64 stack corruption for large frames
+- String constant loading (ADRP+ADD)
+- Heap allocator state preservation (X25/X26)
+- Modulo operator (%) correctness
+- See git history for detailed fix information
 
-**Memory Operations for Binary Writing (Feb 6, 2026):**
-- Added low-level memory operations for Mach-O binary generation
-  - `poke(addr, value)` - write byte to memory address
-  - `peek(addr) -> int` - read byte from memory address
-  - `str_len(s) -> int` - get string length
-  - `mem_set(addr, value, count)` - set memory bytes (has loop issues, use with caution)
-- Implemented in IR (OpPoke, OpPeek, OpMemSet, OpStrLen)
-- ARM64 codegen with LDRB/STRB byte operations
-- Enables bootstrap compiler to write binary files byte-by-byte
-- Files: pkg/ir/ir.go, pkg/ir/builder.go, pkg/sema/analyzer.go, pkg/codegen/arm64/emit.go
-- Note: mem_set has intermittent loop issues; poke/peek/str_len work reliably
+## Known Issues
 
-**File I/O Implementation (Feb 6, 2026):**
-- Implemented complete file I/O syscall support for macOS ARM64
-  - `syscall.open(path, flags, mode)` - open file with proper flag/mode handling
-  - `syscall.read(fd, buf, count)` - read bytes from file descriptor
-  - `syscall.write(fd, buf, count)` - write bytes to file descriptor
-  - `syscall.close(fd)` - close file descriptor
-- Added semantic analysis for syscall package with type checking
-- Added IR builder support for syscall method expressions
-- Codegen already had full ARM64 syscall implementations
-- Buffer parameters accept both string and int (pointer) types
-- Example: `examples/file_io.ease` demonstrates usage
-- Files: pkg/sema/analyzer.go, pkg/ir/builder.go, examples/file_io.ease
+**Critical:**
+- None currently! If statement parsing bug resolved.
 
-**Array Push Corruption & Bootstrap Sema Fix (Feb 6, 2026):**
-- **CRITICAL FIX #1**: Fixed array push corrupting element values during growth
-  - Root cause: emitArrayPush backed up element in X15 (caller-saved register)
-  - mmap syscall during array growth would clobber X15, corrupting element
-  - ARM64 calling convention: X0-X18 are caller-saved, X19-X28 are callee-saved
-  - Solution: Save X20 (element) on stack before mmap, restore after
-  - File: pkg/codegen/arm64/emit.go lines 2697-2726
-- **CRITICAL FIX #2**: Fixed bootstrap sema corruption from convoluted workaround
-  - Root cause: types_equal_safe did push→load→call→push→load (double indirection)
-  - The workaround ITSELF was causing corruption in large functions
-  - Solution: Remove workaround, call types_equal directly
-  - Result: Bootstrap sema now 6/8 tests passing
-  - File: bootstrap/sema.ease - removed types_equal_safe function
-  - Remaining: Tests 7-8 fail due to struct assignment bug (see Known Issues)
-- **CRITICAL FIX #3**: Fixed X8/vreg stack collision in sret functions (Feb 6, 2026)
-  - Root cause: X8 (struct return pointer) saved at FP+32 when usesHeapAlloc=true, but vreg 8 also at FP+32
-  - Prologue used conditional heapRegsSize=16, but spill offset calculation used heapRegsSize=0
-  - Solution: Always save X8 at FP+16 to match spill offset calculation
-  - Simplified logic in emitPrologue and emitReturn
-  - File: pkg/codegen/arm64/emit.go lines 502-514, 2323-2328
-  - This fixed one source of corruption, but tests 7-8 still fail due to struct assignment bug
-- **CRITICAL FIX #4**: Fixed global struct assignment and array field storage (Feb 6, 2026)
-  - Root cause #1: Array/slice fields in structs used OpStore (8 bytes) instead of OpMemCopy (24 bytes)
-    - Arrays are 24-byte fat pointers [ptr, len, cap], not 8-byte values
-    - OpStore only copied first 8 bytes (pointer), leaving len/cap uninitialized
-    - Solution: Use OpMemCopy for array/slice fields like we do for struct fields
-  - Root cause #2: Global struct assignments used OpStore instead of OpMemCopy
-    - OpStore copies 8 bytes (pointer to struct), not entire struct data
-    - When reassigning `g_s = S { a: []int{} }`, only pointer was copied, not struct content
-    - Solution: Use OpMemCopy for global struct assignments, same as local variables
-  - File: pkg/ir/builder.go lines 995-1010 (global assignment), 2093-2111 (struct field storage)
-  - Result: Bootstrap sema now 8/8 tests passing! All array operations in structs work correctly
+**Minor:**
+- Bootstrap compiler parses only 46/182 functions (25%) - need to identify next parsing blocker
+- Struct literals disabled as postfix operators (causes ambiguity with blocks)
 
-**Heap Allocator (Jan 2026):**
-- Fixed heap state corruption by removing X25/X26 save/restore
-  - X25/X26 hold global heap state (heap_ptr, heap_end) across all functions
-  - Previously saved in prologue and restored in epilogue, causing corruption
-  - Solution: Treat X25/X26 as truly global, no save/restore needed
-  - Heap state now persists correctly across function calls
+## Future Work
 
-**ARM64 Code Generation:**
-- Fixed modulo operator (%) returning incorrect values
-  - SDIV was overwriting left operand when it was in X16
-  - Now uses X18 as temporary to preserve original value
-  - Correctly computes: result = left - (left / right) * right
-- Fixed ARM64 stack corruption for large stack frames (>4095 bytes)
-  - 12-bit immediate truncation in SUBi/ADDi caused incorrect stack sizes
-  - Added `addImm` helper using MOVimm + ADD/SUB for large values
+### Standard Library Expansion
+- [ ] os - process, environment, command execution (partial: Argc, Argv, ReadFile done)
+- [ ] path - file path manipulation
+- [ ] net - networking support
+- [ ] json - JSON parsing and serialization
+- [ ] http - HTTP client and server
 
-**Struct and Memory Handling:**
-- Fixed struct return buffer corruption from type size mismatch
-  - IR builder: arrays/slices = 24 bytes (ptr + len + cap)
-  - Codegen was using 8 bytes, causing sret buffer underallocation
-  - Fixed emit.go typeSize to return 24 bytes for Array/Slice types
-- Implemented proper sret (struct return) calling convention
-  - Caller sets X8 to result buffer, callee writes to [X8], saves X8 at FP+16
-- Fixed struct parameter passing to copy data to callee's stack frame
-- Fixed string size to 8 bytes (pointer to null-terminated data)
-  - Changed from 16-byte fat pointer to match runtime implementation
-  - All string operations use null-terminated C strings
+### Additional Backends
+- [ ] WebAssembly backend for browser execution
+- [ ] x86_64 backend for Intel Macs and Linux
+- [ ] LLVM backend for optimization and portability
 
-**String Constant Loading (Feb 2026):**
-- Implemented ADRP+ADD for string constants (ARM64 production standard)
-  - Replaces single ADR with ADRP (page address) + ADD (page offset)
-  - More reliable than ADR for position-independent code
-  - Standard approach used by LLVM and GCC
-- Fixed codeVMAddr mismatch between compiler and Mach-O writer
-  - main.go calculated codeFileOff=1024, but writer used codeFileOff=768
-  - Added CodeVMAddr() method to get actual address from writer
-  - All fixups now use consistent VM addresses
-- Fixed string size inconsistency causing array push crashes
-  - pkg/types/types.go still returned 16 bytes while emit.go/builder.go used 8 bytes
-  - Caused push to copy 16 bytes from 8-byte pointer, corrupting memory
-  - Changed Basic.Size() for String to return 8 bytes consistently
-  - All string array operations now work correctly
+### Language Features
+- [ ] **Variable declaration syntax change**: Switch from `let`/`let mut` to Go-style `:=` operator
+  - `x := 5` declares new mutable variable
+  - `x = 10` reassigns existing variable
+  - Compile error if `:=` used on existing variable (prevents shadowing)
+  - Breaking change: requires migration of all existing code
+  - TODO: Design transition plan, update lexer/parser/semantic analyzer
+- [ ] Enums (parser done, codegen TODO)
+- [ ] Traits (parser done, codegen TODO)
+- [ ] Generics (design TODO)
+- [ ] Pattern matching
+- [ ] Closures and lambdas
+- [ ] Error propagation operator (`?`)
+- [ ] Result and Option types
 
-**Compilation and Symbol Resolution:**
-- Fixed forward function references in IR generation
-  - buildIdent now checks TypeInfo.Uses to resolve function symbols
-  - Enables two-pass compilation: functions callable before definition
-  - Bootstrap parser tests now all pass (5/5)
+### Tooling
+- [ ] Language server protocol (LSP) for IDE support
+- [ ] Formatter (`ease fmt`)
+- [ ] Linter (`ease lint`)
+- [ ] Package manager (`ease get`)
+- [ ] Documentation generator (`ease doc`)
 
-### Known Issues
-None currently! All previously documented issues have been resolved.
+## Running Tests
 
-### Future
-- [ ] Standard library expansion (strings, strconv, and io complete)
-  - [x] strconv - string/number conversions (Itoa, Atoi, ParseInt, FormatInt)
-  - [ ] os - process, environment, command execution
-  - [ ] path - file path manipulation
-  - [ ] More as needed for self-hosting
-- [ ] WebAssembly backend
-- [ ] x86_64 backend
-
-## Running Go Tests
-
+**Go Compiler Tests:**
 ```bash
-go test ./pkg/... -v
+go test ./pkg/... -v                    # Unit tests
+./tests/run_tests.sh                    # Integration tests (6/6 passing)
 ```
 
-## Running Integration Tests
+**Bootstrap Compiler:**
+```bash
+go run cmd/ease/main.go build bootstrap/compiler.ease -o bootstrap_compiler_new
+./bootstrap_compiler_new <file.ease>    # Compile with bootstrap compiler
+```
 
+**Integration Tests:**
 End-to-end compiler tests that verify features work correctly:
-
-```bash
-./tests/run_tests.sh
-```
-
-The test suite includes:
 - Basic arithmetic and variables
 - Function calls and recursion
 - Array operations (literal, index, push, len)
@@ -783,61 +447,12 @@ The test suite includes:
 
 All tests return exit code 0 on success. See `tests/README.md` for details.
 
-## Example Program
+## Example Programs
 
-```
-import (
-    "io"
-    "http"
-    "./config"
-)
+See `examples/` directory for working example programs:
+- `calculator.ease` - Arithmetic, recursion (factorial, fibonacci)
+- `string_demo.ease` - String operations, stdlib usage
+- `data_structures.ease` - Structs, arrays, algorithms
+- `file_io.ease` - File I/O operations
 
-enum Result<T, E> {
-    Ok { value: T },
-    Err { error: E },
-}
-
-struct Config {
-    Name: string,
-    Port: int,
-}
-
-fn loadConfig(path: string) -> Result<Config, Error> {
-    let content = io.ReadFile(path)?
-    return Config { Name: "app", Port: 8080 }
-}
-
-fn main() -> Result<(), Error> {
-    let cfg = loadConfig("config.json")?
-
-    for i in 0..10 {
-        println(i)
-    }
-
-    for cfg.Port > 0 {
-        // condition loop
-    }
-
-    for {
-        // infinite loop
-        break
-    }
-}
-
-// In config_test.ease:
-test "loadConfig returns valid config" {
-    let cfg = loadConfig("test.json")?
-    if cfg.Port != 8080 {
-        return error.New("expected port 8080")
-    }
-}
-
-#[integration]
-test "config file not found returns error" {
-    let result = loadConfig("nonexistent.json")
-    if result.is_ok() {
-        return error.New("should fail for missing file")
-    }
-}
-```
-
+All examples tested and working. See `examples/README.md` for feature matrix.
