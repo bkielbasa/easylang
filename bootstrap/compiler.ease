@@ -2364,7 +2364,8 @@ fn gen_ir_stmt_assign(node: AstNode, nodes: []AstNode, instrs: []IRInstr, st_n: 
 fn gen_ir_stmt_if(node: AstNode, nodes: []AstNode, instrs: []IRInstr, st_n: []string, st_v: []int) -> int {
     let c = gen_ir_from_ast_with_symtab(node.left, nodes, instrs, st_n, st_v)
     if c < 0 { return -1 }
-    let el = len(instrs) + 1000 let en = len(instrs) + 2000
+    let el = len(instrs) + 1000
+    let en = len(instrs) + 2000
     push(instrs, IRInstr { op: OP_BRANCH(), dest: c, arg1: el, arg2: 0, arg3: 0, str_val: "" })
     if node.right >= 0 { gen_ir_from_ast_with_symtab(node.right, nodes, instrs, st_n, st_v) }
     push(instrs, IRInstr { op: OP_JUMP(), dest: en, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
@@ -2389,7 +2390,9 @@ fn gen_ir_stmt_for(n: AstNode, nodes: []AstNode, instrs: []IRInstr, st_n: []stri
 }
 
 fn gen_ir_stmt_block(node: AstNode, nodes: []AstNode, instrs: []IRInstr, st_n: []string, st_v: []int) -> int {
-    let mut last = -1 let mut i = node.left let e = node.right + 1
+    let mut last = -1
+    let mut i = node.left
+    let e = node.right + 1
     for i < e {
         if nodes[i].tag >= STMT_LET() {
             last = gen_ir_from_ast_with_symtab(i, nodes, instrs, st_n, st_v)
@@ -2661,6 +2664,26 @@ fn encode_strb_offset(rt: int, rn: int, offset: int) -> int {
     return 0x39000000 + (imm12 * 0x400) + (rn * 0x20) + rt
 }
 
+fn encode_cmp(rn: int, rm: int) -> int {
+    // CMP Xrn, Xrm (alias for SUBS XZR, Xrn, Xrm)
+    // Compare two registers and set condition flags
+    // sf=1 (64-bit), op=1 (SUB), S=1 (set flags), shift=00, Rm, imm6=0, Rn, Rd=31 (XZR)
+    // Encoding: 1 1 1 01011 00 0 Rm(5) 000000 Rn(5) 11111
+    // Base: 0xEB00001F (CMP with Rd=XZR)
+    return 0xEB00001F + (rm * 0x10000) + (rn * 0x20)
+}
+
+fn encode_cset(rd: int, cond: int) -> int {
+    // CSET Xrd, cond (alias for CSINC Xrd, XZR, XZR, invert(cond))
+    // Set register to 1 if condition is true, 0 otherwise
+    // sf=1 (64-bit), op=0, S=0, Rm=31 (XZR), cond^1, o2=0, Rn=31 (XZR), Rd
+    // Encoding: 1 0 0 11010100 11111 cond(4) 0 1 11111 Rd(5)
+    // Base: 0x9A9F07E0
+    // Note: cond is inverted in the encoding (condition when false)
+    let inv_cond = cond ^ 1
+    return 0x9A9F07E0 + (inv_cond * 0x1000) + rd
+}
+
 fn gen_code_from_ir(instrs: []IRInstr, code: []int) -> int {
     // Two-pass approach:
     // Pass 1: Build label map (label_id -> instruction_index)
@@ -2670,13 +2693,69 @@ fn gen_code_from_ir(instrs: []IRInstr, code: []int) -> int {
 
     let mut pass1_i = 0
     let instrs_len = len(instrs)
+    let mut current_func = ""
     for pass1_i < instrs_len {
         let instr = instrs[pass1_i]
         if instr.op == OP_LABEL() {
             push(label_ids, instr.dest)
             push(label_positions, instr_count)
+            // Track function name for main detection
+            if instr.str_val != "" {
+                current_func = instr.str_val
+                // Main function has 2 extra instructions for heap register initialization
+                if current_func == "main" {
+                    instr_count = instr_count + 2  // MOV X25, XZR + MOV X26, XZR
+                }
+            }
         } else {
-            instr_count = instr_count + 1
+            // Count actual ARM64 instructions that will be generated
+            // This must match Pass 2's instruction generation!
+            if instr.op == OP_CMP_EQ() {
+                instr_count = instr_count + 2  // CMP + CSET
+            } else {
+                if instr.op == OP_CMP_NE() {
+                    instr_count = instr_count + 2  // CMP + CSET
+                } else {
+                    if instr.op == OP_CMP_LT() {
+                        instr_count = instr_count + 2  // CMP + CSET
+                    } else {
+                        if instr.op == OP_CMP_LE() {
+                            instr_count = instr_count + 2  // CMP + CSET
+                        } else {
+                            if instr.op == OP_CMP_GT() {
+                                instr_count = instr_count + 2  // CMP + CSET
+                            } else {
+                                if instr.op == OP_CMP_GE() {
+                                    instr_count = instr_count + 2  // CMP + CSET
+                                } else {
+                                    if instr.op == OP_RET() {
+                                        // RET in main generates: MOV X0 + MOVZ X16 + MOVK X16 + SVC = 4 instructions
+                                        // RET in other functions: MOV X0 + RET = 2 instructions (if dest >= 0)
+                                        // Or just RET if dest < 0 = 1 instruction
+                                        if current_func == "main" {
+                                            if instr.dest >= 0 {
+                                                instr_count = instr_count + 4  // MOV + MOVZ + MOVK + SVC
+                                            } else {
+                                                instr_count = instr_count + 3  // MOVZ + MOVK + SVC
+                                            }
+                                        } else {
+                                            if instr.dest >= 0 {
+                                                instr_count = instr_count + 2  // MOV + RET
+                                            } else {
+                                                instr_count = instr_count + 1  // Just RET
+                                            }
+                                        }
+                                    } else {
+                                        // All other instructions generate 1 ARM64 instruction
+                                        // (Except OP_HEAP_ALLOC and OP_CALL, but those don't affect control flow labels)
+                                        instr_count = instr_count + 1
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
         pass1_i = pass1_i + 1
     }
@@ -2700,6 +2779,15 @@ fn gen_code_from_ir(instrs: []IRInstr, code: []int) -> int {
                 // Check if this is main function
                 if instr.str_val == "main" {
                     main_pos = instr_count
+                    // Initialize heap registers for main function
+                    // X25 = heap_ptr, X26 = heap_end
+                    // Both start at 0 (heap not yet allocated)
+                    let mov_x25_zero = encode_mov_reg(25, 31)  // MOV X25, XZR
+                    push(code, mov_x25_zero)
+                    instr_count = instr_count + 1
+                    let mov_x26_zero = encode_mov_reg(26, 31)  // MOV X26, XZR
+                    push(code, mov_x26_zero)
+                    instr_count = instr_count + 1
                 }
             }
         }
@@ -2731,6 +2819,62 @@ fn gen_code_from_ir(instrs: []IRInstr, code: []int) -> int {
         if instr.op == OP_MUL() {
             let encoded = encode_mul(instr.dest, instr.arg1, instr.arg2)
             push(code, encoded)
+            instr_count = instr_count + 1
+        }
+        if instr.op == OP_CMP_EQ() {
+            // Compare equal: dest = (arg1 == arg2) ? 1 : 0
+            // CMP Xarg1, Xarg2
+            let cmp_encoded = encode_cmp(instr.arg1, instr.arg2)
+            push(code, cmp_encoded)
+            instr_count = instr_count + 1
+            // CSET Xdest, EQ
+            let cset_encoded = encode_cset(instr.dest, 0)  // 0 = EQ condition
+            push(code, cset_encoded)
+            instr_count = instr_count + 1
+        }
+        if instr.op == OP_CMP_NE() {
+            // Compare not equal: dest = (arg1 != arg2) ? 1 : 0
+            let cmp_encoded = encode_cmp(instr.arg1, instr.arg2)
+            push(code, cmp_encoded)
+            instr_count = instr_count + 1
+            let cset_encoded = encode_cset(instr.dest, 1)  // 1 = NE condition
+            push(code, cset_encoded)
+            instr_count = instr_count + 1
+        }
+        if instr.op == OP_CMP_LT() {
+            // Compare less than: dest = (arg1 < arg2) ? 1 : 0
+            let cmp_encoded = encode_cmp(instr.arg1, instr.arg2)
+            push(code, cmp_encoded)
+            instr_count = instr_count + 1
+            let cset_encoded = encode_cset(instr.dest, 11)  // 11 = LT condition
+            push(code, cset_encoded)
+            instr_count = instr_count + 1
+        }
+        if instr.op == OP_CMP_LE() {
+            // Compare less or equal: dest = (arg1 <= arg2) ? 1 : 0
+            let cmp_encoded = encode_cmp(instr.arg1, instr.arg2)
+            push(code, cmp_encoded)
+            instr_count = instr_count + 1
+            let cset_encoded = encode_cset(instr.dest, 13)  // 13 = LE condition
+            push(code, cset_encoded)
+            instr_count = instr_count + 1
+        }
+        if instr.op == OP_CMP_GT() {
+            // Compare greater than: dest = (arg1 > arg2) ? 1 : 0
+            let cmp_encoded = encode_cmp(instr.arg1, instr.arg2)
+            push(code, cmp_encoded)
+            instr_count = instr_count + 1
+            let cset_encoded = encode_cset(instr.dest, 12)  // 12 = GT condition
+            push(code, cset_encoded)
+            instr_count = instr_count + 1
+        }
+        if instr.op == OP_CMP_GE() {
+            // Compare greater or equal: dest = (arg1 >= arg2) ? 1 : 0
+            let cmp_encoded = encode_cmp(instr.arg1, instr.arg2)
+            push(code, cmp_encoded)
+            instr_count = instr_count + 1
+            let cset_encoded = encode_cset(instr.dest, 10)  // 10 = GE condition
+            push(code, cset_encoded)
             instr_count = instr_count + 1
         }
         if instr.op == OP_LOAD() {
@@ -3063,9 +3207,13 @@ fn gen_code_from_ir(instrs: []IRInstr, code: []int) -> int {
 
             if is_main_func == 1 {
                 // Main function: call exit syscall
-                // MOV X16, #1 (exit syscall number)
-                let mov_x16 = encode_mov_imm(16, 1)
-                push(code, mov_x16)
+                // X16 = 0x2000001 (exit syscall number for macOS ARM64)
+                // Use MOVZ + MOVK sequence
+                let movz_x16_low = encode_mov_imm(16, 1)  // MOVZ X16, #1
+                push(code, movz_x16_low)
+                instr_count = instr_count + 1
+                let movk_x16_high = encode_movk(16, 0x200, 16)  // MOVK X16, #0x200, LSL #16
+                push(code, movk_x16_high)
                 instr_count = instr_count + 1
                 // SVC #0x80 (make syscall)
                 push(code, 0xd4001001)
@@ -3960,6 +4108,54 @@ fn main() -> int {
                 print("v")
                 print(strconv.Itoa(instr.dest))
                 print(" = div v")
+                print(strconv.Itoa(instr.arg1))
+                print(", v")
+                print(strconv.Itoa(instr.arg2))
+            }
+            if instr.op == OP_CMP_EQ() {
+                print("v")
+                print(strconv.Itoa(instr.dest))
+                print(" = cmp_eq v")
+                print(strconv.Itoa(instr.arg1))
+                print(", v")
+                print(strconv.Itoa(instr.arg2))
+            }
+            if instr.op == OP_CMP_NE() {
+                print("v")
+                print(strconv.Itoa(instr.dest))
+                print(" = cmp_ne v")
+                print(strconv.Itoa(instr.arg1))
+                print(", v")
+                print(strconv.Itoa(instr.arg2))
+            }
+            if instr.op == OP_CMP_LT() {
+                print("v")
+                print(strconv.Itoa(instr.dest))
+                print(" = cmp_lt v")
+                print(strconv.Itoa(instr.arg1))
+                print(", v")
+                print(strconv.Itoa(instr.arg2))
+            }
+            if instr.op == OP_CMP_GT() {
+                print("v")
+                print(strconv.Itoa(instr.dest))
+                print(" = cmp_gt v")
+                print(strconv.Itoa(instr.arg1))
+                print(", v")
+                print(strconv.Itoa(instr.arg2))
+            }
+            if instr.op == OP_CMP_LE() {
+                print("v")
+                print(strconv.Itoa(instr.dest))
+                print(" = cmp_le v")
+                print(strconv.Itoa(instr.arg1))
+                print(", v")
+                print(strconv.Itoa(instr.arg2))
+            }
+            if instr.op == OP_CMP_GE() {
+                print("v")
+                print(strconv.Itoa(instr.dest))
+                print(" = cmp_ge v")
                 print(strconv.Itoa(instr.arg1))
                 print(", v")
                 print(strconv.Itoa(instr.arg2))
