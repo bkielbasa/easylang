@@ -545,13 +545,14 @@ func (e *Emitter) loadParameters() {
 	if e.fn.Name == "main" {
 		e.asm.MOV(X27, X0) // Save argc
 		e.asm.MOV(X28, X1) // Save argv
-
-		// Initialize heap state registers
-		// X25 = heap_ptr (current bump pointer, 0 = uninitialized)
-		// X26 = heap_end (end of current mmap'd region)
-		e.asm.MOVimm(X25, 0)
-		e.asm.MOVimm(X26, 0)
 	}
+
+	// Initialize heap state registers for ALL functions
+	// X25 = heap_ptr (current bump pointer, 0 = uninitialized)
+	// X26 = heap_end (end of current mmap'd region)
+	// This is needed because any function can call builtins that allocate (e.g., os.ReadFile)
+	e.asm.MOVimm(X25, 0)
+	e.asm.MOVimm(X26, 0)
 
 	// Load parameters from argument registers into their allocated locations
 	for i, param := range e.fn.Params {
