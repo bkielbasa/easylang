@@ -2,6 +2,8 @@
 
 A compiled language focusing on developer experience, self-hosting, fast execution, and web development.
 
+Every interesting finding regarding building compiler put into `findings` folder as set of notes.
+
 ## Working Guidelines
 
 ### File Operations
