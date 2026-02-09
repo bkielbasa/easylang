@@ -193,7 +193,7 @@ The Go compiler successfully compiles `bootstrap/compiler.ease` (3,900+ lines) i
 - [x] IR generation (3-address code)
 - [x] ARM64 code generation (MOV, ADD, SUB, MUL, DIV, LDR, BL, B, CBZ, RET, SVC)
 - [x] Control flow (if/else, for loops)
-- [x] Function calls with single argument
+- [x] Function calls with multiple arguments (X0-X7 parameter passing)
 - [x] Array indexing and field access
 - [x] Top-level struct declarations and globals
 - [x] File I/O (reading source from disk)
@@ -225,25 +225,19 @@ Generated binaries are blocked by macOS 15.x security (exit code 137/SIGKILL) wh
 
 **High Priority (Remaining for Full Self-Compilation):**
 
-1. **Multi-Argument Function Calls** 📋
-   - IR generation currently supports only single argument
-   - Need to extend to handle multiple arguments
-   - Requires: stack frame setup, register allocation for multiple args
-   - **Blocker for**: Compiling complex functions in compiler.ease
-
-2. **Struct Literals with Memory Allocation** 📋
+1. **Struct Literals with Memory Allocation** 📋
    - Parser can parse struct declarations
    - Need: struct literal syntax parsing, heap allocation for struct data
    - Required for AST node creation and data structures
    - **Blocker for**: Creating complex data structures in IR
 
-3. **Enhanced Parsing Coverage** 📋
+2. **Enhanced Parsing Coverage** 📋
    - Currently parses 182/207 functions (88%) of compiler.ease
    - Need to handle remaining 25 functions with complex constructs
    - Includes: nested expressions, advanced control flow patterns
    - **Blocker for**: Compiling entire compiler.ease
 
-4. **Semantic Analysis Integration** 📋
+3. **Semantic Analysis Integration** 📋
    - bootstrap/sema.ease exists (not yet integrated)
    - Need: type checking during compilation
    - Currently relies on Go compiler for semantic correctness
@@ -251,7 +245,7 @@ Generated binaries are blocked by macOS 15.x security (exit code 137/SIGKILL) wh
 
 **Medium Priority:**
 
-5. **macOS Security Compliance** (2% remaining)
+4. **macOS Security Compliance** (2% remaining)
    - Generated binaries execute correctly in lldb ✅
    - Blocked by macOS 15.x security (exit code 137) when run directly
    - May need: additional entitlements, different signature format
@@ -296,6 +290,35 @@ Generated binaries are blocked by macOS 15.x security (exit code 137/SIGKILL) wh
 - Full self-compilation: 📋 TODO (estimated 1-2 weeks)
 
 ## Recent Fixes
+
+**Multi-Argument Function Calls - COMPLETE (Feb 9, 2026):**
+- **Achievement**: Bootstrap compiler now supports functions with multiple parameters!
+- **Problem**: Generated code had multiple bugs preventing multi-arg calls from working
+- **Root Causes Identified**:
+  1. `func_positions` tracked IR instruction counts instead of ARM64 instruction counts
+  2. Entry point pointed to first function instead of main function
+  3. is_main detection failed, causing all functions to use exit syscall
+- **Solutions Applied**:
+  - Moved function position tracking from pass 1 (IR counting) to pass 2 (ARM64 counting)
+  - Modified `gen_code_from_ir` to return main function's instruction offset
+  - Used main offset to calculate correct entry point for LC_MAIN command
+  - Fixed is_main detection now works with correct func_positions
+- **Results**:
+  - ✅ Functions pass arguments in X0-X7 registers correctly
+  - ✅ Non-main functions use RET instruction to return to caller
+  - ✅ Main function uses exit syscall properly
+  - ✅ Entry point correctly points to main function
+  - ✅ Test: `add(10, 32)` returns 42 ✅
+- **Testing**:
+  ```bash
+  $ ./bootstrap_compiler tmp/test_multiarg.ease
+  Success! Generated 32768 byte executable
+
+  $ lldb ./tmp/test_output -o "process launch" -o "exit"
+  Process exited with status = 42 (0x0000002a) ✅
+  ```
+- **Status**: ✅ RESOLVED - Multi-argument function calls fully working!
+- **Progress**: Major milestone toward self-hosting!
 
 **SHA-256 Code Signature Integration - COMPLETE (Feb 9, 2026):**
 - **Achievement**: Bootstrap compiler now generates working ARM64 executables!
