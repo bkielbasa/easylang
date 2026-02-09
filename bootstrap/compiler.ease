@@ -2876,12 +2876,16 @@ fn gen_code_from_ir(instrs: []IRInstr, code: []int) -> int {
             push(code, mov_x0_zero)
             instr_count = instr_count + 1
 
-            // X1 = size (length to allocate)
-            if size_reg != 1 {
-                let mov_x1_size = encode_mov_reg(1, size_reg)
-                push(code, mov_x1_size)
-                instr_count = instr_count + 1
-            }
+            // X1 = 1MB (minimum mmap size for macOS)
+            // Note: Wasteful but simple - always allocate 1MB
+            // A real implementation would use a bump allocator
+            // MOVZ X1, #0x0000, then MOVK X1, #0x10, LSL #16
+            let movz_x1_low = encode_mov_imm(1, 0)  // MOVZ X1, #0
+            push(code, movz_x1_low)
+            instr_count = instr_count + 1
+            let movk_x1_high = encode_movk(1, 0x10, 16)  // MOVK X1, #0x10, LSL #16 = 0x100000 = 1MB
+            push(code, movk_x1_high)
+            instr_count = instr_count + 1
 
             // X2 = 3 (PROT_READ | PROT_WRITE)
             let mov_x2_prot = encode_mov_imm(2, 3)
