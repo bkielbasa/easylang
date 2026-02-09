@@ -2746,9 +2746,18 @@ fn gen_code_from_ir(instrs: []IRInstr, code: []int) -> int {
                                             }
                                         }
                                     } else {
-                                        // All other instructions generate 1 ARM64 instruction
-                                        // (Except OP_HEAP_ALLOC and OP_CALL, but those don't affect control flow labels)
-                                        instr_count = instr_count + 1
+                                        if instr.op == OP_HEAP_ALLOC() {
+                                            // heap_alloc generates: MOV X0 + MOVZ X1 + MOVK X1 + MOV X2 + MOV X3 + MOVN X4 + MOV X5 + MOVZ X16 + MOVK X16 + SVC + MOV dest = 11 instructions
+                                            // Or 10 if dest == 0
+                                            if instr.dest == 0 {
+                                                instr_count = instr_count + 10
+                                            } else {
+                                                instr_count = instr_count + 11
+                                            }
+                                        } else {
+                                            // All other instructions generate 1 ARM64 instruction
+                                            instr_count = instr_count + 1
+                                        }
                                     }
                                 }
                             }
