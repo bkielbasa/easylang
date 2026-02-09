@@ -2092,7 +2092,8 @@ fn field_offset(struct_name: string, field_name: string) -> int {
     }
     return 0  // Unknown field, return 0
 }
-fn OP_CALL() -> int { return 31 }
+fn OP_CALL() -> int { return 33 }
+fn OP_ARG() -> int { return 34 }
 fn OP_LABEL() -> int { return 40 }
 fn OP_JUMP() -> int { return 41 }
 fn OP_BRANCH() -> int { return 42 }
@@ -2257,7 +2258,7 @@ fn gen_ir_call_user(node: AstNode, ast_idx: int, nodes: []AstNode, instrs: []IRI
     let args = gen_ir_eval_args(ast_idx, nodes, instrs, st_names, st_vregs)
     let mut i = 0
     for i < len(args) {
-        push(instrs, IRInstr { op: OP_ADD(), dest: i, arg1: args[i], arg2: -1, arg3: 0, str_val: "" })
+        push(instrs, IRInstr { op: OP_ARG(), dest: i, arg1: args[i], arg2: -1, arg3: 0, str_val: "" })
         i = i + 1
     }
     let res = len(instrs)
@@ -2969,6 +2970,21 @@ fn gen_code_from_ir(instrs: []IRInstr, code: []int) -> int {
             let mov_result = encode_mov_reg(dest_reg, 17)
             push(code, mov_result)
             instr_count = instr_count + 1
+        }
+        if instr.op == OP_ARG() {
+            // Move argument value to argument register (X0-X7)
+            // dest = argument position (0-7)
+            // arg1 = vreg containing the value
+            let arg_pos = instr.dest
+            let value_reg = instr.arg1
+            if arg_pos < 8 {
+                // Only move if source and destination are different
+                if value_reg != arg_pos {
+                    let mov_arg = encode_mov_reg(arg_pos, value_reg)
+                    push(code, mov_arg)
+                    instr_count = instr_count + 1
+                }
+            }
         }
         if instr.op == OP_CALL() {
             // BL <function> - Branch with Link (function call)
@@ -3954,6 +3970,12 @@ fn main() -> int {
                 print(", L")
                 print(strconv.Itoa(instr.arg1))
             }
+            if instr.op == OP_ARG() {
+                print("arg ")
+                print(strconv.Itoa(instr.dest))
+                print(", v")
+                print(strconv.Itoa(instr.arg1))
+            }
             if instr.op == OP_CALL() {
                 print("v")
                 print(strconv.Itoa(instr.dest))
@@ -4060,6 +4082,7 @@ fn main() -> int {
     // Use the IR generated in Phase 3 for all functions
     let mut code = []int{}
     let main_instr_offset = gen_code_from_ir(instrs, code)
+    let code_size = len(code) * 4
         print("Generated ")
         print(strconv.Itoa(len(code)))
         print(" machine instructions:\n")
@@ -4078,7 +4101,7 @@ fn main() -> int {
         // Phase 5: Mach-O Binary Structure (demonstration)
         print("Phase 5: Mach-O Binary Structure\n")
 
-        let code_size = len(code) * 4
+        // code_size already defined above
         let header_size = 32 + 72 + 152 + 24  // header + PAGEZERO + TEXT + MAIN
         let file_size = align_up(header_size + code_size, PAGE_SIZE())
 
