@@ -77,12 +77,54 @@ No file specified, using test program
 - Does NOT affect Go compiler itself
 - Does NOT affect generated binaries from bootstrap compiler
 
+## Resolution ✅ (Feb 9, 2026)
+
+### Root Cause Found
+X25 and X26 (heap state registers) were **only initialized in main() function**:
+```go
+// pkg/codegen/arm64/emit.go:545
+if e.fn.Name == "main" {
+    e.asm.MOV(X27, X0)  // Save argc
+    e.asm.MOV(X28, X1)  // Save argv
+    e.asm.MOVimm(X25, 0)  // ← ONLY HERE!
+    e.asm.MOVimm(X26, 0)  // ← ONLY HERE!
+}
+```
+
+But `os.ReadFile` (and other builtins) use `emitBumpAlloc` which checks X25:
+```go
+// emitBumpAlloc checks if heap is initialized
+e.asm.CMP(X25, XZR)  // ← X25 was garbage in non-main functions!
+```
+
+### The Fix
+Move X25/X26 initialization outside the `if main` block:
+```go
+// Initialize heap state for ALL functions
+e.asm.MOVimm(X25, 0)
+e.asm.MOVimm(X26, 0)
+```
+
+### Why This Worked
+- Bootstrap compiler's top-level code is NOT in main()
+- When it called os.ReadFile, X25 contained garbage
+- emitBumpAlloc's check (CMP X25, XZR) had undefined behavior
+- This caused hang/crash when trying to initialize heap
+
+### Test Results
+After fix (commit 664a63b):
+- ✅ test_simple.ease - Compiles successfully
+- ✅ test_multiarg.ease - Compiles successfully
+- ✅ test_minimal_heap.ease - Compiles successfully
+- ✅ test_heap_alloc.ease - Compiles successfully (poke/peek work!)
+
 ## Status
 
-**BLOCKED**: Cannot use bootstrap compiler to compile source files from disk.
-**IMPACT**: High - prevents self-compilation testing.
-**PRIORITY**: Critical - needs resolution before self-hosting milestone.
+**RESOLVED**: Bootstrap compiler now reads files correctly! ✅
+**IMPACT**: Self-hosting milestone unblocked.
+**COMMIT**: 664a63b - FIX: Critical heap register initialization bug
 
 ---
 
 *Last updated: Feb 9, 2026*
+*Resolution time: ~2 hours from bug discovery to fix*
