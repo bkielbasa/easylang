@@ -1149,14 +1149,26 @@ fn parse_import_decl(src: string, pos: int, nodes: []AstNode) -> ParseResult {
     p = lex_end(src, p, TK_LPAREN())
     p = lex_skip(src, p)
 
-    // Parse import path (string literal)
-    let path_kind = lex_kind(src, p)
-    if path_kind != TK_STRING() {
-        return ParseResult { node_idx: -1, new_pos: p }
+    // Parse one or more import paths (string literals)
+    // For now, we only use the first path (multi-import support limited)
+    let mut import_path = ""
+    let mut first_import = 1
+    for {
+        let path_kind = lex_kind(src, p)
+        if path_kind == TK_RPAREN() {
+            break
+        }
+        if path_kind != TK_STRING() {
+            return ParseResult { node_idx: -1, new_pos: p }
+        }
+        // Save only the first import path
+        if first_import == 1 {
+            import_path = lex_string_value(src, p, path_kind)
+            first_import = 0
+        }
+        p = lex_end(src, p, path_kind)
+        p = lex_skip(src, p)
     }
-    let import_path = lex_string_value(src, p, path_kind)
-    p = lex_end(src, p, path_kind)
-    p = lex_skip(src, p)
 
     // Expect ')'
     if lex_kind(src, p) != TK_RPAREN() {
