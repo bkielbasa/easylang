@@ -2581,13 +2581,11 @@ fn encode_strb_offset(rt: int, rn: int, offset: int) -> int {
     return 0x39000000 + (imm12 * 0x400) + (rn * 0x20) + rt
 }
 
-fn gen_code_from_ir(instrs: []IRInstr, code: []int) {
+fn gen_code_from_ir(instrs: []IRInstr, code: []int) -> int {
     // Two-pass approach:
-    // Pass 1: Build label map (label_id -> instruction_index) and function map (name -> position)
+    // Pass 1: Build label map (label_id -> instruction_index)
     let mut label_ids = []int{}
     let mut label_positions = []int{}
-    let mut func_names = []string{}
-    let mut func_positions = []int{}
     let mut instr_count = 0
 
     let mut pass1_i = 0
@@ -2597,22 +2595,34 @@ fn gen_code_from_ir(instrs: []IRInstr, code: []int) {
         if instr.op == OP_LABEL() {
             push(label_ids, instr.dest)
             push(label_positions, instr_count)
-            // If this label has a function name (str_val), track it
-            if instr.str_val != "" {
-                push(func_names, instr.str_val)
-                push(func_positions, instr_count)
-            }
         } else {
             instr_count = instr_count + 1
         }
         pass1_i = pass1_i + 1
     }
 
+    // Track function positions during pass 2 (with actual ARM64 instruction counts)
+    let mut func_names = []string{}
+    let mut func_positions = []int{}
+    let mut main_pos = 0
+
     // Pass 2: Generate code
     instr_count = 0
     let mut pass2_i = 0
     for pass2_i < instrs_len {
         let instr = instrs[pass2_i]
+
+        // Track function labels with their ARM64 instruction positions
+        if instr.op == OP_LABEL() {
+            if instr.str_val != "" {
+                push(func_names, instr.str_val)
+                push(func_positions, instr_count)
+                // Check if this is main function
+                if instr.str_val == "main" {
+                    main_pos = instr_count
+                }
+            }
+        }
 
         if instr.op == OP_LOADCONST() {
             // MOV Xd, #imm
@@ -2849,7 +2859,6 @@ fn gen_code_from_ir(instrs: []IRInstr, code: []int) {
             }
 
             // Check if we're in main function - only main should exit
-            // Find which function we're currently in by checking from end
             let mut is_main_func = 0
             let mut current_func_idx = -1
 
@@ -2924,6 +2933,9 @@ fn gen_code_from_ir(instrs: []IRInstr, code: []int) {
         // OP_LABEL doesn't generate code, just marks position
         pass2_i = pass2_i + 1
     }
+
+    // Return main function's instruction offset
+    return main_pos
 }
 
 // ============================================================================
@@ -3878,7 +3890,7 @@ fn main() -> int {
     print("Phase 4: ARM64 Code Generation\n")
     // Use the IR generated in Phase 3 for all functions
     let mut code = []int{}
-    gen_code_from_ir(instrs, code)
+    let main_instr_offset = gen_code_from_ir(instrs, code)
         print("Generated ")
         print(strconv.Itoa(len(code)))
         print(" machine instructions:\n")
@@ -3974,7 +3986,9 @@ fn main() -> int {
     offset = offset + write_text_segment(buf + offset, code_size, new_header_size)
     offset = offset + write_linkedit_segment(buf + offset, linkedit_offset, linkedit_size)
     offset = offset + write_dylinker_command(buf + offset)
-    offset = offset + write_main_cmd(buf + offset, new_header_size)
+    // Calculate main function's byte offset: header_size + (instruction_offset * 4)
+    let main_entry_offset = new_header_size + (main_instr_offset * 4)
+    offset = offset + write_main_cmd(buf + offset, main_entry_offset)
     offset = offset + write_build_version_cmd(buf + offset)
     offset = offset + write_symtab_cmd(buf + offset, symtab_offset, nsyms, strtab_offset, strtab_size)
     offset = offset + write_dysymtab_cmd(buf + offset)
