@@ -2052,6 +2052,7 @@ fn OP_STR_SUBSTRING() -> int { return 28 } // String substring: str, start, end 
 fn OP_POKE() -> int { return 29 }  // Write byte to memory: addr, value
 fn OP_RET() -> int { return 30 }
 fn OP_PEEK() -> int { return 31 }  // Read byte from memory: addr -> value
+fn OP_HEAP_ALLOC() -> int { return 32 }  // Allocate memory: size -> pointer
 
 // Struct definitions and offsets (hardcoded for known structs)
 // AstNode: tag(8), int_val(8), str_val(8), left(8), right(8), extra(8), type_tag(8) = 56 bytes
@@ -2146,6 +2147,19 @@ fn gen_ir_call_peek(ast_idx: int, nodes: []AstNode, instrs: []IRInstr, symtab_na
     let peek_instr = IRInstr { op: OP_PEEK(), dest: result_vreg, arg1: addr_vreg, arg2: 0, arg3: 0, str_val: "" }
     push(instrs, peek_instr)
     return result_vreg  // peek returns the byte value
+}
+
+// Helper: Generate IR for heap_alloc() builtin
+fn gen_ir_call_heap_alloc(ast_idx: int, nodes: []AstNode, instrs: []IRInstr, symtab_names: []string, symtab_vregs: []int) -> int {
+    let arg_indices = get_call_args(ast_idx)
+    if len(arg_indices) != 1 {
+        return -1
+    }
+    let size_vreg = gen_ir_from_ast_with_symtab(arg_indices[0], nodes, instrs, symtab_names, symtab_vregs)
+    let result_vreg = len(instrs)
+    let heap_alloc_instr = IRInstr { op: OP_HEAP_ALLOC(), dest: result_vreg, arg1: size_vreg, arg2: 0, arg3: 0, str_val: "" }
+    push(instrs, heap_alloc_instr)
+    return result_vreg  // heap_alloc returns the allocated pointer
 }
 
 fn get_field_offset(name: string) -> int {
@@ -2402,6 +2416,9 @@ fn gen_ir_from_ast_with_symtab(ast_idx: int, nodes: []AstNode, instrs: []IRInstr
         if func_name == "peek" {
             return gen_ir_call_peek(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
         }
+        if func_name == "heap_alloc" {
+            return gen_ir_call_heap_alloc(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
+        }
         return gen_ir_call_user(node, ast_idx, nodes, instrs, symtab_names, symtab_vregs)
     }
 
@@ -2503,6 +2520,22 @@ fn encode_mov_imm(rd: int, imm: int) -> int {
     // For full 64-bit values, need MOVZ + MOVK sequence
     let hw = 0  // shift = 0
     return 0xd2800000 + (hw * 0x200000) + ((imm % 65536) * 0x20) + rd
+}
+
+fn encode_movn(rd: int, imm: int) -> int {
+    // MOVN Xd, #imm (MOV NOT - inverts the immediate)
+    // MOVN: 100 1 0010 1 hw(2) imm16(16) Rd(5)
+    // For -1, use MOVN Xd, #0 (NOT 0 = all ones)
+    let hw = 0
+    return 0x92800000 + (hw * 0x200000) + ((imm % 65536) * 0x20) + rd
+}
+
+fn encode_movk(rd: int, imm: int, shift: int) -> int {
+    // MOVK Xd, #imm, LSL #shift (Move with Keep - keeps other bits)
+    // MOVK: 111 1 0010 1 hw(2) imm16(16) Rd(5)
+    // hw = shift / 16 (0=LSL#0, 1=LSL#16, 2=LSL#32, 3=LSL#48)
+    let hw = shift / 16
+    return 0xf2800000 + (hw * 0x200000) + ((imm % 65536) * 0x20) + rd
 }
 
 fn encode_add(rd: int, rn: int, rm: int) -> int {
@@ -2817,6 +2850,66 @@ fn gen_code_from_ir(instrs: []IRInstr, code: []int) -> int {
             let ldrb_encoded = encode_ldrb_offset(dest_reg, addr_reg, 0)
             push(code, ldrb_encoded)
             instr_count = instr_count + 1
+        }
+        if instr.op == OP_HEAP_ALLOC() {
+            // heap_alloc(size) - allocate memory using mmap
+            // dest = result pointer, arg1 = size
+            let size_reg = instr.arg1
+            let dest_reg = instr.dest
+
+            // Call mmap syscall: mmap(addr, len, prot, flags, fd, offset)
+            // X0 = 0 (let kernel choose address)
+            let mov_x0_zero = encode_mov_reg(0, 31)  // MOV X0, XZR
+            push(code, mov_x0_zero)
+            instr_count = instr_count + 1
+
+            // X1 = size (length to allocate)
+            if size_reg != 1 {
+                let mov_x1_size = encode_mov_reg(1, size_reg)
+                push(code, mov_x1_size)
+                instr_count = instr_count + 1
+            }
+
+            // X2 = 3 (PROT_READ | PROT_WRITE)
+            let mov_x2_prot = encode_mov_imm(2, 3)
+            push(code, mov_x2_prot)
+            instr_count = instr_count + 1
+
+            // X3 = 0x1002 (MAP_ANON | MAP_PRIVATE)
+            let mov_x3_flags = encode_mov_imm(3, 0x1002)
+            push(code, mov_x3_flags)
+            instr_count = instr_count + 1
+
+            // X4 = -1 (fd, not used for MAP_ANON)
+            // Use MOVN X4, #0 to get -1 (NOT 0 = all ones)
+            let movn_x4_neg1 = encode_movn(4, 0)
+            push(code, movn_x4_neg1)
+            instr_count = instr_count + 1
+
+            // X5 = 0 (offset)
+            let mov_x5_zero = encode_mov_reg(5, 31)  // MOV X5, XZR
+            push(code, mov_x5_zero)
+            instr_count = instr_count + 1
+
+            // X16 = 0x20000C5 (mmap syscall number for macOS ARM64)
+            // Need MOVZ + MOVK sequence for this value
+            let movz_x16_low = encode_mov_imm(16, 0xC5)  // MOVZ X16, #0xC5
+            push(code, movz_x16_low)
+            instr_count = instr_count + 1
+            let movk_x16_high = encode_movk(16, 0x200, 16)  // MOVK X16, #0x200, LSL #16
+            push(code, movk_x16_high)
+            instr_count = instr_count + 1
+
+            // SVC #0x80 (make syscall)
+            push(code, 0xd4001001)
+            instr_count = instr_count + 1
+
+            // Move result from X0 to dest_reg
+            if dest_reg != 0 {
+                let mov_dest_x0 = encode_mov_reg(dest_reg, 0)
+                push(code, mov_dest_x0)
+                instr_count = instr_count + 1
+            }
         }
         if instr.op == OP_STR_CHAR_AT() {
             // str_char_at(str, index) - returns character at index as int
@@ -3930,6 +4023,12 @@ fn main() -> int {
                 print("v")
                 print(strconv.Itoa(instr.dest))
                 print(" = peek v")
+                print(strconv.Itoa(instr.arg1))
+            }
+            if instr.op == OP_HEAP_ALLOC() {
+                print("v")
+                print(strconv.Itoa(instr.dest))
+                print(" = heap_alloc v")
                 print(strconv.Itoa(instr.arg1))
             }
             if instr.op == OP_STR_CHAR_AT() {
