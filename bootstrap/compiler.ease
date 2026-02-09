@@ -2827,22 +2827,63 @@ fn gen_code_from_ir(instrs: []IRInstr, code: []int) {
             let encoded = encode_bl(offset)
             push(code, encoded)
             instr_count = instr_count + 1
+
+            // Move return value from X0 to destination register
+            // Return value comes back in X0, need to move it to vreg
+            if instr.dest >= 0 {
+                let dest_reg = instr.dest
+                if dest_reg != 0 {
+                    // Only generate MOV if destination is not X0
+                    let mov_result = encode_mov_reg(dest_reg, 0)
+                    push(code, mov_result)
+                    instr_count = instr_count + 1
+                }
+            }
         }
         if instr.op == OP_RET() {
-            // If returning a value, move it to X0 and call exit syscall
+            // If returning a value, move it to X0
             if instr.dest >= 0 {
                 let mov_to_x0 = encode_mov_reg(0, instr.dest)
                 push(code, mov_to_x0)
                 instr_count = instr_count + 1
             }
-            // Call exit syscall instead of returning
-            // MOV X16, #1 (exit syscall number)
-            let mov_x16 = encode_mov_imm(16, 1)
-            push(code, mov_x16)
-            instr_count = instr_count + 1
-            // SVC #0x80 (make syscall)
-            push(code, 0xd4001001)
-            instr_count = instr_count + 1
+
+            // Check if we're in main function - only main should exit
+            // Find which function we're currently in by checking from end
+            let mut is_main_func = 0
+            let mut current_func_idx = -1
+
+            let num_funcs = len(func_names)
+            let mut check_i = 0
+            for check_i < num_funcs {
+                if func_positions[check_i] <= instr_count {
+                    current_func_idx = check_i
+                }
+                check_i = check_i + 1
+            }
+
+            // Check if current function is main
+            if current_func_idx >= 0 {
+                if func_names[current_func_idx] == "main" {
+                    is_main_func = 1
+                }
+            }
+
+            if is_main_func == 1 {
+                // Main function: call exit syscall
+                // MOV X16, #1 (exit syscall number)
+                let mov_x16 = encode_mov_imm(16, 1)
+                push(code, mov_x16)
+                instr_count = instr_count + 1
+                // SVC #0x80 (make syscall)
+                push(code, 0xd4001001)
+                instr_count = instr_count + 1
+            } else {
+                // Other functions: use RET instruction
+                // RET = 0xD65F03C0 (return using X30/LR)
+                push(code, 0xD65F03C0)
+                instr_count = instr_count + 1
+            }
         }
         if instr.op == OP_BRANCH() {
             // CBZ Rt, label - branch if register is zero
