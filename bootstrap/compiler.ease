@@ -2051,6 +2051,7 @@ fn OP_STR_CHAR_AT() -> int { return 27 } // String char at: str, index -> char (
 fn OP_STR_SUBSTRING() -> int { return 28 } // String substring: str, start, end -> str
 fn OP_POKE() -> int { return 29 }  // Write byte to memory: addr, value
 fn OP_RET() -> int { return 30 }
+fn OP_PEEK() -> int { return 31 }  // Read byte from memory: addr -> value
 
 // Struct definitions and offsets (hardcoded for known structs)
 // AstNode: tag(8), int_val(8), str_val(8), left(8), right(8), extra(8), type_tag(8) = 56 bytes
@@ -2132,6 +2133,19 @@ fn gen_ir_call_poke(ast_idx: int, nodes: []AstNode, instrs: []IRInstr, symtab_na
     let poke_instr = IRInstr { op: OP_POKE(), dest: -1, arg1: addr_vreg, arg2: value_vreg, arg3: 0, str_val: "" }
     push(instrs, poke_instr)
     return -1  // poke returns nothing
+}
+
+// Helper: Generate IR for peek() builtin
+fn gen_ir_call_peek(ast_idx: int, nodes: []AstNode, instrs: []IRInstr, symtab_names: []string, symtab_vregs: []int) -> int {
+    let arg_indices = get_call_args(ast_idx)
+    if len(arg_indices) != 1 {
+        return -1
+    }
+    let addr_vreg = gen_ir_from_ast_with_symtab(arg_indices[0], nodes, instrs, symtab_names, symtab_vregs)
+    let result_vreg = len(instrs)
+    let peek_instr = IRInstr { op: OP_PEEK(), dest: result_vreg, arg1: addr_vreg, arg2: 0, arg3: 0, str_val: "" }
+    push(instrs, peek_instr)
+    return result_vreg  // peek returns the byte value
 }
 
 fn get_field_offset(name: string) -> int {
@@ -2384,6 +2398,9 @@ fn gen_ir_from_ast_with_symtab(ast_idx: int, nodes: []AstNode, instrs: []IRInstr
         }
         if func_name == "poke" {
             return gen_ir_call_poke(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
+        }
+        if func_name == "peek" {
+            return gen_ir_call_peek(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
         }
         return gen_ir_call_user(node, ast_idx, nodes, instrs, symtab_names, symtab_vregs)
     }
@@ -2787,6 +2804,18 @@ fn gen_code_from_ir(instrs: []IRInstr, code: []int) -> int {
             // Store byte from value_reg to memory at addr_reg
             let strb_encoded = encode_strb_offset(value_reg, addr_reg, 0)
             push(code, strb_encoded)
+            instr_count = instr_count + 1
+        }
+        if instr.op == OP_PEEK() {
+            // peek(addr) - read byte from memory
+            // dest = result (byte value as int), arg1 = address
+            let addr_reg = instr.arg1
+            let dest_reg = instr.dest
+
+            // LDRB Wdest, [Xaddr, #0]
+            // Load byte from memory at addr_reg into dest_reg
+            let ldrb_encoded = encode_ldrb_offset(dest_reg, addr_reg, 0)
+            push(code, ldrb_encoded)
             instr_count = instr_count + 1
         }
         if instr.op == OP_STR_CHAR_AT() {
@@ -3896,6 +3925,12 @@ fn main() -> int {
                 print(strconv.Itoa(instr.arg1))
                 print(", v")
                 print(strconv.Itoa(instr.arg2))
+            }
+            if instr.op == OP_PEEK() {
+                print("v")
+                print(strconv.Itoa(instr.dest))
+                print(" = peek v")
+                print(strconv.Itoa(instr.arg1))
             }
             if instr.op == OP_STR_CHAR_AT() {
                 print("v")
