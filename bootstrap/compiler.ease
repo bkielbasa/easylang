@@ -2049,6 +2049,7 @@ fn OP_ARRAY_PUSH() -> int { return 25 } // Array push: array, elem, elem_size
 fn OP_ARRAY_LEN() -> int { return 26 }  // Array length: returns len from fat pointer
 fn OP_STR_CHAR_AT() -> int { return 27 } // String char at: str, index -> char (int)
 fn OP_STR_SUBSTRING() -> int { return 28 } // String substring: str, start, end -> str
+fn OP_POKE() -> int { return 29 }  // Write byte to memory: addr, value
 fn OP_RET() -> int { return 30 }
 
 // Struct definitions and offsets (hardcoded for known structs)
@@ -2118,6 +2119,19 @@ fn gen_ir_call_push(ast_idx: int, nodes: []AstNode, instrs: []IRInstr, symtab_na
     let push_instr = IRInstr { op: OP_ARRAY_PUSH(), dest: -1, arg1: array_vreg, arg2: elem_vreg, arg3: 0, str_val: "" }
     push(instrs, push_instr)
     return array_vreg
+}
+
+// Helper: Generate IR for poke() builtin
+fn gen_ir_call_poke(ast_idx: int, nodes: []AstNode, instrs: []IRInstr, symtab_names: []string, symtab_vregs: []int) -> int {
+    let arg_indices = get_call_args(ast_idx)
+    if len(arg_indices) != 2 {
+        return -1
+    }
+    let addr_vreg = gen_ir_from_ast_with_symtab(arg_indices[0], nodes, instrs, symtab_names, symtab_vregs)
+    let value_vreg = gen_ir_from_ast_with_symtab(arg_indices[1], nodes, instrs, symtab_names, symtab_vregs)
+    let poke_instr = IRInstr { op: OP_POKE(), dest: -1, arg1: addr_vreg, arg2: value_vreg, arg3: 0, str_val: "" }
+    push(instrs, poke_instr)
+    return -1  // poke returns nothing
 }
 
 fn get_field_offset(name: string) -> int {
@@ -2367,6 +2381,9 @@ fn gen_ir_from_ast_with_symtab(ast_idx: int, nodes: []AstNode, instrs: []IRInstr
         }
         if func_name == "push" {
             return gen_ir_call_push(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
+        }
+        if func_name == "poke" {
+            return gen_ir_call_poke(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
         }
         return gen_ir_call_user(node, ast_idx, nodes, instrs, symtab_names, symtab_vregs)
     }
@@ -2758,6 +2775,18 @@ fn gen_code_from_ir(instrs: []IRInstr, code: []int) -> int {
             // Store new length back: STR X16, [Xarray, #8]
             let store_len = encode_str_offset(16, array_reg, 8)
             push(code, store_len)
+            instr_count = instr_count + 1
+        }
+        if instr.op == OP_POKE() {
+            // poke(addr, value) - write byte to memory
+            // arg1 = address, arg2 = value (byte)
+            let addr_reg = instr.arg1
+            let value_reg = instr.arg2
+
+            // STRB Wvalue, [Xaddr, #0]
+            // Store byte from value_reg to memory at addr_reg
+            let strb_encoded = encode_strb_offset(value_reg, addr_reg, 0)
+            push(code, strb_encoded)
             instr_count = instr_count + 1
         }
         if instr.op == OP_STR_CHAR_AT() {
@@ -3858,6 +3887,12 @@ fn main() -> int {
             }
             if instr.op == OP_ARRAY_PUSH() {
                 print("array_push v")
+                print(strconv.Itoa(instr.arg1))
+                print(", v")
+                print(strconv.Itoa(instr.arg2))
+            }
+            if instr.op == OP_POKE() {
+                print("poke v")
                 print(strconv.Itoa(instr.arg1))
                 print(", v")
                 print(strconv.Itoa(instr.arg2))
