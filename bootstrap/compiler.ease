@@ -2390,12 +2390,71 @@ fn gen_ir_stmt_for(n: AstNode, nodes: []AstNode, instrs: []IRInstr, st_n: []stri
 }
 
 fn gen_ir_stmt_block(node: AstNode, nodes: []AstNode, instrs: []IRInstr, st_n: []string, st_v: []int) -> int {
+    // First pass: collect child node indices from IF/FOR statements
+    // These nodes and their descendants shouldn't be processed as top-level statements
+    let mut child_indices = []int{}
+    let mut scan_i = node.left
+    let e = node.right + 1
+    for scan_i < e {
+        let scan_tag = nodes[scan_i].tag
+        if scan_tag == STMT_IF() || scan_tag == STMT_FOR() {
+            let scan_node = nodes[scan_i]
+            // Mark direct children
+            if scan_node.left >= 0 { push(child_indices, scan_node.left) }
+            if scan_node.right >= 0 {
+                push(child_indices, scan_node.right)
+                // If child is a block, also mark all nodes in that block's range
+                if scan_node.right < len(nodes) {
+                    let child_node = nodes[scan_node.right]
+                    if child_node.tag == STMT_BLOCK() {
+                        let mut block_i = child_node.left
+                        let block_e = child_node.right + 1
+                        for block_i < block_e {
+                            push(child_indices, block_i)
+                            block_i = block_i + 1
+                        }
+                    }
+                }
+            }
+            if scan_node.extra >= 0 {
+                push(child_indices, scan_node.extra)
+                // If child is a block, also mark all nodes in that block's range
+                if scan_node.extra < len(nodes) {
+                    let child_node = nodes[scan_node.extra]
+                    if child_node.tag == STMT_BLOCK() {
+                        let mut block_i = child_node.left
+                        let block_e = child_node.right + 1
+                        for block_i < block_e {
+                            push(child_indices, block_i)
+                            block_i = block_i + 1
+                        }
+                    }
+                }
+            }
+        }
+        scan_i = scan_i + 1
+    }
+
+    // Second pass: process statements, skipping child nodes
     let mut last = -1
     let mut i = node.left
-    let e = node.right + 1
     for i < e {
-        if nodes[i].tag >= STMT_LET() {
-            last = gen_ir_from_ast_with_symtab(i, nodes, instrs, st_n, st_v)
+        let node_tag = nodes[i].tag
+        if node_tag >= STMT_LET() && node_tag != STMT_BLOCK() {
+            // Check if this node is a child of another statement
+            let mut is_child = 0
+            let mut check_j = 0
+            let child_count = len(child_indices)
+            for check_j < child_count {
+                if child_indices[check_j] == i {
+                    is_child = 1
+                    break
+                }
+                check_j = check_j + 1
+            }
+            if is_child == 0 {
+                last = gen_ir_from_ast_with_symtab(i, nodes, instrs, st_n, st_v)
+            }
         }
         i = i + 1
     }
