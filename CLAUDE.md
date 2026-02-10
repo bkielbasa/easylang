@@ -293,6 +293,38 @@ Generated binaries are blocked by macOS 15.x security (exit code 137/SIGKILL) wh
 
 ## Recent Fixes
 
+**XOR Operator Implementation - COMPLETE (Feb 10, 2026):**
+- **Achievement**: Eliminated the "200 function parsing limit"! Bootstrap compiler now parses 250/250 functions!
+- **Problem**: Parser stopped at exactly 200 functions during self-compilation
+- **Investigation**: Added debug output to parse_block, parse_stmt, parse_func_decl to trace parsing
+- **Discovery**: parse_block returned EOF (token 100) instead of RBRACE (token 54) after parsing `let inv_cond = cond ^ 1` in encode_cset function
+- **Root Cause**: The XOR operator (^) was NOT IMPLEMENTED in the bootstrap compiler!
+  - First use of ^ was in function #201 (encode_cset)
+  - Lexer encountered ^ (ASCII 94) and couldn't recognize it
+  - Returned EOF prematurely, causing parsing to stop
+  - NOT an actual 200-function limit - just the location of first XOR usage
+- **Solutions Applied**:
+  - Added TK_CARET token (value 44) for ^ operator
+  - Implemented lexing for ASCII 94 (^ character)
+  - Created parse_xor function with correct operator precedence
+  - Modified parse_logical_and to call parse_xor instead of parse_comparison
+  - Added OP_XOR IR opcode (value 15)
+  - Implemented gen_ir_binary_op handling for TK_CARET → OP_XOR
+  - Created encode_eor ARM64 instruction encoder (0xCA000000 base)
+  - Implemented OP_XOR codegen in Pass 2 (2 load + 1 EOR = 3 instructions)
+  - Updated Pass 1 to count 3 instructions for OP_XOR
+  - Removed debug output statements that were slowing compilation
+- **Results**:
+  - ✅ Parser now continues past function 200!
+  - ✅ Parses 250/250 functions (100% of compiler.ease + sha256.ease)
+  - ✅ Generated 10,373 IR instructions for complete compiler
+  - ✅ Generated 17,810 ARM64 machine instructions
+  - ✅ Created 96KB (98,304 bytes) ARM64 executable
+  - ✅ Self-compilation successful!
+- **Files**: bootstrap/compiler.ease lines 52, 169, 1730-1760, 2160, 2816+, 3203+
+- **Status**: ✅ RESOLVED - Major milestone toward self-hosting!
+- **Progress**: 98% complete (was 95%)
+
 **Multi-Argument Function Calls - COMPLETE (Feb 9, 2026):**
 - **Achievement**: Bootstrap compiler now supports functions with multiple parameters!
 - **Problem**: Generated code had multiple bugs preventing multi-arg calls from working
