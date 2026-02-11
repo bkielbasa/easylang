@@ -26,9 +26,15 @@ jobs:
         with:
           go-version: '1.21'
 
+      - name: Build ease CLI tool
+        run: |
+          go build -o ease cmd/ease/main.go
+          chmod +x ease
+          ./ease version
+
       - name: Build bootstrap compiler
         run: |
-          go run cmd/ease/main.go build bootstrap/compiler.ease -o bootstrap_compiler
+          ./ease build bootstrap/compiler.ease -o bootstrap_compiler
           chmod +x bootstrap_compiler
           ls -lh bootstrap_compiler
 
