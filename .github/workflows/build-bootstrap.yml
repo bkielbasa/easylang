@@ -3,6 +3,8 @@ name: Build Bootstrap Compiler
 on:
   push:
     branches: [ master, main ]
+    tags:
+      - 'v*'  # Trigger on version tags (v0.1.0, v1.0.0, etc.)
     paths:
       - 'bootstrap/**'
       - 'pkg/**'
