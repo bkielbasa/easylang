@@ -18,6 +18,8 @@ jobs:
   build-bootstrap:
     name: Build Bootstrap Compiler
     runs-on: macos-latest  # Required for ARM64 macOS binary
+    permissions:
+      contents: write  # Required for creating releases
 
     steps:
       - name: Checkout code
