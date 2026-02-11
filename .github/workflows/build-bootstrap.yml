@@ -1,0 +1,97 @@
+name: Build Bootstrap Compiler
+
+on:
+  push:
+    branches: [ master, main ]
+    paths:
+      - 'bootstrap/**'
+      - 'pkg/**'
+      - 'cmd/**'
+      - '.github/workflows/build-bootstrap.yml'
+  pull_request:
+    branches: [ master, main ]
+  workflow_dispatch:  # Allow manual trigger
+
+jobs:
+  build-bootstrap:
+    name: Build Bootstrap Compiler
+    runs-on: macos-latest  # Required for ARM64 macOS binary
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.21'
+
+      - name: Build bootstrap compiler
+        run: |
+          go run cmd/ease/main.go build bootstrap/compiler.ease -o bootstrap_compiler
+          chmod +x bootstrap_compiler
+          ls -lh bootstrap_compiler
+
+      - name: Test bootstrap compiler
+        run: |
+          # Create simple test program
+          cat > test_sample.ease << 'EOF'
+          fn main() -> int {
+              return 42
+          }
+          EOF
+
+          # Compile with bootstrap
+          ./bootstrap_compiler test_sample.ease
+
+          # Verify binary was created
+          ls -lh tmp/test_output
+
+          # Test execution in lldb
+          lldb tmp/test_output -o "process launch" -o "exit" | grep "exited with status = 42"
+
+      - name: Run integration tests
+        run: |
+          ./tests/run_tests.sh
+
+      - name: Upload bootstrap compiler artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: bootstrap-compiler-macos-arm64
+          path: bootstrap_compiler
+          if-no-files-found: error
+          retention-days: 90
+
+      - name: Create release on tag
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v1
+        with:
+          files: bootstrap_compiler
+          body: |
+            ## Ease Bootstrap Compiler
+
+            Self-hosting Ease compiler (written in Ease, compiled by Go).
+
+            ### Platform
+            - macOS ARM64 (Apple Silicon)
+            - Generates ARM64 Mach-O binaries
+
+            ### Usage
+            ```bash
+            # Download and make executable
+            chmod +x bootstrap_compiler
+
+            # Compile Ease programs
+            ./bootstrap_compiler your_program.ease
+
+            # Run generated binary (in lldb due to macOS security)
+            lldb ./tmp/test_output -o "process launch" -o "exit"
+            ```
+
+            ### Capabilities
+            - Compiles Ease source (up to 384KB)
+            - Supports imports, functions, structs, arrays, loops, conditionals
+            - Generates working ARM64 binaries with code signatures
+            - Parser capacity: ~250 functions
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
