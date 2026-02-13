@@ -10,6 +10,7 @@ import (
 
 	"ease/pkg/ast"
 	"ease/pkg/codegen/arm64"
+	llvmcodegen "ease/pkg/codegen/llvm"
 	"ease/pkg/ir"
 	"ease/pkg/lexer"
 	"ease/pkg/macho"
@@ -68,6 +69,7 @@ func cmdBuild(args []string) {
 	var output string
 	var verbose bool
 	var dumpIR bool
+	backend := "llvm" // default backend
 
 	// Simple flag parsing
 	var files []string
@@ -82,13 +84,19 @@ func cmdBuild(args []string) {
 			verbose = true
 		case "--dump-ir":
 			dumpIR = true
+		case "--backend":
+			if i+1 < len(args) {
+				backend = args[i+1]
+				i++
+			}
 		case "-h", "--help":
 			fmt.Println(`Usage: ease build [options] <file.ease>
 
 Options:
-    -o <file>    output file name (default: name of input without extension)
-    -v           verbose output
-    --dump-ir    dump IR to stdout`)
+    -o <file>       output file name (default: name of input without extension)
+    -v              verbose output
+    --dump-ir       dump IR to stdout
+    --backend <be>  backend: llvm (default) or arm64`)
 			return
 		default:
 			if !strings.HasPrefix(args[i], "-") {
@@ -110,21 +118,22 @@ Options:
 		output = strings.TrimSuffix(base, filepath.Ext(base))
 	}
 
-	if err := compile(inputFile, output, verbose, dumpIR); err != nil {
+	if err := compileWithBackend(inputFile, output, verbose, dumpIR, backend); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
 
-	// Sign the binary (required on macOS)
-	signCmd := exec.Command("codesign", "-s", "-", "-f", output)
-	signCmd.Stderr = os.Stderr
-	if err := signCmd.Run(); err != nil {
-		// Non-fatal warning
-		if verbose {
-			fmt.Fprintf(os.Stderr, "warning: codesign failed: %v\n", err)
+	// Sign the binary (required on macOS, only for arm64 backend)
+	if backend == "arm64" {
+		signCmd := exec.Command("codesign", "-s", "-", "-f", output)
+		signCmd.Stderr = os.Stderr
+		if err := signCmd.Run(); err != nil {
+			if verbose {
+				fmt.Fprintf(os.Stderr, "warning: codesign failed: %v\n", err)
+			}
+		} else if verbose {
+			fmt.Println("Binary signed with ad-hoc signature")
 		}
-	} else if verbose {
-		fmt.Println("Binary signed with ad-hoc signature")
 	}
 }
 
@@ -132,6 +141,7 @@ Options:
 func cmdRun(args []string) {
 	var verbose bool
 	var dumpIR bool
+	backend := "llvm"
 
 	var files []string
 	var progArgs []string
@@ -147,14 +157,20 @@ func cmdRun(args []string) {
 			verbose = true
 		case "--dump-ir":
 			dumpIR = true
+		case "--backend":
+			if i+1 < len(args) {
+				backend = args[i+1]
+				i++
+			}
 		case "--":
 			seenDash = true
 		case "-h", "--help":
 			fmt.Println(`Usage: ease run [options] <file.ease> [-- args...]
 
 Options:
-    -v           verbose output
-    --dump-ir    dump IR to stdout
+    -v              verbose output
+    --dump-ir       dump IR to stdout
+    --backend <be>  backend: llvm (default) or arm64
 
 Arguments after -- are passed to the program.`)
 			return
@@ -176,18 +192,19 @@ Arguments after -- are passed to the program.`)
 	tmpFile := filepath.Join(os.TempDir(), "ease-run-"+filepath.Base(inputFile))
 	defer os.Remove(tmpFile)
 
-	if err := compile(inputFile, tmpFile, verbose, dumpIR); err != nil {
+	if err := compileWithBackend(inputFile, tmpFile, verbose, dumpIR, backend); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
 
-	// Sign the binary (required on macOS)
-	signCmd := exec.Command("codesign", "-s", "-", "-f", tmpFile)
-	signCmd.Stderr = os.Stderr
-	if err := signCmd.Run(); err != nil {
-		// Non-fatal, might work without signing on some systems
-		if verbose {
-			fmt.Fprintf(os.Stderr, "warning: codesign failed: %v\n", err)
+	// Sign the binary (required on macOS, only for arm64 backend)
+	if backend == "arm64" {
+		signCmd := exec.Command("codesign", "-s", "-", "-f", tmpFile)
+		signCmd.Stderr = os.Stderr
+		if err := signCmd.Run(); err != nil {
+			if verbose {
+				fmt.Fprintf(os.Stderr, "warning: codesign failed: %v\n", err)
+			}
 		}
 	}
 
@@ -553,14 +570,10 @@ func runTest(tc testCase, verbose bool) error {
 
 	binFile := filepath.Join(tmpDir, "test")
 
-	// Compile
-	if err := compile(srcFile, binFile, false, false); err != nil {
+	// Compile using LLVM backend (default)
+	if err := compileWithBackend(srcFile, binFile, false, false, "llvm"); err != nil {
 		return fmt.Errorf("compile error: %v", err)
 	}
-
-	// Sign (macOS requirement)
-	signCmd := exec.Command("codesign", "-s", "-", "-f", binFile)
-	signCmd.Run() // Ignore errors
 
 	// Run
 	cmd := exec.Command(binFile)
@@ -583,8 +596,8 @@ func runTest(tc testCase, verbose bool) error {
 	return nil
 }
 
-// compile compiles an Ease source file to a binary.
-func compile(inputFile, output string, verbose, dumpIR bool) error {
+// compileWithBackend compiles an Ease source file to a binary using the specified backend.
+func compileWithBackend(inputFile, output string, verbose, dumpIR bool, backend string) error {
 	// Read source file
 	source, err := os.ReadFile(inputFile)
 	if err != nil {
@@ -592,7 +605,7 @@ func compile(inputFile, output string, verbose, dumpIR bool) error {
 	}
 
 	if verbose {
-		fmt.Printf("Compiling %s...\n", inputFile)
+		fmt.Printf("Compiling %s (backend: %s)...\n", inputFile, backend)
 	}
 
 	// Lexer
@@ -644,7 +657,108 @@ func compile(inputFile, output string, verbose, dumpIR bool) error {
 		fmt.Printf("Generated IR for %d functions\n", len(irProg.Functions))
 	}
 
-	// Code generation
+	switch backend {
+	case "llvm":
+		return compileLLVM(irProg, inputFile, output, verbose)
+	case "arm64":
+		return compileARM64(irProg, output, verbose)
+	default:
+		return fmt.Errorf("unknown backend: %s (use llvm or arm64)", backend)
+	}
+}
+
+// findRuntimeC locates the ease_runtime.c file.
+func findRuntimeC() (string, error) {
+	// Try relative to CWD (development mode)
+	candidates := []string{
+		"runtime/ease_runtime.c",
+	}
+
+	// Try relative to the executable
+	if exe, err := os.Executable(); err == nil {
+		exeDir := filepath.Dir(exe)
+		candidates = append(candidates,
+			filepath.Join(exeDir, "runtime", "ease_runtime.c"),
+			filepath.Join(exeDir, "..", "runtime", "ease_runtime.c"),
+		)
+	}
+
+	for _, path := range candidates {
+		if _, err := os.Stat(path); err == nil {
+			abs, _ := filepath.Abs(path)
+			return abs, nil
+		}
+	}
+
+	return "", fmt.Errorf("cannot find runtime/ease_runtime.c; run from project root or set EASE_RUNTIME")
+}
+
+// compileLLVM generates LLVM IR and calls clang to produce a native binary.
+func compileLLVM(irProg *ir.Program, inputFile, output string, verbose bool) error {
+	// Find the C runtime
+	runtimePath, err := findRuntimeC()
+	if err != nil {
+		return err
+	}
+
+	// Generate LLVM IR
+	emitter := llvmcodegen.NewEmitter()
+	llvmIR := emitter.EmitProgram(irProg)
+
+	if verbose {
+		fmt.Printf("Generated %d bytes of LLVM IR\n", len(llvmIR))
+	}
+
+	// Write LLVM IR to temp file
+	tmpDir, err := os.MkdirTemp("", "ease-llvm-*")
+	if err != nil {
+		return fmt.Errorf("creating temp dir: %v", err)
+	}
+	defer os.RemoveAll(tmpDir)
+
+	llFile := filepath.Join(tmpDir, "program.ll")
+	if err := os.WriteFile(llFile, []byte(llvmIR), 0644); err != nil {
+		return fmt.Errorf("writing LLVM IR: %v", err)
+	}
+
+	// Call clang to compile LLVM IR + C runtime into native binary
+	absOutput, _ := filepath.Abs(output)
+	clangArgs := []string{
+		"-O1",
+		"-o", absOutput,
+		runtimePath,
+		llFile,
+	}
+
+	if verbose {
+		fmt.Printf("Running: clang %s\n", strings.Join(clangArgs, " "))
+	}
+
+	clangCmd := exec.Command("clang", clangArgs...)
+	clangCmd.Stderr = os.Stderr
+	if verbose {
+		clangCmd.Stdout = os.Stdout
+	}
+
+	if err := clangCmd.Run(); err != nil {
+		// On failure, save the .ll file for debugging
+		debugLL := output + ".ll"
+		os.WriteFile(debugLL, []byte(llvmIR), 0644)
+		return fmt.Errorf("clang failed: %v (LLVM IR saved to %s)", err, debugLL)
+	}
+
+	if verbose {
+		info, _ := os.Stat(absOutput)
+		if info != nil {
+			fmt.Printf("Wrote %d bytes to %s\n", info.Size(), output)
+		}
+	}
+
+	return nil
+}
+
+// compileARM64 uses the original ARM64 backend to produce a native binary.
+func compileARM64(irProg *ir.Program, output string, verbose bool) error {
 	emitter := arm64.NewEmitter()
 
 	// Track function offsets for the linker
@@ -667,22 +781,19 @@ func compile(inputFile, output string, verbose, dumpIR bool) error {
 
 	// Calculate memory layout for fixups
 	const (
-		baseAddr = 0x100000000 // Base VM address
-		pageSize = 0x4000      // 16KB pages on Apple Silicon
+		baseAddr = 0x100000000
+		pageSize = 0x4000
 	)
 
 	codeSize := uint64(emitter.CodeSize())
 
-	// Create Mach-O writer early to get code VM address for fixups
 	writer := macho.NewWriter()
-	code := emitter.Code() // Get code before fixups
+	code := emitter.Code()
 	writer.SetCode(code)
 	writer.SetStrings(irProg.Strings)
 
-	// Get the actual code VM address from the writer
 	codeVMAddr := writer.CodeVMAddr()
 
-	// Fixup string addresses (strings are in __TEXT segment after code)
 	if len(irProg.Strings) > 0 {
 		stringOffsets := make([]uint64, len(irProg.Strings))
 		offset := codeSize
@@ -693,30 +804,22 @@ func compile(inputFile, output string, verbose, dumpIR bool) error {
 		emitter.FixupStrings(stringOffsets, codeVMAddr)
 	}
 
-	// Update code after fixups
 	code = emitter.Code()
 	writer.SetCode(code)
 
-	// Calculate global VM addresses (globals are in __DATA segment)
 	if len(irProg.GlobalVars) > 0 {
-		// Calculate strings size
 		stringsSize := uint64(0)
 		for _, s := range irProg.Strings {
 			stringsSize += uint64(len(s) + 1)
 		}
 
-		// __TEXT segment size (code + strings, page-aligned)
 		codeFileOff := codeVMAddr - baseAddr
 		textSegSize := ((codeFileOff + codeSize + stringsSize + pageSize - 1) / pageSize) * pageSize
-
-		// __DATA segment starts at next page boundary
 		dataVMAddr := baseAddr + textSegSize
 
-		// Calculate each global's VM address
 		globalAddrs := make(map[string]uint64)
 		offset := 0
 		for _, gv := range irProg.GlobalVars {
-			// Align to 8-byte boundary
 			if offset%8 != 0 {
 				offset += 8 - (offset % 8)
 			}
@@ -724,15 +827,11 @@ func compile(inputFile, output string, verbose, dumpIR bool) error {
 			offset += gv.Size
 		}
 
-		// Fixup global variable addresses
 		emitter.FixupGlobals(globalAddrs, codeVMAddr)
-
-		// Update code after global fixups
 		code = emitter.Code()
 		writer.SetCode(code)
 	}
 
-	// Set main offset
 	writer.SetMainOffset(mainOff)
 
 	if verbose {
@@ -743,17 +842,14 @@ func compile(inputFile, output string, verbose, dumpIR bool) error {
 		fmt.Printf("main function at offset %d\n", mainOff)
 	}
 
-	// Set global variables with calculated offsets
 	if len(irProg.GlobalVars) > 0 {
 		machoGlobals := make([]macho.GlobalVar, 0, len(irProg.GlobalVars))
 		offset := 0
 		for _, gv := range irProg.GlobalVars {
-			// Align to 8-byte boundary
 			if offset%8 != 0 {
 				offset += 8 - (offset % 8)
 			}
 
-			// Extract initial value for simple types
 			var initVal int64 = 0
 			if gv.InitVal != nil {
 				switch val := gv.InitVal.(type) {
@@ -777,7 +873,6 @@ func compile(inputFile, output string, verbose, dumpIR bool) error {
 		writer.SetGlobalVars(machoGlobals)
 	}
 
-	// Add symbols
 	for name, offset := range funcOffsets {
 		extern := name == "main"
 		writer.AddSymbol("_"+name, offset, 1, extern)
@@ -785,7 +880,6 @@ func compile(inputFile, output string, verbose, dumpIR bool) error {
 
 	binary := writer.Write()
 
-	// Write output file
 	if err := os.WriteFile(output, binary, 0755); err != nil {
 		return fmt.Errorf("error writing %s: %v", output, err)
 	}
