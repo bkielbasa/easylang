@@ -266,6 +266,26 @@ var Builtins = []*BuiltinFunction{
 			Result: &Slice{Elem: TypString},
 		},
 	},
+	{
+		Name: "str_eq",
+		Type: &Function{
+			Params: []*Param{
+				{Name: "a", Type: TypString},
+				{Name: "b", Type: TypString},
+			},
+			Result: TypBool,
+		},
+	},
+	{
+		Name: "str_ne",
+		Type: &Function{
+			Params: []*Param{
+				{Name: "a", Type: TypString},
+				{Name: "b", Type: TypString},
+			},
+			Result: TypBool,
+		},
+	},
 	// OS/File operations (used by stdlib/io module)
 	{
 		Name: "os.ReadFile",

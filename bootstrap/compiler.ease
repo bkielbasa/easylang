@@ -4,7 +4,6 @@
 
 import (
     "strconv"
-    "./sha256"
 )
 
 // ============================================================================
@@ -50,6 +49,8 @@ fn TK_AND() -> int { return 41 }
 fn TK_OR() -> int { return 42 }
 fn TK_NOT() -> int { return 43 }
 fn TK_CARET() -> int { return 44 }  // XOR operator ^
+fn TK_AMPERSAND() -> int { return 46 }  // Bitwise AND operator &
+fn TK_PIPE() -> int { return 50 }  // Bitwise OR operator |
 
 // Assignment
 fn TK_ASSIGN() -> int { return 45 }
@@ -167,6 +168,8 @@ fn lex_kind(src: string, pos: int) -> int {
     if ch == 47 { return TK_SLASH() }     // /
     if ch == 37 { return TK_PERCENT() }   // %
     if ch == 94 { return TK_CARET() }     // ^ (XOR)
+    if ch == 38 { return TK_AMPERSAND() } // & (bitwise AND, after && check)
+    if ch == 124 { return TK_PIPE() }     // | (bitwise OR, after || check)
     if ch == 60 { return TK_LT() }        // <
     if ch == 62 { return TK_GT() }        // >
     if ch == 61 { return TK_ASSIGN() }    // =
@@ -189,19 +192,19 @@ fn lex_kind(src: string, pos: int) -> int {
             end = end + 1
         }
         let word = str_substring(src, pos, end)
-        if word == "fn" { return TK_FN() }
-        if word == "let" { return TK_LET() }
-        if word == "mut" { return TK_MUT() }
-        if word == "if" { return TK_IF() }
-        if word == "else" { return TK_ELSE() }
-        if word == "for" { return TK_FOR() }
-        if word == "in" { return TK_IN() }
-        if word == "return" { return TK_RETURN() }
-        if word == "break" { return TK_BREAK() }
-        if word == "struct" { return TK_STRUCT() }
-        if word == "true" { return TK_TRUE() }
-        if word == "false" { return TK_FALSE() }
-        if word == "import" { return TK_IMPORT() }
+        if str_eq(word, "fn") { return TK_FN() }
+        if str_eq(word, "let") { return TK_LET() }
+        if str_eq(word, "mut") { return TK_MUT() }
+        if str_eq(word, "if") { return TK_IF() }
+        if str_eq(word, "else") { return TK_ELSE() }
+        if str_eq(word, "for") { return TK_FOR() }
+        if str_eq(word, "in") { return TK_IN() }
+        if str_eq(word, "return") { return TK_RETURN() }
+        if str_eq(word, "break") { return TK_BREAK() }
+        if str_eq(word, "struct") { return TK_STRUCT() }
+        if str_eq(word, "true") { return TK_TRUE() }
+        if str_eq(word, "false") { return TK_FALSE() }
+        if str_eq(word, "import") { return TK_IMPORT() }
         return TK_IDENT()
     }
 
@@ -223,7 +226,7 @@ fn lex_end(src: string, pos: int, kind: int) -> int {
        kind == TK_RBRACE() || kind == TK_LBRACKET() || kind == TK_RBRACKET() ||
        kind == TK_COMMA() || kind == TK_COLON() || kind == TK_SEMI() || kind == TK_DOT() ||
        kind == TK_PLUS() || kind == TK_MINUS() || kind == TK_STAR() || kind == TK_SLASH() ||
-       kind == TK_PERCENT() || kind == TK_CARET() || kind == TK_LT() || kind == TK_GT() || kind == TK_ASSIGN() || kind == TK_NOT() {
+       kind == TK_PERCENT() || kind == TK_CARET() || kind == TK_AMPERSAND() || kind == TK_PIPE() || kind == TK_LT() || kind == TK_GT() || kind == TK_ASSIGN() || kind == TK_NOT() {
         return pos + 1
     }
 
@@ -293,9 +296,28 @@ fn lex_string_value(src: string, pos: int, kind: int) -> string {
         return str_substring(src, pos, end)
     }
     if kind == TK_STRING() {
-        // Extract string content without quotes
+        // Extract string content without quotes, decode escape sequences
         let end = lex_end(src, pos, kind)
-        return str_substring(src, pos + 1, end - 1)  // Skip opening and closing quotes
+        let raw = str_substring(src, pos + 1, end - 1)
+        let raw_len = len(raw)
+        let mut result = ""
+        let mut ri = 0
+        for ri < raw_len {
+            let ch = str_char_at(raw, ri)
+            if ch == 92 && ri + 1 < raw_len {
+                let next = str_char_at(raw, ri + 1)
+                if next == 110 { result = result + "\n" }
+                if next == 116 { result = result + "\t" }
+                if next == 92  { result = result + "\\" }
+                if next == 34  { result = result + "\"" }
+                if next == 48  { poke(result, len(result), 0) }
+                ri = ri + 2
+            } else {
+                result = result + str_substring(raw, ri, ri + 1)
+                ri = ri + 1
+            }
+        }
+        return result
     }
     return ""
 }
@@ -428,6 +450,11 @@ fn get_call_args(call_node_idx: int) -> []int {
 // Layout: same as g_call_args
 // TODO: Re-enable when parser supports top-level let
 let mut g_struct_fields = []int{}
+let mut g_string_vars = []string{}
+let mut g_string_array_vars = []string{}
+let mut g_scalar_globals = []string{}
+let mut g_break_label = -1
+let mut g_next_label = 100000
 
 fn store_struct_fields(struct_node_idx: int, field_indices: []int) {
     push(g_struct_fields, struct_node_idx)
@@ -677,11 +704,22 @@ fn parse_if_stmt(src: string, pos: int, nodes: []AstNode) -> ParseResult {
     if next_kind == TK_ELSE() {
         p = lex_end(src, p, next_kind)
         p = lex_skip(src, p)
-        // Parse else block
-        let else_result = parse_block(src, p, nodes)
-        if else_result.node_idx >= 0 {
-            else_node = else_result.node_idx
-            p = else_result.new_pos
+        // Check for else if
+        let else_kind = lex_kind(src, p)
+        if else_kind == TK_IF() {
+            // else if -> parse as nested if statement
+            let else_if_result = parse_if_stmt(src, p, nodes)
+            if else_if_result.node_idx >= 0 {
+                else_node = else_if_result.node_idx
+                p = else_if_result.new_pos
+            }
+        } else {
+            // else { block }
+            let else_result = parse_block(src, p, nodes)
+            if else_result.node_idx >= 0 {
+                else_node = else_result.node_idx
+                p = else_result.new_pos
+            }
         }
     }
 
@@ -987,15 +1025,21 @@ fn parse_param(src: string, pos: int, nodes: []AstNode) -> ParseResult {
     }
 
     // Create parameter node
-    // str_val = param_name, int_val = 0 (type stored separately in real impl)
+    // int_val: 1 = array type, 0 = scalar type
+    let mut param_type_tag = TYPE_UNKNOWN()
+    let mut param_is_array = 0
+    if str_eq(type_name, "string") { param_type_tag = TYPE_STRING() }
+    if str_eq(type_name, "int") { param_type_tag = TYPE_INT() }
+    if str_eq(type_name, "[]string") { param_type_tag = TYPE_STRING() param_is_array = 1 }
+    if str_eq(type_name, "[]int") { param_type_tag = TYPE_INT() param_is_array = 1 }
     let param = AstNode {
         tag: DECL_PARAM(),
-        int_val: 0,
+        int_val: param_is_array,
         str_val: param_name,
         left: -1,
         right: -1,
         extra: -1,
-        type_tag: TYPE_UNKNOWN()
+        type_tag: param_type_tag
     }
     push(nodes, param)
     return ParseResult { node_idx: len(nodes) - 1, new_pos: p }
@@ -1085,6 +1129,19 @@ fn parse_block(src: string, pos: int, nodes: []AstNode) -> ParseResult {
 
         let stmt_result = parse_stmt(src, p, nodes)
         if stmt_result.node_idx < 0 {
+            print("PARSE_BLOCK: stmt failed at pos ")
+            print(strconv.Itoa(p))
+            print(", token=")
+            print(strconv.Itoa(lex_kind(src, p)))
+            print(", stmts_so_far=")
+            print(strconv.Itoa(stmt_count))
+            print(", nodes=")
+            print(strconv.Itoa(len(nodes)))
+            print(", context=")
+            let mut ctx_e = p + 60
+            if ctx_e > len(src) { ctx_e = len(src) }
+            print(str_substring(src, p, ctx_e))
+            print("\n")
             break
         }
         stmt_count = stmt_count + 1
@@ -1113,6 +1170,17 @@ fn parse_block(src: string, pos: int, nodes: []AstNode) -> ParseResult {
     // Expect '}'
     let rbrace = lex_kind(src, p)
     if rbrace != TK_RBRACE() {
+        print("PARSE_BLOCK: expected RBRACE at pos ")
+        print(strconv.Itoa(p))
+        print(", got token=")
+        print(strconv.Itoa(rbrace))
+        print(", stmt_count=")
+        print(strconv.Itoa(stmt_count))
+        print(", context=")
+        let mut ctx_e2 = p + 60
+        if ctx_e2 > len(src) { ctx_e2 = len(src) }
+        print(str_substring(src, p, ctx_e2))
+        print("\n")
         return ParseResult { node_idx: -1, new_pos: p }
     }
     p = lex_end(src, p, rbrace)
@@ -1485,8 +1553,10 @@ fn parse_atom(src: string, pos: int, nodes: []AstNode) -> ParseResult {
         p = lex_end(src, p, TK_RBRACKET())
         p = lex_skip(src, p)
 
-        // Expect type name (for now, just skip - assume 'int')
+        // Parse element type name
+        let mut elem_type_name = "int"
         if lex_kind(src, p) == TK_IDENT() {
+            elem_type_name = lex_string_value(src, p, TK_IDENT())
             p = lex_end(src, p, TK_IDENT())
             p = lex_skip(src, p)
         }
@@ -1541,7 +1611,7 @@ fn parse_atom(src: string, pos: int, nodes: []AstNode) -> ParseResult {
         let array_node = AstNode {
             tag: EXPR_ARRAY_LIT(),
             int_val: elem_count,
-            str_val: "int",  // element type
+            str_val: elem_type_name,  // element type
             left: -1,
             right: first_elem_idx,
             extra: -1,
@@ -1658,7 +1728,8 @@ fn parse_comparison(src: string, start_pos: int, nodes: []AstNode) -> ParseResul
 }
 
 // Parse XOR: ^
-fn parse_xor(src: string, start_pos: int, nodes: []AstNode) -> ParseResult {
+// Parse bitwise AND: &
+fn parse_bitand(src: string, start_pos: int, nodes: []AstNode) -> ParseResult {
     let mut result = parse_comparison(src, start_pos, nodes)
     if result.node_idx < 0 {
         return result
@@ -1670,7 +1741,7 @@ fn parse_xor(src: string, start_pos: int, nodes: []AstNode) -> ParseResult {
     for {
         pos = lex_skip(src, pos)
         let op = lex_kind(src, pos)
-        if op != TK_CARET() {
+        if op != TK_AMPERSAND() {
             break
         }
 
@@ -1687,9 +1758,69 @@ fn parse_xor(src: string, start_pos: int, nodes: []AstNode) -> ParseResult {
     return ParseResult { node_idx: left, new_pos: pos }
 }
 
+// Parse XOR: ^
+fn parse_xor(src: string, start_pos: int, nodes: []AstNode) -> ParseResult {
+    let mut result = parse_bitand(src, start_pos, nodes)
+    if result.node_idx < 0 {
+        return result
+    }
+
+    let mut pos = result.new_pos
+    let mut left = result.node_idx
+
+    for {
+        pos = lex_skip(src, pos)
+        let op = lex_kind(src, pos)
+        if op != TK_CARET() {
+            break
+        }
+
+        pos = lex_end(src, pos, op)
+        let right_result = parse_bitand(src, pos, nodes)
+        if right_result.node_idx < 0 {
+            break
+        }
+
+        left = new_binary_node(op, left, right_result.node_idx, nodes)
+        pos = right_result.new_pos
+    }
+
+    return ParseResult { node_idx: left, new_pos: pos }
+}
+
+// Parse bitwise OR: |
+fn parse_bitor(src: string, start_pos: int, nodes: []AstNode) -> ParseResult {
+    let mut result = parse_xor(src, start_pos, nodes)
+    if result.node_idx < 0 {
+        return result
+    }
+
+    let mut pos = result.new_pos
+    let mut left = result.node_idx
+
+    for {
+        pos = lex_skip(src, pos)
+        let op = lex_kind(src, pos)
+        if op != TK_PIPE() {
+            break
+        }
+
+        pos = lex_end(src, pos, op)
+        let right_result = parse_xor(src, pos, nodes)
+        if right_result.node_idx < 0 {
+            break
+        }
+
+        left = new_binary_node(op, left, right_result.node_idx, nodes)
+        pos = right_result.new_pos
+    }
+
+    return ParseResult { node_idx: left, new_pos: pos }
+}
+
 // Parse logical AND: &&
 fn parse_logical_and(src: string, start_pos: int, nodes: []AstNode) -> ParseResult {
-    let mut result = parse_xor(src, start_pos, nodes)
+    let mut result = parse_bitor(src, start_pos, nodes)
     if result.node_idx < 0 {
         return result
     }
@@ -1705,7 +1836,7 @@ fn parse_logical_and(src: string, start_pos: int, nodes: []AstNode) -> ParseResu
         }
 
         pos = lex_end(src, pos, op)
-        let right_result = parse_xor(src, pos, nodes)
+        let right_result = parse_bitor(src, pos, nodes)
         if right_result.node_idx < 0 {
             break
         }
@@ -2047,13 +2178,13 @@ fn symtab_add(st: SymbolTable, name: string, vreg: int) {
 }
 
 fn symtab_lookup(st: SymbolTable, name: string) -> int {
-    let mut i = 0
-    let count = len(st.names)
-    for i < count {
-        if st.names[i] == name {
+    // Search backwards to find the most recent binding (handles shadowing)
+    let mut i = len(st.names) - 1
+    for i >= 0 {
+        if str_eq(st.names[i], name) {
             return st.vregs[i]
         }
-        i = i + 1
+        i = i - 1
     }
     return -1  // Not found
 }
@@ -2087,6 +2218,8 @@ fn OP_AND() -> int { return 12 }
 fn OP_OR() -> int { return 13 }
 fn OP_NOT() -> int { return 14 }
 fn OP_XOR() -> int { return 15 }
+fn OP_BITAND() -> int { return 16 }
+fn OP_BITOR() -> int { return 17 }
 fn OP_ALLOCA() -> int { return 20 }
 fn OP_STORE() -> int { return 21 }
 fn OP_LOAD() -> int { return 22 }
@@ -2103,39 +2236,40 @@ fn OP_HEAP_ALLOC() -> int { return 32 }  // Allocate memory: size -> pointer
 
 // Struct definitions and offsets (hardcoded for known structs)
 // AstNode: tag(8), int_val(8), str_val(8), left(8), right(8), extra(8), type_tag(8) = 56 bytes
-// IRInstr: op(8), dest(8), arg1(8), arg2(8), str_val(8) = 40 bytes
+// IRInstr: op(8), dest(8), arg1(8), arg2(8), arg3(8), str_val(8) = 48 bytes
 // ParseResult: node_idx(8), new_pos(8) = 16 bytes
 
 fn struct_size(struct_name: string) -> int {
-    if struct_name == "AstNode" { return 56 }
-    if struct_name == "IRInstr" { return 40 }
-    if struct_name == "ParseResult" { return 16 }
+    if str_eq(struct_name, "AstNode") { return 56 }
+    if str_eq(struct_name, "IRInstr") { return 48 }
+    if str_eq(struct_name, "ParseResult") { return 16 }
     return 64  // Default: 8 fields * 8 bytes
 }
 
 fn field_offset(struct_name: string, field_name: string) -> int {
     // AstNode fields
-    if struct_name == "AstNode" {
-        if field_name == "tag" { return 0 }
-        if field_name == "int_val" { return 8 }
-        if field_name == "str_val" { return 16 }
-        if field_name == "left" { return 24 }
-        if field_name == "right" { return 32 }
-        if field_name == "extra" { return 40 }
-        if field_name == "type_tag" { return 48 }
+    if str_eq(struct_name, "AstNode") {
+        if str_eq(field_name, "tag") { return 0 }
+        if str_eq(field_name, "int_val") { return 8 }
+        if str_eq(field_name, "str_val") { return 16 }
+        if str_eq(field_name, "left") { return 24 }
+        if str_eq(field_name, "right") { return 32 }
+        if str_eq(field_name, "extra") { return 40 }
+        if str_eq(field_name, "type_tag") { return 48 }
     }
     // IRInstr fields
-    if struct_name == "IRInstr" {
-        if field_name == "op" { return 0 }
-        if field_name == "dest" { return 8 }
-        if field_name == "arg1" { return 16 }
-        if field_name == "arg2" { return 24 }
-        if field_name == "str_val" { return 32 }
+    if str_eq(struct_name, "IRInstr") {
+        if str_eq(field_name, "op") { return 0 }
+        if str_eq(field_name, "dest") { return 8 }
+        if str_eq(field_name, "arg1") { return 16 }
+        if str_eq(field_name, "arg2") { return 24 }
+        if str_eq(field_name, "arg3") { return 32 }
+        if str_eq(field_name, "str_val") { return 40 }
     }
     // ParseResult fields
-    if struct_name == "ParseResult" {
-        if field_name == "node_idx" { return 0 }
-        if field_name == "new_pos" { return 8 }
+    if str_eq(struct_name, "ParseResult") {
+        if str_eq(field_name, "node_idx") { return 0 }
+        if str_eq(field_name, "new_pos") { return 8 }
     }
     return 0  // Unknown field, return 0
 }
@@ -2145,9 +2279,114 @@ fn OP_READFILE() -> int { return 35 }  // Read file: path -> content string
 fn OP_ARGC() -> int { return 36 }     // Get argument count -> int
 fn OP_ARGV() -> int { return 37 }     // Get argument at index: index -> string
 fn OP_INT_TO_STR() -> int { return 38 } // Convert int to string: int -> string
+fn OP_PRINT() -> int { return 39 } // Print string to stdout: string -> ()
 fn OP_LABEL() -> int { return 40 }
 fn OP_JUMP() -> int { return 41 }
 fn OP_BRANCH() -> int { return 42 }
+fn OP_SYSCALL_OPEN() -> int { return 43 }
+fn OP_SYSCALL_WRITE() -> int { return 44 }
+fn OP_SYSCALL_CLOSE() -> int { return 45 }
+fn OP_STR_EQ() -> int { return 46 }
+fn OP_STR_NE() -> int { return 47 }
+fn OP_STR_CONCAT() -> int { return 48 }
+fn OP_COPY() -> int { return 49 }
+fn OP_LOAD_GLOBAL() -> int { return 50 }
+fn OP_STR_LEN() -> int { return 51 }
+
+fn is_scalar_global(name: string) -> int {
+    let mut i = 0
+    for i < len(g_scalar_globals) {
+        if str_eq(g_scalar_globals[i], name) { return 1 }
+        i = i + 1
+    }
+    return 0
+}
+
+// Helper: check if an AST expression produces a string value
+fn is_string_expr(idx: int, nodes: []AstNode) -> int {
+    if idx < 0 { return 0 }
+    let node = nodes[idx]
+    if node.tag == EXPR_STRING() { return 1 }
+    if node.tag == EXPR_IDENT() {
+        // Check if this variable was tracked as holding a string
+        let mut si = 0
+        let slen = len(g_string_vars)
+        for si < slen {
+            if str_eq(g_string_vars[si], node.str_val) { return 1 }
+            si = si + 1
+        }
+        return 0
+    }
+    if node.tag == EXPR_CALL() {
+        if str_eq(node.str_val, "Itoa") || str_eq(node.str_val, "strconv.Itoa") { return 1 }
+        if str_eq(node.str_val, "str_substring") { return 1 }
+        if str_eq(node.str_val, "ReadFile") || str_eq(node.str_val, "os.ReadFile") { return 1 }
+        if str_eq(node.str_val, "Argv") || str_eq(node.str_val, "os.Argv") { return 1 }
+        if str_eq(node.str_val, "lex_string_value") { return 1 }
+        if str_eq(node.str_val, "llvm_escape_string") { return 1 }
+        if str_eq(node.str_val, "llvm_mangle") { return 1 }
+        if str_eq(node.str_val, "llvm_func_name") { return 1 }
+        if str_eq(node.str_val, "tmp_name") { return 1 }
+        if str_eq(node.str_val, "emit_load_vreg") { return 1 }
+        if str_eq(node.str_val, "emit_load_ptr") { return 1 }
+        if str_eq(node.str_val, "hex_byte_str") { return 1 }
+        if str_eq(node.str_val, "hex_digit_char") { return 1 }
+        if str_eq(node.str_val, "str_eq") || str_eq(node.str_val, "str_ne") { return 0 }
+        return 0
+    }
+    if node.tag == EXPR_FIELD() {
+        // Field access: check if the field name is known to be a string
+        if str_eq(node.str_val, "str_val") { return 1 }
+        return 0
+    }
+    if node.tag == EXPR_INDEX() {
+        // Array indexing: check if base array is a known string array
+        let base = nodes[node.left]
+        if base.tag == EXPR_IDENT() {
+            let mut sai = 0
+            for sai < len(g_string_array_vars) {
+                if str_eq(g_string_array_vars[sai], base.str_val) { return 1 }
+                sai = sai + 1
+            }
+        }
+        return 0
+    }
+    // NOTE: EXPR_ARRAY_LIT is NOT a string - it's an array.
+    // []string{} is a string ARRAY, not a string value.
+    // String array detection is in is_string_array_expr.
+    if node.tag == EXPR_BINARY() {
+        if node.int_val == TK_PLUS() {
+            if is_string_expr(node.left, nodes) == 1 { return 1 }
+            if is_string_expr(node.right, nodes) == 1 { return 1 }
+        }
+        return 0
+    }
+    return 0
+}
+
+fn is_string_array_expr(idx: int, nodes: []AstNode) -> int {
+    if idx < 0 { return 0 }
+    let node = nodes[idx]
+    if node.tag == EXPR_ARRAY_LIT() {
+        if str_eq(node.str_val, "string") { return 1 }
+        return 0
+    }
+    if node.tag == EXPR_IDENT() {
+        let mut i = 0
+        for i < len(g_string_array_vars) {
+            if str_eq(g_string_array_vars[i], node.str_val) { return 1 }
+            i = i + 1
+        }
+        return 0
+    }
+    if node.tag == EXPR_CALL() {
+        if str_eq(node.str_val, "get_call_args") { return 0 }
+        if str_eq(node.str_val, "get_struct_fields") { return 0 }
+        if str_eq(node.str_val, "get_struct_field_names") { return 1 }
+        return 0
+    }
+    return 0
+}
 
 // Helper: Generate IR for len() builtin
 fn gen_ir_call_len(ast_idx: int, nodes: []AstNode, instrs: []IRInstr, symtab_names: []string, symtab_vregs: []int) -> int {
@@ -2157,7 +2396,11 @@ fn gen_ir_call_len(ast_idx: int, nodes: []AstNode, instrs: []IRInstr, symtab_nam
     }
     let array_vreg = gen_ir_from_ast_with_symtab(arg_indices[0], nodes, instrs, symtab_names, symtab_vregs)
     let result_vreg = len(instrs)
-    let len_instr = IRInstr { op: OP_ARRAY_LEN(), dest: result_vreg, arg1: array_vreg, arg2: 0, arg3: 0, str_val: "" }
+    let mut op = OP_ARRAY_LEN()
+    if is_string_expr(arg_indices[0], nodes) == 1 {
+        op = OP_STR_LEN()
+    }
+    let len_instr = IRInstr { op: op, dest: result_vreg, arg1: array_vreg, arg2: 0, arg3: 0, str_val: "" }
     push(instrs, len_instr)
     return result_vreg
 }
@@ -2261,15 +2504,109 @@ fn gen_ir_call_itoa(ast_idx: int, nodes: []AstNode, instrs: []IRInstr, symtab_na
     return result_vreg
 }
 
+fn gen_ir_call_print(ast_idx: int, nodes: []AstNode, instrs: []IRInstr, symtab_names: []string, symtab_vregs: []int) -> int {
+    // print(string) -> ()
+    let arg_indices = get_call_args(ast_idx)
+    if len(arg_indices) != 1 {
+        return -1
+    }
+    let str_vreg = gen_ir_from_ast_with_symtab(arg_indices[0], nodes, instrs, symtab_names, symtab_vregs)
+    let print_instr = IRInstr { op: OP_PRINT(), dest: 0, arg1: str_vreg, arg2: 0, arg3: 0, str_val: "" }
+    push(instrs, print_instr)
+    return 0  // print returns nothing
+}
+
+fn gen_ir_call_str_char_at(ast_idx: int, nodes: []AstNode, instrs: []IRInstr, symtab_names: []string, symtab_vregs: []int) -> int {
+    let arg_indices = get_call_args(ast_idx)
+    if len(arg_indices) != 2 { return -1 }
+    let str_vreg = gen_ir_from_ast_with_symtab(arg_indices[0], nodes, instrs, symtab_names, symtab_vregs)
+    let idx_vreg = gen_ir_from_ast_with_symtab(arg_indices[1], nodes, instrs, symtab_names, symtab_vregs)
+    let result_vreg = len(instrs)
+    push(instrs, IRInstr { op: OP_STR_CHAR_AT(), dest: result_vreg, arg1: str_vreg, arg2: idx_vreg, arg3: 0, str_val: "" })
+    return result_vreg
+}
+
+fn gen_ir_call_str_substring(ast_idx: int, nodes: []AstNode, instrs: []IRInstr, symtab_names: []string, symtab_vregs: []int) -> int {
+    let arg_indices = get_call_args(ast_idx)
+    if len(arg_indices) != 3 { return -1 }
+    let str_vreg = gen_ir_from_ast_with_symtab(arg_indices[0], nodes, instrs, symtab_names, symtab_vregs)
+    let start_vreg = gen_ir_from_ast_with_symtab(arg_indices[1], nodes, instrs, symtab_names, symtab_vregs)
+    let end_vreg = gen_ir_from_ast_with_symtab(arg_indices[2], nodes, instrs, symtab_names, symtab_vregs)
+    let result_vreg = len(instrs)
+    push(instrs, IRInstr { op: OP_STR_SUBSTRING(), dest: result_vreg, arg1: str_vreg, arg2: start_vreg, arg3: end_vreg, str_val: "" })
+    return result_vreg
+}
+
+fn gen_ir_call_str_eq(ast_idx: int, nodes: []AstNode, instrs: []IRInstr, symtab_names: []string, symtab_vregs: []int) -> int {
+    let arg_indices = get_call_args(ast_idx)
+    if len(arg_indices) != 2 { return -1 }
+    let a_vreg = gen_ir_from_ast_with_symtab(arg_indices[0], nodes, instrs, symtab_names, symtab_vregs)
+    let b_vreg = gen_ir_from_ast_with_symtab(arg_indices[1], nodes, instrs, symtab_names, symtab_vregs)
+    let result_vreg = len(instrs)
+    push(instrs, IRInstr { op: OP_STR_EQ(), dest: result_vreg, arg1: a_vreg, arg2: b_vreg, arg3: 0, str_val: "" })
+    return result_vreg
+}
+
+fn gen_ir_call_str_ne(ast_idx: int, nodes: []AstNode, instrs: []IRInstr, symtab_names: []string, symtab_vregs: []int) -> int {
+    let arg_indices = get_call_args(ast_idx)
+    if len(arg_indices) != 2 { return -1 }
+    let a_vreg = gen_ir_from_ast_with_symtab(arg_indices[0], nodes, instrs, symtab_names, symtab_vregs)
+    let b_vreg = gen_ir_from_ast_with_symtab(arg_indices[1], nodes, instrs, symtab_names, symtab_vregs)
+    let result_vreg = len(instrs)
+    push(instrs, IRInstr { op: OP_STR_NE(), dest: result_vreg, arg1: a_vreg, arg2: b_vreg, arg3: 0, str_val: "" })
+    return result_vreg
+}
+
+fn gen_ir_call_syscall_open(ast_idx: int, nodes: []AstNode, instrs: []IRInstr, symtab_names: []string, symtab_vregs: []int) -> int {
+    let arg_indices = get_call_args(ast_idx)
+    if len(arg_indices) != 3 { return -1 }
+    let path_vreg = gen_ir_from_ast_with_symtab(arg_indices[0], nodes, instrs, symtab_names, symtab_vregs)
+    let flags_vreg = gen_ir_from_ast_with_symtab(arg_indices[1], nodes, instrs, symtab_names, symtab_vregs)
+    let mode_vreg = gen_ir_from_ast_with_symtab(arg_indices[2], nodes, instrs, symtab_names, symtab_vregs)
+    let result_vreg = len(instrs)
+    push(instrs, IRInstr { op: OP_SYSCALL_OPEN(), dest: result_vreg, arg1: path_vreg, arg2: flags_vreg, arg3: mode_vreg, str_val: "" })
+    return result_vreg
+}
+
+fn gen_ir_call_syscall_write(ast_idx: int, nodes: []AstNode, instrs: []IRInstr, symtab_names: []string, symtab_vregs: []int) -> int {
+    let arg_indices = get_call_args(ast_idx)
+    if len(arg_indices) != 3 { return -1 }
+    let fd_vreg = gen_ir_from_ast_with_symtab(arg_indices[0], nodes, instrs, symtab_names, symtab_vregs)
+    let buf_vreg = gen_ir_from_ast_with_symtab(arg_indices[1], nodes, instrs, symtab_names, symtab_vregs)
+    let size_vreg = gen_ir_from_ast_with_symtab(arg_indices[2], nodes, instrs, symtab_names, symtab_vregs)
+    let result_vreg = len(instrs)
+    push(instrs, IRInstr { op: OP_SYSCALL_WRITE(), dest: result_vreg, arg1: fd_vreg, arg2: buf_vreg, arg3: size_vreg, str_val: "" })
+    return result_vreg
+}
+
+fn gen_ir_call_syscall_close(ast_idx: int, nodes: []AstNode, instrs: []IRInstr, symtab_names: []string, symtab_vregs: []int) -> int {
+    let arg_indices = get_call_args(ast_idx)
+    if len(arg_indices) != 1 { return -1 }
+    let fd_vreg = gen_ir_from_ast_with_symtab(arg_indices[0], nodes, instrs, symtab_names, symtab_vregs)
+    let result_vreg = len(instrs)
+    push(instrs, IRInstr { op: OP_SYSCALL_CLOSE(), dest: result_vreg, arg1: fd_vreg, arg2: 0, arg3: 0, str_val: "" })
+    return result_vreg
+}
+
 fn get_field_offset(name: string) -> int {
     let mut off = 0
-    if name == "tag" { off = 0 }
-    if name == "int_val" { off = 8 }
-    if name == "str_val" { off = 16 }
-    if name == "left" { off = 24 }
-    if name == "right" { off = 32 }
-    if name == "extra" { off = 40 }
-    if name == "type_tag" { off = 48 }
+    // AstNode fields
+    if str_eq(name, "tag") { off = 0 }
+    if str_eq(name, "int_val") { off = 8 }
+    if str_eq(name, "str_val") { off = 16 }
+    if str_eq(name, "left") { off = 24 }
+    if str_eq(name, "right") { off = 32 }
+    if str_eq(name, "extra") { off = 40 }
+    if str_eq(name, "type_tag") { off = 48 }
+    // ParseResult fields (unique names)
+    if str_eq(name, "node_idx") { off = 0 }
+    if str_eq(name, "new_pos") { off = 8 }
+    // IRInstr fields (unique names only - str_val collision handled in gen_ir_field)
+    if str_eq(name, "op") { off = 0 }
+    if str_eq(name, "dest") { off = 8 }
+    if str_eq(name, "arg1") { off = 16 }
+    if str_eq(name, "arg2") { off = 24 }
+    if str_eq(name, "arg3") { off = 32 }
     return off
 }
 
@@ -2296,7 +2633,21 @@ fn gen_ir_index(node: AstNode, nodes: []AstNode, instrs: []IRInstr, st_names: []
 
 fn gen_ir_field(node: AstNode, nodes: []AstNode, instrs: []IRInstr, st_names: []string, st_vregs: []int) -> int {
     let base = gen_ir_from_ast_with_symtab(node.left, nodes, instrs, st_names, st_vregs)
-    let off = get_field_offset(node.str_val)
+    let mut off = get_field_offset(node.str_val)
+    // Handle str_val collision: AstNode.str_val is at offset 16, IRInstr.str_val is at offset 40
+    // Detect IRInstr access by checking the base expression variable name
+    if str_eq(node.str_val, "str_val") {
+        let left = nodes[node.left]
+        if left.tag == EXPR_IDENT() && str_eq(left.str_val, "instr") {
+            off = 40
+        }
+        if left.tag == EXPR_INDEX() {
+            let arr = nodes[left.left]
+            if arr.tag == EXPR_IDENT() && str_eq(arr.str_val, "instrs") {
+                off = 40
+            }
+        }
+    }
     let res = len(instrs)
     let instr = IRInstr { op: OP_LOAD(), dest: res, arg1: base, arg2: off, arg3: 0, str_val: node.str_val }
     push(instrs, instr)
@@ -2316,16 +2667,19 @@ fn gen_ir_array_lit(node: AstNode, nodes: []AstNode, instrs: []IRInstr, st_n: []
         i = i + 1
     }
     if f >= 0 { return f }
+    // Empty array: allocate a 24-byte fat pointer (ptr, len, cap) initialized to zero
+    let size_vreg = len(instrs)
+    push(instrs, IRInstr { op: OP_LOADCONST(), dest: size_vreg, arg1: 24, arg2: 0, arg3: 0, str_val: "" })
     let r = len(instrs)
-    push(instrs, IRInstr { op: OP_LOADCONST(), dest: r, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
+    push(instrs, IRInstr { op: OP_HEAP_ALLOC(), dest: r, arg1: size_vreg, arg2: 0, arg3: 0, str_val: "" })
     return r
 }
 
 fn get_struct_field_names(name: string) -> []string {
     let f = []string{}
-    if name == "AstNode" { push(f, "tag") push(f, "int_val") push(f, "str_val") push(f, "left") push(f, "right") push(f, "extra") push(f, "type_tag") }
-    if name == "IRInstr" { push(f, "op") push(f, "dest") push(f, "arg1") push(f, "arg2") push(f, "str_val") }
-    if name == "ParseResult" { push(f, "node_idx") push(f, "new_pos") }
+    if str_eq(name, "AstNode") { push(f, "tag") push(f, "int_val") push(f, "str_val") push(f, "left") push(f, "right") push(f, "extra") push(f, "type_tag") }
+    if str_eq(name, "IRInstr") { push(f, "op") push(f, "dest") push(f, "arg1") push(f, "arg2") push(f, "arg3") push(f, "str_val") }
+    if str_eq(name, "ParseResult") { push(f, "node_idx") push(f, "new_pos") }
     return f
 }
 
@@ -2380,13 +2734,21 @@ fn gen_ir_binary_op(token_op: int) -> int {
     if token_op == TK_AND() { op = OP_AND() }
     if token_op == TK_OR() { op = OP_OR() }
     if token_op == TK_CARET() { op = OP_XOR() }
+    if token_op == TK_AMPERSAND() { op = OP_BITAND() }
+    if token_op == TK_PIPE() { op = OP_BITOR() }
     return op
 }
 
 fn gen_ir_binary(node: AstNode, nodes: []AstNode, instrs: []IRInstr, symtab_names: []string, symtab_vregs: []int) -> int {
     let left_vreg = gen_ir_from_ast_with_symtab(node.left, nodes, instrs, symtab_names, symtab_vregs)
     let right_vreg = gen_ir_from_ast_with_symtab(node.right, nodes, instrs, symtab_names, symtab_vregs)
-    let op = gen_ir_binary_op(node.int_val)
+    let mut op = gen_ir_binary_op(node.int_val)
+    // Detect string concatenation: if + and either operand is string-typed
+    if node.int_val == TK_PLUS() {
+        if is_string_expr(node.left, nodes) == 1 || is_string_expr(node.right, nodes) == 1 {
+            op = OP_STR_CONCAT()
+        }
+    }
     let dest_vreg = len(instrs)
     let instr = IRInstr { op: op, dest: dest_vreg, arg1: left_vreg, arg2: right_vreg, arg3: 0, str_val: "" }
     push(instrs, instr)
@@ -2410,15 +2772,28 @@ fn gen_ir_expr(node: AstNode, ast_idx: int, nodes: []AstNode, instrs: []IRInstr,
     }
 
     if node.tag == EXPR_IDENT() {
+        // Search backwards to find the most recent binding (handles variable shadowing)
         let mut found_vreg = -1
-        let mut idx1 = 0
-        let symtab_len1 = len(symtab_names)
-        for idx1 < symtab_len1 {
-            if symtab_names[idx1] == node.str_val {
+        let symtab_len = len(symtab_names)
+        let mut idx1 = symtab_len - 1
+        for idx1 >= 0 {
+            if str_eq(symtab_names[idx1], node.str_val) {
                 found_vreg = symtab_vregs[idx1]
                 break
             }
-            idx1 = idx1 + 1
+            idx1 = idx1 - 1
+        }
+        if found_vreg <= -1000 {
+            // Global variable sentinel - emit OP_LOAD_GLOBAL
+            let vreg = len(instrs)
+            push(instrs, IRInstr { op: OP_LOAD_GLOBAL(), dest: vreg, arg1: 0, arg2: 0, arg3: 0, str_val: node.str_val })
+            if is_scalar_global(node.str_val) == 1 {
+                // For scalar globals, dereference the address to get the value
+                let val_vreg = len(instrs)
+                push(instrs, IRInstr { op: OP_LOAD(), dest: val_vreg, arg1: vreg, arg2: 0, arg3: 0, str_val: "" })
+                return val_vreg
+            }
+            return vreg
         }
         if found_vreg < 0 {
             return -1
@@ -2440,28 +2815,71 @@ fn gen_ir_expr(node: AstNode, ast_idx: int, nodes: []AstNode, instrs: []IRInstr,
 
 fn gen_ir_stmt_ret(node: AstNode, nodes: []AstNode, instrs: []IRInstr, st_n: []string, st_v: []int) -> int {
     let mut v = -1
-    if node.left >= 0 { v = gen_ir_from_ast_with_symtab(node.left, nodes, instrs, st_n, st_v) }
+    if node.left >= 0 {
+        v = gen_ir_from_ast_with_symtab(node.left, nodes, instrs, st_n, st_v)
+    }
     push(instrs, IRInstr { op: OP_RET(), dest: v, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
     return v
 }
 
 fn gen_ir_stmt_let(node: AstNode, nodes: []AstNode, instrs: []IRInstr, st_n: []string, st_v: []int) -> int {
+    // Track string variables for is_string_expr heuristic
+    if node.right >= 0 {
+        if is_string_expr(node.right, nodes) == 1 {
+            push(g_string_vars, node.str_val)
+        }
+        if is_string_array_expr(node.right, nodes) == 1 {
+            push(g_string_array_vars, node.str_val)
+        }
+    }
     let v = gen_ir_from_ast_with_symtab(node.right, nodes, instrs, st_n, st_v)
     if v < 0 { return -1 }
+    // Always create a new vreg via COPY to prevent aliasing when init is a variable reference.
+    // Without this, "let mut end = pos" would map end to pos's vreg, and modifying end would corrupt pos.
+    let new_vreg = len(instrs)
+    push(instrs, IRInstr { op: OP_COPY(), dest: new_vreg, arg1: v, arg2: 0, arg3: 0, str_val: "" })
     push(st_n, node.str_val)
-    push(st_v, v)
-    return v
+    push(st_v, new_vreg)
+    return new_vreg
 }
 
 fn gen_ir_stmt_assign(node: AstNode, nodes: []AstNode, instrs: []IRInstr, st_n: []string, st_v: []int) -> int {
-    return gen_ir_from_ast_with_symtab(node.right, nodes, instrs, st_n, st_v)
+    let val_vreg = gen_ir_from_ast_with_symtab(node.right, nodes, instrs, st_n, st_v)
+    if val_vreg < 0 { return -1 }
+
+    // Look up the target variable in the symbol table
+    let target_name = node.str_val
+    let mut var_vreg = -1
+    let mut si = 0
+    let st_len = len(st_n)
+    for si < st_len {
+        if str_eq(st_n[si], target_name) {
+            var_vreg = st_v[si]
+        }
+        si = si + 1
+    }
+
+    if var_vreg <= -1000 {
+        // Global variable - emit store through address
+        if is_scalar_global(target_name) == 1 {
+            let addr_vreg = len(instrs)
+            push(instrs, IRInstr { op: OP_LOAD_GLOBAL(), dest: addr_vreg, arg1: 0, arg2: 0, arg3: 0, str_val: target_name })
+            push(instrs, IRInstr { op: OP_STORE(), dest: -1, arg1: addr_vreg, arg2: val_vreg, arg3: 0, str_val: "" })
+        }
+    } else if var_vreg >= 0 && var_vreg != val_vreg {
+        // Emit copy from result vreg to variable vreg
+        push(instrs, IRInstr { op: OP_COPY(), dest: var_vreg, arg1: val_vreg, arg2: 0, arg3: 0, str_val: "" })
+    }
+    return val_vreg
 }
 
 fn gen_ir_stmt_if(node: AstNode, nodes: []AstNode, instrs: []IRInstr, st_n: []string, st_v: []int) -> int {
     let c = gen_ir_from_ast_with_symtab(node.left, nodes, instrs, st_n, st_v)
     if c < 0 { return -1 }
-    let el = len(instrs) + 1000
-    let en = len(instrs) + 2000
+    let el = g_next_label
+    g_next_label = g_next_label + 1
+    let en = g_next_label
+    g_next_label = g_next_label + 1
     push(instrs, IRInstr { op: OP_BRANCH(), dest: c, arg1: el, arg2: 0, arg3: 0, str_val: "" })
     if node.right >= 0 { gen_ir_from_ast_with_symtab(node.right, nodes, instrs, st_n, st_v) }
     push(instrs, IRInstr { op: OP_JUMP(), dest: en, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
@@ -2472,15 +2890,21 @@ fn gen_ir_stmt_if(node: AstNode, nodes: []AstNode, instrs: []IRInstr, st_n: []st
 }
 
 fn gen_ir_stmt_for(n: AstNode, nodes: []AstNode, instrs: []IRInstr, st_n: []string, st_v: []int) -> int {
-    let s = len(instrs) + 3000
-    let e = len(instrs) + 4000
+    let s = g_next_label
+    g_next_label = g_next_label + 1
+    let e = g_next_label
+    g_next_label = g_next_label + 1
     push(instrs, IRInstr { op: OP_LABEL(), dest: s, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
     if n.left >= 0 {
         let c = gen_ir_from_ast_with_symtab(n.left, nodes, instrs, st_n, st_v)
         if c < 0 { return -1 }
         push(instrs, IRInstr { op: OP_BRANCH(), dest: c, arg1: e, arg2: 0, arg3: 0, str_val: "" })
     }
+    // Save/restore break label for proper nesting
+    let saved_break = g_break_label
+    g_break_label = e
     if n.right >= 0 { gen_ir_from_ast_with_symtab(n.right, nodes, instrs, st_n, st_v) }
+    g_break_label = saved_break
     push(instrs, IRInstr { op: OP_JUMP(), dest: s, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
     push(instrs, IRInstr { op: OP_LABEL(), dest: e, arg1: 0, arg2: 0, arg3: 0, str_val: "" }) return 0
 }
@@ -2490,8 +2914,12 @@ fn gen_ir_stmt_block(node: AstNode, nodes: []AstNode, instrs: []IRInstr, st_n: [
     // These nodes and their descendants shouldn't be processed as top-level statements
     let mut child_indices = []int{}
     let mut scan_i = node.left
-    let e = node.right + 1
+    let mut e = node.right + 1
+    let nodes_len = len(nodes)
+    if scan_i < 0 { return -1 }
+    if e > nodes_len { e = nodes_len }
     for scan_i < e {
+        if scan_i >= nodes_len { break }
         let scan_tag = nodes[scan_i].tag
         if scan_tag == STMT_IF() || scan_tag == STMT_FOR() {
             let scan_node = nodes[scan_i]
@@ -2535,6 +2963,7 @@ fn gen_ir_stmt_block(node: AstNode, nodes: []AstNode, instrs: []IRInstr, st_n: [
     let mut last = -1
     let mut i = node.left
     for i < e {
+        if i >= nodes_len { break }
         let node_tag = nodes[i].tag
         if node_tag >= STMT_LET() && node_tag != STMT_BLOCK() {
             // Check if this node is a child of another statement
@@ -2569,38 +2998,83 @@ fn gen_ir_from_ast_with_symtab(ast_idx: int, nodes: []AstNode, instrs: []IRInstr
         return gen_ir_expr(node, ast_idx, nodes, instrs, symtab_names, symtab_vregs)
     }
 
+    if node.tag == EXPR_UNARY() {
+        let operand = gen_ir_from_ast_with_symtab(node.left, nodes, instrs, symtab_names, symtab_vregs)
+        if node.int_val == TK_MINUS() {
+            // Unary minus: 0 - operand
+            let zero_vreg = len(instrs)
+            push(instrs, IRInstr { op: OP_LOADCONST(), dest: zero_vreg, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
+            let result_vreg = len(instrs)
+            push(instrs, IRInstr { op: OP_SUB(), dest: result_vreg, arg1: zero_vreg, arg2: operand, arg3: 0, str_val: "" })
+            return result_vreg
+        }
+        if node.int_val == TK_NOT() {
+            // Logical NOT: operand == 0
+            let zero_vreg = len(instrs)
+            push(instrs, IRInstr { op: OP_LOADCONST(), dest: zero_vreg, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
+            let result_vreg = len(instrs)
+            push(instrs, IRInstr { op: OP_CMP_EQ(), dest: result_vreg, arg1: operand, arg2: zero_vreg, arg3: 0, str_val: "" })
+            return result_vreg
+        }
+        return operand
+    }
+
     if node.tag == EXPR_BINARY() {
         return gen_ir_binary(node, nodes, instrs, symtab_names, symtab_vregs)
     }
 
     if node.tag == EXPR_CALL() {
         let func_name = node.str_val
-        if func_name == "len" {
+        if str_eq(func_name, "len") {
             return gen_ir_call_len(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
         }
-        if func_name == "push" {
+        if str_eq(func_name, "push") {
             return gen_ir_call_push(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
         }
-        if func_name == "poke" {
+        if str_eq(func_name, "poke") {
             return gen_ir_call_poke(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
         }
-        if func_name == "peek" {
+        if str_eq(func_name, "peek") {
             return gen_ir_call_peek(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
         }
-        if func_name == "heap_alloc" {
+        if str_eq(func_name, "heap_alloc") {
             return gen_ir_call_heap_alloc(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
         }
-        if func_name == "ReadFile" || func_name == "os.ReadFile" {
+        if str_eq(func_name, "ReadFile") || str_eq(func_name, "os.ReadFile") {
             return gen_ir_call_readfile(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
         }
-        if func_name == "Argc" || func_name == "os.Argc" {
+        if str_eq(func_name, "Argc") || str_eq(func_name, "os.Argc") {
             return gen_ir_call_argc(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
         }
-        if func_name == "Argv" || func_name == "os.Argv" {
+        if str_eq(func_name, "Argv") || str_eq(func_name, "os.Argv") {
             return gen_ir_call_argv(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
         }
-        if func_name == "Itoa" || func_name == "strconv.Itoa" {
+        if str_eq(func_name, "Itoa") || str_eq(func_name, "strconv.Itoa") {
             return gen_ir_call_itoa(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
+        }
+        if str_eq(func_name, "print") {
+            return gen_ir_call_print(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
+        }
+        if str_eq(func_name, "str_char_at") {
+            return gen_ir_call_str_char_at(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
+        }
+        if str_eq(func_name, "str_substring") {
+            return gen_ir_call_str_substring(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
+        }
+        if str_eq(func_name, "str_eq") {
+            return gen_ir_call_str_eq(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
+        }
+        if str_eq(func_name, "str_ne") {
+            return gen_ir_call_str_ne(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
+        }
+        if str_eq(func_name, "open") || str_eq(func_name, "syscall.open") {
+            return gen_ir_call_syscall_open(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
+        }
+        if str_eq(func_name, "write") || str_eq(func_name, "syscall.write") {
+            return gen_ir_call_syscall_write(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
+        }
+        if str_eq(func_name, "close") || str_eq(func_name, "syscall.close") {
+            return gen_ir_call_syscall_close(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
         }
         return gen_ir_call_user(node, ast_idx, nodes, instrs, symtab_names, symtab_vregs)
     }
@@ -2652,17 +3126,26 @@ fn gen_ir_from_ast_with_symtab(ast_idx: int, nodes: []AstNode, instrs: []IRInstr
         return gen_ir_stmt_block(node, nodes, instrs, symtab_names, symtab_vregs)
     }
 
+    if node.tag == STMT_BREAK() {
+        // Use global break label (set by gen_ir_stmt_for with save/restore)
+        if g_break_label >= 0 {
+            push(instrs, IRInstr { op: OP_JUMP(), dest: g_break_label, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
+        }
+        return 0
+    }
+
     if node.tag == DECL_FUNC() {
         // Generate function with parameters
         // node.left = first parameter index (or -1 if no parameters)
         // node.right = body node
 
-        // Add all parameters to symbol table (using v0, v1, v2, ... for parameter vregs)
+        // Add all parameters to symbol table.
+        // Use 90000+ offset for parameter vregs to avoid collision with instruction-based vregs.
         // Parameters are stored consecutively in nodes array starting at node.left
         if node.left >= 0 {
             // Iterate through consecutive parameter nodes
             let mut param_idx = node.left
-            let mut param_reg = 0  // v0, v1, v2, etc.
+            let mut param_reg = 90000  // 90000, 90001, 90002, etc.
 
             // Find how many consecutive DECL_PARAM nodes there are
             let mut param_i = node.left
@@ -2673,6 +3156,13 @@ fn gen_ir_from_ast_with_symtab(ast_idx: int, nodes: []AstNode, instrs: []IRInstr
                     // Add parameter to symbol table
                     push(symtab_names, param_node.str_val)
                     push(symtab_vregs, param_reg)
+                    // Track string-typed parameters for is_string_expr
+                    if param_node.type_tag == TYPE_STRING() && param_node.int_val == 0 {
+                        push(g_string_vars, param_node.str_val)
+                    }
+                    if param_node.type_tag == TYPE_STRING() && param_node.int_val == 1 {
+                        push(g_string_array_vars, param_node.str_val)
+                    }
                     param_reg = param_reg + 1
                 } else {
                     // Stop when we hit a non-parameter node
@@ -2692,1372 +3182,753 @@ fn gen_ir_from_ast_with_symtab(ast_idx: int, nodes: []AstNode, instrs: []IRInstr
 }
 
 // ============================================================================
-// Simplified Codegen (from codegen.ease)
+// LLVM IR Code Generation
 // ============================================================================
+//
+// Strategy: translate bootstrap IR to LLVM IR text, delegate all builtins
+// to the C runtime (ease_runtime.c). clang compiles the .ll to native binary.
+//
+// Design: all values are i64. Pointers are integers (ptrtoint/inttoptr).
+// Each virtual register gets an alloca i64 slot; clang -O1 mem2reg pass
+// promotes these to SSA registers automatically.
+//
 
-// ARM64 Instruction Encoders
-
-fn encode_mov_imm(rd: int, imm: int) -> int {
-    // MOV Xd, #imm (using MOVZ for simplicity, handles 0-65535)
-    // MOVZ: 110 1 0010 1 hw(2) imm16(16) Rd(5)
-    // For full 64-bit values, need MOVZ + MOVK sequence
-    let hw = 0  // shift = 0
-    return 0xd2800000 + (hw * 0x200000) + ((imm % 65536) * 0x20) + rd
+fn write_str(fd: int, s: string) {
+    syscall.write(fd, s, len(s))
 }
 
-fn encode_movn(rd: int, imm: int) -> int {
-    // MOVN Xd, #imm (MOV NOT - inverts the immediate)
-    // MOVN: 100 1 0010 1 hw(2) imm16(16) Rd(5)
-    // For -1, use MOVN Xd, #0 (NOT 0 = all ones)
-    let hw = 0
-    return 0x92800000 + (hw * 0x200000) + ((imm % 65536) * 0x20) + rd
+fn hex_digit_char(v: int) -> string {
+    if v == 0 { return "0" }
+    if v == 1 { return "1" }
+    if v == 2 { return "2" }
+    if v == 3 { return "3" }
+    if v == 4 { return "4" }
+    if v == 5 { return "5" }
+    if v == 6 { return "6" }
+    if v == 7 { return "7" }
+    if v == 8 { return "8" }
+    if v == 9 { return "9" }
+    if v == 10 { return "A" }
+    if v == 11 { return "B" }
+    if v == 12 { return "C" }
+    if v == 13 { return "D" }
+    if v == 14 { return "E" }
+    if v == 15 { return "F" }
+    return "0"
 }
 
-fn encode_movk(rd: int, imm: int, shift: int) -> int {
-    // MOVK Xd, #imm, LSL #shift (Move with Keep - keeps other bits)
-    // MOVK: 111 1 0010 1 hw(2) imm16(16) Rd(5)
-    // hw = shift / 16 (0=LSL#0, 1=LSL#16, 2=LSL#32, 3=LSL#48)
-    let hw = shift / 16
-    return 0xf2800000 + (hw * 0x200000) + ((imm % 65536) * 0x20) + rd
+fn hex_byte_str(v: int) -> string {
+    let hi = v / 16
+    let lo = v - hi * 16
+    return hex_digit_char(hi) + hex_digit_char(lo)
 }
 
-fn encode_add(rd: int, rn: int, rm: int) -> int {
-    // ADD Xd, Xn, Xm
-    // sf=1 (64-bit), op=0, S=0, shift=00, Rm, imm6=0, Rn, Rd
-    return 0x8b000000 + (rm * 0x10000) + (rn * 0x20) + rd
-}
-
-fn encode_mov_reg(rd: int, rm: int) -> int {
-    // MOV Xd, Xm (implemented as ORR Xd, XZR, Xm)
-    // sf=1 (64-bit), opc=01, shift=00, N=0, Rm, imm6=0, Rn=31 (XZR), Rd
-    return 0xaa0003e0 + (rm * 0x10000) + rd
-}
-
-fn encode_sub(rd: int, rn: int, rm: int) -> int {
-    // SUB Xd, Xn, Xm
-    return 0xcb000000 + (rm * 0x10000) + (rn * 0x20) + rd
-}
-
-fn encode_mul(rd: int, rn: int, rm: int) -> int {
-    // MUL Xd, Xn, Xm
-    // MADD with Ra=XZR
-    return 0x9b007c00 + (rm * 0x10000) + (rn * 0x20) + rd
-}
-
-fn encode_eor(rd: int, rn: int, rm: int) -> int {
-    // EOR Xd, Xn, Xm (Exclusive OR / XOR)
-    // sf=1 (64-bit), opc=10, shift=00, N=0, Rm, imm6=000000, Rn, Rd
-    return 0xCA000000 + (rm * 0x10000) + (rn * 0x20) + rd
-}
-
-fn encode_lsl(rd: int, rn: int, shift: int) -> int {
-    // LSL Xd, Xn, #shift (Logical Shift Left)
-    // Encoded as UBFM with specific immr and imms values
-    // sf=1, opc=10, N=1, immr=(64-shift)%64, imms=63-shift, Rn, Rd
-    let immr = (64 - shift) % 64
-    let imms = 63 - shift
-    return 0xd3400000 + (immr * 0x10000) + (imms * 0x400) + (rn * 0x20) + rd
-}
-
-fn encode_add_imm(rd: int, rn: int, imm: int) -> int {
-    // ADD Xd, Xn, #imm (immediate addition)
-    // sf=1 (64-bit), op=0, S=0, shift=00, imm12, Rn, Rd
-    return 0x91000000 + ((imm % 4096) * 0x400) + (rn * 0x20) + rd
-}
-
-fn encode_ret() -> int {
-    // RET (return, defaults to X30/LR)
-    return 0xd65f03c0
-}
-
-fn encode_cbz(rt: int, offset: int) -> int {
-    // CBZ Xt, label (Compare and Branch if Zero)
-    // sf=1 (64-bit), op=011010, imm19, Rt
-    // offset is in instructions (divide by 4 for byte offset)
-    return 0xb4000000 + ((offset % 524288) * 0x20) + rt
-}
-
-fn encode_cbnz(rt: int, offset: int) -> int {
-    // CBNZ Xt, label (Compare and Branch if Not Zero)
-    // sf=1 (64-bit), op=011011, imm19, Rt
-    // offset is in instructions (divide by 4 for byte offset)
-    return 0xb5000000 + ((offset % 524288) * 0x20) + rt
-}
-
-fn encode_b(offset: int) -> int {
-    // B label (Unconditional branch)
-    // op=000101, imm26
-    // offset is in instructions (divide by 4 for byte offset)
-    return 0x14000000 + (offset % 67108864)
-}
-
-fn encode_bl(offset: int) -> int {
-    // BL label (Branch with Link - function call)
-    // op=100101, imm26
-    // offset is in instructions (divide by 4 for byte offset)
-    // Saves return address in X30 (LR) and branches to target
-    // Mask offset to 26 bits to handle negative offsets correctly
-    let mut masked_offset = offset % 67108864
-    if masked_offset < 0 {
-        masked_offset = masked_offset + 67108864
-    }
-    return 0x94000000 + masked_offset
-}
-
-fn encode_ldr_offset(rt: int, rn: int, offset: int) -> int {
-    // LDR Xt, [Xn, #offset]
-    // Load 64-bit register from memory address [Xn + offset]
-    // size=11 (64-bit), V=0, opc=01, imm12 (unsigned offset / 8), Rn, Rt
-    // Encoding: 11 111 0 01 01 imm12(12) Rn(5) Rt(5)
-    // imm12 is offset >> 3 (divided by 8, must be 8-byte aligned)
-    let imm12 = (offset / 8) % 4096
-    return 0xf9400000 + (imm12 * 0x400) + (rn * 0x20) + rt
-}
-
-fn encode_str_offset(rt: int, rn: int, offset: int) -> int {
-    // STR Xt, [Xn, #offset]
-    // Store 64-bit register to memory address [Xn + offset]
-    // size=11 (64-bit), V=0, opc=00, imm12 (unsigned offset / 8), Rn, Rt
-    // Encoding: 11 111 0 01 00 imm12(12) Rn(5) Rt(5)
-    // imm12 is offset >> 3 (divided by 8, must be 8-byte aligned)
-    let imm12 = (offset / 8) % 4096
-    return 0xf9000000 + (imm12 * 0x400) + (rn * 0x20) + rt
-}
-
-fn encode_ldrb_offset(rt: int, rn: int, offset: int) -> int {
-    // LDRB Wt, [Xn, #offset]
-    // Load byte (8-bit) from memory address [Xn + offset]
-    // size=00 (8-bit), V=0, opc=01, imm12 (unsigned offset), Rn, Rt
-    // Encoding: 00 111 0 01 01 imm12(12) Rn(5) Rt(5)
-    // imm12 is the byte offset directly (no division needed)
-    let imm12 = offset % 4096
-    return 0x39400000 + (imm12 * 0x400) + (rn * 0x20) + rt
-}
-
-fn encode_strb_offset(rt: int, rn: int, offset: int) -> int {
-    // STRB Wt, [Xn, #offset]
-    // Store byte (8-bit) to memory address [Xn + offset]
-    // size=00 (8-bit), V=0, opc=00, imm12 (unsigned offset), Rn, Rt
-    // Encoding: 00 111 0 01 00 imm12(12) Rn(5) Rt(5)
-    // imm12 is the byte offset directly (no division needed)
-    let imm12 = offset % 4096
-    return 0x39000000 + (imm12 * 0x400) + (rn * 0x20) + rt
-}
-
-fn encode_cmp(rn: int, rm: int) -> int {
-    // CMP Xrn, Xrm (alias for SUBS XZR, Xrn, Xrm)
-    // Compare two registers and set condition flags
-    // sf=1 (64-bit), op=1 (SUB), S=1 (set flags), shift=00, Rm, imm6=0, Rn, Rd=31 (XZR)
-    // Encoding: 1 1 1 01011 00 0 Rm(5) 000000 Rn(5) 11111
-    // Base: 0xEB00001F (CMP with Rd=XZR)
-    return 0xEB00001F + (rm * 0x10000) + (rn * 0x20)
-}
-
-fn encode_cset(rd: int, cond: int) -> int {
-    // CSET Xrd, cond (alias for CSINC Xrd, XZR, XZR, invert(cond))
-    // Set register to 1 if condition is true, 0 otherwise
-    // sf=1 (64-bit), op=0, S=0, Rm=31 (XZR), cond^1, o2=0, Rn=31 (XZR), Rd
-    // Encoding: 1 0 0 11010100 11111 cond(4) 0 1 11111 Rd(5)
-    // Base: 0x9A9F07E0
-    // Note: cond is inverted in the encoding (condition when false)
-    let inv_cond = cond ^ 1
-    return 0x9A9F07E0 + (inv_cond * 0x1000) + rd
-}
-
-fn gen_code_from_ir(instrs: []IRInstr, code: []int, string_table: []string, string_fixups: []int) -> int {
-    // Two-pass approach:
-    // Pass 1: Build label map (label_id -> instruction_index)
-    let mut label_ids = []int{}
-    let mut label_positions = []int{}
-    let mut instr_count = 0
-
-    let mut pass1_i = 0
-    let instrs_len = len(instrs)
-    let mut current_func = ""
-    for pass1_i < instrs_len {
-        let instr = instrs[pass1_i]
-        if instr.op == OP_LABEL() {
-            push(label_ids, instr.dest)
-            push(label_positions, instr_count)
-            // Track function name
-            if instr.str_val != "" {
-                current_func = instr.str_val
-                // ALL functions have 2 extra instructions for heap register initialization
-                // This matches Go compiler behavior (emit.go:554-555)
-                instr_count = instr_count + 2  // MOV X25, XZR + MOV X26, XZR
-                // Main function also initializes argc/argv (2 more instructions)
-                if instr.str_val == "main" {
-                    instr_count = instr_count + 2  // LDR X27, [SP] + LDR X28, [SP, #8]
-                }
-            }
+fn llvm_escape_string(s: string) -> string {
+    let mut result = "c\""
+    let mut i = 0
+    let slen = len(s)
+    for i < slen {
+        let ch = str_char_at(s, i)
+        if ch >= 32 && ch < 127 && ch != 34 && ch != 92 {
+            result = result + str_substring(s, i, i + 1)
         } else {
-            // Count actual ARM64 instructions that will be generated
-            // This must match Pass 2's instruction generation!
-            if instr.op == OP_CMP_EQ() {
-                instr_count = instr_count + 2  // CMP + CSET
-            } else {
-                if instr.op == OP_CMP_NE() {
-                    instr_count = instr_count + 2  // CMP + CSET
-                } else {
-                    if instr.op == OP_CMP_LT() {
-                        instr_count = instr_count + 2  // CMP + CSET
-                    } else {
-                        if instr.op == OP_CMP_LE() {
-                            instr_count = instr_count + 2  // CMP + CSET
-                        } else {
-                            if instr.op == OP_CMP_GT() {
-                                instr_count = instr_count + 2  // CMP + CSET
-                            } else {
-                                if instr.op == OP_CMP_GE() {
-                                    instr_count = instr_count + 2  // CMP + CSET
-                                } else {
-                                    if instr.op == OP_RET() {
-                                        // RET in main generates: MOV X0 + MOVZ X16 + MOVK X16 + SVC = 4 instructions
-                                        // RET in other functions: MOV X0 + RET = 2 instructions (if dest >= 0)
-                                        // Or just RET if dest < 0 = 1 instruction
-                                        if current_func == "main" {
-                                            if instr.dest >= 0 {
-                                                instr_count = instr_count + 4  // MOV + MOVZ + MOVK + SVC
-                                            } else {
-                                                instr_count = instr_count + 3  // MOVZ + MOVK + SVC
-                                            }
-                                        } else {
-                                            if instr.dest >= 0 {
-                                                instr_count = instr_count + 2  // MOV + RET
-                                            } else {
-                                                instr_count = instr_count + 1  // Just RET
-                                            }
-                                        }
-                                    } else {
-                                        if instr.op == OP_HEAP_ALLOC() {
-                                            // heap_alloc generates: MOV X0 + MOVZ X1 + MOVK X1 + MOV X2 + MOV X3 + MOVN X4 + MOV X5 + MOVZ X16 + MOVK X16 + SVC + MOV dest = 11 instructions
-                                            // Or 10 if dest == 0
-                                            if instr.dest == 0 {
-                                                instr_count = instr_count + 10
-                                            } else {
-                                                instr_count = instr_count + 11
-                                            }
-                                        } else {
-                                            if instr.op == OP_READFILE() {
-                                                // ReadFile generates: open (6) + mmap (11) + unrolled reads (42) + CBZ checks (5) + close (4) + mov dest (0-1) = 68-69 instructions
-                                                // 6x 64KB reads with EOF checking (5 CBZ instructions) = 384KB max
-                                                if instr.dest == 21 {
-                                                    instr_count = instr_count + 68
-                                                } else {
-                                                    instr_count = instr_count + 69
-                                                }
-                                            } else {
-                                                if instr.op == OP_ARGC() {
-                                                    // Argc: MOV dest, X27 (or skip if dest == 27) = 0-1 instruction
-                                                    if instr.dest == 27 {
-                                                        instr_count = instr_count + 0
-                                                    } else {
-                                                        instr_count = instr_count + 1
-                                                    }
-                                                } else {
-                                                    if instr.op == OP_ARGV() {
-                                                        // Argv: MOV imm (1) + MUL (1) + ADD (1) + LDRx (1) + MOV dest (0-1) = 4-5 instructions
-                                                        if instr.dest == 16 {
-                                                            instr_count = instr_count + 4
-                                                        } else {
-                                                            instr_count = instr_count + 5
-                                                        }
-                                                    } else {
-                                                        if instr.op == OP_INT_TO_STR() {
-                                                            // IntToStr: complex logic with loop - approximately 40 instructions
-                                                            instr_count = instr_count + 40
-                                                        } else {
-                                                            if instr.op == OP_LOADCONST() {
-                                                                // Check if it's a string literal (str_val != "")
-                                                                if instr.str_val != "" {
-                                                                    instr_count = instr_count + 2  // ADRP + ADD
-                                                                } else {
-                                                                    instr_count = instr_count + 1  // MOV
-                                                                }
-                                                            } else {
-                                                                // All other instructions generate 1 ARM64 instruction
-                                                                instr_count = instr_count + 1
-                                                            }
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
+            let hbs = hex_byte_str(ch)
+            result = result + "\\" + hbs
         }
-        pass1_i = pass1_i + 1
+        i = i + 1
+    }
+    result = result + "\\00\""
+    return result
+}
+
+fn llvm_mangle(name: string) -> string {
+    let mut result = ""
+    let mut i = 0
+    let slen = len(name)
+    for i < slen {
+        let ch = str_char_at(name, i)
+        if ch == 46 {
+            result = result + "_"
+        } else {
+            result = result + str_substring(name, i, i + 1)
+        }
+        i = i + 1
+    }
+    return result
+}
+
+fn llvm_func_name(name: string) -> string {
+    if str_eq(name, "main") {
+        return "ease_main"
+    }
+    return llvm_mangle(name)
+}
+
+fn add_unique(arr: []int, val: int) {
+    let mut i = 0
+    for i < len(arr) {
+        if arr[i] == val { return }
+        i = i + 1
+    }
+    push(arr, val)
+}
+
+fn tmp_name(ti: int, sub: int) -> string {
+    return "%t." + strconv.Itoa(ti * 10 + sub)
+}
+
+fn emit_load_vreg(fd: int, vreg: int, ti: int, sub: int) -> string {
+    let name = tmp_name(ti, sub)
+    write_str(fd, "  " + name + " = load i64, ptr %v." + strconv.Itoa(vreg) + "\n")
+    return name
+}
+
+fn emit_load_ptr(fd: int, vreg: int, ti: int, s1: int, s2: int) -> string {
+    let val = emit_load_vreg(fd, vreg, ti, s1)
+    let name = tmp_name(ti, s2)
+    write_str(fd, "  " + name + " = inttoptr i64 " + val + " to ptr\n")
+    return name
+}
+
+fn emit_store_vreg(fd: int, vreg: int, val: string) {
+    write_str(fd, "  store i64 " + val + ", ptr %v." + strconv.Itoa(vreg) + "\n")
+}
+
+fn emit_ptrtoint_store(fd: int, vreg: int, ptr_val: string, ti: int, sub: int) {
+    let name = tmp_name(ti, sub)
+    write_str(fd, "  " + name + " = ptrtoint ptr " + ptr_val + " to i64\n")
+    emit_store_vreg(fd, vreg, name)
+}
+
+fn emit_llvm_binop(fd: int, instr: IRInstr, op: string, ti: int) {
+    let lhs = emit_load_vreg(fd, instr.arg1, ti, 0)
+    let rhs = emit_load_vreg(fd, instr.arg2, ti, 1)
+    let result = tmp_name(ti, 2)
+    write_str(fd, "  " + result + " = " + op + " i64 " + lhs + ", " + rhs + "\n")
+    emit_store_vreg(fd, instr.dest, result)
+}
+
+fn emit_llvm_cmp(fd: int, instr: IRInstr, pred: string, ti: int) {
+    let lhs = emit_load_vreg(fd, instr.arg1, ti, 0)
+    let rhs = emit_load_vreg(fd, instr.arg2, ti, 1)
+    let cmp = tmp_name(ti, 2)
+    write_str(fd, "  " + cmp + " = icmp " + pred + " i64 " + lhs + ", " + rhs + "\n")
+    let ext = tmp_name(ti, 3)
+    write_str(fd, "  " + ext + " = zext i1 " + cmp + " to i64\n")
+    emit_store_vreg(fd, instr.dest, ext)
+}
+
+fn emit_llvm_decls(fd: int) {
+    write_str(fd, "declare ptr @malloc(i64)\n")
+    write_str(fd, "declare ptr @calloc(i64, i64)\n")
+    write_str(fd, "declare ptr @memcpy(ptr, ptr, i64)\n")
+    write_str(fd, "declare ptr @memset(ptr, i32, i64)\n")
+    write_str(fd, "declare i64 @ease_str_eq(ptr, ptr)\n")
+    write_str(fd, "declare i64 @ease_str_ne(ptr, ptr)\n")
+    write_str(fd, "declare i64 @ease_str_len(ptr)\n")
+    write_str(fd, "declare ptr @ease_str_concat(ptr, ptr)\n")
+    write_str(fd, "declare ptr @ease_str_slice(ptr, i64, i64)\n")
+    write_str(fd, "declare i64 @ease_str_char_at(ptr, i64)\n")
+    write_str(fd, "declare ptr @ease_str_substring(ptr, i64, i64)\n")
+    write_str(fd, "declare void @ease_array_push(ptr, ptr, i64)\n")
+    write_str(fd, "declare void @ease_print(ptr)\n")
+    write_str(fd, "declare ptr @ease_read_file(ptr)\n")
+    write_str(fd, "declare i64 @ease_write_file(ptr, ptr)\n")
+    write_str(fd, "declare ptr @ease_int_to_str(i64)\n")
+    write_str(fd, "declare i64 @ease_str_to_int(ptr)\n")
+    write_str(fd, "declare void @ease_poke(ptr, i64)\n")
+    write_str(fd, "declare i64 @ease_peek(ptr)\n")
+    write_str(fd, "declare void @ease_memset(ptr, i64, i64)\n")
+    write_str(fd, "declare i64 @ease_syscall_open(ptr, i64, i64)\n")
+    write_str(fd, "declare i64 @ease_syscall_read(i64, ptr, i64)\n")
+    write_str(fd, "declare i64 @ease_syscall_write(i64, ptr, i64)\n")
+    write_str(fd, "declare i64 @ease_syscall_close(i64)\n")
+    write_str(fd, "declare i64 @ease_argc()\n")
+    write_str(fd, "declare ptr @ease_argv(i64)\n")
+    write_str(fd, "\n")
+}
+
+fn collect_vregs(instrs: []IRInstr, start: int, end_pos: int, param_count: int) -> []int {
+    let mut vregs = []int{}
+    let mut p = 0
+    for p < param_count {
+        add_unique(vregs, 90000 + p)
+        p = p + 1
+    }
+    let mut i = start
+    for i < end_pos {
+        let instr = instrs[i]
+        let op = instr.op
+        // dest is vreg for result-producing operations
+        if op == OP_LOADCONST() || op == OP_ADD() || op == OP_SUB() || op == OP_MUL() || op == OP_DIV() || op == OP_CMP_LT() || op == OP_CMP_GT() || op == OP_CMP_LE() || op == OP_CMP_GE() || op == OP_CMP_EQ() || op == OP_CMP_NE() || op == OP_AND() || op == OP_OR() || op == OP_NOT() || op == OP_XOR() || op == OP_BITAND() || op == OP_BITOR() || op == OP_ALLOCA() || op == OP_LOAD() || op == OP_INDEXADDR() || op == OP_ARRAY_LEN() || op == OP_STR_LEN() || op == OP_STR_CHAR_AT() || op == OP_STR_SUBSTRING() || op == OP_PEEK() || op == OP_HEAP_ALLOC() || op == OP_CALL() || op == OP_READFILE() || op == OP_ARGC() || op == OP_ARGV() || op == OP_INT_TO_STR() || op == OP_STR_EQ() || op == OP_STR_NE() || op == OP_STR_CONCAT() || op == OP_LOAD_GLOBAL() || op == OP_SYSCALL_OPEN() || op == OP_SYSCALL_WRITE() || op == OP_SYSCALL_CLOSE() {
+            if instr.dest >= 0 { add_unique(vregs, instr.dest) }
+        }
+        // RET dest is vreg
+        if op == OP_RET() && instr.dest >= 0 { add_unique(vregs, instr.dest) }
+        // BRANCH dest is vreg (condition)
+        if op == OP_BRANCH() && instr.dest >= 0 { add_unique(vregs, instr.dest) }
+        // COPY: dest=target, arg1=source
+        if op == OP_COPY() {
+            if instr.dest >= 0 { add_unique(vregs, instr.dest) }
+            if instr.arg1 >= 0 { add_unique(vregs, instr.arg1) }
+        }
+        // arg1 is vreg for most ops (not LOADCONST, ALLOCA, LABEL, JUMP, BRANCH, ARGC, CALL)
+        if op != OP_LOADCONST() && op != OP_LOAD_GLOBAL() && op != OP_ALLOCA() && op != OP_LABEL() && op != OP_JUMP() && op != OP_BRANCH() && op != OP_ARGC() && op != OP_CALL() {
+            if instr.arg1 >= 0 { add_unique(vregs, instr.arg1) }
+        }
+        // arg2 is vreg for binary ops, STORE, ARRAY_PUSH, POKE, STR_EQ/NE, STR_CHAR_AT, etc
+        if op == OP_ADD() || op == OP_SUB() || op == OP_MUL() || op == OP_DIV() || op == OP_CMP_LT() || op == OP_CMP_GT() || op == OP_CMP_LE() || op == OP_CMP_GE() || op == OP_CMP_EQ() || op == OP_CMP_NE() || op == OP_AND() || op == OP_OR() || op == OP_XOR() || op == OP_BITAND() || op == OP_BITOR() || op == OP_STORE() || op == OP_ARRAY_PUSH() || op == OP_POKE() || op == OP_STR_EQ() || op == OP_STR_NE() || op == OP_STR_CONCAT() || op == OP_STR_CHAR_AT() || op == OP_MEMCOPY() || op == OP_SYSCALL_OPEN() || op == OP_SYSCALL_WRITE() || op == OP_SYSCALL_CLOSE() {
+            if instr.arg2 >= 0 { add_unique(vregs, instr.arg2) }
+        }
+        // STR_SUBSTRING arg2 and arg3 are vregs
+        if op == OP_STR_SUBSTRING() {
+            if instr.arg2 >= 0 { add_unique(vregs, instr.arg2) }
+            if instr.arg3 >= 0 { add_unique(vregs, instr.arg3) }
+        }
+        // MEMCOPY arg3 is vreg (size)
+        if op == OP_MEMCOPY() && instr.arg3 >= 0 { add_unique(vregs, instr.arg3) }
+        // SYSCALL_OPEN arg3 is vreg (mode)
+        if op == OP_SYSCALL_OPEN() && instr.arg3 >= 0 { add_unique(vregs, instr.arg3) }
+        i = i + 1
+    }
+    return vregs
+}
+
+fn emit_llvm_ir(instrs: []IRInstr, output_path: string) -> int {
+    let fd = syscall.open(output_path, 1537, 420)
+    if fd < 0 {
+        print("ERROR: Failed to open output file: " + output_path + "\n")
+        return 1
     }
 
-    // Track function positions during pass 2 (with actual ARM64 instruction counts)
-    let mut func_names = []string{}
-    let mut func_positions = []int{}
-    let mut main_pos = 0
-
-    // Pass 2: Generate code
-    instr_count = 0
-    let mut pass2_i = 0
-    for pass2_i < instrs_len {
-        let instr = instrs[pass2_i]
-
-        // Track function labels with their ARM64 instruction positions
-        if instr.op == OP_LABEL() {
-            if instr.str_val != "" {
-                print(instr.str_val)
-                print("' at instr=")
-                print(strconv.Itoa(instr_count))
-                print("\n")
-                push(func_names, instr.str_val)
-                push(func_positions, instr_count)
-                // Check if this is main function
-                let mut is_main = 0
-                if instr.str_val == "main" {
-                    is_main = 1
-                }
-                // Initialize heap registers for ALL functions
-                // X25 = heap_ptr (current bump pointer, 0 = uninitialized)
-                // X26 = heap_end (end of current mmap'd region)
-                // This matches Go compiler behavior in emit.go:554-555
-                // Any function can call builtins that allocate (e.g., os.ReadFile)
-                let mov_x25_zero = encode_mov_reg(25, 31)  // MOV X25, XZR
-                push(code, mov_x25_zero)
-                instr_count = instr_count + 1
-                let mov_x26_zero = encode_mov_reg(26, 31)  // MOV X26, XZR
-                push(code, mov_x26_zero)
-                instr_count = instr_count + 1
-
-                // For main function, save argc (X0) and argv (X1) to X27/X28
-                // macOS ARM64 ABI: argc comes in X0, argv comes in X1
-                if is_main == 1 {
-                    // Save argc from X0 to X27
-                    let mov_x27 = encode_mov_reg(27, 0)  // MOV X27, X0
-                    push(code, mov_x27)
-                    instr_count = instr_count + 1
-
-                    // Save argv from X1 to X28
-                    let mov_x28 = encode_mov_reg(28, 1)  // MOV X28, X1
-                    push(code, mov_x28)
-                    instr_count = instr_count + 1
-
-                    // Set main_pos AFTER generating prologue
-                    main_pos = instr_count
-                }
+    // Pass 1: Collect string constants
+    let mut string_table = []string{}
+    let mut string_dests = []int{}
+    let mut si = 0
+    for si < len(instrs) {
+        if instrs[si].op == OP_LOADCONST() {
+            if str_ne(instrs[si].str_val, "") {
+                push(string_table, instrs[si].str_val)
+                push(string_dests, instrs[si].dest)
             }
         }
+        si = si + 1
+    }
 
-        if instr.op == OP_LOADCONST() {
-            // Check if this is a string literal (str_val != "")
-            if instr.str_val != "" {
-                // String literal - emit ADRP + ADD placeholder (will be fixed up later)
-                // ADRP Xd, #0 (placeholder)
-                let adrp_encoded = 0x90000000 + instr.dest  // ADRP with 0 offset
-                push(code, adrp_encoded)
-                instr_count = instr_count + 1
+    // Emit string constants
+    let mut sci = 0
+    for sci < len(string_table) {
+        let s = string_table[sci]
+        let escaped = llvm_escape_string(s)
+        write_str(fd, "@.str." + strconv.Itoa(sci) + " = private unnamed_addr constant [" + strconv.Itoa(len(s) + 1) + " x i8] " + escaped + "\n")
+        sci = sci + 1
+    }
+    if len(string_table) > 0 {
+        write_str(fd, "\n")
+    }
 
-                // ADD Xd, Xd, #0 (placeholder)
-                let add_encoded = 0x91000000 + (instr.dest * 0x20) + instr.dest  // ADD Xd, Xd, #0
-                push(code, add_encoded)
-                instr_count = instr_count + 1
+    // Pass 1b: Collect global variables from OP_LOAD_GLOBAL instructions
+    let mut global_names = []string{}
+    let mut gi = 0
+    for gi < len(instrs) {
+        if instrs[gi].op == OP_LOAD_GLOBAL() {
+            let gname = instrs[gi].str_val
+            // Check if already collected
+            let mut found = 0
+            let mut gj = 0
+            for gj < len(global_names) {
+                if str_eq(global_names[gj], gname) {
+                    found = 1
+                    break
+                }
+                gj = gj + 1
+            }
+            if found == 0 {
+                push(global_names, gname)
+            }
+        }
+        gi = gi + 1
+    }
 
-                // Store to stack: STR Xdest, [X29, #vreg_offset]
-                // Use stack slot based on vreg number to avoid register conflicts
-                let vreg_offset = (instr.dest + 2) * 8
-                let str_encoded = encode_str_offset(instr.dest, 29, vreg_offset)
-                push(code, str_encoded)
-                instr_count = instr_count + 1
+    // Emit global variable declarations
+    let mut gdi = 0
+    for gdi < len(global_names) {
+        if is_scalar_global(global_names[gdi]) == 1 {
+            write_str(fd, "@" + global_names[gdi] + " = global i64 0\n")
+        } else {
+            write_str(fd, "@" + global_names[gdi] + " = global [24 x i8] zeroinitializer\n")
+        }
+        gdi = gdi + 1
+    }
+    if len(global_names) > 0 {
+        write_str(fd, "\n")
+    }
 
-                // Record this string for embedding and fixup
-                push(string_table, instr.str_val)
-                push(string_fixups, instr_count - 4)  // Record ADRP instruction position (now 4 instructions back)
+    // Emit runtime declarations
+    emit_llvm_decls(fd)
+
+    // Pass 2: Emit functions
+    let mut fi = 0
+    let instrs_len = len(instrs)
+    for fi < instrs_len {
+        if instrs[fi].op == OP_LABEL() && str_ne(instrs[fi].str_val, "") {
+            let func_name = instrs[fi].str_val
+            let param_count = instrs[fi].arg1
+            let func_start = fi + 1
+
+            // Find function end
+            let mut func_end = instrs_len
+            let mut fj = fi + 1
+            for fj < instrs_len {
+                if instrs[fj].op == OP_LABEL() && str_ne(instrs[fj].str_val, "") {
+                    func_end = fj
+                    break
+                }
+                fj = fj + 1
+            }
+
+            // Emit function
+            emit_llvm_function(fd, instrs, func_start, func_end, func_name, param_count, string_table, string_dests)
+
+            fi = func_end
+        } else {
+            fi = fi + 1
+        }
+    }
+
+    syscall.close(fd)
+    print("Generated LLVM IR: " + output_path + "\n")
+    return 0
+}
+
+fn find_string_index(dest: int, string_dests: []int) -> int {
+    let mut i = 0
+    for i < len(string_dests) {
+        if string_dests[i] == dest {
+            return i
+        }
+        i = i + 1
+    }
+    return -1
+}
+
+fn emit_llvm_function(fd: int, instrs: []IRInstr, start: int, end_pos: int, func_name: string, param_count: int, string_table: []string, string_dests: []int) {
+    let lname = llvm_func_name(func_name)
+
+    // Build parameter list
+    let mut params = ""
+    let mut pi = 0
+    for pi < param_count {
+        if pi > 0 { params = params + ", " }
+        params = params + "i64 %param." + strconv.Itoa(pi)
+        pi = pi + 1
+    }
+
+    write_str(fd, "define i64 @" + lname + "(" + params + ") {\n")
+
+    // Collect all vregs used
+    let vregs = collect_vregs(instrs, start, end_pos, param_count)
+
+    // Emit allocas for all vregs
+    let mut vi = 0
+    for vi < len(vregs) {
+        write_str(fd, "  %v." + strconv.Itoa(vregs[vi]) + " = alloca i64\n")
+        vi = vi + 1
+    }
+
+    // Store parameters into vreg slots (params use 90000+ offset vregs)
+    pi = 0
+    for pi < param_count {
+        write_str(fd, "  store i64 %param." + strconv.Itoa(pi) + ", ptr %v." + strconv.Itoa(90000 + pi) + "\n")
+        pi = pi + 1
+    }
+
+    // Branch to body
+    write_str(fd, "  br label %B.body\n")
+    write_str(fd, "B.body:\n")
+
+    // Emit instructions
+    let mut terminated = 0
+    let mut call_args = []int{}
+    let mut ii = start
+    for ii < end_pos {
+        let instr = instrs[ii]
+        let ti = ii
+
+        if instr.op == OP_LABEL() && str_eq(instr.str_val, "") {
+            // Basic block label
+            if terminated == 0 {
+                write_str(fd, "  br label %L." + strconv.Itoa(instr.dest) + "\n")
+            }
+            write_str(fd, "L." + strconv.Itoa(instr.dest) + ":\n")
+            terminated = 0
+        }
+
+        if terminated == 0 && instr.op == OP_LOADCONST() {
+            if str_ne(instr.str_val, "") {
+                // String constant
+                let str_idx = find_string_index(instr.dest, string_dests)
+                if str_idx >= 0 {
+                    let t = tmp_name(ti, 0)
+                    write_str(fd, "  " + t + " = ptrtoint ptr @.str." + strconv.Itoa(str_idx) + " to i64\n")
+                    emit_store_vreg(fd, instr.dest, t)
+                }
             } else {
-                // Regular integer constant
-                let encoded = encode_mov_imm(instr.dest, instr.arg1)
-                push(code, encoded)
-                instr_count = instr_count + 1
+                // Integer constant
+                emit_store_vreg(fd, instr.dest, strconv.Itoa(instr.arg1))
             }
         }
-        if instr.op == OP_ADD() {
-            // Load arg1 from stack
-            let arg1_reg = instr.arg1
 
-            // Check if this is actually a MOV (arg2 = -1 flag)
-            let mut encoded = 0
+        if terminated == 0 && instr.op == OP_LOAD_GLOBAL() {
+            // Load address of a global variable: ptrtoint ptr @name to i64
+            let t = tmp_name(ti, 0)
+            write_str(fd, "  " + t + " = ptrtoint ptr @" + instr.str_val + " to i64\n")
+            emit_store_vreg(fd, instr.dest, t)
+        }
+
+        if terminated == 0 && instr.op == OP_ADD() {
             if instr.arg2 == -1 {
-                // This is a register move: dest = arg1
-                encoded = encode_mov_reg(instr.dest, arg1_reg)
+                // Copy (MOV variant)
+                let v = emit_load_vreg(fd, instr.arg1, ti, 0)
+                emit_store_vreg(fd, instr.dest, v)
             } else {
-                // Load arg2 from stack for normal ADD
-                let arg2_reg = instr.arg2
-
-                // Normal ADD
-                encoded = encode_add(instr.dest, arg1_reg, arg2_reg)
+                emit_llvm_binop(fd, instr, "add", ti)
             }
-            push(code, encoded)
-            instr_count = instr_count + 1
         }
-        if instr.op == OP_SUB() {
-            // Load arg1 from stack
-            let arg1_reg = instr.arg1
+        if terminated == 0 && instr.op == OP_SUB() { emit_llvm_binop(fd, instr, "sub", ti) }
+        if terminated == 0 && instr.op == OP_MUL() { emit_llvm_binop(fd, instr, "mul", ti) }
+        if terminated == 0 && instr.op == OP_DIV() { emit_llvm_binop(fd, instr, "sdiv", ti) }
+        if terminated == 0 && instr.op == OP_AND() { emit_llvm_binop(fd, instr, "and", ti) }
+        if terminated == 0 && instr.op == OP_OR() { emit_llvm_binop(fd, instr, "or", ti) }
+        if terminated == 0 && instr.op == OP_XOR() { emit_llvm_binop(fd, instr, "xor", ti) }
+        if terminated == 0 && instr.op == OP_BITAND() { emit_llvm_binop(fd, instr, "and", ti) }
+        if terminated == 0 && instr.op == OP_BITOR() { emit_llvm_binop(fd, instr, "or", ti) }
 
-            // Load arg2 from stack
-            let arg2_reg = instr.arg2
-
-            // SUB operation
-            let encoded = encode_sub(instr.dest, arg1_reg, arg2_reg)
-            push(code, encoded)
-            instr_count = instr_count + 1
+        if terminated == 0 && instr.op == OP_NOT() {
+            let v = emit_load_vreg(fd, instr.arg1, ti, 0)
+            let r = tmp_name(ti, 1)
+            write_str(fd, "  " + r + " = xor i64 " + v + ", 1\n")
+            emit_store_vreg(fd, instr.dest, r)
         }
-        if instr.op == OP_MUL() {
-            // Load arg1 from stack
-            let arg1_reg = instr.arg1
 
-            // Load arg2 from stack
-            let arg2_reg = instr.arg2
+        if terminated == 0 && instr.op == OP_CMP_EQ() { emit_llvm_cmp(fd, instr, "eq", ti) }
+        if terminated == 0 && instr.op == OP_CMP_NE() { emit_llvm_cmp(fd, instr, "ne", ti) }
+        if terminated == 0 && instr.op == OP_CMP_LT() { emit_llvm_cmp(fd, instr, "slt", ti) }
+        if terminated == 0 && instr.op == OP_CMP_LE() { emit_llvm_cmp(fd, instr, "sle", ti) }
+        if terminated == 0 && instr.op == OP_CMP_GT() { emit_llvm_cmp(fd, instr, "sgt", ti) }
+        if terminated == 0 && instr.op == OP_CMP_GE() { emit_llvm_cmp(fd, instr, "sge", ti) }
 
-            // MUL operation
-            let encoded = encode_mul(instr.dest, arg1_reg, arg2_reg)
-            push(code, encoded)
-            instr_count = instr_count + 1
+        if terminated == 0 && instr.op == OP_LOAD() {
+            let base = emit_load_vreg(fd, instr.arg1, ti, 0)
+            // arg2: if str_val is "array_index", arg2 is a vreg; otherwise immediate offset
+            let mut addr_val = ""
+            if str_eq(instr.str_val, "array_index") {
+                // Array indexing: base is fat pointer address, arg2 is index vreg
+                // 1. Extract data pointer from fat pointer (offset 0)
+                let fp = tmp_name(ti, 1)
+                write_str(fd, "  " + fp + " = inttoptr i64 " + base + " to ptr\n")
+                let dp = tmp_name(ti, 2)
+                write_str(fd, "  " + dp + " = load i64, ptr " + fp + "\n")
+                // 2. Scale index by element size (8 bytes for pointer-based storage)
+                let idx = emit_load_vreg(fd, instr.arg2, ti, 3)
+                let scaled = tmp_name(ti, 4)
+                write_str(fd, "  " + scaled + " = mul i64 " + idx + ", 8\n")
+                // 3. Calculate element address
+                let a = tmp_name(ti, 5)
+                write_str(fd, "  " + a + " = add i64 " + dp + ", " + scaled + "\n")
+                addr_val = a
+            } else {
+                if instr.arg2 == 0 {
+                    addr_val = base
+                } else {
+                    let a = tmp_name(ti, 2)
+                    write_str(fd, "  " + a + " = add i64 " + base + ", " + strconv.Itoa(instr.arg2) + "\n")
+                    addr_val = a
+                }
+            }
+            let ptr = tmp_name(ti, 6)
+            write_str(fd, "  " + ptr + " = inttoptr i64 " + addr_val + " to ptr\n")
+            let val = tmp_name(ti, 7)
+            write_str(fd, "  " + val + " = load i64, ptr " + ptr + "\n")
+            emit_store_vreg(fd, instr.dest, val)
         }
-        if instr.op == OP_XOR() {
-            // Load arg1 from stack
-            let arg1_reg = instr.arg1
 
-            // Load arg2 from stack
-            let arg2_reg = instr.arg2
-
-            // EOR operation (XOR)
-            let encoded = encode_eor(instr.dest, arg1_reg, arg2_reg)
-            push(code, encoded)
-            instr_count = instr_count + 1
+        if terminated == 0 && instr.op == OP_STORE() {
+            let addr = emit_load_vreg(fd, instr.arg1, ti, 0)
+            let val = emit_load_vreg(fd, instr.arg2, ti, 1)
+            let ptr = tmp_name(ti, 2)
+            write_str(fd, "  " + ptr + " = inttoptr i64 " + addr + " to ptr\n")
+            write_str(fd, "  store i64 " + val + ", ptr " + ptr + "\n")
         }
-        if instr.op == OP_CMP_EQ() {
-            // Load arg1 from stack
-            let arg1_reg = instr.arg1
 
-            // Load arg2 from stack
-            let arg2_reg = instr.arg2
-
-            // Compare equal: dest = (arg1 == arg2) ? 1 : 0
-            // CMP Xarg1, Xarg2
-            let cmp_encoded = encode_cmp(arg1_reg, arg2_reg)
-            push(code, cmp_encoded)
-            instr_count = instr_count + 1
-            // CSET Xdest, EQ
-            let cset_encoded = encode_cset(instr.dest, 0)  // 0 = EQ condition
-            push(code, cset_encoded)
-            instr_count = instr_count + 1
+        if terminated == 0 && instr.op == OP_COPY() {
+            // Copy value from source vreg (arg1) to dest vreg
+            let val = emit_load_vreg(fd, instr.arg1, ti, 0)
+            emit_store_vreg(fd, instr.dest, val)
         }
-        if instr.op == OP_CMP_NE() {
-            // Load arg1 from stack
-            let arg1_reg = instr.arg1
 
-            // Load arg2 from stack
-            let arg2_reg = instr.arg2
-
-            // Compare not equal: dest = (arg1 != arg2) ? 1 : 0
-            let cmp_encoded = encode_cmp(arg1_reg, arg2_reg)
-            push(code, cmp_encoded)
-            instr_count = instr_count + 1
-            let cset_encoded = encode_cset(instr.dest, 1)  // 1 = NE condition
-            push(code, cset_encoded)
-            instr_count = instr_count + 1
+        if terminated == 0 && instr.op == OP_ALLOCA() {
+            // Allocate with malloc (survives function returns)
+            let size = strconv.Itoa(instr.arg1)
+            let p = tmp_name(ti, 0)
+            write_str(fd, "  " + p + " = call ptr @malloc(i64 " + size + ")\n")
+            let z = tmp_name(ti, 1)
+            write_str(fd, "  " + z + " = call ptr @memset(ptr " + p + ", i32 0, i64 " + size + ")\n")
+            emit_ptrtoint_store(fd, instr.dest, p, ti, 2)
         }
-        if instr.op == OP_CMP_LT() {
-            // Load arg1 from stack
-            let arg1_reg = instr.arg1
 
-            // Load arg2 from stack
-            let arg2_reg = instr.arg2
-
-            // Compare less than: dest = (arg1 < arg2) ? 1 : 0
-            let cmp_encoded = encode_cmp(arg1_reg, arg2_reg)
-            push(code, cmp_encoded)
-            instr_count = instr_count + 1
-            let cset_encoded = encode_cset(instr.dest, 11)  // 11 = LT condition
-            push(code, cset_encoded)
-            instr_count = instr_count + 1
-        }
-        if instr.op == OP_CMP_LE() {
-            // Load arg1 from stack
-            let arg1_reg = instr.arg1
-
-            // Load arg2 from stack
-            let arg2_reg = instr.arg2
-
-            // Compare less or equal: dest = (arg1 <= arg2) ? 1 : 0
-            let cmp_encoded = encode_cmp(arg1_reg, arg2_reg)
-            push(code, cmp_encoded)
-            instr_count = instr_count + 1
-            let cset_encoded = encode_cset(instr.dest, 13)  // 13 = LE condition
-            push(code, cset_encoded)
-            instr_count = instr_count + 1
-        }
-        if instr.op == OP_CMP_GT() {
-            // Load arg1 from stack
-            let arg1_reg = instr.arg1
-
-            // Load arg2 from stack
-            let arg2_reg = instr.arg2
-
-            // Compare greater than: dest = (arg1 > arg2) ? 1 : 0
-            let cmp_encoded = encode_cmp(arg1_reg, arg2_reg)
-            push(code, cmp_encoded)
-            instr_count = instr_count + 1
-            let cset_encoded = encode_cset(instr.dest, 12)  // 12 = GT condition
-            push(code, cset_encoded)
-            instr_count = instr_count + 1
-        }
-        if instr.op == OP_CMP_GE() {
-            // Load arg1 from stack
-            let arg1_reg = instr.arg1
-
-            // Load arg2 from stack
-            let arg2_reg = instr.arg2
-
-            // Compare greater or equal: dest = (arg1 >= arg2) ? 1 : 0
-            let cmp_encoded = encode_cmp(arg1_reg, arg2_reg)
-            push(code, cmp_encoded)
-            instr_count = instr_count + 1
-            let cset_encoded = encode_cset(instr.dest, 10)  // 10 = GE condition
-            push(code, cset_encoded)
-            instr_count = instr_count + 1
-        }
-        if instr.op == OP_LOAD() {
-            // Load base register from stack first
-            let base_reg = instr.arg1
-            instr_count = instr_count + 1
-
-            // LDR Xdest, [Xbase, #offset]
-            // For now, simplified: assume arg1 is base register, arg2 is offset
-            // In real implementation, would handle array indexing differently
-            let offset = instr.arg2
-            let dest_reg = instr.dest
-            let encoded = encode_ldr_offset(dest_reg, base_reg, offset)
-            push(code, encoded)
-            instr_count = instr_count + 1
-        }
-        if instr.op == OP_STORE() {
-            // Load base register from stack first
-            let base_reg = instr.arg1
-            let vreg_offset1 = (base_reg + 2) * 8
-            instr_count = instr_count + 1
-
-            // Load source register from stack
-            let src_reg = instr.arg2
-            let vreg_offset2 = (src_reg + 2) * 8
-            let load_src_encoded = encode_ldr_offset(src_reg, 29, vreg_offset2)
-            push(code, load_src_encoded)
-            instr_count = instr_count + 1
-
-            // STR Xsrc, [Xbase, #offset]
-            // Store value from arg2 to memory at arg1 + offset
-            let offset = 0  // For now, store directly (no offset)
-            let encoded = encode_str_offset(src_reg, base_reg, offset)
-            push(code, encoded)
-            instr_count = instr_count + 1
-        }
-        if instr.op == OP_ALLOCA() {
-            // Allocate stack space
-            // For bootstrap: use a simple heap_alloc call (simplified)
-            // In full implementation: adjust stack pointer
-            // For now: generate MOV Xdest, #size (placeholder)
-            let encoded = encode_mov_imm(instr.dest, instr.arg1)
-            push(code, encoded)
-            instr_count = instr_count + 1
-        }
-        if instr.op == OP_INDEXADDR() {
-            // Load arg1 (base pointer) from stack
-            let arg1_reg = instr.arg1
-            instr_count = instr_count + 1
-
-            // Pointer arithmetic: dest = arg1 + arg2 (offset)
-            // ADD Xdest, Xbase, #offset
+        if terminated == 0 && instr.op == OP_INDEXADDR() {
+            let base = emit_load_vreg(fd, instr.arg1, ti, 0)
             if instr.arg2 == 0 {
-                // No offset, just copy pointer
-                let encoded = encode_mov_reg(instr.dest, arg1_reg)
-                push(code, encoded)
+                emit_store_vreg(fd, instr.dest, base)
             } else {
-                // Add offset to base pointer
-                // For now, load offset into temp register and add
-                let temp_reg = 16  // X16 as temp
-                let mov_encoded = encode_mov_imm(temp_reg, instr.arg2)
-                push(code, mov_encoded)
-                instr_count = instr_count + 1
-                let add_encoded = encode_add(instr.dest, arg1_reg, temp_reg)
-                push(code, add_encoded)
-            }
-            instr_count = instr_count + 1
-        }
-        if instr.op == OP_STORE() {
-            // STR: Store arg2 (value) to memory at arg1 (address)
-            // STR Xvalue, [Xaddr]
-            let encoded = encode_str_offset(instr.arg2, instr.arg1, 0)
-            push(code, encoded)
-            instr_count = instr_count + 1
-        }
-        if instr.op == OP_ARRAY_LEN() {
-            // Load length from fat pointer at offset 8
-            // LDR Xdest, [Xarray, #8]
-            let encoded = encode_ldr_offset(instr.dest, instr.arg1, 8)
-            push(code, encoded)
-            instr_count = instr_count + 1
-        }
-        if instr.op == OP_ARRAY_PUSH() {
-            // Simplified push (no growth): load len, store elem, increment len
-            // For bootstrap: assume 8-byte elements (int, pointer, etc.)
-            let array_reg = instr.arg1
-            let elem_reg = instr.arg2
-
-            // Load len from fat pointer at offset 8
-            // LDR X16, [Xarray, #8]
-            let load_len = encode_ldr_offset(16, array_reg, 8)
-            push(code, load_len)
-            instr_count = instr_count + 1
-
-            // Load data pointer from offset 0
-            // LDR X17, [Xarray, #0]
-            let load_ptr = encode_ldr_offset(17, array_reg, 0)
-            push(code, load_ptr)
-            instr_count = instr_count + 1
-
-            // Calculate element address: X18 = X17 + (X16 * 8)
-            // LSL X18, X16, #3  (multiply by 8)
-            let shift = encode_lsl(18, 16, 3)
-            push(code, shift)
-            instr_count = instr_count + 1
-
-            // ADD X18, X17, X18
-            let add_addr = encode_add(18, 17, 18)
-            push(code, add_addr)
-            instr_count = instr_count + 1
-
-            // Store element: STR Xelem, [X18]
-            let store_elem = encode_str_offset(elem_reg, 18, 0)
-            push(code, store_elem)
-            instr_count = instr_count + 1
-
-            // Increment length: ADD X16, X16, #1
-            let inc_len = encode_add_imm(16, 16, 1)
-            push(code, inc_len)
-            instr_count = instr_count + 1
-
-            // Store new length back: STR X16, [Xarray, #8]
-            let store_len = encode_str_offset(16, array_reg, 8)
-            push(code, store_len)
-            instr_count = instr_count + 1
-        }
-        if instr.op == OP_POKE() {
-            // poke(addr, value) - write byte to memory
-            // arg1 = address, arg2 = value (byte)
-            let addr_reg = instr.arg1
-            let value_reg = instr.arg2
-
-            // STRB Wvalue, [Xaddr, #0]
-            // Store byte from value_reg to memory at addr_reg
-            let strb_encoded = encode_strb_offset(value_reg, addr_reg, 0)
-            push(code, strb_encoded)
-            instr_count = instr_count + 1
-        }
-        if instr.op == OP_PEEK() {
-            // peek(addr) - read byte from memory
-            // dest = result (byte value as int), arg1 = address
-            let addr_reg = instr.arg1
-            let dest_reg = instr.dest
-
-            // LDRB Wdest, [Xaddr, #0]
-            // Load byte from memory at addr_reg into dest_reg
-            let ldrb_encoded = encode_ldrb_offset(dest_reg, addr_reg, 0)
-            push(code, ldrb_encoded)
-            instr_count = instr_count + 1
-        }
-        if instr.op == OP_HEAP_ALLOC() {
-            // heap_alloc(size) - allocate memory using mmap
-            // dest = result pointer, arg1 = size
-            let size_reg = instr.arg1
-            let dest_reg = instr.dest
-
-            // Call mmap syscall: mmap(addr, len, prot, flags, fd, offset)
-            // X0 = 0 (let kernel choose address)
-            let mov_x0_zero = encode_mov_reg(0, 31)  // MOV X0, XZR
-            push(code, mov_x0_zero)
-            instr_count = instr_count + 1
-
-            // X1 = 1MB (minimum mmap size for macOS)
-            // Note: Wasteful but simple - always allocate 1MB
-            // A real implementation would use a bump allocator
-            // MOVZ X1, #0x0000, then MOVK X1, #0x10, LSL #16
-            let movz_x1_low = encode_mov_imm(1, 0)  // MOVZ X1, #0
-            push(code, movz_x1_low)
-            instr_count = instr_count + 1
-            let movk_x1_high = encode_movk(1, 0x10, 16)  // MOVK X1, #0x10, LSL #16 = 0x100000 = 1MB
-            push(code, movk_x1_high)
-            instr_count = instr_count + 1
-
-            // X2 = 3 (PROT_READ | PROT_WRITE)
-            let mov_x2_prot = encode_mov_imm(2, 3)
-            push(code, mov_x2_prot)
-            instr_count = instr_count + 1
-
-            // X3 = 0x1002 (MAP_ANON | MAP_PRIVATE)
-            let mov_x3_flags = encode_mov_imm(3, 0x1002)
-            push(code, mov_x3_flags)
-            instr_count = instr_count + 1
-
-            // X4 = -1 (fd, not used for MAP_ANON)
-            // Use MOVN X4, #0 to get -1 (NOT 0 = all ones)
-            let movn_x4_neg1 = encode_movn(4, 0)
-            push(code, movn_x4_neg1)
-            instr_count = instr_count + 1
-
-            // X5 = 0 (offset)
-            let mov_x5_zero = encode_mov_reg(5, 31)  // MOV X5, XZR
-            push(code, mov_x5_zero)
-            instr_count = instr_count + 1
-
-            // X16 = 0x20000C5 (mmap syscall number for macOS ARM64)
-            // Need MOVZ + MOVK sequence for this value
-            let movz_x16_low = encode_mov_imm(16, 0xC5)  // MOVZ X16, #0xC5
-            push(code, movz_x16_low)
-            instr_count = instr_count + 1
-            let movk_x16_high = encode_movk(16, 0x200, 16)  // MOVK X16, #0x200, LSL #16
-            push(code, movk_x16_high)
-            instr_count = instr_count + 1
-
-            // SVC #0x80 (make syscall)
-            push(code, 0xd4001001)
-            instr_count = instr_count + 1
-
-            // Move result from X0 to dest_reg
-            if dest_reg != 0 {
-                let mov_dest_x0 = encode_mov_reg(dest_reg, 0)
-                push(code, mov_dest_x0)
-                instr_count = instr_count + 1
+                let r = tmp_name(ti, 1)
+                write_str(fd, "  " + r + " = add i64 " + base + ", " + strconv.Itoa(instr.arg2) + "\n")
+                emit_store_vreg(fd, instr.dest, r)
             }
         }
-        if instr.op == OP_READFILE() {
-            // os.ReadFile(path) - read file contents
-            // dest = result string pointer, arg1 = path string pointer
-            let path_reg = instr.arg1
-            let dest_reg = instr.dest
 
-            // 1. open(path, O_RDONLY, 0)
-            // X0 = path
-            let mov_x0_path = encode_mov_reg(0, path_reg)
-            push(code, mov_x0_path)
-            instr_count = instr_count + 1
+        if terminated == 0 && instr.op == OP_MEMCOPY() {
+            // arg1=src, arg2=dest, arg3=size
+            let src = emit_load_ptr(fd, instr.arg1, ti, 0, 1)
+            let dst = emit_load_ptr(fd, instr.arg2, ti, 2, 3)
+            let size = emit_load_vreg(fd, instr.arg3, ti, 4)
+            write_str(fd, "  call ptr @memcpy(ptr " + dst + ", ptr " + src + ", i64 " + size + ")\n")
+        }
 
-            // X1 = 0 (O_RDONLY)
-            let mov_x1_zero = encode_mov_reg(1, 31)  // MOV X1, XZR
-            push(code, mov_x1_zero)
-            instr_count = instr_count + 1
+        if terminated == 0 && instr.op == OP_ARRAY_LEN() {
+            // Fat pointer: [ptr, len, cap]. len is at offset 8
+            let base = emit_load_vreg(fd, instr.arg1, ti, 0)
+            let addr = tmp_name(ti, 1)
+            write_str(fd, "  " + addr + " = add i64 " + base + ", 8\n")
+            let ptr = tmp_name(ti, 2)
+            write_str(fd, "  " + ptr + " = inttoptr i64 " + addr + " to ptr\n")
+            let val = tmp_name(ti, 3)
+            write_str(fd, "  " + val + " = load i64, ptr " + ptr + "\n")
+            emit_store_vreg(fd, instr.dest, val)
+        }
 
-            // X2 = 0 (mode, ignored for read)
-            let mov_x2_zero = encode_mov_reg(2, 31)  // MOV X2, XZR
-            push(code, mov_x2_zero)
-            instr_count = instr_count + 1
+        if terminated == 0 && instr.op == OP_STR_LEN() {
+            // String length via runtime call
+            let str_val = emit_load_vreg(fd, instr.arg1, ti, 0)
+            let str_ptr = tmp_name(ti, 1)
+            write_str(fd, "  " + str_ptr + " = inttoptr i64 " + str_val + " to ptr\n")
+            let result = tmp_name(ti, 2)
+            write_str(fd, "  " + result + " = call i64 @ease_str_len(ptr " + str_ptr + ")\n")
+            emit_store_vreg(fd, instr.dest, result)
+        }
 
-            // X16 = 0x2000005 (open syscall for macOS ARM64)
-            let movz_x16_open = encode_mov_imm(16, 5)  // MOVZ X16, #5
-            push(code, movz_x16_open)
-            instr_count = instr_count + 1
-            let movk_x16_open = encode_movk(16, 0x200, 16)  // MOVK X16, #0x200, LSL #16
-            push(code, movk_x16_open)
-            instr_count = instr_count + 1
+        if terminated == 0 && instr.op == OP_ARRAY_PUSH() {
+            // arg1=fat ptr vreg, arg2=element vreg
+            let fp = emit_load_ptr(fd, instr.arg1, ti, 0, 1)
+            let elem = emit_load_vreg(fd, instr.arg2, ti, 2)
+            let tmp_alloca = tmp_name(ti, 3)
+            write_str(fd, "  " + tmp_alloca + " = alloca i64\n")
+            write_str(fd, "  store i64 " + elem + ", ptr " + tmp_alloca + "\n")
+            write_str(fd, "  call void @ease_array_push(ptr " + fp + ", ptr " + tmp_alloca + ", i64 8)\n")
+        }
 
-            // SVC #0x80 (make syscall)
-            push(code, 0xd4001001)
-            instr_count = instr_count + 1
+        if terminated == 0 && instr.op == OP_POKE() {
+            let addr = emit_load_ptr(fd, instr.arg1, ti, 0, 1)
+            let val = emit_load_vreg(fd, instr.arg2, ti, 2)
+            write_str(fd, "  call void @ease_poke(ptr " + addr + ", i64 " + val + ")\n")
+        }
 
-            // Save fd in X20
-            let mov_x20_fd = encode_mov_reg(20, 0)  // MOV X20, X0
-            push(code, mov_x20_fd)
-            instr_count = instr_count + 1
+        if terminated == 0 && instr.op == OP_PEEK() {
+            let addr = emit_load_ptr(fd, instr.arg1, ti, 0, 1)
+            let r = tmp_name(ti, 2)
+            write_str(fd, "  " + r + " = call i64 @ease_peek(ptr " + addr + ")\n")
+            emit_store_vreg(fd, instr.dest, r)
+        }
 
-            // 2. Allocate 1MB buffer via mmap
-            // X0 = 0 (let kernel choose address)
-            let mov_x0_zero2 = encode_mov_reg(0, 31)  // MOV X0, XZR
-            push(code, mov_x0_zero2)
-            instr_count = instr_count + 1
+        if terminated == 0 && instr.op == OP_HEAP_ALLOC() {
+            let size = emit_load_vreg(fd, instr.arg1, ti, 0)
+            let p = tmp_name(ti, 1)
+            write_str(fd, "  " + p + " = call ptr @malloc(i64 " + size + ")\n")
+            let ms = tmp_name(ti, 2)
+            write_str(fd, "  " + ms + " = call ptr @memset(ptr " + p + ", i32 0, i64 " + size + ")\n")
+            emit_ptrtoint_store(fd, instr.dest, p, ti, 3)
+        }
 
-            // X1 = 1MB (buffer size)
-            let movz_x1_size = encode_mov_imm(1, 0)  // MOVZ X1, #0
-            push(code, movz_x1_size)
-            instr_count = instr_count + 1
-            let movk_x1_size = encode_movk(1, 0x10, 16)  // MOVK X1, #0x10, LSL #16 = 1MB
-            push(code, movk_x1_size)
-            instr_count = instr_count + 1
+        if terminated == 0 && instr.op == OP_READFILE() {
+            let path = emit_load_ptr(fd, instr.arg1, ti, 0, 1)
+            let p = tmp_name(ti, 2)
+            write_str(fd, "  " + p + " = call ptr @ease_read_file(ptr " + path + ")\n")
+            emit_ptrtoint_store(fd, instr.dest, p, ti, 3)
+        }
 
-            // X2 = 3 (PROT_READ | PROT_WRITE)
-            let mov_x2_prot2 = encode_mov_imm(2, 3)
-            push(code, mov_x2_prot2)
-            instr_count = instr_count + 1
+        if terminated == 0 && instr.op == OP_ARGC() {
+            let r = tmp_name(ti, 0)
+            write_str(fd, "  " + r + " = call i64 @ease_argc()\n")
+            emit_store_vreg(fd, instr.dest, r)
+        }
 
-            // X3 = 0x1002 (MAP_ANON | MAP_PRIVATE)
-            let mov_x3_flags2 = encode_mov_imm(3, 0x1002)
-            push(code, mov_x3_flags2)
-            instr_count = instr_count + 1
+        if terminated == 0 && instr.op == OP_ARGV() {
+            let idx = emit_load_vreg(fd, instr.arg1, ti, 0)
+            let p = tmp_name(ti, 1)
+            write_str(fd, "  " + p + " = call ptr @ease_argv(i64 " + idx + ")\n")
+            emit_ptrtoint_store(fd, instr.dest, p, ti, 2)
+        }
 
-            // X4 = -1 (fd)
-            let movn_x4_neg1_2 = encode_movn(4, 0)
-            push(code, movn_x4_neg1_2)
-            instr_count = instr_count + 1
+        if terminated == 0 && instr.op == OP_INT_TO_STR() {
+            let val = emit_load_vreg(fd, instr.arg1, ti, 0)
+            let p = tmp_name(ti, 1)
+            write_str(fd, "  " + p + " = call ptr @ease_int_to_str(i64 " + val + ")\n")
+            emit_ptrtoint_store(fd, instr.dest, p, ti, 2)
+        }
 
-            // X5 = 0 (offset)
-            let mov_x5_zero2 = encode_mov_reg(5, 31)
-            push(code, mov_x5_zero2)
-            instr_count = instr_count + 1
+        if terminated == 0 && instr.op == OP_PRINT() {
+            let s = emit_load_ptr(fd, instr.arg1, ti, 0, 1)
+            write_str(fd, "  call void @ease_print(ptr " + s + ")\n")
+        }
 
-            // X16 = 0x20000C5 (mmap syscall)
-            let movz_x16_mmap = encode_mov_imm(16, 0xC5)
-            push(code, movz_x16_mmap)
-            instr_count = instr_count + 1
-            let movk_x16_mmap = encode_movk(16, 0x200, 16)
-            push(code, movk_x16_mmap)
-            instr_count = instr_count + 1
+        if terminated == 0 && instr.op == OP_STR_EQ() {
+            let a = emit_load_ptr(fd, instr.arg1, ti, 0, 1)
+            let b = emit_load_ptr(fd, instr.arg2, ti, 2, 3)
+            let r = tmp_name(ti, 4)
+            write_str(fd, "  " + r + " = call i64 @ease_str_eq(ptr " + a + ", ptr " + b + ")\n")
+            emit_store_vreg(fd, instr.dest, r)
+        }
 
-            // SVC #0x80 (mmap)
-            push(code, 0xd4001001)
-            instr_count = instr_count + 1
+        if terminated == 0 && instr.op == OP_STR_NE() {
+            let a = emit_load_ptr(fd, instr.arg1, ti, 0, 1)
+            let b = emit_load_ptr(fd, instr.arg2, ti, 2, 3)
+            let r = tmp_name(ti, 4)
+            write_str(fd, "  " + r + " = call i64 @ease_str_ne(ptr " + a + ", ptr " + b + ")\n")
+            emit_store_vreg(fd, instr.dest, r)
+        }
 
-            // Save buffer pointer in X21
-            let mov_x21_buf = encode_mov_reg(21, 0)  // MOV X21, X0
-            push(code, mov_x21_buf)
-            instr_count = instr_count + 1
+        if terminated == 0 && instr.op == OP_STR_CONCAT() {
+            let a = emit_load_ptr(fd, instr.arg1, ti, 0, 1)
+            let b = emit_load_ptr(fd, instr.arg2, ti, 2, 3)
+            let r = tmp_name(ti, 4)
+            write_str(fd, "  " + r + " = call ptr @ease_str_concat(ptr " + a + ", ptr " + b + ")\n")
+            emit_ptrtoint_store(fd, instr.dest, r, ti, 5)
+        }
 
-            // 3. Read file in 64KB chunks (unrolled loop for 4 iterations = 256KB max)
-            // X22 = total bytes read accumulator
-            let movz_x22_zero = encode_mov_imm(22, 0)  // MOVZ X22, #0
-            push(code, movz_x22_zero)
-            instr_count = instr_count + 1
+        if terminated == 0 && instr.op == OP_STR_CHAR_AT() {
+            let s = emit_load_ptr(fd, instr.arg1, ti, 0, 1)
+            let idx = emit_load_vreg(fd, instr.arg2, ti, 2)
+            let r = tmp_name(ti, 3)
+            write_str(fd, "  " + r + " = call i64 @ease_str_char_at(ptr " + s + ", i64 " + idx + ")\n")
+            emit_store_vreg(fd, instr.dest, r)
+        }
 
-            // Read chunk size: 65536 (64KB)
-            let movz_x24_chunk = encode_mov_imm(24, 0)  // MOVZ X24, #0
-            push(code, movz_x24_chunk)
-            instr_count = instr_count + 1
-            let movk_x24_chunk = encode_movk(24, 1, 16)  // MOVK X24, #1, LSL #16 = 65536
-            push(code, movk_x24_chunk)
-            instr_count = instr_count + 1
+        if terminated == 0 && instr.op == OP_STR_SUBSTRING() {
+            let s = emit_load_ptr(fd, instr.arg1, ti, 0, 1)
+            let start_val = emit_load_vreg(fd, instr.arg2, ti, 2)
+            let end_val = emit_load_vreg(fd, instr.arg3, ti, 3)
+            let p = tmp_name(ti, 4)
+            write_str(fd, "  " + p + " = call ptr @ease_str_substring(ptr " + s + ", i64 " + start_val + ", i64 " + end_val + ")\n")
+            emit_ptrtoint_store(fd, instr.dest, p, ti, 5)
+        }
 
-            // Read #1: read(fd, buffer + 0, 64KB)
-            let mov_x0_fd1 = encode_mov_reg(0, 20)
-            push(code, mov_x0_fd1)
-            instr_count = instr_count + 1
-            let add_x1_buf1 = encode_add(1, 21, 22)  // ADD X1, X21, X22
-            push(code, add_x1_buf1)
-            instr_count = instr_count + 1
-            let mov_x2_chunk1 = encode_mov_reg(2, 24)
-            push(code, mov_x2_chunk1)
-            instr_count = instr_count + 1
-            let movz_x16_1 = encode_mov_imm(16, 3)
-            push(code, movz_x16_1)
-            instr_count = instr_count + 1
-            let movk_x16_1 = encode_movk(16, 0x200, 16)
-            push(code, movk_x16_1)
-            instr_count = instr_count + 1
-            push(code, 0xd4001001)  // SVC
-            instr_count = instr_count + 1
-            let add_total1 = encode_add(22, 22, 0)  // X22 += bytes_read
-            push(code, add_total1)
-            instr_count = instr_count + 1
-            // Check if X0 = 0 (EOF), if so skip remaining reads (24 instructions ahead)
-            let cbz_eof1 = encode_cbz(0, 24)  // CBZ X0, #24
-            push(code, cbz_eof1)
-            instr_count = instr_count + 1
+        if terminated == 0 && instr.op == OP_SYSCALL_OPEN() {
+            let path = emit_load_ptr(fd, instr.arg1, ti, 0, 1)
+            let flags = emit_load_vreg(fd, instr.arg2, ti, 2)
+            let mode = emit_load_vreg(fd, instr.arg3, ti, 3)
+            let r = tmp_name(ti, 4)
+            write_str(fd, "  " + r + " = call i64 @ease_syscall_open(ptr " + path + ", i64 " + flags + ", i64 " + mode + ")\n")
+            emit_store_vreg(fd, instr.dest, r)
+        }
 
-            // Read #2
-            let mov_x0_fd2 = encode_mov_reg(0, 20)
-            push(code, mov_x0_fd2)
-            instr_count = instr_count + 1
-            let add_x1_buf2 = encode_add(1, 21, 22)
-            push(code, add_x1_buf2)
-            instr_count = instr_count + 1
-            let mov_x2_chunk2 = encode_mov_reg(2, 24)
-            push(code, mov_x2_chunk2)
-            instr_count = instr_count + 1
-            let movz_x16_2 = encode_mov_imm(16, 3)
-            push(code, movz_x16_2)
-            instr_count = instr_count + 1
-            let movk_x16_2 = encode_movk(16, 0x200, 16)
-            push(code, movk_x16_2)
-            instr_count = instr_count + 1
-            push(code, 0xd4001001)
-            instr_count = instr_count + 1
-            let add_total2 = encode_add(22, 22, 0)
-            push(code, add_total2)
-            instr_count = instr_count + 1
-            // Check EOF, skip 16 instructions ahead
-            let cbz_eof2 = encode_cbz(0, 16)  // CBZ X0, #16
-            push(code, cbz_eof2)
-            instr_count = instr_count + 1
+        if terminated == 0 && instr.op == OP_SYSCALL_WRITE() {
+            let sfd = emit_load_vreg(fd, instr.arg1, ti, 0)
+            let buf = emit_load_ptr(fd, instr.arg2, ti, 1, 2)
+            let size = emit_load_vreg(fd, instr.arg3, ti, 3)
+            let r = tmp_name(ti, 4)
+            write_str(fd, "  " + r + " = call i64 @ease_syscall_write(i64 " + sfd + ", ptr " + buf + ", i64 " + size + ")\n")
+            emit_store_vreg(fd, instr.dest, r)
+        }
 
-            // Read #3
-            let mov_x0_fd3 = encode_mov_reg(0, 20)
-            push(code, mov_x0_fd3)
-            instr_count = instr_count + 1
-            let add_x1_buf3 = encode_add(1, 21, 22)
-            push(code, add_x1_buf3)
-            instr_count = instr_count + 1
-            let mov_x2_chunk3 = encode_mov_reg(2, 24)
-            push(code, mov_x2_chunk3)
-            instr_count = instr_count + 1
-            let movz_x16_3 = encode_mov_imm(16, 3)
-            push(code, movz_x16_3)
-            instr_count = instr_count + 1
-            let movk_x16_3 = encode_movk(16, 0x200, 16)
-            push(code, movk_x16_3)
-            instr_count = instr_count + 1
-            push(code, 0xd4001001)
-            instr_count = instr_count + 1
-            let add_total3 = encode_add(22, 22, 0)
-            push(code, add_total3)
-            instr_count = instr_count + 1
-            // Check EOF, skip 8 instructions ahead
-            let cbz_eof3 = encode_cbz(0, 8)  // CBZ X0, #8
-            push(code, cbz_eof3)
-            instr_count = instr_count + 1
+        if terminated == 0 && instr.op == OP_SYSCALL_CLOSE() {
+            let sfd = emit_load_vreg(fd, instr.arg1, ti, 0)
+            let r = tmp_name(ti, 1)
+            write_str(fd, "  " + r + " = call i64 @ease_syscall_close(i64 " + sfd + ")\n")
+            emit_store_vreg(fd, instr.dest, r)
+        }
 
-            // Read #4
-            let mov_x0_fd4 = encode_mov_reg(0, 20)
-            push(code, mov_x0_fd4)
-            instr_count = instr_count + 1
-            let add_x1_buf4 = encode_add(1, 21, 22)
-            push(code, add_x1_buf4)
-            instr_count = instr_count + 1
-            let mov_x2_chunk4 = encode_mov_reg(2, 24)
-            push(code, mov_x2_chunk4)
-            instr_count = instr_count + 1
-            let movz_x16_4 = encode_mov_imm(16, 3)
-            push(code, movz_x16_4)
-            instr_count = instr_count + 1
-            let movk_x16_4 = encode_movk(16, 0x200, 16)
-            push(code, movk_x16_4)
-            instr_count = instr_count + 1
-            push(code, 0xd4001001)
-            instr_count = instr_count + 1
-            let add_total4 = encode_add(22, 22, 0)
-            push(code, add_total4)
-            instr_count = instr_count + 1
-            // Check EOF, skip 8 instructions ahead
-            let cbz_eof4 = encode_cbz(0, 8)
-            push(code, cbz_eof4)
-            instr_count = instr_count + 1
+        if terminated == 0 && instr.op == OP_ARG() {
+            // Collect argument for next call
+            push(call_args, instr.arg1)
+        }
 
-            // Read #5
-            let mov_x0_fd5 = encode_mov_reg(0, 20)
-            push(code, mov_x0_fd5)
-            instr_count = instr_count + 1
-            let add_x1_buf5 = encode_add(1, 21, 22)
-            push(code, add_x1_buf5)
-            instr_count = instr_count + 1
-            let mov_x2_chunk5 = encode_mov_reg(2, 24)
-            push(code, mov_x2_chunk5)
-            instr_count = instr_count + 1
-            let movz_x16_5 = encode_mov_imm(16, 3)
-            push(code, movz_x16_5)
-            instr_count = instr_count + 1
-            let movk_x16_5 = encode_movk(16, 0x200, 16)
-            push(code, movk_x16_5)
-            instr_count = instr_count + 1
-            push(code, 0xd4001001)
-            instr_count = instr_count + 1
-            let add_total5 = encode_add(22, 22, 0)
-            push(code, add_total5)
-            instr_count = instr_count + 1
-            // Check EOF, skip 8 instructions ahead
-            let cbz_eof5 = encode_cbz(0, 8)
-            push(code, cbz_eof5)
-            instr_count = instr_count + 1
-
-            // Read #6
-            let mov_x0_fd6 = encode_mov_reg(0, 20)
-            push(code, mov_x0_fd6)
-            instr_count = instr_count + 1
-            let add_x1_buf6 = encode_add(1, 21, 22)
-            push(code, add_x1_buf6)
-            instr_count = instr_count + 1
-            let mov_x2_chunk6 = encode_mov_reg(2, 24)
-            push(code, mov_x2_chunk6)
-            instr_count = instr_count + 1
-            let movz_x16_6 = encode_mov_imm(16, 3)
-            push(code, movz_x16_6)
-            instr_count = instr_count + 1
-            let movk_x16_6 = encode_movk(16, 0x200, 16)
-            push(code, movk_x16_6)
-            instr_count = instr_count + 1
-            push(code, 0xd4001001)
-            instr_count = instr_count + 1
-            let add_total6 = encode_add(22, 22, 0)
-            push(code, add_total6)
-            instr_count = instr_count + 1
-            // No check needed after last read, just fall through
-
-            // Null terminate
-            let add_x23_end = encode_add(23, 21, 22)
-            push(code, add_x23_end)
-            instr_count = instr_count + 1
-            let strb_null = encode_strb_offset(31, 23, 0)
-            push(code, strb_null)
-            instr_count = instr_count + 1
-
-            // 4. close(fd)
-            // X0 = fd (from X20)
-            let mov_x0_fd_close = encode_mov_reg(0, 20)  // MOV X0, X20
-            push(code, mov_x0_fd_close)
-            instr_count = instr_count + 1
-
-            // X16 = 0x2000006 (close syscall)
-            let movz_x16_close = encode_mov_imm(16, 6)  // MOVZ X16, #6
-            push(code, movz_x16_close)
-            instr_count = instr_count + 1
-            let movk_x16_close = encode_movk(16, 0x200, 16)  // MOVK X16, #0x200, LSL #16
-            push(code, movk_x16_close)
-            instr_count = instr_count + 1
-
-            // SVC #0x80 (close)
-            push(code, 0xd4001001)
-            instr_count = instr_count + 1
-
-            // 5. Return buffer pointer (X21) in dest_reg
-            if dest_reg != 21 {
-                let mov_dest_buf = encode_mov_reg(dest_reg, 21)
-                push(code, mov_dest_buf)
-                instr_count = instr_count + 1
+        if terminated == 0 && instr.op == OP_CALL() {
+            let callee = llvm_func_name(instr.str_val)
+            // Build argument string
+            let mut args_str = ""
+            let mut ai = 0
+            for ai < len(call_args) {
+                if ai > 0 { args_str = args_str + ", " }
+                let arg_val = emit_load_vreg(fd, call_args[ai], ti, ai)
+                args_str = args_str + "i64 " + arg_val
+                ai = ai + 1
             }
-        }
-        if instr.op == OP_ARGC() {
-            // os.Argc() - return argument count from X27
-            let dest_reg = instr.dest
-            if dest_reg != 27 {
-                let mov_dest = encode_mov_reg(dest_reg, 27)  // MOV dest, X27
-                push(code, mov_dest)
-                instr_count = instr_count + 1
-            }
-        }
-        if instr.op == OP_ARGV() {
-            // os.Argv(index) - return argument string from X28[index]
-            let index_reg = instr.arg1
-            let dest_reg = instr.dest
-
-            // X16 = index * 8
-            let mov_x17_8 = encode_mov_imm(17, 8)  // MOVZ X17, #8
-            push(code, mov_x17_8)
-            instr_count = instr_count + 1
-
-            let mul_x16 = encode_mul(16, index_reg, 17)  // MUL X16, index_reg, X17
-            push(code, mul_x16)
-            instr_count = instr_count + 1
-
-            // X16 = X28 + X16 (argv + index*8)
-            let add_x16 = encode_add(16, 28, 16)  // ADD X16, X28, X16
-            push(code, add_x16)
-            instr_count = instr_count + 1
-
-            // Load string pointer from argv[index]
-            let ldr_x16 = encode_ldr_offset(16, 16, 0)  // LDR X16, [X16]
-            push(code, ldr_x16)
-            instr_count = instr_count + 1
-
-            // Move to dest if needed
-            if dest_reg != 16 {
-                let mov_dest = encode_mov_reg(dest_reg, 16)
-                push(code, mov_dest)
-                instr_count = instr_count + 1
-            }
-        }
-        if instr.op == OP_INT_TO_STR() {
-            // strconv.Itoa(int) - convert integer to decimal string
-            // This is complex, will implement simplified version
-            // For now, just allocate buffer and write "0"
-            let int_reg = instr.arg1
-            let dest_reg = instr.dest
-
-            // Allocate 32 bytes for string buffer (enough for 64-bit int + null)
-            let mov_x0_zero = encode_mov_reg(0, 31)  // MOV X0, XZR
-            push(code, mov_x0_zero)
-            instr_count = instr_count + 1
-
-            let mov_x1_32 = encode_mov_imm(1, 32)  // MOVZ X1, #32
-            push(code, mov_x1_32)
-            instr_count = instr_count + 1
-
-            let mov_x2_prot = encode_mov_imm(2, 3)  // MOVZ X2, #3
-            push(code, mov_x2_prot)
-            instr_count = instr_count + 1
-
-            let mov_x3_flags = encode_mov_imm(3, 0x1002)  // MOVZ X3, #0x1002
-            push(code, mov_x3_flags)
-            instr_count = instr_count + 1
-
-            let movn_x4 = encode_movn(4, 0)  // MOVN X4, #0 → -1
-            push(code, movn_x4)
-            instr_count = instr_count + 1
-
-            let mov_x5_zero = encode_mov_reg(5, 31)  // MOV X5, XZR
-            push(code, mov_x5_zero)
-            instr_count = instr_count + 1
-
-            let movz_x16_mmap = encode_mov_imm(16, 0xC5)  // MOVZ X16, #0xC5
-            push(code, movz_x16_mmap)
-            instr_count = instr_count + 1
-
-            let movk_x16_mmap = encode_movk(16, 0x200, 16)  // MOVK X16, #0x200, LSL #16
-            push(code, movk_x16_mmap)
-            instr_count = instr_count + 1
-
-            push(code, 0xd4001001)  // SVC #0x80
-            instr_count = instr_count + 1
-
-            // X0 now has buffer pointer, save it
-            let mov_x20_buf = encode_mov_reg(20, 0)  // MOV X20, X0 (save buffer)
-            push(code, mov_x20_buf)
-            instr_count = instr_count + 1
-
-            // Now convert integer to string (simplified - just handle positive numbers)
-            // This is a placeholder implementation
-            // TODO: Implement full integer-to-string conversion
-            // For now, write "0" and null terminate
-            let mov_x21_48 = encode_mov_imm(21, 48)  // MOVZ X21, #48 ('0')
-            push(code, mov_x21_48)
-            instr_count = instr_count + 1
-
-            let strb_zero_char = encode_strb_offset(21, 20, 0)  // STRB W21, [X20]
-            push(code, strb_zero_char)
-            instr_count = instr_count + 1
-
-            let strb_null = encode_strb_offset(31, 20, 1)  // STRB WZR, [X20, #1]
-            push(code, strb_null)
-            instr_count = instr_count + 1
-
-            // Return buffer pointer
-            if dest_reg != 20 {
-                let mov_dest = encode_mov_reg(dest_reg, 20)
-                push(code, mov_dest)
-                instr_count = instr_count + 1
-            }
-
-            // TODO: Implement proper digit extraction loop
-            // For self-compilation, this placeholder should work for simple integer printing
-        }
-        if instr.op == OP_STR_CHAR_AT() {
-            // str_char_at(str, index) - returns character at index as int
-            // dest = result, arg1 = string vreg, arg2 = index vreg
-            let str_reg = instr.arg1
-            let index_reg = instr.arg2
-            let dest_reg = instr.dest
-
-            // Compute address: str + index
-            // ADD X16, Xstr, Xindex
-            let add_addr = encode_add(16, str_reg, index_reg)
-            push(code, add_addr)
-            instr_count = instr_count + 1
-
-            // Load byte at address
-            // LDRB W17, [X16, #0]
-            let load_byte = encode_ldrb_offset(17, 16, 0)
-            push(code, load_byte)
-            instr_count = instr_count + 1
-
-            // Move result to destination register
-            // MOV Xdest, X17
-            let mov_result = encode_mov_reg(dest_reg, 17)
-            push(code, mov_result)
-            instr_count = instr_count + 1
-        }
-        if instr.op == OP_STR_SUBSTRING() {
-            // str_substring(str, start, end) - returns new string with substring
-            // dest = result pointer, arg1 = string vreg, arg2 = start vreg, arg3 = end vreg
-            // Note: Full implementation requires mmap syscall for allocation
-            // For bootstrap demo, we'll show the structure but actual execution needs runtime support
-
-            let str_reg = instr.arg1
-            let start_reg = instr.arg2
-            let end_reg = instr.arg3
-            let dest_reg = instr.dest
-
-            // Calculate length: end - start
-            // SUB X16, Xend, Xstart
-            let calc_len = encode_sub(16, end_reg, start_reg)
-            push(code, calc_len)
-            instr_count = instr_count + 1
-
-            // Calculate source address: str + start
-            // ADD X17, Xstr, Xstart
-            let calc_src = encode_add(17, str_reg, start_reg)
-            push(code, calc_src)
-            instr_count = instr_count + 1
-
-            // For now: just return source pointer (not a copy)
-            // Full implementation would:
-            // 1. Allocate buffer with mmap (size = length + 1)
-            // 2. Copy bytes in loop from X17 to buffer
-            // 3. Null-terminate buffer
-            // 4. Return buffer pointer
-            // MOV Xdest, X17
-            let mov_result = encode_mov_reg(dest_reg, 17)
-            push(code, mov_result)
-            instr_count = instr_count + 1
-        }
-        if instr.op == OP_ARG() {
-            // Move argument value to argument register (X0-X7)
-            // dest = argument position (0-7)
-            // arg1 = vreg containing the value
-            let arg_pos = instr.dest
-            let value_reg = instr.arg1
-            if arg_pos < 8 {
-                // Only move if source and destination are different
-                if value_reg != arg_pos {
-                    let mov_arg = encode_mov_reg(arg_pos, value_reg)
-                    push(code, mov_arg)
-                    instr_count = instr_count + 1
-                }
-            }
-        }
-        if instr.op == OP_CALL() {
-            // BL <function> - Branch with Link (function call)
-            // Look up function position by name
-            let mut target_pos = 0
-            let mut j = 0
-            let func_count = len(func_names)
-            for j < func_count {
-                if func_names[j] == instr.str_val {
-                    target_pos = func_positions[j]
-                    break
-                }
-                j = j + 1
-            }
-            // Calculate offset from current instruction to function start
-            let offset = target_pos - instr_count
-            let encoded = encode_bl(offset)
-            push(code, encoded)
-            instr_count = instr_count + 1
-
-            // Move return value from X0 to destination register
-            // Return value comes back in X0, need to move it to vreg
+            // Emit call
             if instr.dest >= 0 {
-                let dest_reg = instr.dest
-                if dest_reg != 0 {
-                    // Only generate MOV if destination is not X0
-                    let mov_result = encode_mov_reg(dest_reg, 0)
-                    push(code, mov_result)
-                    instr_count = instr_count + 1
-                }
-            }
-        }
-        if instr.op == OP_RET() {
-            // If returning a value, move it to X0
-            if instr.dest >= 0 {
-                let mov_to_x0 = encode_mov_reg(0, instr.dest)
-                push(code, mov_to_x0)
-                instr_count = instr_count + 1
-            }
-
-            // Check if we're in main function - only main should exit
-            let mut is_main_func = 0
-            let mut current_func_idx = -1
-
-            let num_funcs = len(func_names)
-            let mut check_i = 0
-            for check_i < num_funcs {
-                if func_positions[check_i] <= instr_count {
-                    current_func_idx = check_i
-                }
-                check_i = check_i + 1
-            }
-
-            // Check if current function is main
-            if current_func_idx >= 0 {
-                if func_names[current_func_idx] == "main" {
-                    is_main_func = 1
-                }
-            }
-
-            if is_main_func == 1 {
-                // Main function: call exit syscall
-                // X16 = 0x2000001 (exit syscall number for macOS ARM64)
-                // Use MOVZ + MOVK sequence
-                let movz_x16_low = encode_mov_imm(16, 1)  // MOVZ X16, #1
-                push(code, movz_x16_low)
-                instr_count = instr_count + 1
-                let movk_x16_high = encode_movk(16, 0x200, 16)  // MOVK X16, #0x200, LSL #16
-                push(code, movk_x16_high)
-                instr_count = instr_count + 1
-                // SVC #0x80 (make syscall)
-                push(code, 0xd4001001)
-                instr_count = instr_count + 1
+                let r = tmp_name(ti, 9)
+                write_str(fd, "  " + r + " = call i64 @" + callee + "(" + args_str + ")\n")
+                emit_store_vreg(fd, instr.dest, r)
             } else {
-                // Other functions: use RET instruction
-                // RET = 0xD65F03C0 (return using X30/LR)
-                push(code, 0xD65F03C0)
-                instr_count = instr_count + 1
+                write_str(fd, "  call i64 @" + callee + "(" + args_str + ")\n")
             }
+            // Reset call args
+            call_args = []int{}
         }
-        if instr.op == OP_BRANCH() {
-            // CBZ Rt, label - branch if register is zero
-            // Find label position
-            let mut target_pos = 0
-            let mut branch_j = 0
-            let label_count = len(label_ids)
-            for branch_j < label_count {
-                if label_ids[branch_j] == instr.arg1 {
-                    target_pos = label_positions[branch_j]
-                    break
-                }
-                branch_j = branch_j + 1
+
+        if terminated == 0 && instr.op == OP_RET() {
+            if instr.dest >= 0 {
+                let v = emit_load_vreg(fd, instr.dest, ti, 0)
+                write_str(fd, "  ret i64 " + v + "\n")
+            } else {
+                write_str(fd, "  ret i64 0\n")
             }
-            let offset = target_pos - instr_count
-            let encoded = encode_cbz(instr.dest, offset)
-            push(code, encoded)
-            instr_count = instr_count + 1
+            terminated = 1
         }
-        if instr.op == OP_JUMP() {
-            // B label - unconditional branch
-            // Find label position
-            let mut target_pos = 0
-            let mut jump_j = 0
-            let label_count2 = len(label_ids)
-            for jump_j < label_count2 {
-                if label_ids[jump_j] == instr.dest {
-                    target_pos = label_positions[jump_j]
-                    break
-                }
-                jump_j = jump_j + 1
-            }
-            let offset = target_pos - instr_count
-            let encoded = encode_b(offset)
-            push(code, encoded)
-            instr_count = instr_count + 1
+
+        if terminated == 0 && instr.op == OP_JUMP() {
+            write_str(fd, "  br label %L." + strconv.Itoa(instr.dest) + "\n")
+            terminated = 1
         }
-        // OP_LABEL doesn't generate code, just marks position
-        pass2_i = pass2_i + 1
+
+        if terminated == 0 && instr.op == OP_BRANCH() {
+            // Branch to arg1 if dest is ZERO (CBZ semantics)
+            let cond = emit_load_vreg(fd, instr.dest, ti, 0)
+            let cmp = tmp_name(ti, 1)
+            write_str(fd, "  " + cmp + " = icmp eq i64 " + cond + ", 0\n")
+            let fall_label = "L.fall." + strconv.Itoa(ti)
+            write_str(fd, "  br i1 " + cmp + ", label %L." + strconv.Itoa(instr.arg1) + ", label %" + fall_label + "\n")
+            write_str(fd, fall_label + ":\n")
+            terminated = 0
+        }
+
+        ii = ii + 1
     }
 
-    // Return main function's instruction offset
-    return main_pos
+    // If function didn't end with a terminator, add default return
+    if terminated == 0 {
+        write_str(fd, "  ret i64 0\n")
+    }
+
+    write_str(fd, "}\n\n")
 }
 
 // ============================================================================
-// Main Integration Demo
+// Main
 // ============================================================================
 
 fn print_hex(val: int) {
-    print("0x")
     let mut v = val
     let mut digits = []int{}
     let mut hex_i = 0
     for hex_i < 8 {
-        push(digits, v % 16)
+        push(digits, v - ((v / 16) * 16))
         v = v / 16
         hex_i = hex_i + 1
     }
-    let mut print_i = 0
-    for print_i < 8 {
-        let d = digits[7 - print_i]
+    let mut pri = 0
+    for pri < 8 {
+        let d = digits[7 - pri]
         if d < 10 {
             print(strconv.Itoa(d))
         } else {
@@ -4068,626 +3939,74 @@ fn print_hex(val: int) {
             if d == 14 { print("e") }
             if d == 15 { print("f") }
         }
-        print_i = print_i + 1
+        pri = pri + 1
     }
 }
 
-// ============================================================================
-// Mach-O Binary Writer
-// ============================================================================
-
-// Mach-O constants
-fn MH_MAGIC_64() -> int { return 0xfeedfacf }
-fn MH_EXECUTE() -> int { return 0x2 }
-fn MH_NOUNDEFS() -> int { return 0x1 }
-fn MH_DYLDLINK() -> int { return 0x4 }
-fn MH_TWOLEVEL() -> int { return 0x80 }
-fn MH_PIE() -> int { return 0x200000 }
-fn CPU_TYPE_ARM64() -> int { return 0x100000C }
-fn CPU_SUBTYPE_ARM64_ALL() -> int { return 0x0 }
-fn LC_SEGMENT_64() -> int { return 0x19 }
-fn LC_MAIN() -> int { return 0x80000028 }
-fn LC_LOAD_DYLINKER() -> int { return 0xE }
-fn LC_BUILD_VERSION() -> int { return 0x32 }
-fn LC_SYMTAB() -> int { return 0x2 }
-fn LC_DYSYMTAB() -> int { return 0xB }
-fn LC_CODE_SIGNATURE() -> int { return 0x1D }
-fn PLATFORM_MACOS() -> int { return 1 }
-fn CSMAGIC_REQUIREMENTS() -> int { return 0xfade0c01 }
-fn CSSLOT_CODEDIRECTORY() -> int { return 0 }
-fn CSSLOT_REQUIREMENTS() -> int { return 2 }
-fn VM_PROT_READ() -> int { return 0x1 }
-fn VM_PROT_WRITE() -> int { return 0x2 }
-fn VM_PROT_EXECUTE() -> int { return 0x4 }
-
-// Binary writing helpers
-fn write_u16_le(addr: int, value: int) {
-    poke(addr, value - ((value / 256) * 256))
-    poke(addr + 1, value / 256)
-}
-
-fn write_u32_le(addr: int, value: int) {
-    poke(addr, value - ((value / 256) * 256))
-    poke(addr + 1, (value / 256) - ((value / 65536) * 256))
-    poke(addr + 2, (value / 65536) - ((value / 16777216) * 256))
-    poke(addr + 3, value / 16777216)
-}
-
-fn write_u64_le(addr: int, value: int) {
-    write_u32_le(addr, value)
-    let high = value / 4294967296
-    write_u32_le(addr + 4, high)
-}
-
-fn write_zeros(addr: int, count: int) {
-    let mut i = 0
-    for i < count {
-        poke(addr + i, 0)
-        i = i + 1
-    }
-}
-
-fn align_up(val: int, alignment: int) -> int {
-    let remainder = val - ((val / alignment) * alignment)
-    if remainder == 0 {
-        return val
-    }
-    return val + (alignment - remainder)
-}
-
-// Write Mach-O header (32 bytes)
-fn write_mach_header(buf: int, num_cmds: int, cmds_size: int) -> int {
-    let mut offset = 0
-    write_u32_le(buf + offset, MH_MAGIC_64())
-    offset = offset + 4
-    write_u32_le(buf + offset, CPU_TYPE_ARM64())
-    offset = offset + 4
-    write_u32_le(buf + offset, CPU_SUBTYPE_ARM64_ALL())
-    offset = offset + 4
-    write_u32_le(buf + offset, MH_EXECUTE())
-    offset = offset + 4
-    write_u32_le(buf + offset, num_cmds)
-    offset = offset + 4
-    write_u32_le(buf + offset, cmds_size)
-    offset = offset + 4
-    let flags = MH_NOUNDEFS() + MH_DYLDLINK() + MH_TWOLEVEL() + MH_PIE()
-    write_u32_le(buf + offset, flags)
-    offset = offset + 4
-    write_u32_le(buf + offset, 0)
-    offset = offset + 4
-    return 32
-}
-
-// Helper: Write ASCII string to buffer (up to 16 bytes, zero-padded)
-fn write_segment_name(buf: int, name: string) {
-    // For bootstrap simplicity, hardcode the most common names
-    if name == "__PAGEZERO" {
-        poke(buf, 95)   // '_'
-        poke(buf + 1, 95)   // '_'
-        poke(buf + 2, 80)   // 'P'
-        poke(buf + 3, 65)   // 'A'
-        poke(buf + 4, 71)   // 'G'
-        poke(buf + 5, 69)   // 'E'
-        poke(buf + 6, 90)   // 'Z'
-        poke(buf + 7, 69)   // 'E'
-        poke(buf + 8, 82)   // 'R'
-        poke(buf + 9, 79)   // 'O'
-        let mut i = 10
-        for i < 16 {
-            poke(buf + i, 0)
-            i = i + 1
+fn count_func_params(nodes: []AstNode, func_idx: int) -> int {
+    let node = nodes[func_idx]
+    if node.left < 0 { return 0 }
+    let mut count = 0
+    let mut pi = node.left
+    let nodes_len = len(nodes)
+    for pi < nodes_len {
+        if nodes[pi].tag == DECL_PARAM() {
+            count = count + 1
+        } else {
+            break
         }
+        pi = pi + 1
     }
-    if name == "__TEXT" {
-        poke(buf, 95)   // '_'
-        poke(buf + 1, 95)   // '_'
-        poke(buf + 2, 84)   // 'T'
-        poke(buf + 3, 69)   // 'E'
-        poke(buf + 4, 88)   // 'X'
-        poke(buf + 5, 84)   // 'T'
-        let mut i = 6
-        for i < 16 {
-            poke(buf + i, 0)
-            i = i + 1
-        }
-    }
-    if name == "__text" {
-        poke(buf, 95)   // '_'
-        poke(buf + 1, 95)   // '_'
-        poke(buf + 2, 116)  // 't'
-        poke(buf + 3, 101)  // 'e'
-        poke(buf + 4, 120)  // 'x'
-        poke(buf + 5, 116)  // 't'
-        let mut i = 6
-        for i < 16 {
-            poke(buf + i, 0)
-            i = i + 1
-        }
-    }
+    return count
 }
-
-// Write __PAGEZERO segment (72 bytes)
-fn write_pagezero_segment(buf: int) -> int {
-    let mut offset = 0
-    write_u32_le(buf + offset, LC_SEGMENT_64())
-    offset = offset + 4
-    write_u32_le(buf + offset, 72)
-    offset = offset + 4
-    write_segment_name(buf + offset, "__PAGEZERO")
-    offset = offset + 16
-    write_u64_le(buf + offset, 0)
-    offset = offset + 8
-    write_u64_le(buf + offset, 4294967296)
-    offset = offset + 8
-    write_u64_le(buf + offset, 0)
-    offset = offset + 8
-    write_u64_le(buf + offset, 0)
-    offset = offset + 8
-    write_u32_le(buf + offset, 0)
-    offset = offset + 4
-    write_u32_le(buf + offset, 0)
-    offset = offset + 4
-    write_u32_le(buf + offset, 0)
-    offset = offset + 4
-    write_u32_le(buf + offset, 0)
-    offset = offset + 4
-    return 72
-}
-
-// Write __TEXT segment (152 bytes with section)
-fn write_text_segment(buf: int, code_size: int, file_offset: int) -> int {
-    let mut offset = 0
-    let vm_addr = 4294967296 + file_offset  // 0x100000000 + file_offset
-    let seg_size = align_up(file_offset + code_size, 16384)  // Include header in segment
-
-    write_u32_le(buf + offset, LC_SEGMENT_64())
-    offset = offset + 4
-    write_u32_le(buf + offset, 152)
-    offset = offset + 4
-    write_segment_name(buf + offset, "__TEXT")
-    offset = offset + 16
-    write_u64_le(buf + offset, 4294967296)  // vmaddr starts at 0x100000000
-    offset = offset + 8
-    write_u64_le(buf + offset, seg_size)  // vmsize includes header
-    offset = offset + 8
-    write_u64_le(buf + offset, 0)  // fileoff: segment starts at beginning of file
-    offset = offset + 8
-    write_u64_le(buf + offset, seg_size)  // filesize: entire segment
-    offset = offset + 8
-    let prot = VM_PROT_READ() + VM_PROT_EXECUTE()
-    write_u32_le(buf + offset, prot)  // maxprot
-    offset = offset + 4
-    write_u32_le(buf + offset, prot)  // initprot
-    offset = offset + 4
-    write_u32_le(buf + offset, 1)
-    offset = offset + 4
-    write_u32_le(buf + offset, 0)
-    offset = offset + 4
-    // Section structure (80 bytes): sectname, segname, addr, size, offset, align, reloff, nreloc, flags, reserved
-    write_segment_name(buf + offset, "__text")
-    offset = offset + 16
-    write_segment_name(buf + offset, "__TEXT")
-    offset = offset + 16
-    let section_vmaddr = 4294967296 + file_offset  // 0x100000000 + file_offset
-    write_u64_le(buf + offset, section_vmaddr)
-    offset = offset + 8
-    write_u64_le(buf + offset, code_size)
-    offset = offset + 8
-    write_u32_le(buf + offset, file_offset)
-    offset = offset + 4
-    write_u32_le(buf + offset, 2)  // align = 2^2 = 4 bytes
-    offset = offset + 4
-    write_u32_le(buf + offset, 0)  // reloff
-    offset = offset + 4
-    write_u32_le(buf + offset, 0)  // nreloc
-    offset = offset + 4
-    write_u32_le(buf + offset, 0x80000400)  // flags: S_ATTR_PURE_INSTRUCTIONS | S_ATTR_SOME_INSTRUCTIONS
-    offset = offset + 4
-    write_u32_le(buf + offset, 0)  // reserved1
-    offset = offset + 4
-    write_u32_le(buf + offset, 0)  // reserved2
-    offset = offset + 4
-    write_u32_le(buf + offset, 0)  // reserved3 (64-bit only)
-    offset = offset + 4
-    return 152
-}
-
-// Write LC_LOAD_DYLINKER (32 bytes)
-fn write_dylinker_command(buf: int) -> int {
-    let mut offset = 0
-    write_u32_le(buf + offset, LC_LOAD_DYLINKER())
-    offset = offset + 4
-    write_u32_le(buf + offset, 32)
-    offset = offset + 4
-    write_u32_le(buf + offset, 12)  // offset to string within command
-    offset = offset + 4
-    // String: "/usr/lib/dyld" (null-terminated, padded to 4-byte boundary)
-    poke(buf + offset, 47)  // '/'
-    poke(buf + offset + 1, 117)  // 'u'
-    poke(buf + offset + 2, 115)  // 's'
-    poke(buf + offset + 3, 114)  // 'r'
-    poke(buf + offset + 4, 47)  // '/'
-    poke(buf + offset + 5, 108)  // 'l'
-    poke(buf + offset + 6, 105)  // 'i'
-    poke(buf + offset + 7, 98)  // 'b'
-    poke(buf + offset + 8, 47)  // '/'
-    poke(buf + offset + 9, 100)  // 'd'
-    poke(buf + offset + 10, 121)  // 'y'
-    poke(buf + offset + 11, 108)  // 'l'
-    poke(buf + offset + 12, 100)  // 'd'
-    poke(buf + offset + 13, 0)  // null terminator
-    write_u16_le(buf + offset + 14, 0)  // padding to 4-byte boundary
-    offset = offset + 20
-    return 32
-}
-
-// Write LC_BUILD_VERSION (24 bytes)
-fn write_build_version_cmd(buf: int) -> int {
-    let mut offset = 0
-    write_u32_le(buf + offset, LC_BUILD_VERSION())
-    offset = offset + 4
-    write_u32_le(buf + offset, 24)
-    offset = offset + 4
-    write_u32_le(buf + offset, PLATFORM_MACOS())  // platform = 1 (macOS)
-    offset = offset + 4
-    write_u32_le(buf + offset, 0x000B0000)  // minos = 11.0
-    offset = offset + 4
-    write_u32_le(buf + offset, 0x000B0000)  // sdk = 11.0
-    offset = offset + 4
-    write_u32_le(buf + offset, 0)  // ntools = 0
-    offset = offset + 4
-    return 24
-}
-
-// Write __LINKEDIT segment (72 bytes)
-fn write_linkedit_segment(buf: int, linkedit_offset: int, linkedit_size: int) -> int {
-    let mut offset = 0
-    write_u32_le(buf + offset, LC_SEGMENT_64())
-    offset = offset + 4
-    write_u32_le(buf + offset, 72)
-    offset = offset + 4
-    // segname: "__LINKEDIT"
-    write_zeros(buf + offset, 16)
-    poke(buf + offset, 95)   // '_'
-    poke(buf + offset + 1, 95) // '_'
-    poke(buf + offset + 2, 76) // 'L'
-    poke(buf + offset + 3, 73) // 'I'
-    poke(buf + offset + 4, 78) // 'N'
-    poke(buf + offset + 5, 75) // 'K'
-    poke(buf + offset + 6, 69) // 'E'
-    poke(buf + offset + 7, 68) // 'D'
-    poke(buf + offset + 8, 73) // 'I'
-    poke(buf + offset + 9, 84) // 'T'
-    offset = offset + 16
-    write_u64_le(buf + offset, 4294967296 + 16384)  // vmaddr after __TEXT
-    offset = offset + 8
-    write_u64_le(buf + offset, 16384)  // vmsize
-    offset = offset + 8
-    write_u64_le(buf + offset, linkedit_offset)
-    offset = offset + 8
-    write_u64_le(buf + offset, linkedit_size)
-    offset = offset + 8
-    write_u32_le(buf + offset, VM_PROT_READ())  // maxprot
-    offset = offset + 4
-    write_u32_le(buf + offset, VM_PROT_READ())  // initprot
-    offset = offset + 4
-    write_u32_le(buf + offset, 0)  // nsects
-    offset = offset + 4
-    write_u32_le(buf + offset, 0)  // flags
-    offset = offset + 4
-    return 72
-}
-
-// Write LC_SYMTAB (24 bytes)
-fn write_symtab_cmd(buf: int, symoff: int, nsyms: int, stroff: int, strsize: int) -> int {
-    let mut offset = 0
-    write_u32_le(buf + offset, LC_SYMTAB())
-    offset = offset + 4
-    write_u32_le(buf + offset, 24)
-    offset = offset + 4
-    write_u32_le(buf + offset, symoff)
-    offset = offset + 4
-    write_u32_le(buf + offset, nsyms)
-    offset = offset + 4
-    write_u32_le(buf + offset, stroff)
-    offset = offset + 4
-    write_u32_le(buf + offset, strsize)
-    offset = offset + 4
-    return 24
-}
-
-// Write LC_DYSYMTAB (80 bytes)
-fn write_dysymtab_cmd(buf: int) -> int {
-    let mut offset = 0
-    write_u32_le(buf + offset, LC_DYSYMTAB())
-    offset = offset + 4
-    write_u32_le(buf + offset, 80)
-    offset = offset + 4
-    write_zeros(buf + offset, 72)  // All zeros for minimal binary
-    offset = offset + 72
-    return 80
-}
-
-// Write LC_CODE_SIGNATURE (16 bytes)
-fn write_code_signature_cmd(buf: int, dataoff: int, datasize: int) -> int {
-    let mut offset = 0
-    write_u32_le(buf + offset, LC_CODE_SIGNATURE())
-    offset = offset + 4
-    write_u32_le(buf + offset, 16)
-    offset = offset + 4
-    write_u32_le(buf + offset, dataoff)
-    offset = offset + 4
-    write_u32_le(buf + offset, datasize)
-    offset = offset + 4
-    return 16
-}
-
-// Write big-endian uint32
-fn write_u32_be(addr: int, value: int) {
-    poke(addr, value / 16777216)
-    poke(addr + 1, (value / 65536) - ((value / 16777216) * 256))
-    poke(addr + 2, (value / 256) - ((value / 65536) * 256))
-    poke(addr + 3, value - ((value / 256) * 256))
-}
-
-// Create ad-hoc code signature blob (full version)
-fn write_code_signature_blob(sig_buf: int, bin_buf: int, sig_offset: int, code_limit: int, identifier: string) -> int {
-    let mut offset = 0
-
-    // Calculate sizes
-    let ident_len = 8  // "main" + null + padding
-    let cd_size = 88 + ident_len + 32  // CodeDirectory header + identifier + 1 hash slot
-    let cd_size_aligned = align_up(cd_size, 4)
-    let req_size = 12  // Empty requirements
-    let total_size = 12 + (2 * 8) + cd_size_aligned + req_size  // SuperBlob header is 12 bytes, not 8
-
-    // SuperBlob header
-    write_u32_be(sig_buf + offset, 0xfade0cc0)
-    offset = offset + 4
-    write_u32_be(sig_buf + offset, total_size)
-    offset = offset + 4
-    write_u32_be(sig_buf + offset, 2)  // count (CodeDirectory + Requirements)
-    offset = offset + 4
-
-    // Index entry 0: CodeDirectory
-    write_u32_be(sig_buf + offset, CSSLOT_CODEDIRECTORY())
-    offset = offset + 4
-    write_u32_be(sig_buf + offset, 12 + 16)  // offset: header(12) + indices(2*8)
-    offset = offset + 4
-
-    // Index entry 1: Requirements
-    write_u32_be(sig_buf + offset, CSSLOT_REQUIREMENTS())
-    offset = offset + 4
-    write_u32_be(sig_buf + offset, 12 + 16 + cd_size_aligned)  // after header + indices + CodeDirectory
-    offset = offset + 4
-
-    // CodeDirectory blob
-    let cd_start = offset
-    write_u32_be(sig_buf + offset, 0xfade0c02)
-    offset = offset + 4
-    write_u32_be(sig_buf + offset, cd_size_aligned)
-    offset = offset + 4
-    write_u32_be(sig_buf + offset, 0x20400)  // version
-    offset = offset + 4
-    write_u32_be(sig_buf + offset, 0x20002)  // flags (adhoc | linker-signed)
-    offset = offset + 4
-    write_u32_be(sig_buf + offset, 52)  // hashOffset
-    offset = offset + 4
-    write_u32_be(sig_buf + offset, 88)  // identOffset
-    offset = offset + 4
-    write_u32_be(sig_buf + offset, 0)  // nSpecialSlots
-    offset = offset + 4
-    write_u32_be(sig_buf + offset, 1)  // nCodeSlots
-    offset = offset + 4
-    write_u32_be(sig_buf + offset, code_limit)  // codeLimit
-    offset = offset + 4
-    poke(sig_buf + offset, 32)  // hashSize (SHA256 = 32 bytes)
-    offset = offset + 1
-    poke(sig_buf + offset, 2)  // hashType (SHA256)
-    offset = offset + 1
-    poke(sig_buf + offset, 0)  // platform
-    offset = offset + 1
-    poke(sig_buf + offset, 12)  // pageSize (2^12 = 4096)
-    offset = offset + 1
-    write_u32_be(sig_buf + offset, 0)  // spare2
-    offset = offset + 4
-    write_u32_be(sig_buf + offset, 0)  // scatterOffset
-    offset = offset + 4
-    write_u32_be(sig_buf + offset, 0)  // teamOffset
-    offset = offset + 4
-    write_u32_be(sig_buf + offset, 0)  // spare3
-    offset = offset + 4
-    write_u64_le(sig_buf + offset, 0)  // codeLimit64
-    offset = offset + 8
-    write_u64_le(sig_buf + offset, 0)  // execSegBase
-    offset = offset + 8
-    write_u64_le(sig_buf + offset, 0)  // execSegLimit
-    offset = offset + 8
-    write_u64_le(sig_buf + offset, 0)  // execSegFlags
-    offset = offset + 8
-
-    // Hash slot: SHA256 of code section (at hashOffset, not at current offset!)
-    offset = cd_start + 52  // Jump to hashOffset
-    sha256.Sha256(bin_buf, code_limit, sig_buf + offset)
-    offset = offset + 32
-
-    // Identifier: "main" (at identOffset)
-    offset = cd_start + 88  // Jump to identOffset
-    poke(sig_buf + offset, 109)  // 'm'
-    poke(sig_buf + offset + 1, 97)  // 'a'
-    poke(sig_buf + offset + 2, 105)  // 'i'
-    poke(sig_buf + offset + 3, 110)  // 'n'
-    poke(sig_buf + offset + 4, 0)  // null
-    offset = offset + 5
-
-    // Pad to alignment
-    for offset < (cd_start + cd_size_aligned) {
-        poke(sig_buf + offset, 0)
-        offset = offset + 1
-    }
-
-    // Requirements blob (empty)
-    write_u32_be(sig_buf + offset, CSMAGIC_REQUIREMENTS())
-    offset = offset + 4
-    write_u32_be(sig_buf + offset, req_size)
-    offset = offset + 4
-    write_u32_le(sig_buf + offset, 0)
-    offset = offset + 4
-
-    return total_size
-}
-
-// Write LC_MAIN (24 bytes)
-fn write_main_cmd(buf: int, entry_offset: int) -> int {
-    let mut offset = 0
-    write_u32_le(buf + offset, LC_MAIN())
-    offset = offset + 4
-    write_u32_le(buf + offset, 24)
-    offset = offset + 4
-    write_u64_le(buf + offset, entry_offset)
-    offset = offset + 8
-    write_u64_le(buf + offset, 0)
-    offset = offset + 8
-    return 24
-}
-
-// Write complete Mach-O binary (Note: disabled due to type system limitations)
-// Requires: syscall_write to accept int buffers, or a way to cast int to string
-// fn write_macho_binary(filename: string, code: []int) -> int {
-//     let code_size = len(code) * 4
-//     let header_size = 32 + 72 + 152 + 24
-//     let file_size = align_up(header_size + code_size, 16384)
-//
-//     let buf = heap_alloc(file_size)
-//     write_zeros(buf, file_size)
-//
-//     let mut offset = 0
-//     offset = offset + write_mach_header(buf + offset, 3, 72 + 152 + 24)
-//     offset = offset + write_pagezero_segment(buf + offset)
-//     offset = offset + write_text_segment(buf + offset, code_size, header_size)
-//     offset = offset + write_main_cmd(buf + offset, 0)
-//
-//     let code_offset = header_size
-//     let mut i = 0
-//     for i < len(code) {
-//         write_u32_le(buf + code_offset + (i * 4), code[i])
-//         i = i + 1
-//     }
-//
-//     // File writing would go here
-//     return 0
-// }
 
 fn main() -> int {
-    print("=== Bootstrap Ease Compiler ===\n\n")
+    print("=== Bootstrap Ease Compiler (LLVM IR) ===\n\n")
 
     // Get command-line arguments
     let argc = os.Argc()
     let mut source = ""
 
     if argc > 1 {
-        // Read source from file
         let filename = os.Argv(1)
-        print("Reading file: ")
-        print(filename)
-        print("\n")
-
+        print("Reading file: " + filename + "\n")
         source = os.ReadFile(filename)
         print("File loaded successfully\n\n")
     } else {
-        // Fall back to error message
         print("ERROR: No input file specified\n")
         print("Usage: compiler <source.ease>\n")
         return 1
-        print("Compiling: ")
-        print(source)
-        print("\n\n")
     }
 
     // Phase 1: Lexing
     print("Phase 1: Lexing\n")
-    print("Tokens: ")
     let mut pos = 0
+    let mut token_count = 0
     for {
         pos = lex_skip(source, pos)
         let kind = lex_kind(source, pos)
-        if kind == TK_INT() {
-            print("INT(")
-            print(strconv.Itoa(lex_int_value(source, pos)))
-            print(") ")
-        }
-        if kind == TK_STRING() {
-            print("STRING(")
-            print(lex_string_value(source, pos, kind))
-            print(") ")
-        }
-        if kind == TK_IDENT() {
-            print("IDENT(")
-            print(lex_string_value(source, pos, kind))
-            print(") ")
-        }
-        if kind == TK_FN() { print("FN ") }
-        if kind == TK_LET() { print("LET ") }
-        if kind == TK_MUT() { print("MUT ") }
-        if kind == TK_IF() { print("IF ") }
-        if kind == TK_ELSE() { print("ELSE ") }
-        if kind == TK_FOR() { print("FOR ") }
-        if kind == TK_IN() { print("IN ") }
-        if kind == TK_RETURN() { print("RETURN ") }
-        if kind == TK_STRUCT() { print("STRUCT ") }
-        if kind == TK_IMPORT() { print("IMPORT ") }
-        if kind == TK_ASSIGN() { print("ASSIGN ") }
-        if kind == TK_ARROW() { print("ARROW ") }
-        if kind == TK_LBRACE() { print("LBRACE ") }
-        if kind == TK_RBRACE() { print("RBRACE ") }
-        if kind == TK_LBRACKET() { print("LBRACKET ") }
-        if kind == TK_RBRACKET() { print("RBRACKET ") }
-        if kind == TK_COLON() { print("COLON ") }
-        if kind == TK_PLUS() { print("PLUS ") }
-        if kind == TK_MINUS() { print("MINUS ") }
-        if kind == TK_STAR() { print("STAR ") }
-        if kind == TK_SLASH() { print("SLASH ") }
-        if kind == TK_LPAREN() { print("LPAREN ") }
-        if kind == TK_RPAREN() { print("RPAREN ") }
-        if kind == TK_COMMA() { print("COMMA ") }
-        if kind == TK_DOT() { print("DOT ") }
-        if kind == TK_LT() { print("LT ") }
-        if kind == TK_GT() { print("GT ") }
-        if kind == TK_LE() { print("LE ") }
-        if kind == TK_GE() { print("GE ") }
-        if kind == TK_EQ() { print("EQ ") }
-        if kind == TK_NE() { print("NE ") }
-        if kind == TK_AND() { print("AND ") }
-        if kind == TK_OR() { print("OR ") }
-        if kind == TK_TRUE() { print("TRUE ") }
-        if kind == TK_FALSE() { print("FALSE ") }
-        pos = lex_end(source, pos, kind)
         if kind == TK_EOF() { break }
+        token_count = token_count + 1
+        pos = lex_end(source, pos, kind)
     }
-    print("\n\n")
+    print("Lexed " + strconv.Itoa(token_count) + " tokens\n\n")
 
-    // Phase 2: Parsing (Multiple Functions)
+    // Phase 2: Parsing
     print("Phase 2: Parsing\n")
     let mut nodes = []AstNode{}
-    let mut func_names = []string{}
-    let mut func_indices = []int{}
-
-    // Parse all top-level declarations (imports, structs, and functions)
     let mut parse_pos = 0
+    parse_pos = lex_skip(source, parse_pos)
     let mut import_count = 0
     let mut struct_count = 0
+    let mut func_names = []string{}
+    let mut func_indices = []int{}
+    let mut global_var_names = []string{}
+
     for {
         parse_pos = lex_skip(source, parse_pos)
         let kind = lex_kind(source, parse_pos)
-        print(strconv.Itoa(kind))
-        print(", pos: ")
-        print(strconv.Itoa(parse_pos))
-        print("\n")
-        if kind == TK_EOF() {
-            break
-        }
+        if kind == TK_EOF() { break }
 
-        // Try parsing import first
         if kind == TK_IMPORT() {
             let import_result = parse_import_decl(source, parse_pos, nodes)
             if import_result.node_idx >= 0 {
@@ -4698,670 +4017,95 @@ fn main() -> int {
                 break
             }
         } else if kind == TK_STRUCT() {
-            // Parse struct declaration
             let struct_result = parse_struct_decl(source, parse_pos, nodes)
-            if struct_result.node_idx >= 0 {
-                // Struct parsed successfully, continue to next declaration
-                struct_count = struct_count + 1
-                parse_pos = struct_result.new_pos
-                parse_pos = lex_skip(source, parse_pos)
-            } else {
-                break
-            }
+            struct_count = struct_count + 1
+            parse_pos = struct_result.new_pos
         } else if kind == TK_LET() {
-            // Top-level global variable declaration
-            // Parse it as a statement and store in AST
-            let global_result = parse_let_stmt(source, parse_pos, nodes)
-            if global_result.node_idx >= 0 {
-                // Global parsed successfully, continue
-                parse_pos = global_result.new_pos
-                parse_pos = lex_skip(source, parse_pos)
-            } else {
-                // Failed to parse, break
-                break
+            let let_result = parse_let_stmt(source, parse_pos, nodes)
+            if let_result.node_idx >= 0 {
+                let let_node = nodes[let_result.node_idx]
+                push(global_var_names, let_node.str_val)
+                // Track scalar (integer) globals vs array globals
+                if let_node.right >= 0 {
+                    let init_node = nodes[let_node.right]
+                    if init_node.tag == EXPR_INT() {
+                        push(g_scalar_globals, let_node.str_val)
+                    }
+                    if init_node.tag == EXPR_UNARY() {
+                        push(g_scalar_globals, let_node.str_val)
+                    }
+                }
             }
+            parse_pos = let_result.new_pos
         } else if kind == TK_FN() {
-            // Parse function declaration
             let parse_result = parse_func_decl(source, parse_pos, nodes)
             if parse_result.node_idx < 0 {
-                print("ERROR: Failed to parse function at position ")
-                print(strconv.Itoa(parse_pos))
-                print("\n")
-                print("Context: ")
-                let ctx_start = parse_pos
-                let mut ctx_end = parse_pos + 100
-                if ctx_end > len(source) {
-                    ctx_end = len(source)
-                }
-                print(str_substring(source, ctx_start, ctx_end))
-                print("\n")
+                print("ERROR: Failed to parse function at position " + strconv.Itoa(parse_pos) + "\n")
                 break
             }
-
             let func_idx = parse_result.node_idx
             let func_node = nodes[func_idx]
             push(func_names, func_node.str_val)
             push(func_indices, func_idx)
-            print(func_node.str_val)
-            print(" (total: ")
-            print(strconv.Itoa(len(func_names)))
-            print(")\n")
-
+            print("  " + func_node.str_val + " (" + strconv.Itoa(len(func_names)) + ")\n")
             parse_pos = parse_result.new_pos
             parse_pos = lex_skip(source, parse_pos)
         } else {
-            // Unknown top-level declaration, stop parsing
-            print(strconv.Itoa(kind))
-            print("\n")
             break
         }
     }
 
-    if import_count > 0 {
-        print("Parsed ")
-        print(strconv.Itoa(import_count))
-        print(" imports\n")
-    }
+    print("Parsed " + strconv.Itoa(len(func_names)) + " functions\n\n")
 
-    if struct_count > 0 {
-        print("Parsed ")
-        print(strconv.Itoa(struct_count))
-        print(" structs\n")
-    }
-
-    print("Parsed ")
-    print(strconv.Itoa(len(func_names)))
-    print(" functions:\n")
-    let mut print_fn_i = 0
-    let fn_count = len(func_names)
-    for print_fn_i < fn_count {
-        print("  [")
-        print(strconv.Itoa(print_fn_i))
-        print("] ")
-        print(func_names[print_fn_i])
-        print(" (AST index: ")
-        print(strconv.Itoa(func_indices[print_fn_i]))
-        print(")\n")
-        print_fn_i = print_fn_i + 1
-    }
-    print("\n")
-
-    // Find main function for compilation
-    let mut main_idx = -1
-    let mut find_main_i = 0
-    for find_main_i < fn_count {
-        if func_names[find_main_i] == "main" {
-            main_idx = func_indices[find_main_i]
-            break
-        }
-        find_main_i = find_main_i + 1
-    }
-
-    let ast_root = main_idx
-
-    // Phase 3: IR Generation (All Functions)
+    // Phase 3: IR Generation
     print("Phase 3: IR Generation\n")
     let mut instrs = []IRInstr{}
-    let mut func_label_ids = []int{}
-    let mut func_label_names = []string{}
 
-    // Generate IR for all functions
+    let fn_count = len(func_names)
     let mut gen_all_i = 0
     for gen_all_i < fn_count {
         let func_idx = func_indices[gen_all_i]
         let func_name = func_names[gen_all_i]
+        let param_count = count_func_params(nodes, func_idx)
 
-        // Add function label (using index 5000 + i to avoid conflicts)
         let func_label = 5000 + gen_all_i
-        push(func_label_ids, func_label)
-        push(func_label_names, func_name)
-
         let label_instr = IRInstr {
             op: OP_LABEL(),
             dest: func_label,
-            arg1: 0,
+            arg1: param_count,
             arg2: 0,
             arg3: 0,
             str_val: func_name
         }
         push(instrs, label_instr)
 
-        // Generate IR for function body
         let mut symtab_names = []string{}
         let mut symtab_vregs = []int{}
+        // Add global variables to symtab with sentinel vregs (<= -1000)
+        let mut gvi = 0
+        for gvi < len(global_var_names) {
+            push(symtab_names, global_var_names[gvi])
+            push(symtab_vregs, -1000 - gvi)
+            gvi = gvi + 1
+        }
         gen_ir_from_ast_with_symtab(func_idx, nodes, instrs, symtab_names, symtab_vregs)
         gen_all_i = gen_all_i + 1
     }
 
-    if len(instrs) > 0 {
-        print("Generated ")
-        print(strconv.Itoa(len(instrs)))
-        print(" IR instructions:\n")
-        let mut print_ir_i = 0
-        let instrs_count = len(instrs)
-        for print_ir_i < instrs_count {
-            let instr = instrs[print_ir_i]
-            print("  [")
-            print(strconv.Itoa(print_ir_i))
-            print("] ")
-            if instr.op == OP_LOADCONST() {
-                print("v")
-                print(strconv.Itoa(instr.dest))
-                print(" = loadconst ")
-                print(strconv.Itoa(instr.arg1))
-            }
-            if instr.op == OP_ADD() {
-                print("v")
-                print(strconv.Itoa(instr.dest))
-                print(" = add v")
-                print(strconv.Itoa(instr.arg1))
-                print(", v")
-                print(strconv.Itoa(instr.arg2))
-            }
-            if instr.op == OP_SUB() {
-                print("v")
-                print(strconv.Itoa(instr.dest))
-                print(" = sub v")
-                print(strconv.Itoa(instr.arg1))
-                print(", v")
-                print(strconv.Itoa(instr.arg2))
-            }
-            if instr.op == OP_MUL() {
-                print("v")
-                print(strconv.Itoa(instr.dest))
-                print(" = mul v")
-                print(strconv.Itoa(instr.arg1))
-                print(", v")
-                print(strconv.Itoa(instr.arg2))
-            }
-            if instr.op == OP_DIV() {
-                print("v")
-                print(strconv.Itoa(instr.dest))
-                print(" = div v")
-                print(strconv.Itoa(instr.arg1))
-                print(", v")
-                print(strconv.Itoa(instr.arg2))
-            }
-            if instr.op == OP_CMP_EQ() {
-                print("v")
-                print(strconv.Itoa(instr.dest))
-                print(" = cmp_eq v")
-                print(strconv.Itoa(instr.arg1))
-                print(", v")
-                print(strconv.Itoa(instr.arg2))
-            }
-            if instr.op == OP_CMP_NE() {
-                print("v")
-                print(strconv.Itoa(instr.dest))
-                print(" = cmp_ne v")
-                print(strconv.Itoa(instr.arg1))
-                print(", v")
-                print(strconv.Itoa(instr.arg2))
-            }
-            if instr.op == OP_CMP_LT() {
-                print("v")
-                print(strconv.Itoa(instr.dest))
-                print(" = cmp_lt v")
-                print(strconv.Itoa(instr.arg1))
-                print(", v")
-                print(strconv.Itoa(instr.arg2))
-            }
-            if instr.op == OP_CMP_GT() {
-                print("v")
-                print(strconv.Itoa(instr.dest))
-                print(" = cmp_gt v")
-                print(strconv.Itoa(instr.arg1))
-                print(", v")
-                print(strconv.Itoa(instr.arg2))
-            }
-            if instr.op == OP_CMP_LE() {
-                print("v")
-                print(strconv.Itoa(instr.dest))
-                print(" = cmp_le v")
-                print(strconv.Itoa(instr.arg1))
-                print(", v")
-                print(strconv.Itoa(instr.arg2))
-            }
-            if instr.op == OP_CMP_GE() {
-                print("v")
-                print(strconv.Itoa(instr.dest))
-                print(" = cmp_ge v")
-                print(strconv.Itoa(instr.arg1))
-                print(", v")
-                print(strconv.Itoa(instr.arg2))
-            }
-            if instr.op == OP_RET() {
-                print("ret")
-                if instr.dest >= 0 {
-                    print(" v")
-                    print(strconv.Itoa(instr.dest))
-                }
-            }
-            if instr.op == OP_LABEL() {
-                print("L")
-                print(strconv.Itoa(instr.dest))
-                print(":")
-            }
-            if instr.op == OP_JUMP() {
-                print("jump L")
-                print(strconv.Itoa(instr.dest))
-            }
-            if instr.op == OP_BRANCH() {
-                print("branch_if_zero v")
-                print(strconv.Itoa(instr.dest))
-                print(", L")
-                print(strconv.Itoa(instr.arg1))
-            }
-            if instr.op == OP_ARG() {
-                print("arg ")
-                print(strconv.Itoa(instr.dest))
-                print(", v")
-                print(strconv.Itoa(instr.arg1))
-            }
-            if instr.op == OP_CALL() {
-                print("v")
-                print(strconv.Itoa(instr.dest))
-                print(" = call ")
-                print(instr.str_val)
-                print("(")
-                if instr.arg1 >= 0 {
-                    print("v")
-                    print(strconv.Itoa(instr.arg1))
-                }
-                print(")")
-            }
-            if instr.op == OP_LOAD() {
-                print("v")
-                print(strconv.Itoa(instr.dest))
-                print(" = load [v")
-                print(strconv.Itoa(instr.arg1))
-                print(" + ")
-                print(strconv.Itoa(instr.arg2))
-                print("] // ")
-                print(instr.str_val)
-            }
-            if instr.op == OP_ALLOCA() {
-                print("v")
-                print(strconv.Itoa(instr.dest))
-                print(" = alloca ")
-                print(strconv.Itoa(instr.arg1))
-                print(" // ")
-                print(instr.str_val)
-            }
-            if instr.op == OP_INDEXADDR() {
-                print("v")
-                print(strconv.Itoa(instr.dest))
-                print(" = indexaddr v")
-                print(strconv.Itoa(instr.arg1))
-                print(" + ")
-                print(strconv.Itoa(instr.arg2))
-                print(" // ")
-                print(instr.str_val)
-            }
-            if instr.op == OP_STORE() {
-                print("store v")
-                print(strconv.Itoa(instr.arg2))
-                print(" to [v")
-                print(strconv.Itoa(instr.arg1))
-                print("]")
-            }
-            if instr.op == OP_ARRAY_LEN() {
-                print("v")
-                print(strconv.Itoa(instr.dest))
-                print(" = array_len v")
-                print(strconv.Itoa(instr.arg1))
-            }
-            if instr.op == OP_ARRAY_PUSH() {
-                print("array_push v")
-                print(strconv.Itoa(instr.arg1))
-                print(", v")
-                print(strconv.Itoa(instr.arg2))
-            }
-            if instr.op == OP_POKE() {
-                print("poke v")
-                print(strconv.Itoa(instr.arg1))
-                print(", v")
-                print(strconv.Itoa(instr.arg2))
-            }
-            if instr.op == OP_PEEK() {
-                print("v")
-                print(strconv.Itoa(instr.dest))
-                print(" = peek v")
-                print(strconv.Itoa(instr.arg1))
-            }
-            if instr.op == OP_HEAP_ALLOC() {
-                print("v")
-                print(strconv.Itoa(instr.dest))
-                print(" = heap_alloc v")
-                print(strconv.Itoa(instr.arg1))
-            }
-            if instr.op == OP_READFILE() {
-                print("v")
-                print(strconv.Itoa(instr.dest))
-                print(" = os.ReadFile v")
-                print(strconv.Itoa(instr.arg1))
-            }
-            if instr.op == OP_ARGC() {
-                print("v")
-                print(strconv.Itoa(instr.dest))
-                print(" = os.Argc")
-            }
-            if instr.op == OP_ARGV() {
-                print("v")
-                print(strconv.Itoa(instr.dest))
-                print(" = os.Argv v")
-                print(strconv.Itoa(instr.arg1))
-            }
-            if instr.op == OP_INT_TO_STR() {
-                print("v")
-                print(strconv.Itoa(instr.dest))
-                print(" = strconv.Itoa v")
-                print(strconv.Itoa(instr.arg1))
-            }
-            if instr.op == OP_STR_CHAR_AT() {
-                print("v")
-                print(strconv.Itoa(instr.dest))
-                print(" = str_char_at v")
-                print(strconv.Itoa(instr.arg1))
-                print(", v")
-                print(strconv.Itoa(instr.arg2))
-            }
-            if instr.op == OP_STR_SUBSTRING() {
-                print("v")
-                print(strconv.Itoa(instr.dest))
-                print(" = str_substring v")
-                print(strconv.Itoa(instr.arg1))
-                print(", v")
-                print(strconv.Itoa(instr.arg2))
-                print(", v")
-                print(strconv.Itoa(instr.arg3))
-            }
-            print("\n")
-            print_ir_i = print_ir_i + 1
-        }
-        print("\n")
-    }
+    print("Generated " + strconv.Itoa(len(instrs)) + " IR instructions\n\n")
 
-    // Phase 4: Code Generation
-    print("Phase 4: ARM64 Code Generation\n")
-    // Use the IR generated in Phase 3 for all functions
-    let mut code = []int{}
-    let mut string_table = []string{}
-    let mut string_fixups = []int{}
-    let main_instr_offset = gen_code_from_ir(instrs, code, string_table, string_fixups)
-    print(strconv.Itoa(len(instrs)))
-    print(", len(code)=")
-    print(strconv.Itoa(len(code)))
-    print(", main_offset=")
-    print(strconv.Itoa(main_instr_offset))
-    print("\n")
-
-    // Embed strings in binary after code section
-    // For now, we'll just print that strings were collected
-    // Full embedding will be implemented in Phase 5
-    print("Collected ")
-    print(strconv.Itoa(len(string_table)))
-    print(" string literals\n")
-
-    // Calculate total size needed for string data (16-byte header + data per string)
-    let mut string_data_size = 0
-    let mut str_size_i = 0
-    for str_size_i < len(string_table) {
-        let s = string_table[str_size_i]
-        string_data_size = string_data_size + 16 + len(s)
-        str_size_i = str_size_i + 1
-    }
-
-    let code_size = len(code) * 4
-        print("Generated ")
-        print(strconv.Itoa(len(code)))
-        print(" machine instructions:\n")
-        let mut print_code_i = 0
-        let code_count = len(code)
-        for print_code_i < code_count {
-            print("  [")
-            print(strconv.Itoa(print_code_i))
-            print("] ")
-            print_hex(code[print_code_i])
-            print("\n")
-            print_code_i = print_code_i + 1
-        }
-        print("\n")
-
-        // Phase 5: Mach-O Binary Structure (demonstration)
-        print("Phase 5: Mach-O Binary Structure\n")
-
-        // code_size already defined above
-        let header_size = 32 + 72 + 152 + 24  // header + PAGEZERO + TEXT + MAIN
-        let file_size = align_up(header_size + code_size, 16384)
-
-        print("  Header size: ")
-        print(strconv.Itoa(header_size))
-        print(" bytes\n")
-
-        print("  Code size: ")
-        print(strconv.Itoa(code_size))
-        print(" bytes\n")
-
-        print("  Total file size: ")
-        print(strconv.Itoa(file_size))
-        print(" bytes (aligned to ")
-        print(strconv.Itoa(16384))
-        print(")\n")
-
-        print("  Entry point: 0x")
-        print_hex(4294967296)
-        print("\n")
-
-        print("\n  Mach-O structure:\n")
-        print("    - Mach-O header (32 bytes)\n")
-        print("    - __PAGEZERO segment (72 bytes)\n")
-        print("    - __TEXT segment (152 bytes)\n")
-        print("    - LC_MAIN command (24 bytes)\n")
-        print("    - Machine code (")
-        print(strconv.Itoa(code_size))
-        print(" bytes)\n")
-        print("\n")
-
-    print("=== Compilation Pipeline Complete ===\n")
-    print("All phases: Lex → Parse → IR → Codegen → Binary!\n")
-
-    // Phase 6: Write Binary to File
-    print("\nPhase 6: Writing Binary\n")
-    let output_path = "./tmp/test_output"
-
-    // Complete binary with full code signature
-    // Load commands: PAGEZERO(72) + TEXT(152) + LINKEDIT(72) + DYLINKER(32) + MAIN(24) + BUILD_VERSION(24) + SYMTAB(24) + DYSYMTAB(80) + CODE_SIGNATURE(16)
-    let load_cmds_size = 72 + 152 + 72 + 32 + 24 + 24 + 24 + 80 + 16
-    let new_header_size = 32 + load_cmds_size
-
-    // Calculate __LINKEDIT layout (includes code + string data)
-    let linkedit_offset = align_up(new_header_size + code_size + string_data_size, 16384)
-    let symtab_offset = linkedit_offset
-    let nsyms = 1  // One symbol entry
-    let symtab_size = nsyms * 16  // nlist_64 is 16 bytes
-    let strtab_offset = symtab_offset + symtab_size
-    let strtab_size = 16  // Minimal string table
-    let codesig_offset = align_up(strtab_offset + strtab_size, 16)
-    let codesig_size = 256  // Reserve space for signature
-    let linkedit_size = (codesig_offset - linkedit_offset) + codesig_size
-
-    let new_file_size = align_up(linkedit_offset + linkedit_size, 16384)
-
-    // Allocate buffer for Mach-O binary
-    let buf_size = new_file_size
-    let buf = heap_alloc(buf_size)
-    if buf == 0 {
-        print("ERROR: Failed to allocate buffer\n")
+    // Phase 4: LLVM IR Generation
+    print("Phase 4: LLVM IR Generation\n")
+    let output_ll = "./tmp/output.ll"
+    let result = emit_llvm_ir(instrs, output_ll)
+    if result != 0 {
         return 1
     }
 
-    // Zero out buffer
-    write_zeros(buf, buf_size)
-
-    // Write Mach-O header (9 load commands)
-    let mut offset = 0
-    offset = offset + write_mach_header(buf + offset, 9, load_cmds_size)
-
-    // Write load commands
-    offset = offset + write_pagezero_segment(buf + offset)
-    offset = offset + write_text_segment(buf + offset, code_size, new_header_size)
-    offset = offset + write_linkedit_segment(buf + offset, linkedit_offset, linkedit_size)
-    offset = offset + write_dylinker_command(buf + offset)
-    // Calculate main function's byte offset: header_size + (instruction_offset * 4)
-    let main_entry_offset = new_header_size + (main_instr_offset * 4)
-    offset = offset + write_main_cmd(buf + offset, main_entry_offset)
-    offset = offset + write_build_version_cmd(buf + offset)
-    offset = offset + write_symtab_cmd(buf + offset, symtab_offset, nsyms, strtab_offset, strtab_size)
-    offset = offset + write_dysymtab_cmd(buf + offset)
-    offset = offset + write_code_signature_cmd(buf + offset, codesig_offset, codesig_size)
-
-    // Copy code to buffer
-    let code_offset = new_header_size
-    let mut code_i = 0
-    for code_i < len(code) {
-        write_u32_le(buf + code_offset + (code_i * 4), code[code_i])
-        code_i = code_i + 1
-    }
-
-    // Phase 5: Embed string data in binary
-    print("  Embedding string data...\n")
-    let string_data_offset = new_header_size + code_size
-    let mut str_embed_i = 0
-    let mut current_str_offset = string_data_offset
-    let mut string_addresses = []int{}  // Track VM addresses for Phase 6
-    for str_embed_i < len(string_table) {
-        let s = string_table[str_embed_i]
-        let str_len = len(s)
-
-        // Calculate and store VM address for this string (for Phase 6 patching)
-        let vm_addr = 4294967296 + current_str_offset  // TEXT_BASE = 0x100000000
-        push(string_addresses, vm_addr)
-
-        // Write 16-byte header: length (8 bytes) + capacity (8 bytes)
-        write_u64_le(buf + current_str_offset, str_len)
-        write_u64_le(buf + current_str_offset + 8, str_len)
-
-        // Write string data
-        let mut char_i = 0
-        for char_i < str_len {
-            poke(buf + current_str_offset + 16 + char_i, str_char_at(s, char_i))
-            char_i = char_i + 1
-        }
-
-        print("    String ")
-        print(strconv.Itoa(str_embed_i))
-        print(" at VM addr 0x")
-        print_hex(vm_addr)
-        print(" (offset ")
-        print(strconv.Itoa(current_str_offset))
-        print(", len ")
-        print(strconv.Itoa(str_len))
-        print(")\n")
-
-        current_str_offset = current_str_offset + 16 + str_len
-        str_embed_i = str_embed_i + 1
-    }
-
-    // Phase 6: Patch ADRP+ADD instructions with actual VM addresses
-    print("  Patching string load instructions...\n")
-    let mut fixup_i = 0
-    for fixup_i < len(string_fixups) {
-        let instr_count = string_fixups[fixup_i]  // Get instruction count (not byte offset yet)
-        let str_index = fixup_i  // Iteration index IS string index (parallel arrays)
-        let code_offset_in_bytes = instr_count * 4  // Convert instruction count to byte offset
-
-        // Get target VM address from string_addresses
-        let target_vm_addr = string_addresses[str_index]
-
-        // Calculate instruction VM address
-        let instruction_vm_addr = 4294967296 + new_header_size + code_offset_in_bytes  // TEXT_BASE = 0x100000000
-
-        // Calculate page offset for ADRP
-        let target_page = target_vm_addr / 4096
-        let instruction_page = instruction_vm_addr / 4096
-        let page_offset = target_page - instruction_page
-
-        // Encode ADRP: adrp xd, #page_offset
-        // Format: 0x90000000 | (rd << 0) | ((immhi << 5) | (immlo << 29))
-        let rd = 16  // X16 register
-        let immlo = page_offset & 0x3
-        let immhi = (page_offset / 4) & 0x7FFFF
-        let adrp_instr = 0x90000000 | rd | (immhi * 32) | (immlo * 536870912)
-
-        // Encode ADD: add xd, xd, #page_offset
-        // Format: 0x91000000 | (rd << 0) | (rn << 5) | (imm12 << 10)
-        let imm12 = target_vm_addr & 0xFFF
-        let add_instr = 0x91000000 | rd | (rd * 32) | (imm12 * 1024)
-
-        // Write patched instructions to code buffer
-        let patch_offset = code_offset + code_offset_in_bytes
-        write_u32_le(buf + patch_offset, adrp_instr)
-        write_u32_le(buf + patch_offset + 4, add_instr)
-
-        print("    Fixup ")
-        print(strconv.Itoa(fixup_i))
-        print(": str[")
-        print(strconv.Itoa(str_index))
-        print("] at code offset ")
-        print(strconv.Itoa(code_offset_in_bytes))
-        print(" -> VM 0x")
-        print_hex(target_vm_addr)
-        print(" (page offset ")
-        print(strconv.Itoa(page_offset))
-        print(")\n")
-
-        fixup_i = fixup_i + 1
-    }
-
-    // Write __LINKEDIT data
-    print("  Writing __LINKEDIT data...\n")
-
-    // Symbol table: 1 entry (all zeros for minimal binary)
-    write_zeros(buf + symtab_offset, symtab_size)
-
-    // String table: starts with null byte
-    write_zeros(buf + strtab_offset, strtab_size)
-    poke(buf + strtab_offset, 0)
-
-    // Write code signature
-    print("  Writing code signature...\n")
-    let sig_size = write_code_signature_blob(buf + codesig_offset, buf, codesig_offset, codesig_offset, "main")
-    print("  Signature: ")
-    print(strconv.Itoa(sig_size))
-    print(" bytes\n")
-
-    // Write to file
-    print("  Writing to: ")
-    print(output_path)
-    print("\n")
-
-    let fd = syscall.open(output_path, 1537, 493)  // O_WRONLY|O_CREAT|O_TRUNC, 0755
-    if fd < 0 {
-        print("ERROR: Failed to open output file\n")
-        return 1
-    }
-
-    let written = syscall.write(fd, buf, buf_size)
-    syscall.close(fd)
-
-    if written != buf_size {
-        print("ERROR: Write failed (wrote ")
-        print(strconv.Itoa(written))
-        print(" of ")
-        print(strconv.Itoa(buf_size))
-        print(" bytes)\n")
-        return 1
-    }
-
-    print("  Success! Generated ")
-    print(strconv.Itoa(written))
-    print(" byte executable\n")
-    print("\nTo run the generated program:\n")
-    print("  ")
-    print(output_path)
-    print("\n")
-    print("  echo $?  # Check exit code\n")
+    print("\n=== Compilation Complete ===\n")
+    print("To build the executable:\n")
+    print("  clang -O1 runtime/ease_runtime.c " + output_ll + " -o tmp/output\n")
+    print("  ./tmp/output\n")
 
     return 0
 }

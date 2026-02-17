@@ -725,13 +725,22 @@ func (e *Emitter) emitArrayPush(instr *ir.Instr) {
 	elemVal := e.loadVal(instr.Args[1])
 	elemSize := e.loadVal(instr.Args[2])
 
-	// Store element value to a temp alloca so we can pass its address
-	tmpAlloca := e.temp()
-	e.printf("  %s = alloca i64\n", tmpAlloca)
-	e.printf("  store i64 %s, ptr %s\n", elemVal, tmpAlloca)
-
-	e.printf("  call void @ease_array_push(ptr %s, ptr %s, i64 %s)\n",
-		fatPtr, tmpAlloca, elemSize)
+	elemSizeImm := instr.Args[2].Imm
+	if elemSizeImm > 8 {
+		// Struct element: elemVal is a pointer to struct data.
+		// Pass it directly to ease_array_push which will memcpy elemSize bytes.
+		elemPtr := e.temp()
+		e.printf("  %s = inttoptr i64 %s to ptr\n", elemPtr, elemVal)
+		e.printf("  call void @ease_array_push(ptr %s, ptr %s, i64 %s)\n",
+			fatPtr, elemPtr, elemSize)
+	} else {
+		// Primitive element: store value to a temp alloca so we can pass its address
+		tmpAlloca := e.temp()
+		e.printf("  %s = alloca i64\n", tmpAlloca)
+		e.printf("  store i64 %s, ptr %s\n", elemVal, tmpAlloca)
+		e.printf("  call void @ease_array_push(ptr %s, ptr %s, i64 %s)\n",
+			fatPtr, tmpAlloca, elemSize)
+	}
 }
 
 func (e *Emitter) emitIndexAddr(instr *ir.Instr) {

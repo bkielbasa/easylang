@@ -483,6 +483,10 @@ Generated binaries are blocked by macOS 15.x security (exit code 137/SIGKILL) wh
 - [ ] x86_64 backend for Intel Macs and Linux
 - [ ] LLVM backend for optimization and portability
 
+### Bootstrap Compiler Improvements
+- [ ] **Add type tracking to bootstrap compiler** so `==`/`!=` on strings auto-dispatches to `OP_STR_EQ`/`OP_STR_NE` (currently uses explicit `str_eq()`/`str_ne()` calls as workaround because the bootstrap compiler has no type system)
+- [ ] **Implement proper strconv.Itoa** in bootstrap codegen (currently placeholder returns "0")
+
 ### Language Features
 - [ ] **Variable declaration syntax change**: Switch from `let`/`let mut` to Go-style `:=` operator
   - `x := 5` declares new mutable variable

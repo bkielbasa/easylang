@@ -1226,6 +1226,10 @@ func (b *Builder) buildCallExpr(e *ast.CallExpr) Operand {
 			return b.buildStrReplace(e)
 		case "str_split":
 			return b.buildStrSplit(e)
+		case "str_eq":
+			return b.buildStrEqBuiltin(e)
+		case "str_ne":
+			return b.buildStrNeBuiltin(e)
 		}
 	}
 
@@ -2926,6 +2930,36 @@ func (b *Builder) buildStrCharAt(e *ast.CallExpr) Operand {
 		Op:   OpStrCharAt,
 		Dest: dest,
 		Args: []Operand{s, index},
+	})
+	return dest
+}
+
+func (b *Builder) buildStrEqBuiltin(e *ast.CallExpr) Operand {
+	if len(e.Args) != 2 {
+		return None()
+	}
+	a := b.buildExpr(e.Args[0])
+	bb := b.buildExpr(e.Args[1])
+	dest := b.fn.NewVReg(types.Typ[types.Int])
+	b.emit(&Instr{
+		Op:   OpStrEq,
+		Dest: dest,
+		Args: []Operand{a, bb},
+	})
+	return dest
+}
+
+func (b *Builder) buildStrNeBuiltin(e *ast.CallExpr) Operand {
+	if len(e.Args) != 2 {
+		return None()
+	}
+	a := b.buildExpr(e.Args[0])
+	bb := b.buildExpr(e.Args[1])
+	dest := b.fn.NewVReg(types.Typ[types.Int])
+	b.emit(&Instr{
+		Op:   OpStrNe,
+		Dest: dest,
+		Args: []Operand{a, bb},
 	})
 	return dest
 }
