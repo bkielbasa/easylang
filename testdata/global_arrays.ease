@@ -1,0 +1,35 @@
+// Regression test: Global array limit bug (SIGBUS with 10+ global arrays)
+// This test verifies that programs with many global arrays work correctly.
+// Previously caused SIGBUS crash during initialization.
+
+let mut g1 = []int{1, 2, 3}
+let mut g2 = []int{4, 5, 6}
+let mut g3 = []int{7, 8, 9}
+let mut g4 = []int{10, 11, 12}
+let mut g5 = []int{13, 14, 15}
+let mut g6 = []int{16, 17, 18}
+let mut g7 = []int{19, 20, 21}
+let mut g8 = []int{22, 23, 24}
+let mut g9 = []int{25, 26, 27}
+let mut g10 = []int{28, 29, 30}
+let mut g11 = []int{31, 32, 33}
+let mut g12 = []int{34, 35, 36}
+let mut g13 = []int{37, 38, 39}
+let mut g14 = []int{40, 41, 42}
+let mut g15 = []int{43, 44, 45}
+
+fn main() -> int {
+    // Verify first and last arrays are correctly initialized
+    if g1[0] != 1 {
+        return 1
+    }
+    if g15[2] != 45 {
+        return 2
+    }
+    // Sum first element of g1 and last element of g15
+    // 1 + 45 = 46, but we need exit code 0 for success
+    if g1[0] + g15[2] != 46 {
+        return 3
+    }
+    return 0
+}

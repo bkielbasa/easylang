@@ -1,0 +1,64 @@
+// Basic test examples demonstrating the Ease test framework.
+//
+// Run with: ease test examples/
+
+fn add(a: int, b: int) -> int {
+    return a + b
+}
+
+fn max(a: int, b: int) -> int {
+    if a > b {
+        return a
+    }
+    return b
+}
+
+fn abs(x: int) -> int {
+    if x < 0 {
+        return -x
+    }
+    return x
+}
+
+test "addition works" {
+    let result = add(2, 3)
+    if result != 5 {
+        return 1
+    }
+}
+
+test "max returns larger value" {
+    if max(3, 7) != 7 {
+        return 1
+    }
+    if max(10, 2) != 10 {
+        return 1
+    }
+}
+
+test "abs handles negative numbers" {
+    if abs(-5) != 5 {
+        return 1
+    }
+    if abs(5) != 5 {
+        return 1
+    }
+    if abs(0) != 0 {
+        return 1
+    }
+}
+
+test "comparison operators" {
+    if !(1 < 2) {
+        return 1
+    }
+    if !(2 > 1) {
+        return 1
+    }
+    if !(3 >= 3) {
+        return 1
+    }
+    if !(3 <= 3) {
+        return 1
+    }
+}

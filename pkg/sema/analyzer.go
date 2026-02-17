@@ -92,6 +92,7 @@ type Analyzer struct {
 	importAliases  map[string]string         // alias -> module name
 	currentFile    string                    // current file being analyzed
 	loadedFiles    map[string]*ast.Program   // file path -> parsed program
+	usedModules    map[string]bool           // tracks which imported modules are actually used
 }
 
 // New creates a new Analyzer.
@@ -114,6 +115,7 @@ func New() *Analyzer {
 		modules:        make(map[string]*ModuleInfo),
 		importAliases:  make(map[string]string),
 		loadedFiles:    make(map[string]*ast.Program),
+		usedModules:    make(map[string]bool),
 	}
 }
 
@@ -132,6 +134,9 @@ func (a *Analyzer) Analyze(prog *ast.Program) (*TypeInfo, []Error) {
 	for _, decl := range prog.Decls {
 		a.analyzeDecl(decl)
 	}
+
+	// Check for unused imports
+	a.checkUnusedImports(prog)
 
 	return a.info, a.errors
 }
@@ -152,6 +157,21 @@ func (a *Analyzer) error(pos token.Position, format string, args ...interface{})
 // ============================================
 // Module System
 // ============================================
+
+// checkUnusedImports reports errors for imported modules that are never used.
+func (a *Analyzer) checkUnusedImports(prog *ast.Program) {
+	for _, imp := range prog.Imports {
+		for _, spec := range imp.Imports {
+			moduleName := a.getModuleName(spec)
+			if _, used := a.usedModules[moduleName]; !used {
+				// Only report if the module was successfully loaded
+				if _, loaded := a.modules[moduleName]; loaded {
+					a.error(spec.Token.Pos, "'%s' imported and not used", moduleName)
+				}
+			}
+		}
+	}
+}
 
 // processImports loads and analyzes all imported modules.
 func (a *Analyzer) processImports(prog *ast.Program) {
@@ -2168,6 +2188,8 @@ func (a *Analyzer) analyzeFieldExpr(e *ast.FieldExpr) types.Type {
 	if ident, ok := e.Expr.(*ast.Ident); ok {
 		if module, exists := a.modules[ident.Name]; exists {
 			// Qualified name: module.Symbol
+			a.usedModules[ident.Name] = true
+
 			symbol, found := module.Symbols[e.Field.Name]
 			if !found {
 				a.error(e.Field.Pos(), "module %s has no exported symbol %s", ident.Name, e.Field.Name)
@@ -2946,6 +2968,8 @@ func (a *Analyzer) analyzeMethodExpr(e *ast.MethodExpr) types.Type {
 	if ident, ok := e.Expr.(*ast.Ident); ok {
 		if module, exists := a.modules[ident.Name]; exists {
 			// Module-qualified function call
+			a.usedModules[ident.Name] = true
+
 			symbol, found := module.Symbols[e.Method.Name]
 			if !found {
 				a.error(e.Method.Pos(), "module %s has no exported symbol %s", ident.Name, e.Method.Name)

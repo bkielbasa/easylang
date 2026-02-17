@@ -1,0 +1,70 @@
+// Math test examples demonstrating test attributes.
+//
+// Run with:
+//   ease test examples/              # run all tests
+//   ease test -tag slow examples/    # run only slow tests
+//   ease test -skip slow examples/   # skip slow tests
+
+fn fibonacci(n: int) -> int {
+    if n <= 1 {
+        return n
+    }
+    return fibonacci(n - 1) + fibonacci(n - 2)
+}
+
+fn factorial(n: int) -> int {
+    if n <= 1 {
+        return 1
+    }
+    return n * factorial(n - 1)
+}
+
+fn is_even(n: int) -> int {
+    return n % 2
+}
+
+test "fibonacci base cases" {
+    if fibonacci(0) != 0 {
+        return 1
+    }
+    if fibonacci(1) != 1 {
+        return 1
+    }
+}
+
+test "fibonacci sequence" {
+    if fibonacci(5) != 5 {
+        return 1
+    }
+    if fibonacci(10) != 55 {
+        return 1
+    }
+}
+
+#[slow]
+test "fibonacci large value" {
+    if fibonacci(20) != 6765 {
+        return 1
+    }
+}
+
+test "factorial" {
+    if factorial(1) != 1 {
+        return 1
+    }
+    if factorial(5) != 120 {
+        return 1
+    }
+    if factorial(10) != 3628800 {
+        return 1
+    }
+}
+
+test "modulo operator" {
+    if is_even(4) != 0 {
+        return 1
+    }
+    if is_even(7) != 1 {
+        return 1
+    }
+}

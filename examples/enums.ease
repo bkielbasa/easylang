@@ -1,0 +1,59 @@
+// Enum and pattern matching examples.
+//
+// Demonstrates:
+// - Simple enums (tag-only variants)
+// - Enums with data fields
+// - Pattern matching with match expressions
+
+enum Color {
+    Red,
+    Green,
+    Blue,
+}
+
+enum Option {
+    Some { value: int },
+    None,
+}
+
+fn unwrap_or(opt: Option, def: int) -> int {
+    match opt {
+        Option::Some { value } => value,
+        Option::None => def,
+    }
+}
+
+fn color_code(c: Color) -> int {
+    match c {
+        Color::Red => 1,
+        Color::Green => 2,
+        Color::Blue => 3,
+    }
+}
+
+fn main() -> int {
+    // Simple enum construction
+    let r = Color::Red
+    let g = Color::Green
+    let b = Color::Blue
+
+    // Pattern matching on simple enum
+    let rc = color_code(r)
+    let gc = color_code(g)
+    let bc = color_code(b)
+
+    // Enum with data
+    let some = Option::Some { value: 42 }
+    let none = Option::None
+
+    // Pattern matching extracts data
+    let a = unwrap_or(some, 0)
+    let d = unwrap_or(none, 10)
+
+    // Verify: 1 + 2 + 3 + 42 + 10 = 58
+    let total = rc + gc + bc + a + d
+    if total != 58 {
+        return 1
+    }
+    return 0
+}
