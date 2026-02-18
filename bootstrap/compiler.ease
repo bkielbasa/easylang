@@ -2,14 +2,14 @@
 // Main entry point — imports domain modules and orchestrates compilation pipeline
 
 import (
-    "./strconv"
-    "./token"
-    "./lexer"
-    "./ast"
-    "./parser"
-    "./ir"
-    "./irgen"
-    "./llvm"
+    "./ease/strconv"
+    "./ease/token"
+    "./ease/lexer"
+    "./ease/ast"
+    "./ease/parser"
+    "./ease/ir"
+    "./ease/irgen"
+    "./ease/llvm"
 )
 
 // Global storage for function call arguments (workaround for immutability)
@@ -71,6 +71,43 @@ let mut g_import_paths = []string{}
 let mut g_import_names = []string{}
 let mut g_rename_from = []string{}
 let mut g_rename_to = []string{}
+let mut g_field_reg_names = []string{}
+let mut g_field_reg_types = []int{}
+let mut g_field_reg_is_array = []int{}
+
+fn register_field_type(name: string, field_type: int, is_array: int) {
+    // Only register if not already present (first definition wins)
+    let mut i = 0
+    for i < len(g_field_reg_names) {
+        if g_field_reg_names[i] == name { return }
+        i = i + 1
+    }
+    push(g_field_reg_names, name)
+    push(g_field_reg_types, field_type)
+    push(g_field_reg_is_array, is_array)
+}
+
+fn lookup_field_type(name: string) -> int {
+    let mut i = 0
+    for i < len(g_field_reg_names) {
+        if g_field_reg_names[i] == name {
+            return g_field_reg_types[i]
+        }
+        i = i + 1
+    }
+    return TYPE_UNKNOWN()
+}
+
+fn lookup_field_is_array(name: string) -> int {
+    let mut i = 0
+    for i < len(g_field_reg_names) {
+        if g_field_reg_names[i] == name {
+            return g_field_reg_is_array[i]
+        }
+        i = i + 1
+    }
+    return 0
+}
 
 fn register_func_return_type(name: string, ret_type: int, is_array: int) {
     push(g_func_ret_names, name)
@@ -129,8 +166,8 @@ fn extract_module_name(import_path: string) -> string {
     return import_path
 }
 
-// Resolve import path relative to source file: "./lexer" -> "dir/lexer.ease"
-fn resolve_import_path(source_path: string, import_path: string) -> string {
+// Resolve import base path relative to source file: "./lexer" -> "dir/lexer"
+fn resolve_import_base(source_path: string, import_path: string) -> string {
     let slash_pos = find_last_slash(source_path)
     let mut dir = "."
     if slash_pos >= 0 {
@@ -141,7 +178,38 @@ fn resolve_import_path(source_path: string, import_path: string) -> string {
     if len(import_path) >= 2 && str_char_at(import_path, 0) == 46 && str_char_at(import_path, 1) == 47 {
         rel_path = str_substring(import_path, 2, len(import_path))
     }
-    return dir + "/" + rel_path + ".ease"
+    return dir + "/" + rel_path
+}
+
+// Resolve import path relative to source file: "./lexer" -> "dir/lexer.ease"
+// For directories, returns the directory path (without .ease)
+fn resolve_import_path(source_path: string, import_path: string) -> string {
+    let base = resolve_import_base(source_path, import_path)
+    // Check if path is a directory first
+    if os.IsDir(base) == 1 {
+        return base
+    }
+    return base + ".ease"
+}
+
+// Check if a string ends with ".ease" (used for filtering directory entries)
+fn has_ease_suffix(s: string) -> int {
+    let slen = len(s)
+    if slen < 5 { return 0 }
+    if str_char_at(s, slen - 5) != 46 { return 0 }
+    if str_char_at(s, slen - 4) != 101 { return 0 }
+    if str_char_at(s, slen - 3) != 97 { return 0 }
+    if str_char_at(s, slen - 2) != 115 { return 0 }
+    if str_char_at(s, slen - 1) != 101 { return 0 }
+    return 1
+}
+
+// Check if a name starts with an uppercase letter (A-Z = 65-90)
+fn is_exported(name: string) -> int {
+    if len(name) == 0 { return 0 }
+    let ch = str_char_at(name, 0)
+    if ch >= 65 && ch <= 90 { return 1 }
+    return 0
 }
 
 // Look up a function name in the rename table; returns qualified name or original
@@ -315,74 +383,182 @@ fn main() -> int {
             if len(import_path) >= 2 && str_char_at(import_path, 0) == 46 && str_char_at(import_path, 1) == 47 {
                 let mod_name = extract_module_name(import_path)
                 let resolved = resolve_import_path(filename, import_path)
-                print("Importing module: " + mod_name + " from " + resolved + "\n")
+                let is_dir = os.IsDir(resolved)
 
-                let mod_source = os.ReadFile(resolved)
-                push(g_import_paths, resolved)
-                push(g_import_names, mod_name)
-
-                // Parse all top-level declarations from the imported module
-                let mut mod_pos = 0
-                mod_pos = lex_skip(mod_source, mod_pos)
                 let mut mod_func_names = []string{}
                 let mut mod_func_indices = []int{}
 
-                for {
-                    mod_pos = lex_skip(mod_source, mod_pos)
-                    let mod_kind = lex_kind(mod_source, mod_pos)
-                    if mod_kind == TK_EOF() { break }
+                if is_dir == 1 {
+                    // Directory package: load all .ease files
+                    print("Importing package: " + mod_name + " from " + resolved + "/\n")
+                    push(g_import_paths, resolved)
+                    push(g_import_names, mod_name)
 
-                    if mod_kind == TK_IMPORT() {
-                        let mod_import_result = parse_import_decl(mod_source, mod_pos, nodes)
-                        mod_pos = mod_import_result.new_pos
-                        mod_pos = lex_skip(mod_source, mod_pos)
-                    } else if mod_kind == TK_STRUCT() {
-                        let mod_struct_result = parse_struct_decl(mod_source, mod_pos, nodes)
-                        mod_pos = mod_struct_result.new_pos
-                    } else if mod_kind == TK_LET() {
-                        let mod_let_result = parse_let_stmt(mod_source, mod_pos, nodes)
-                        if mod_let_result.node_idx >= 0 {
-                            let mod_let_node = nodes[mod_let_result.node_idx]
-                            push(global_var_names, mod_let_node.str_val)
-                            if mod_let_node.right >= 0 {
-                                let mod_init = nodes[mod_let_node.right]
-                                if mod_init.tag == EXPR_INT() {
-                                    push(g_scalar_globals, mod_let_node.str_val)
-                                }
-                                if mod_init.tag == EXPR_UNARY() {
-                                    push(g_scalar_globals, mod_let_node.str_val)
+                    let entries = os.ListDir(resolved)
+                    let mut epos = 0
+                    let mut estart = 0
+                    let entries_len = len(entries)
+                    for epos <= entries_len {
+                        // Process entry at newline or end of string
+                        if epos == entries_len || str_char_at(entries, epos) == 10 {
+                            if epos > estart {
+                                let entry = str_substring(entries, estart, epos)
+                                if has_ease_suffix(entry) == 1 {
+                                    let file_path = resolved + "/" + entry
+                                    print("  Loading: " + file_path + "\n")
+                                    let dir_source = os.ReadFile(file_path)
+                                    let mut dir_pos = 0
+                                    dir_pos = lex_skip(dir_source, dir_pos)
+                                    for {
+                                        dir_pos = lex_skip(dir_source, dir_pos)
+                                        let dir_kind = lex_kind(dir_source, dir_pos)
+                                        if dir_kind == TK_EOF() { break }
+                                        if dir_kind == TK_IMPORT() {
+                                            let dir_imp = parse_import_decl(dir_source, dir_pos, nodes)
+                                            dir_pos = dir_imp.new_pos
+                                            dir_pos = lex_skip(dir_source, dir_pos)
+                                        } else if dir_kind == TK_STRUCT() {
+                                            let dir_struct = parse_struct_decl(dir_source, dir_pos, nodes)
+                                            dir_pos = dir_struct.new_pos
+                                        } else if dir_kind == TK_LET() {
+                                            let dir_let = parse_let_stmt(dir_source, dir_pos, nodes)
+                                            if dir_let.node_idx >= 0 {
+                                                let dir_let_node = nodes[dir_let.node_idx]
+                                                push(global_var_names, dir_let_node.str_val)
+                                                if dir_let_node.right >= 0 {
+                                                    let dir_init = nodes[dir_let_node.right]
+                                                    if dir_init.tag == EXPR_INT() {
+                                                        push(g_scalar_globals, dir_let_node.str_val)
+                                                    }
+                                                    if dir_init.tag == EXPR_UNARY() {
+                                                        push(g_scalar_globals, dir_let_node.str_val)
+                                                    }
+                                                }
+                                            }
+                                            dir_pos = dir_let.new_pos
+                                        } else if dir_kind == TK_FN() {
+                                            let dir_func = parse_func_decl(dir_source, dir_pos, nodes)
+                                            if dir_func.node_idx < 0 {
+                                                print("ERROR: Failed to parse function in " + file_path + " at position " + strconv.Itoa(dir_pos) + "\n")
+                                                break
+                                            }
+                                            let dir_func_idx = dir_func.node_idx
+                                            let dir_orig = nodes[dir_func_idx].str_val
+                                            push(mod_func_names, dir_orig)
+                                            push(mod_func_indices, dir_func_idx)
+                                            dir_pos = dir_func.new_pos
+                                            dir_pos = lex_skip(dir_source, dir_pos)
+                                        } else {
+                                            break
+                                        }
+                                    }
                                 }
                             }
+                            estart = epos + 1
                         }
-                        mod_pos = mod_let_result.new_pos
-                    } else if mod_kind == TK_FN() {
-                        let mod_func_result = parse_func_decl(mod_source, mod_pos, nodes)
-                        if mod_func_result.node_idx < 0 {
-                            print("ERROR: Failed to parse function in " + resolved + " at position " + strconv.Itoa(mod_pos) + "\n")
+                        epos = epos + 1
+                    }
+
+                    // Register functions with visibility enforcement
+                    // All functions get compiled with qualified names
+                    // Only uppercase (exported) functions are added to rename table
+                    let mut mfi = 0
+                    for mfi < len(mod_func_names) {
+                        let qualified = mod_name + "." + mod_func_names[mfi]
+                        push(func_names, qualified)
+                        push(func_indices, mod_func_indices[mfi])
+                        if is_exported(mod_func_names[mfi]) == 1 {
+                            // Uppercase: accessible from outside the package
+                            push(g_rename_from, mod_func_names[mfi])
+                            push(g_rename_to, qualified)
+                        }
+                        // Intra-package calls: functions within the package use
+                        // unqualified names that get resolved by the rename table
+                        // built from within the package's own functions
+                        print("  " + qualified + " (" + strconv.Itoa(len(func_names)) + ")\n")
+                        mfi = mfi + 1
+                    }
+
+                    // Build intra-package rename table so functions within the
+                    // package can call each other by unqualified names
+                    let mut ipfi = 0
+                    for ipfi < len(mod_func_names) {
+                        // Only add if not already in rename table (avoid duplication with exported ones)
+                        if is_exported(mod_func_names[ipfi]) == 0 {
+                            push(g_rename_from, mod_func_names[ipfi])
+                            push(g_rename_to, mod_name + "." + mod_func_names[ipfi])
+                        }
+                        ipfi = ipfi + 1
+                    }
+                } else {
+                    // Single file import (existing behavior)
+                    print("Importing module: " + mod_name + " from " + resolved + "\n")
+
+                    let mod_source = os.ReadFile(resolved)
+                    push(g_import_paths, resolved)
+                    push(g_import_names, mod_name)
+
+                    // Parse all top-level declarations from the imported module
+                    let mut mod_pos = 0
+                    mod_pos = lex_skip(mod_source, mod_pos)
+
+                    for {
+                        mod_pos = lex_skip(mod_source, mod_pos)
+                        let mod_kind = lex_kind(mod_source, mod_pos)
+                        if mod_kind == TK_EOF() { break }
+
+                        if mod_kind == TK_IMPORT() {
+                            let mod_import_result = parse_import_decl(mod_source, mod_pos, nodes)
+                            mod_pos = mod_import_result.new_pos
+                            mod_pos = lex_skip(mod_source, mod_pos)
+                        } else if mod_kind == TK_STRUCT() {
+                            let mod_struct_result = parse_struct_decl(mod_source, mod_pos, nodes)
+                            mod_pos = mod_struct_result.new_pos
+                        } else if mod_kind == TK_LET() {
+                            let mod_let_result = parse_let_stmt(mod_source, mod_pos, nodes)
+                            if mod_let_result.node_idx >= 0 {
+                                let mod_let_node = nodes[mod_let_result.node_idx]
+                                push(global_var_names, mod_let_node.str_val)
+                                if mod_let_node.right >= 0 {
+                                    let mod_init = nodes[mod_let_node.right]
+                                    if mod_init.tag == EXPR_INT() {
+                                        push(g_scalar_globals, mod_let_node.str_val)
+                                    }
+                                    if mod_init.tag == EXPR_UNARY() {
+                                        push(g_scalar_globals, mod_let_node.str_val)
+                                    }
+                                }
+                            }
+                            mod_pos = mod_let_result.new_pos
+                        } else if mod_kind == TK_FN() {
+                            let mod_func_result = parse_func_decl(mod_source, mod_pos, nodes)
+                            if mod_func_result.node_idx < 0 {
+                                print("ERROR: Failed to parse function in " + resolved + " at position " + strconv.Itoa(mod_pos) + "\n")
+                                break
+                            }
+                            let mod_func_idx = mod_func_result.node_idx
+                            let orig_name = nodes[mod_func_idx].str_val
+                            push(mod_func_names, orig_name)
+                            push(mod_func_indices, mod_func_idx)
+                            mod_pos = mod_func_result.new_pos
+                            mod_pos = lex_skip(mod_source, mod_pos)
+                        } else {
                             break
                         }
-                        let mod_func_idx = mod_func_result.node_idx
-                        let orig_name = nodes[mod_func_idx].str_val
-                        push(mod_func_names, orig_name)
-                        push(mod_func_indices, mod_func_idx)
-                        mod_pos = mod_func_result.new_pos
-                        mod_pos = lex_skip(mod_source, mod_pos)
-                    } else {
-                        break
                     }
-                }
 
-                // Register imported functions with qualified names
-                // Add to rename table so internal calls get resolved
-                let mut mfi = 0
-                for mfi < len(mod_func_names) {
-                    let qualified = mod_name + "." + mod_func_names[mfi]
-                    push(func_names, qualified)
-                    push(func_indices, mod_func_indices[mfi])
-                    push(g_rename_from, mod_func_names[mfi])
-                    push(g_rename_to, qualified)
-                    print("  " + qualified + " (" + strconv.Itoa(len(func_names)) + ")\n")
-                    mfi = mfi + 1
+                    // Register imported functions with qualified names (flat merge)
+                    // Add to rename table so internal calls get resolved
+                    let mut mfi = 0
+                    for mfi < len(mod_func_names) {
+                        let qualified = mod_name + "." + mod_func_names[mfi]
+                        push(func_names, qualified)
+                        push(func_indices, mod_func_indices[mfi])
+                        push(g_rename_from, mod_func_names[mfi])
+                        push(g_rename_to, qualified)
+                        print("  " + qualified + " (" + strconv.Itoa(len(func_names)) + ")\n")
+                        mfi = mfi + 1
+                    }
                 }
             }
         }
@@ -393,11 +569,78 @@ fn main() -> int {
         print("Imported " + strconv.Itoa(len(g_import_names)) + " module(s)\n\n")
     }
 
+    // Load bootstrap stdlib modules programmatically (not via import declarations,
+    // because the Go compiler's sema would reject them due to builtin conflicts)
+    let mut stdlib_mods = []string{}
+    push(stdlib_mods, "./ease/io")
+    push(stdlib_mods, "./ease/strings")
+    push(stdlib_mods, "./ease/os")
+    let mut smi = 0
+    for smi < len(stdlib_mods) {
+        let smod_path = stdlib_mods[smi]
+        let smod_name = extract_module_name(smod_path)
+        let smod_resolved = resolve_import_path(filename, smod_path)
+        print("Loading stdlib: " + smod_name + " from " + smod_resolved + "\n")
+        let smod_source = os.ReadFile(smod_resolved)
+        push(g_import_paths, smod_resolved)
+        push(g_import_names, smod_name)
+        let mut smod_pos = 0
+        smod_pos = lex_skip(smod_source, smod_pos)
+        for {
+            smod_pos = lex_skip(smod_source, smod_pos)
+            let smod_kind = lex_kind(smod_source, smod_pos)
+            if smod_kind == TK_EOF() { break }
+            if smod_kind == TK_FN() {
+                let smod_result = parse_func_decl(smod_source, smod_pos, nodes)
+                if smod_result.node_idx < 0 { break }
+                let smod_func_idx = smod_result.node_idx
+                let smod_orig = nodes[smod_func_idx].str_val
+                let smod_qualified = smod_name + "." + smod_orig
+                push(func_names, smod_qualified)
+                push(func_indices, smod_func_idx)
+                push(g_rename_from, smod_orig)
+                push(g_rename_to, smod_qualified)
+                print("  " + smod_qualified + " (" + strconv.Itoa(len(func_names)) + ")\n")
+                smod_pos = smod_result.new_pos
+                smod_pos = lex_skip(smod_source, smod_pos)
+            } else {
+                // Skip comments and non-function declarations
+                smod_pos = lex_end(smod_source, smod_pos, smod_kind)
+                smod_pos = lex_skip(smod_source, smod_pos)
+            }
+        }
+        smi = smi + 1
+    }
+
+    // Bridge lowercase "print" callers to uppercase "io.Print"
+    push(g_rename_from, "print")
+    push(g_rename_to, "io.Print")
+
+    // Build struct field type registry from parsed DECL_STRUCT nodes
+    let mut sfi = 0
+    let nodes_len = len(nodes)
+    for sfi < nodes_len {
+        if nodes[sfi].tag == DECL_STRUCT() {
+            // Walk consecutive DECL_FIELD nodes starting at struct.left
+            let mut fi = nodes[sfi].left
+            if fi >= 0 {
+                for fi < nodes_len {
+                    if nodes[fi].tag != DECL_FIELD() { break }
+                    if nodes[fi].type_tag != TYPE_UNKNOWN() {
+                        register_field_type(nodes[fi].str_val, nodes[fi].type_tag, nodes[fi].int_val)
+                    }
+                    fi = fi + 1
+                }
+            }
+        }
+        sfi = sfi + 1
+    }
+
     // Build function return type registry
     // Pre-register built-in functions (no DECL_FUNC nodes for these)
-    register_func_return_type("os.ReadFile", TYPE_STRING(), 0)
     register_func_return_type("os.Argv", TYPE_STRING(), 0)
-    register_func_return_type("str_substring", TYPE_STRING(), 0)
+    register_func_return_type("os.IsDir", TYPE_INT(), 0)
+    register_func_return_type("os.ListDir", TYPE_STRING(), 0)
 
     // Register all user-defined functions from parsed declarations
     // Use func_names[i] for the name (which has qualified names for imported functions)

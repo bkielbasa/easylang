@@ -1,0 +1,5 @@
+// I/O functions for the Ease bootstrap compiler
+
+fn Print(s: string) {
+    syscall.write(1, s, len(s))
+}
