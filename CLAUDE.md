@@ -321,6 +321,20 @@ Generated binaries are blocked by macOS 15.x security (exit code 137/SIGKILL) wh
 
 ## Recent Fixes
 
+**Full Integration Test Coverage (6/6) - COMPLETE (Feb 18, 2026):**
+- **Achievement**: All 6 integration tests pass via `make test` — previously only 3/6
+- **Features Added**:
+  - `!` (NOT) prefix operator in parser's `parse_unary`
+  - Range-based for loops (`for i in start..end`): `TK_DOTDOT` binary operator parsing + IR desugaring to init/compare/body/increment
+  - Modulo operator (`%`): `OP_MOD` opcode (55) + LLVM `srem` emission
+  - Dynamic struct field registry: `RegisterStruct`/`RegisterFieldOffset` so user-defined structs (Point, Rectangle) get correct sizes and field offsets
+  - Stdlib fallback path resolution: when compiling files outside `bootstrap/`, tries `bootstrap/ease/{name}` as fallback
+  - `strconv` added to programmatic stdlib list with already-loaded deduplication
+  - String wrapper functions: `Concat`, `StartsWith`, `EndsWith`, `IndexOf` in `bootstrap/ease/strings/strings.ease`
+- **Files Modified**: `parser.ease`, `irgen.ease`, `ir.ease`, `llvm.ease`, `strings.ease`, `compiler.ease`, `seed.ll`
+- **Results**: Self-hosting convergence verified (gen1 == gen2), 6/6 integration tests pass, 265 functions, 16700 IR instructions
+- **Status**: RESOLVED
+
 **Go-Style Directory Packages with `package` Declarations - COMPLETE (Feb 18, 2026):**
 - **Achievement**: Restructured bootstrap modules to Go-style directory packages with `package` declarations
 - **Changes**:
@@ -589,6 +603,12 @@ Generated binaries are blocked by macOS 15.x security (exit code 137/SIGKILL) wh
 - [x] **Implement proper strconv.Itoa** — Pure Ease implementation in `bootstrap/strconv.ease`, no C runtime dependency. Uses digit extraction loop with string concatenation.
 - [x] **Pure Ease stdlib** — Replaced `print`, `str_substring`, `os.ReadFile` builtins with pure Ease implementations in `bootstrap/io.ease`, `bootstrap/strings.ease`, `bootstrap/os.ease`. Added `syscall.read` builtin (OP_SYSCALL_READ). Added `strconv.Atoi` + 4 new string functions (`Contains`, `HasPrefix`, `HasSuffix`, `Index`). Modules loaded programmatically to avoid Go compiler conflicts.
 - [x] **Go-style directory packages with `package` declarations** — Moved 11 bootstrap modules from flat files (`bootstrap/ease/token.ease`) to directory packages (`bootstrap/ease/token/token.ease`) with `package token` declarations. Added `TK_PACKAGE` token, lexer keyword recognition, and skip handling in all 4 module-loading loops (main file, directory import, single-file import, programmatic stdlib). Stdlib loading updated to detect directories via `os.IsDir` + `os.ListDir`.
+- [x] **NOT prefix operator** — `parse_unary` handles `TK_NOT()` for `!expr`. IRgen already had `EXPR_UNARY` + `TK_NOT()` support (emits `operand == 0`).
+- [x] **Range-based for loops** — `for i in start..end` parsed via `TK_DOTDOT` binary operator, desugared in `gen_ir_stmt_for` to init/compare/body/increment pattern with `OP_COPY` writeback.
+- [x] **Modulo operator** — `TK_PERCENT` → `OP_MOD` (55) in irgen, emitted as `srem` in LLVM backend.
+- [x] **Dynamic struct field registry** — `RegisterStruct` + `RegisterFieldOffset` allow user-defined structs to work without hardcoded layouts. `struct_size`, `field_offset`, `get_struct_field_names`, and `get_field_offset` all fall back to dynamic registry.
+- [x] **Stdlib fallback resolution** — Programmatic stdlib loads try `bootstrap/ease/{name}` when source-relative paths don't exist. Enables compiling test files from any directory. `strconv` added to programmatic stdlib list.
+- [x] **String wrapper functions** — `Concat`, `StartsWith`, `EndsWith`, `IndexOf` added to `bootstrap/ease/strings/strings.ease` as thin wrappers around existing implementations.
 
 ### Language Features
 - [ ] **Variable declaration syntax change**: Switch from `let`/`let mut` to Go-style `:=` operator
@@ -622,20 +642,23 @@ go test ./pkg/... -v                    # Unit tests
 
 **Bootstrap Compiler:**
 ```bash
-go run cmd/ease/main.go build bootstrap/compiler.ease -o bootstrap_compiler_new
-./bootstrap_compiler_new <file.ease>    # Compile with bootstrap compiler
+make                                    # Build from seed (no Go required)
+make test                               # Run integration tests (6/6 passing)
+make verify                             # Verify self-hosting convergence
+make update-seed                        # Update seed after source changes
 ```
 
-**Integration Tests:**
-End-to-end compiler tests that verify features work correctly:
-- Basic arithmetic and variables
-- Function calls and recursion
-- Array operations (literal, index, push, len)
-- String operations (strings and strconv modules)
-- Struct definitions and operations
-- Loop variants (range, condition)
+**Integration Tests (6/6 passing):**
+| Test | Description | Features Tested |
+|------|-------------|-----------------|
+| 01_basic_math | Arithmetic and variables | `+`, `-`, `*`, `/`, `%`, conditionals |
+| 02_functions | Function calls and recursion | Parameters, return values, recursion |
+| 03_arrays | Array operations | Literal, index, push, len |
+| 04_strings | String operations | Concat, Contains, StartsWith, EndsWith, IndexOf, strconv |
+| 05_structs | Struct definitions | Struct literals, field access, pass to functions |
+| 06_loops | Loops and control flow | Range `for i in start..end`, condition loops, `%` modulo |
 
-All tests return exit code 0 on success. See `tests/README.md` for details.
+All tests return exit code 0 on success.
 
 ## Example Programs
 
