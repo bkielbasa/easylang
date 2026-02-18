@@ -38,11 +38,23 @@ Prefer defining stdlib instead of building new builtins. For example `strings.Sp
 - **Uppercase** first letter = public (exported)
 - **Lowercase** first letter = private (package-internal)
 
+### Package Declarations
+Every `.ease` file starts with a `package` declaration, exactly like Go:
+```
+package main           // executable programs
+package token          // library package (matches directory name)
+```
+- One package per directory
+- Package name must match the directory name
+- `package main` for executable entry points
+- The parser skips the declaration (no semantic enforcement yet)
+
 ### Imports
 ```
 import (
     "io"                          // stdlib - bare name ✅ IMPLEMENTED
-    "./config"                    // local - starts with ./ ✅ IMPLEMENTED
+    "./config"                    // local file - starts with ./ ✅ IMPLEMENTED
+    "./mylib"                     // local directory package ✅ IMPLEMENTED
     "github.com/user/pkg" as p    // external - URL style (TODO)
 )
 ```
@@ -52,7 +64,7 @@ import (
 - Imported functions compiled into the binary ✅
 - Unused imports = compile error (TODO)
 
-**Status**: Local imports and stdlib imports fully working! External imports coming soon.
+**Status**: Local file imports, directory package imports, and stdlib imports all working! Directory imports enforce visibility (uppercase = public). External imports coming soon.
 
 ### Loops (Go-style, only `for`)
 ```
@@ -133,7 +145,19 @@ ease/
 │   ├── codegen/arm64/    # ARM64 code generation
 │   └── macho/            # Mach-O binary writer
 └── bootstrap/            # Self-hosting compiler in Ease
-    └── compiler.ease     # Bootstrap compiler (~4,150 lines)
+    ├── compiler.ease     # Bootstrap compiler main (~4,200 lines)
+    └── ease/             # Bootstrap domain modules (Go-style directory packages)
+        ├── token/token.ease       # Token type constants
+        ├── lexer/lexer.ease       # Tokenizer
+        ├── ast/ast.ease           # AST node types and constructors
+        ├── parser/parser.ease     # Recursive descent parser
+        ├── ir/ir.ease             # IR opcodes and symbol table
+        ├── irgen/irgen.ease       # AST → IR translation
+        ├── llvm/llvm.ease         # LLVM IR code generation
+        ├── strconv/strconv.ease   # String conversion (Itoa, Atoi)
+        ├── io/io.ease             # I/O (print via syscall)
+        ├── strings/strings.ease   # String functions
+        └── os/os.ease             # OS functions (ReadFile via syscall)
 ```
 
 ## CLI Usage
@@ -163,7 +187,9 @@ ease version                 # Print version
 The Go implementation is the production compiler with all core features working:
 - ✅ Full lexer, parser, semantic analysis, IR, ARM64 codegen
 - ✅ Control flow (if/else, for loops), arrays, strings, structs
-- ✅ Module/import system (local and stdlib imports)
+- ✅ Module/import system (local files, directory packages, stdlib imports)
+- ✅ Directory package imports with Go-style visibility (uppercase = public)
+- ✅ Package declarations (`package main`, `package token`, etc.)
 - ✅ Standard library (strings, strconv, io, os, syscall modules)
 - ✅ Global variables (mutable and immutable)
 - ✅ File I/O and command-line arguments
@@ -294,6 +320,54 @@ Generated binaries are blocked by macOS 15.x security (exit code 137/SIGKILL) wh
 - Full self-compilation: ✅ Done (byte-identical convergence)
 
 ## Recent Fixes
+
+**Go-Style Directory Packages with `package` Declarations - COMPLETE (Feb 18, 2026):**
+- **Achievement**: Restructured bootstrap modules to Go-style directory packages with `package` declarations
+- **Changes**:
+  - Added `Package` token to Go compiler (`pkg/token/token.go`) and `TK_PACKAGE` to bootstrap (`bootstrap/ease/token/token.ease`)
+  - Go parser (`ParseProgram`) skips `package <name>` declaration at file start
+  - Bootstrap lexer recognizes `"package"` keyword; all 4 module-loading loops (main file, directory import, single-file import, stdlib) skip `TK_PACKAGE`
+  - Moved 11 modules from `bootstrap/ease/*.ease` to `bootstrap/ease/*/` directory packages
+  - Each file now starts with `package <name>` (e.g., `package token`, `package lexer`)
+  - Stdlib loading updated to handle directories via `os.IsDir` + `os.ListDir`
+  - Added `package main` to all examples, tests, and `bootstrap/compiler.ease`
+  - Fixed `loadDirectoryPackage` in Go sema to mark flat-merged modules as used (prevents false "unused import" errors)
+- **Results**: Self-hosting convergence verified (gen1 == gen2), 6/6 integration tests pass, 258 functions, 15739 IR instructions
+- **Status**: RESOLVED
+
+**Go-Style Package System with Visibility - COMPLETE (Feb 18, 2026):**
+- **Achievement**: Directory-based packages with Go-style visibility (uppercase = public, lowercase = private)
+- **New Features**:
+  - `import ("./mylib")` where `mylib/` is a directory loads ALL `.ease` files as one package
+  - Only uppercase-named functions exported (accessible via `mylib.Hello()`)
+  - Lowercase functions are private to the package (intra-package calls work)
+  - `os.IsDir(path)` and `os.ListDir(path)` builtins added to both compilers
+- **Components Modified**:
+  - C runtime: `ease_is_dir`, `ease_list_dir` functions
+  - Bootstrap IR: `OP_IS_DIR` (53), `OP_LIST_DIR` (54) opcodes
+  - Bootstrap irgen: dispatch for `os.IsDir`, `os.ListDir`
+  - Bootstrap LLVM: emission for new opcodes
+  - Bootstrap compiler: directory-aware `resolve_import_path`, visibility filtering in import loop
+  - Go sema: `loadDirectoryPackage`, directory-aware `resolveImportPath`, visibility in qualified access
+  - Go IR/codegen: `OpIsDir`, `OpListDir` opcodes with LLVM and ARM64 backends
+- **Backward Compatible**: Single-file imports (`./module` → `module.ease`) unchanged
+- **Results**: Self-hosting convergence verified (gen1 == gen2), 6/6 integration tests pass, 257 functions, 15574 IR instructions
+- **Status**: RESOLVED
+
+**Pure Ease Stdlib: Builtins Replaced - COMPLETE (Feb 18, 2026):**
+- **Achievement**: Replaced 3 C runtime builtins with pure Ease implementations, added 6 new stdlib functions
+- **Builtins Removed**: `print`, `str_substring`, `os.ReadFile` — no longer dispatch to C runtime
+- **New Modules**:
+  - `bootstrap/io.ease`: `print(s)` via `syscall.write(1, s, len(s))`
+  - `bootstrap/strings.ease`: `str_substring`, `Contains`, `HasPrefix`, `HasSuffix`, `Index`
+  - `bootstrap/os.ease`: `ReadFile(path)` via `syscall.open` + `syscall.read` + `heap_alloc`
+- **New Builtin**: `syscall.read` (OP_SYSCALL_READ) — needed by os.ReadFile pure Ease impl
+- **New Functions**: `strconv.Atoi`, `strings.Contains`, `strings.HasPrefix`, `strings.HasSuffix`, `strings.Index`
+- **Design**: Stdlib modules loaded programmatically (not via import declarations) to avoid Go compiler sema conflicts with builtin names
+- **Bug Found & Fixed**: Non-empty array literals (`[]string{"a","b","c"}`) crash in bootstrap compiler — only empty array literals work. Fixed by using `push()` to build arrays.
+- **Results**: 250 functions, 14920 IR instructions, full triple convergence (gen1 == gen2 == gen3), all 6 integration tests pass
+- **Builtin count**: Reduced from 14 special dispatches to 11 (print, str_substring, os.ReadFile removed)
+- **Status**: RESOLVED
 
 **String `==`/`!=` Auto-Dispatch - COMPLETE (Feb 18, 2026):**
 - **Achievement**: Replaced explicit `str_eq(a, b)` / `str_ne(a, b)` function calls with native `a == b` / `a != b` operators
@@ -492,7 +566,7 @@ Generated binaries are blocked by macOS 15.x security (exit code 137/SIGKILL) wh
 
 **Minor:**
 - Struct literals disabled as postfix operators (causes ambiguity with blocks)
-- `EXPR_FIELD` string detection still uses `str_val` heuristic (needs struct field type registry)
+- None currently!
 
 ## Future Work
 
@@ -511,8 +585,10 @@ Generated binaries are blocked by macOS 15.x security (exit code 137/SIGKILL) wh
 ### Bootstrap Compiler Improvements
 - [x] **Function return type registry** — `is_string_expr` / `is_string_array_expr` now use a registry built from parsed `-> type` annotations instead of hardcoded function name lists. 7 built-in functions pre-registered; all user functions registered automatically after parsing.
 - [x] **String `==`/`!=` auto-dispatch** — `gen_ir_binary` auto-dispatches `==`/`!=` to `OP_STR_EQ`/`OP_STR_NE` for string operands. All `str_eq()`/`str_ne()` calls replaced with native operators. Per-function scoping via `g_string_vars_start`/`g_string_array_vars_start` prevents cross-function contamination.
-- [ ] **Struct field type registry** — Replace the `str_val` heuristic in `EXPR_FIELD` with proper struct field type lookups
-- [ ] **Implement proper strconv.Itoa** in bootstrap codegen (currently placeholder returns "0")
+- [x] **Struct field type registry** — `is_string_expr` / `is_string_array_expr` EXPR_FIELD now uses a registry built from parsed DECL_FIELD type annotations instead of hardcoded field name check. Registry populated after parsing all structs (including from imported modules).
+- [x] **Implement proper strconv.Itoa** — Pure Ease implementation in `bootstrap/strconv.ease`, no C runtime dependency. Uses digit extraction loop with string concatenation.
+- [x] **Pure Ease stdlib** — Replaced `print`, `str_substring`, `os.ReadFile` builtins with pure Ease implementations in `bootstrap/io.ease`, `bootstrap/strings.ease`, `bootstrap/os.ease`. Added `syscall.read` builtin (OP_SYSCALL_READ). Added `strconv.Atoi` + 4 new string functions (`Contains`, `HasPrefix`, `HasSuffix`, `Index`). Modules loaded programmatically to avoid Go compiler conflicts.
+- [x] **Go-style directory packages with `package` declarations** — Moved 11 bootstrap modules from flat files (`bootstrap/ease/token.ease`) to directory packages (`bootstrap/ease/token/token.ease`) with `package token` declarations. Added `TK_PACKAGE` token, lexer keyword recognition, and skip handling in all 4 module-loading loops (main file, directory import, single-file import, programmatic stdlib). Stdlib loading updated to detect directories via `os.IsDir` + `os.ListDir`.
 
 ### Language Features
 - [ ] **Variable declaration syntax change**: Switch from `let`/`let mut` to Go-style `:=` operator
