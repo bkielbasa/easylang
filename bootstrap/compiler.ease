@@ -455,6 +455,37 @@ let mut g_string_array_vars = []string{}
 let mut g_scalar_globals = []string{}
 let mut g_break_label = -1
 let mut g_next_label = 100000
+let mut g_func_ret_names = []string{}
+let mut g_func_ret_types = []int{}
+let mut g_func_ret_is_array = []int{}
+
+fn register_func_return_type(name: string, ret_type: int, is_array: int) {
+    push(g_func_ret_names, name)
+    push(g_func_ret_types, ret_type)
+    push(g_func_ret_is_array, is_array)
+}
+
+fn lookup_func_return_type(name: string) -> int {
+    let mut i = len(g_func_ret_names) - 1
+    for i >= 0 {
+        if str_eq(g_func_ret_names[i], name) {
+            return g_func_ret_types[i]
+        }
+        i = i - 1
+    }
+    return TYPE_UNKNOWN()
+}
+
+fn lookup_func_return_is_array(name: string) -> int {
+    let mut i = len(g_func_ret_names) - 1
+    for i >= 0 {
+        if str_eq(g_func_ret_names[i], name) {
+            return g_func_ret_is_array[i]
+        }
+        i = i - 1
+    }
+    return 0
+}
 
 fn store_struct_fields(struct_node_idx: int, field_indices: []int) {
     push(g_struct_fields, struct_node_idx)
@@ -1338,14 +1369,27 @@ fn parse_func_decl(src: string, pos: int, nodes: []AstNode) -> ParseResult {
     // str_val = function name
     // left = parameters (first param node)
     // right = body (block node)
+    // type_tag = return type, int_val = is_array_return flag
+    let mut ret_type_tag = TYPE_UNKNOWN()
+    let mut ret_is_array = 0
+    if str_eq(ret_type, "int") { ret_type_tag = TYPE_INT() }
+    if str_eq(ret_type, "string") { ret_type_tag = TYPE_STRING() }
+    if str_eq(ret_type, "bool") { ret_type_tag = TYPE_BOOL() }
+    if str_eq(ret_type, "[]int") { ret_type_tag = TYPE_INT()
+        ret_is_array = 1
+    }
+    if str_eq(ret_type, "[]string") { ret_type_tag = TYPE_STRING()
+        ret_is_array = 1
+    }
+
     let func = AstNode {
         tag: DECL_FUNC(),
-        int_val: 0,
+        int_val: ret_is_array,
         str_val: func_name,
         left: params_result.node_idx,
         right: body_result.node_idx,
         extra: -1,
-        type_tag: TYPE_UNKNOWN()
+        type_tag: ret_type_tag
     }
     push(nodes, func)
     return ParseResult { node_idx: len(nodes) - 1, new_pos: body_result.new_pos }
@@ -2318,20 +2362,12 @@ fn is_string_expr(idx: int, nodes: []AstNode) -> int {
         return 0
     }
     if node.tag == EXPR_CALL() {
-        if str_eq(node.str_val, "Itoa") || str_eq(node.str_val, "strconv.Itoa") { return 1 }
-        if str_eq(node.str_val, "str_substring") { return 1 }
-        if str_eq(node.str_val, "ReadFile") || str_eq(node.str_val, "os.ReadFile") { return 1 }
-        if str_eq(node.str_val, "Argv") || str_eq(node.str_val, "os.Argv") { return 1 }
-        if str_eq(node.str_val, "lex_string_value") { return 1 }
-        if str_eq(node.str_val, "llvm_escape_string") { return 1 }
-        if str_eq(node.str_val, "llvm_mangle") { return 1 }
-        if str_eq(node.str_val, "llvm_func_name") { return 1 }
-        if str_eq(node.str_val, "tmp_name") { return 1 }
-        if str_eq(node.str_val, "emit_load_vreg") { return 1 }
-        if str_eq(node.str_val, "emit_load_ptr") { return 1 }
-        if str_eq(node.str_val, "hex_byte_str") { return 1 }
-        if str_eq(node.str_val, "hex_digit_char") { return 1 }
-        if str_eq(node.str_val, "str_eq") || str_eq(node.str_val, "str_ne") { return 0 }
+        let ret_type = lookup_func_return_type(node.str_val)
+        if ret_type == TYPE_STRING() {
+            if lookup_func_return_is_array(node.str_val) == 0 {
+                return 1
+            }
+        }
         return 0
     }
     if node.tag == EXPR_FIELD() {
@@ -2380,9 +2416,10 @@ fn is_string_array_expr(idx: int, nodes: []AstNode) -> int {
         return 0
     }
     if node.tag == EXPR_CALL() {
-        if str_eq(node.str_val, "get_call_args") { return 0 }
-        if str_eq(node.str_val, "get_struct_fields") { return 0 }
-        if str_eq(node.str_val, "get_struct_field_names") { return 1 }
+        let ret_type = lookup_func_return_type(node.str_val)
+        if ret_type == TYPE_STRING() && lookup_func_return_is_array(node.str_val) == 1 {
+            return 1
+        }
         return 0
     }
     return 0
@@ -4056,6 +4093,24 @@ fn main() -> int {
     }
 
     print("Parsed " + strconv.Itoa(len(func_names)) + " functions\n\n")
+
+    // Build function return type registry
+    // Pre-register built-in functions (no DECL_FUNC nodes for these)
+    register_func_return_type("Itoa", TYPE_STRING(), 0)
+    register_func_return_type("strconv.Itoa", TYPE_STRING(), 0)
+    register_func_return_type("ReadFile", TYPE_STRING(), 0)
+    register_func_return_type("os.ReadFile", TYPE_STRING(), 0)
+    register_func_return_type("Argv", TYPE_STRING(), 0)
+    register_func_return_type("os.Argv", TYPE_STRING(), 0)
+    register_func_return_type("str_substring", TYPE_STRING(), 0)
+
+    // Register all user-defined functions from parsed declarations
+    let mut reg_i = 0
+    for reg_i < len(func_indices) {
+        let fn_node = nodes[func_indices[reg_i]]
+        register_func_return_type(fn_node.str_val, fn_node.type_tag, fn_node.int_val)
+        reg_i = reg_i + 1
+    }
 
     // Phase 3: IR Generation
     print("Phase 3: IR Generation\n")
