@@ -94,16 +94,42 @@ fn OP_STR_LEN() -> int { return 51 }
 fn OP_SYSCALL_READ() -> int { return 52 }
 fn OP_IS_DIR() -> int { return 53 }
 fn OP_LIST_DIR() -> int { return 54 }
+fn OP_MOD() -> int { return 55 }
 
 // Struct definitions and offsets (hardcoded for known structs)
 // AstNode: tag(8), int_val(8), str_val(8), left(8), right(8), extra(8), type_tag(8) = 56 bytes
 // IRInstr: op(8), dest(8), arg1(8), arg2(8), arg3(8), str_val(8) = 48 bytes
 // ParseResult: node_idx(8), new_pos(8) = 16 bytes
 
+// Dynamic struct registry
+let mut g_struct_reg_names = []string{}
+let mut g_struct_reg_field_counts = []int{}
+let mut g_struct_reg_field_starts = []int{}
+let mut g_struct_reg_field_names = []string{}
+
+fn RegisterStruct(name: string, field_names: []string) {
+    push(g_struct_reg_names, name)
+    push(g_struct_reg_field_counts, len(field_names))
+    push(g_struct_reg_field_starts, len(g_struct_reg_field_names))
+    let mut i = 0
+    for i < len(field_names) {
+        push(g_struct_reg_field_names, field_names[i])
+        i = i + 1
+    }
+}
+
 fn struct_size(struct_name: string) -> int {
     if struct_name == "AstNode" { return 56 }
     if struct_name == "IRInstr" { return 48 }
     if struct_name == "ParseResult" { return 16 }
+    // Look up in dynamic registry
+    let mut ri = 0
+    for ri < len(g_struct_reg_names) {
+        if g_struct_reg_names[ri] == struct_name {
+            return g_struct_reg_field_counts[ri] * 8
+        }
+        ri = ri + 1
+    }
     return 64  // Default: 8 fields * 8 bytes
 }
 
@@ -138,6 +164,22 @@ fn field_offset(struct_name: string, field_name: string) -> int {
         if field_name == "vregs" { return 8 }
         if field_name == "types" { return 16 }
     }
+    // Look up in dynamic registry
+    let mut ri = 0
+    for ri < len(g_struct_reg_names) {
+        if g_struct_reg_names[ri] == struct_name {
+            let start = g_struct_reg_field_starts[ri]
+            let count = g_struct_reg_field_counts[ri]
+            let mut fi = 0
+            for fi < count {
+                if g_struct_reg_field_names[start + fi] == field_name {
+                    return fi * 8
+                }
+                fi = fi + 1
+            }
+        }
+        ri = ri + 1
+    }
     return 0  // Unknown field, return 0
 }
 
@@ -145,6 +187,22 @@ fn get_struct_field_names(name: string) -> []string {
     if name == "AstNode" { return []string{"tag", "int_val", "str_val", "left", "right", "extra", "type_tag"} }
     if name == "IRInstr" { return []string{"op", "dest", "arg1", "arg2", "arg3", "str_val"} }
     if name == "ParseResult" { return []string{"node_idx", "new_pos"} }
+    // Look up in dynamic registry
+    let mut ri = 0
+    for ri < len(g_struct_reg_names) {
+        if g_struct_reg_names[ri] == name {
+            let start = g_struct_reg_field_starts[ri]
+            let count = g_struct_reg_field_counts[ri]
+            let mut result = []string{}
+            let mut fi = 0
+            for fi < count {
+                push(result, g_struct_reg_field_names[start + fi])
+                fi = fi + 1
+            }
+            return result
+        }
+        ri = ri + 1
+    }
     return []string{}
 }
 

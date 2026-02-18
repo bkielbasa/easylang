@@ -1075,6 +1075,16 @@ fn parse_unary(src: string, start_pos: int, nodes: []AstNode) -> ParseResult {
         return ParseResult { node_idx: unary_idx, new_pos: operand_result.new_pos }
     }
 
+    if kind == TK_NOT() {
+        let mut new_pos = lex_end(src, pos, kind)
+        let operand_result = parse_unary(src, new_pos, nodes)
+        if operand_result.node_idx < 0 {
+            return operand_result
+        }
+        let unary_idx = new_unary_node(kind, operand_result.node_idx, nodes)
+        return ParseResult { node_idx: unary_idx, new_pos: operand_result.new_pos }
+    }
+
     return parse_primary_expr(src, start_pos, nodes)
 }
 
@@ -1150,6 +1160,15 @@ fn parse_comparison(src: string, start_pos: int, nodes: []AstNode) -> ParseResul
 
     pos = lex_skip(src, pos)
     let op = lex_kind(src, pos)
+    if op == TK_DOTDOT() {
+        pos = lex_end(src, pos, op)
+        let right_result = parse_additive(src, pos, nodes)
+        if right_result.node_idx >= 0 {
+            left = new_binary_node(op, left, right_result.node_idx, nodes)
+            pos = right_result.new_pos
+        }
+        return ParseResult { node_idx: left, new_pos: pos }
+    }
     if op == TK_LT() || op == TK_GT() || op == TK_LE() || op == TK_GE() ||
        op == TK_EQ() || op == TK_NE() {
         pos = lex_end(src, pos, op)

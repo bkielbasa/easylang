@@ -251,6 +251,21 @@ fn gen_ir_call_list_dir(ast_idx: int, nodes: []AstNode, instrs: []IRInstr, symta
     return result_vreg
 }
 
+// Dynamic field offset registry (for user-defined structs)
+let mut g_all_field_names = []string{}
+let mut g_all_field_offsets = []int{}
+
+fn RegisterFieldOffset(name: string, offset: int) {
+    // Only register if not already present (first definition wins)
+    let mut i = 0
+    for i < len(g_all_field_names) {
+        if g_all_field_names[i] == name { return }
+        i = i + 1
+    }
+    push(g_all_field_names, name)
+    push(g_all_field_offsets, offset)
+}
+
 fn get_field_offset(name: string) -> int {
     let mut off = 0
     // AstNode fields
@@ -270,6 +285,12 @@ fn get_field_offset(name: string) -> int {
     if name == "arg1" { off = 16 }
     if name == "arg2" { off = 24 }
     if name == "arg3" { off = 32 }
+    // Look up in dynamic registry for user-defined struct fields
+    let mut di = 0
+    for di < len(g_all_field_names) {
+        if g_all_field_names[di] == name { return g_all_field_offsets[di] }
+        di = di + 1
+    }
     return off
 }
 
@@ -422,6 +443,7 @@ fn gen_ir_binary_op(token_op: int) -> int {
     if token_op == TK_NE() { op = OP_CMP_NE() }
     if token_op == TK_AND() { op = OP_AND() }
     if token_op == TK_OR() { op = OP_OR() }
+    if token_op == TK_PERCENT() { op = OP_MOD() }
     if token_op == TK_CARET() { op = OP_XOR() }
     if token_op == TK_AMPERSAND() { op = OP_BITAND() }
     if token_op == TK_PIPE() { op = OP_BITOR() }
@@ -591,6 +613,54 @@ fn gen_ir_stmt_if(node: AstNode, nodes: []AstNode, instrs: []IRInstr, st_n: []st
 }
 
 fn gen_ir_stmt_for(n: AstNode, nodes: []AstNode, instrs: []IRInstr, st_n: []string, st_v: []int) -> int {
+    if n.str_val != "" {
+        // Range-based for loop: for i in start..end { body }
+        // n.left = EXPR_BINARY(TK_DOTDOT) with left=start, right=end
+        // n.str_val = loop variable name
+        // n.right = body block
+        let range_node = nodes[n.left]
+        let start_vreg = gen_ir_from_ast_with_symtab(range_node.left, nodes, instrs, st_n, st_v)
+        let end_vreg = gen_ir_from_ast_with_symtab(range_node.right, nodes, instrs, st_n, st_v)
+
+        // Initialize loop variable with a copy of start
+        let loop_vreg = len(instrs)
+        push(instrs, IRInstr { op: OP_COPY(), dest: loop_vreg, arg1: start_vreg, arg2: 0, arg3: 0, str_val: "" })
+        push(st_n, n.str_val)
+        push(st_v, loop_vreg)
+
+        let s = g_next_label
+        g_next_label = g_next_label + 1
+        let e = g_next_label
+        g_next_label = g_next_label + 1
+
+        // Loop header: compare loop_vreg < end_vreg
+        push(instrs, IRInstr { op: OP_LABEL(), dest: s, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
+        let cmp_vreg = len(instrs)
+        push(instrs, IRInstr { op: OP_CMP_LT(), dest: cmp_vreg, arg1: loop_vreg, arg2: end_vreg, arg3: 0, str_val: "" })
+        // OP_BRANCH: jump to label when dest==0 (CBZ semantics)
+        // cmp_vreg = 1 when i < end, 0 when i >= end
+        // So branch to end when cmp_vreg==0 (loop done)
+        push(instrs, IRInstr { op: OP_BRANCH(), dest: cmp_vreg, arg1: e, arg2: 0, arg3: 0, str_val: "" })
+
+        // Body
+        let saved_break = g_break_label
+        g_break_label = e
+        if n.right >= 0 { gen_ir_from_ast_with_symtab(n.right, nodes, instrs, st_n, st_v) }
+        g_break_label = saved_break
+
+        // Increment: loop_vreg = loop_vreg + 1
+        let one_vreg = len(instrs)
+        push(instrs, IRInstr { op: OP_LOADCONST(), dest: one_vreg, arg1: 1, arg2: 0, arg3: 0, str_val: "" })
+        let inc_vreg = len(instrs)
+        push(instrs, IRInstr { op: OP_ADD(), dest: inc_vreg, arg1: loop_vreg, arg2: one_vreg, arg3: 0, str_val: "" })
+        push(instrs, IRInstr { op: OP_COPY(), dest: loop_vreg, arg1: inc_vreg, arg2: 0, arg3: 0, str_val: "" })
+
+        push(instrs, IRInstr { op: OP_JUMP(), dest: s, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
+        push(instrs, IRInstr { op: OP_LABEL(), dest: e, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
+        return 0
+    }
+
+    // Condition-based or infinite for loop (existing behavior)
     let s = g_next_label
     g_next_label = g_next_label + 1
     let e = g_next_label
@@ -607,7 +677,8 @@ fn gen_ir_stmt_for(n: AstNode, nodes: []AstNode, instrs: []IRInstr, st_n: []stri
     if n.right >= 0 { gen_ir_from_ast_with_symtab(n.right, nodes, instrs, st_n, st_v) }
     g_break_label = saved_break
     push(instrs, IRInstr { op: OP_JUMP(), dest: s, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
-    push(instrs, IRInstr { op: OP_LABEL(), dest: e, arg1: 0, arg2: 0, arg3: 0, str_val: "" }) return 0
+    push(instrs, IRInstr { op: OP_LABEL(), dest: e, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
+    return 0
 }
 
 fn gen_ir_stmt_block(node: AstNode, nodes: []AstNode, instrs: []IRInstr, st_n: []string, st_v: []int) -> int {

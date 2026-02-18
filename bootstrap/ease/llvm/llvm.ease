@@ -408,6 +408,7 @@ fn emit_llvm_function(fd: int, instrs: []IRInstr, start: int, end_pos: int, func
         if terminated == 0 && instr.op == OP_SUB() { emit_llvm_binop(fd, instr, "sub", ti) }
         if terminated == 0 && instr.op == OP_MUL() { emit_llvm_binop(fd, instr, "mul", ti) }
         if terminated == 0 && instr.op == OP_DIV() { emit_llvm_binop(fd, instr, "sdiv", ti) }
+        if terminated == 0 && instr.op == OP_MOD() { emit_llvm_binop(fd, instr, "srem", ti) }
         if terminated == 0 && instr.op == OP_AND() { emit_llvm_binop(fd, instr, "and", ti) }
         if terminated == 0 && instr.op == OP_OR() { emit_llvm_binop(fd, instr, "or", ti) }
         if terminated == 0 && instr.op == OP_XOR() { emit_llvm_binop(fd, instr, "xor", ti) }

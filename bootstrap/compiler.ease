@@ -588,19 +588,42 @@ fn main() -> int {
 
     // Load bootstrap stdlib modules programmatically (not via import declarations,
     // because the Go compiler's sema would reject them due to builtin conflicts)
-    let stdlib_mods = []string{"./ease/io", "./ease/strings", "./ease/os"}
+    let stdlib_mods = []string{"./ease/io", "./ease/strings", "./ease/os", "./ease/strconv"}
     let mut smi = 0
     for smi < len(stdlib_mods) {
         let smod_path = stdlib_mods[smi]
         let smod_name = extract_module_name(smod_path)
-        let smod_resolved = resolve_import_path(filename, smod_path)
+
+        // Skip if this module was already loaded via import declarations
+        let mut already_loaded = 0
+        let mut ali = 0
+        for ali < len(g_import_names) {
+            if g_import_names[ali] == smod_name {
+                already_loaded = 1
+                break
+            }
+            ali = ali + 1
+        }
+        if already_loaded == 0 {
+
+        let mut smod_resolved = resolve_import_path(filename, smod_path)
+
+        // Fallback: if source-relative path doesn't exist, try bootstrap/ease/{name}
+        let mut smod_is_dir = os.IsDir(smod_resolved)
+        if smod_is_dir == 0 {
+            let fallback = "bootstrap/ease/" + smod_name
+            if os.IsDir(fallback) == 1 {
+                smod_resolved = fallback
+                smod_is_dir = 1
+            }
+        }
+
         print("Loading stdlib: " + smod_name + " from " + smod_resolved + "\n")
         push(g_import_paths, smod_resolved)
         push(g_import_names, smod_name)
 
         // Collect files to parse: if directory, list .ease files; otherwise single file
         let mut smod_files = []string{}
-        let smod_is_dir = os.IsDir(smod_resolved)
         if smod_is_dir == 1 {
             let smod_entries = os.ListDir(smod_resolved)
             let mut sepos = 0
@@ -659,6 +682,8 @@ fn main() -> int {
             }
             sfi = sfi + 1
         }
+
+        } // end if (not already_loaded)
         smi = smi + 1
     }
 
@@ -666,22 +691,29 @@ fn main() -> int {
     push(g_rename_from, "print")
     push(g_rename_to, "io.Print")
 
-    // Build struct field type registry from parsed DECL_STRUCT nodes
+    // Build struct field type registry and dynamic struct registry from parsed DECL_STRUCT nodes
     let mut sfi = 0
     let nodes_len = len(nodes)
     for sfi < nodes_len {
         if nodes[sfi].tag == DECL_STRUCT() {
+            let struct_name = nodes[sfi].str_val
+            let mut field_names_list = []string{}
             // Walk consecutive DECL_FIELD nodes starting at struct.left
             let mut fi = nodes[sfi].left
             if fi >= 0 {
+                let mut field_idx = 0
                 for fi < nodes_len {
                     if nodes[fi].tag != DECL_FIELD() { break }
+                    push(field_names_list, nodes[fi].str_val)
                     if nodes[fi].type_tag != TYPE_UNKNOWN() {
                         register_field_type(nodes[fi].str_val, nodes[fi].type_tag, nodes[fi].int_val)
                     }
+                    RegisterFieldOffset(nodes[fi].str_val, field_idx * 8)
+                    field_idx = field_idx + 1
                     fi = fi + 1
                 }
             }
+            RegisterStruct(struct_name, field_names_list)
         }
         sfi = sfi + 1
     }

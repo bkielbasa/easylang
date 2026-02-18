@@ -68,6 +68,22 @@ fn HasSuffix(s: string, suf: string) -> int {
     return 1
 }
 
+fn Concat(a: string, b: string) -> string {
+    return a + b
+}
+
+fn StartsWith(s: string, prefix: string) -> int {
+    return HasPrefix(s, prefix)
+}
+
+fn EndsWith(s: string, suffix: string) -> int {
+    return HasSuffix(s, suffix)
+}
+
+fn IndexOf(s: string, substr: string) -> int {
+    return Index(s, substr)
+}
+
 fn Index(s: string, sub: string) -> int {
     let slen = len(s)
     let sublen = len(sub)
