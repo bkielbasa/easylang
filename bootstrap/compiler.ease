@@ -460,6 +460,10 @@ let mut g_next_label = 100000
 let mut g_func_ret_names = []string{}
 let mut g_func_ret_types = []int{}
 let mut g_func_ret_is_array = []int{}
+let mut g_import_paths = []string{}
+let mut g_import_names = []string{}
+let mut g_rename_from = []string{}
+let mut g_rename_to = []string{}
 
 fn register_func_return_type(name: string, ret_type: int, is_array: int) {
     push(g_func_ret_names, name)
@@ -487,6 +491,62 @@ fn lookup_func_return_is_array(name: string) -> int {
         i = i - 1
     }
     return 0
+}
+
+// Find the position of '.' in a string, returns -1 if not found
+fn find_dot(name: string) -> int {
+    let mut i = 0
+    for i < len(name) {
+        if str_char_at(name, i) == 46 { return i }
+        i = i + 1
+    }
+    return -1
+}
+
+// Find the last '/' in a string, returns -1 if not found
+fn find_last_slash(path: string) -> int {
+    let mut i = len(path) - 1
+    for i >= 0 {
+        if str_char_at(path, i) == 47 { return i }
+        i = i - 1
+    }
+    return -1
+}
+
+// Extract module name from import path: "./lexer" -> "lexer", "./sub/parser" -> "parser"
+fn extract_module_name(import_path: string) -> string {
+    let slash_pos = find_last_slash(import_path)
+    if slash_pos >= 0 {
+        return str_substring(import_path, slash_pos + 1, len(import_path))
+    }
+    return import_path
+}
+
+// Resolve import path relative to source file: "./lexer" -> "dir/lexer.ease"
+fn resolve_import_path(source_path: string, import_path: string) -> string {
+    let slash_pos = find_last_slash(source_path)
+    let mut dir = "."
+    if slash_pos >= 0 {
+        dir = str_substring(source_path, 0, slash_pos)
+    }
+    // Strip leading "./" from import_path if present
+    let mut rel_path = import_path
+    if len(import_path) >= 2 && str_char_at(import_path, 0) == 46 && str_char_at(import_path, 1) == 47 {
+        rel_path = str_substring(import_path, 2, len(import_path))
+    }
+    return dir + "/" + rel_path + ".ease"
+}
+
+// Look up a function name in the rename table; returns qualified name or original
+fn lookup_rename(name: string) -> string {
+    let mut i = 0
+    for i < len(g_rename_from) {
+        if g_rename_from[i] == name {
+            return g_rename_to[i]
+        }
+        i = i + 1
+    }
+    return name
 }
 
 fn store_struct_fields(struct_node_idx: int, field_indices: []int) {
@@ -1255,9 +1315,8 @@ fn parse_import_decl(src: string, pos: int, nodes: []AstNode) -> ParseResult {
     p = lex_skip(src, p)
 
     // Parse one or more import paths (string literals)
-    // For now, we only use the first path (multi-import support limited)
-    let mut import_path = ""
-    let mut first_import = 1
+    // Create one DECL_IMPORT node per path
+    let mut last_import_idx = -1
     for {
         let path_kind = lex_kind(src, p)
         if path_kind == TK_RPAREN() {
@@ -1266,13 +1325,21 @@ fn parse_import_decl(src: string, pos: int, nodes: []AstNode) -> ParseResult {
         if path_kind != TK_STRING() {
             return ParseResult { node_idx: -1, new_pos: p }
         }
-        // Save only the first import path
-        if first_import == 1 {
-            import_path = lex_string_value(src, p, path_kind)
-            first_import = 0
-        }
+        let import_path = lex_string_value(src, p, path_kind)
         p = lex_end(src, p, path_kind)
         p = lex_skip(src, p)
+
+        let import_node = AstNode {
+            tag: DECL_IMPORT(),
+            int_val: 0,
+            str_val: import_path,
+            left: -1,
+            right: -1,
+            extra: -1,
+            type_tag: TYPE_UNKNOWN()
+        }
+        push(nodes, import_node)
+        last_import_idx = len(nodes) - 1
     }
 
     // Expect ')'
@@ -1281,19 +1348,7 @@ fn parse_import_decl(src: string, pos: int, nodes: []AstNode) -> ParseResult {
     }
     p = lex_end(src, p, TK_RPAREN())
 
-    // Create import declaration node
-    // str_val = import path
-    let import_node = AstNode {
-        tag: DECL_IMPORT(),
-        int_val: 0,
-        str_val: import_path,
-        left: -1,
-        right: -1,
-        extra: -1,
-        type_tag: TYPE_UNKNOWN()
-    }
-    push(nodes, import_node)
-    return ParseResult { node_idx: len(nodes) - 1, new_pos: p }
+    return ParseResult { node_idx: last_import_idx, new_pos: p }
 }
 
 // Parse function declaration: fn name(params) -> type { body }
@@ -2007,7 +2062,14 @@ fn parse_primary_expr(src: string, pos: int, nodes: []AstNode) -> ParseResult {
 
             // Create call expression node
             // left = function name node, right = first argument, int_val = arg count
-            let func_name = nodes[func_name_node].str_val
+            // If func_name_node is EXPR_FIELD with EXPR_IDENT base, construct qualified name (e.g. "os.ReadFile")
+            let mut func_name = nodes[func_name_node].str_val
+            if nodes[func_name_node].tag == EXPR_FIELD() {
+                let base_idx = nodes[func_name_node].left
+                if base_idx >= 0 && nodes[base_idx].tag == EXPR_IDENT() {
+                    func_name = nodes[base_idx].str_val + "." + func_name
+                }
+            }
             let call_node = AstNode {
                 tag: EXPR_CALL(),
                 int_val: len(arg_indices),
@@ -2364,9 +2426,10 @@ fn is_string_expr(idx: int, nodes: []AstNode) -> int {
         return 0
     }
     if node.tag == EXPR_CALL() {
-        let ret_type = lookup_func_return_type(node.str_val)
+        let call_name = lookup_rename(node.str_val)
+        let ret_type = lookup_func_return_type(call_name)
         if ret_type == TYPE_STRING() {
-            if lookup_func_return_is_array(node.str_val) == 0 {
+            if lookup_func_return_is_array(call_name) == 0 {
                 return 1
             }
         }
@@ -2418,8 +2481,9 @@ fn is_string_array_expr(idx: int, nodes: []AstNode) -> int {
         return 0
     }
     if node.tag == EXPR_CALL() {
-        let ret_type = lookup_func_return_type(node.str_val)
-        if ret_type == TYPE_STRING() && lookup_func_return_is_array(node.str_val) == 1 {
+        let call_name = lookup_rename(node.str_val)
+        let ret_type = lookup_func_return_type(call_name)
+        if ret_type == TYPE_STRING() && lookup_func_return_is_array(call_name) == 1 {
             return 1
         }
         return 0
@@ -2733,7 +2797,7 @@ fn gen_ir_call_user(node: AstNode, ast_idx: int, nodes: []AstNode, instrs: []IRI
         i = i + 1
     }
     let res = len(instrs)
-    push(instrs, IRInstr { op: OP_CALL(), dest: res, arg1: 0, arg2: node.int_val, arg3: 0, str_val: node.str_val })
+    push(instrs, IRInstr { op: OP_CALL(), dest: res, arg1: 0, arg2: node.int_val, arg3: 0, str_val: lookup_rename(node.str_val) })
     return res
 }
 
@@ -3055,7 +3119,7 @@ fn gen_ir_from_ast_with_symtab(ast_idx: int, nodes: []AstNode, instrs: []IRInstr
     }
 
     if node.tag == EXPR_CALL() {
-        let func_name = node.str_val
+        let func_name = lookup_rename(node.str_val)
         if func_name == "len" {
             return gen_ir_call_len(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
         }
@@ -3071,16 +3135,16 @@ fn gen_ir_from_ast_with_symtab(ast_idx: int, nodes: []AstNode, instrs: []IRInstr
         if func_name == "heap_alloc" {
             return gen_ir_call_heap_alloc(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
         }
-        if func_name == "ReadFile" || func_name == "os.ReadFile" {
+        if func_name == "os.ReadFile" {
             return gen_ir_call_readfile(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
         }
-        if func_name == "Argc" || func_name == "os.Argc" {
+        if func_name == "os.Argc" {
             return gen_ir_call_argc(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
         }
-        if func_name == "Argv" || func_name == "os.Argv" {
+        if func_name == "os.Argv" {
             return gen_ir_call_argv(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
         }
-        if func_name == "Itoa" || func_name == "strconv.Itoa" {
+        if func_name == "strconv.Itoa" {
             return gen_ir_call_itoa(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
         }
         if func_name == "print" {
@@ -3092,13 +3156,13 @@ fn gen_ir_from_ast_with_symtab(ast_idx: int, nodes: []AstNode, instrs: []IRInstr
         if func_name == "str_substring" {
             return gen_ir_call_str_substring(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
         }
-        if func_name == "open" || func_name == "syscall.open" {
+        if func_name == "syscall.open" {
             return gen_ir_call_syscall_open(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
         }
-        if func_name == "write" || func_name == "syscall.write" {
+        if func_name == "syscall.write" {
             return gen_ir_call_syscall_write(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
         }
-        if func_name == "close" || func_name == "syscall.close" {
+        if func_name == "syscall.close" {
             return gen_ir_call_syscall_close(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
         }
         return gen_ir_call_user(node, ast_idx, nodes, instrs, symtab_names, symtab_vregs)
@@ -3991,9 +4055,10 @@ fn main() -> int {
     // Get command-line arguments
     let argc = os.Argc()
     let mut source = ""
+    let mut filename = ""
 
     if argc > 1 {
-        let filename = os.Argv(1)
+        filename = os.Argv(1)
         print("Reading file: " + filename + "\n")
         source = os.ReadFile(filename)
         print("File loaded successfully\n\n")
@@ -4082,21 +4147,108 @@ fn main() -> int {
 
     print("Parsed " + strconv.Itoa(len(func_names)) + " functions\n\n")
 
+    // Process imports: scan for DECL_IMPORT nodes, read and parse imported modules
+    // Uses rename table approach (no AST node mutation) for bootstrap parser compatibility
+    let mut imp_i = 0
+    let main_node_count = len(nodes)
+    for imp_i < main_node_count {
+        if nodes[imp_i].tag == DECL_IMPORT() {
+            let import_path = nodes[imp_i].str_val
+            // Skip stdlib imports (no "./" prefix) — handled by builtin dispatch
+            if len(import_path) >= 2 && str_char_at(import_path, 0) == 46 && str_char_at(import_path, 1) == 47 {
+                let mod_name = extract_module_name(import_path)
+                let resolved = resolve_import_path(filename, import_path)
+                print("Importing module: " + mod_name + " from " + resolved + "\n")
+
+                let mod_source = os.ReadFile(resolved)
+                push(g_import_paths, resolved)
+                push(g_import_names, mod_name)
+
+                // Parse all top-level declarations from the imported module
+                let mut mod_pos = 0
+                mod_pos = lex_skip(mod_source, mod_pos)
+                let mut mod_func_names = []string{}
+                let mut mod_func_indices = []int{}
+
+                for {
+                    mod_pos = lex_skip(mod_source, mod_pos)
+                    let mod_kind = lex_kind(mod_source, mod_pos)
+                    if mod_kind == TK_EOF() { break }
+
+                    if mod_kind == TK_IMPORT() {
+                        let mod_import_result = parse_import_decl(mod_source, mod_pos, nodes)
+                        mod_pos = mod_import_result.new_pos
+                        mod_pos = lex_skip(mod_source, mod_pos)
+                    } else if mod_kind == TK_STRUCT() {
+                        let mod_struct_result = parse_struct_decl(mod_source, mod_pos, nodes)
+                        mod_pos = mod_struct_result.new_pos
+                    } else if mod_kind == TK_LET() {
+                        let mod_let_result = parse_let_stmt(mod_source, mod_pos, nodes)
+                        if mod_let_result.node_idx >= 0 {
+                            let mod_let_node = nodes[mod_let_result.node_idx]
+                            push(global_var_names, mod_let_node.str_val)
+                            if mod_let_node.right >= 0 {
+                                let mod_init = nodes[mod_let_node.right]
+                                if mod_init.tag == EXPR_INT() {
+                                    push(g_scalar_globals, mod_let_node.str_val)
+                                }
+                                if mod_init.tag == EXPR_UNARY() {
+                                    push(g_scalar_globals, mod_let_node.str_val)
+                                }
+                            }
+                        }
+                        mod_pos = mod_let_result.new_pos
+                    } else if mod_kind == TK_FN() {
+                        let mod_func_result = parse_func_decl(mod_source, mod_pos, nodes)
+                        if mod_func_result.node_idx < 0 {
+                            print("ERROR: Failed to parse function in " + resolved + " at position " + strconv.Itoa(mod_pos) + "\n")
+                            break
+                        }
+                        let mod_func_idx = mod_func_result.node_idx
+                        let orig_name = nodes[mod_func_idx].str_val
+                        push(mod_func_names, orig_name)
+                        push(mod_func_indices, mod_func_idx)
+                        mod_pos = mod_func_result.new_pos
+                        mod_pos = lex_skip(mod_source, mod_pos)
+                    } else {
+                        break
+                    }
+                }
+
+                // Register imported functions with qualified names
+                // Add to rename table so internal calls get resolved
+                let mut mfi = 0
+                for mfi < len(mod_func_names) {
+                    let qualified = mod_name + "." + mod_func_names[mfi]
+                    push(func_names, qualified)
+                    push(func_indices, mod_func_indices[mfi])
+                    push(g_rename_from, mod_func_names[mfi])
+                    push(g_rename_to, qualified)
+                    print("  " + qualified + " (" + strconv.Itoa(len(func_names)) + ")\n")
+                    mfi = mfi + 1
+                }
+            }
+        }
+        imp_i = imp_i + 1
+    }
+
+    if len(g_import_names) > 0 {
+        print("Imported " + strconv.Itoa(len(g_import_names)) + " module(s)\n\n")
+    }
+
     // Build function return type registry
     // Pre-register built-in functions (no DECL_FUNC nodes for these)
-    register_func_return_type("Itoa", TYPE_STRING(), 0)
     register_func_return_type("strconv.Itoa", TYPE_STRING(), 0)
-    register_func_return_type("ReadFile", TYPE_STRING(), 0)
     register_func_return_type("os.ReadFile", TYPE_STRING(), 0)
-    register_func_return_type("Argv", TYPE_STRING(), 0)
     register_func_return_type("os.Argv", TYPE_STRING(), 0)
     register_func_return_type("str_substring", TYPE_STRING(), 0)
 
     // Register all user-defined functions from parsed declarations
+    // Use func_names[i] for the name (which has qualified names for imported functions)
     let mut reg_i = 0
     for reg_i < len(func_indices) {
         let fn_node = nodes[func_indices[reg_i]]
-        register_func_return_type(fn_node.str_val, fn_node.type_tag, fn_node.int_val)
+        register_func_return_type(func_names[reg_i], fn_node.type_tag, fn_node.int_val)
         reg_i = reg_i + 1
     }
 
