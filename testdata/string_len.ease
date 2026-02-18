@@ -1,7 +1,7 @@
 fn main() -> int {
-    let empty = ""
-    let hello = "hello"
-    let longer = "hello world"
+    empty := ""
+    hello := "hello"
+    longer := "hello world"
 
     // Test 1: Empty string length should be 0
     if len(empty) != 0 {

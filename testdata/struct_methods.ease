@@ -14,7 +14,7 @@ impl Point {
 }
 
 fn main() -> int {
-    let p = Point { x: 3, y: 4 }
+    p := Point { x: 3, y: 4 }
 
     // Test 1: Method call with no args
     if p.sum() != 7 {
@@ -22,7 +22,7 @@ fn main() -> int {
     }
 
     // Test 2: Method call with args
-    let p2 = p.scale(2)
+    p2 := p.scale(2)
     if p2.x != 6 {
         return 2
     }

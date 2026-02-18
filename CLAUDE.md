@@ -93,7 +93,7 @@ Tests live in `*_test.ease` files alongside source code.
 #[slow]
 #[parallel]
 test "user login succeeds" {
-    let result = login("user", "pass")
+    result := login("user", "pass")
     if result.is_err() {
         return error.New("login should succeed")
     }
@@ -254,12 +254,8 @@ The Ease compiler is written in Ease and compiles itself with byte-identical con
 - [x] **Dynamic struct field registry** — `RegisterStruct` + `RegisterFieldOffset` for user-defined structs.
 
 ### Language Features
-- [ ] **Variable declaration syntax change**: Switch from `let`/`let mut` to Go-style `:=` operator
-  - `x := 5` declares new mutable variable
-  - `x = 10` reassigns existing variable
-  - Compile error if `:=` used on existing variable (prevents shadowing)
-  - Breaking change: requires migration of all existing code
-  - TODO: Design transition plan, update lexer/parser/semantic analyzer
+- [x] **Go-style `:=` declarations** — Replaced `let`/`let mut` with `:=`. All variables are mutable.
+- [ ] **`const` keyword** — Compile-time constants (e.g. `const MAX_SIZE = 1024`)
 - [ ] Enums (parser done, codegen TODO)
 - [ ] Traits (parser done, codegen TODO)
 - [ ] Generics (design TODO)

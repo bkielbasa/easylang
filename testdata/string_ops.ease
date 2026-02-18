@@ -1,9 +1,9 @@
 fn main() -> int {
-    let a = "hello"
-    let b = "hello"
-    let c = "world"
-    let d = "hell"
-    let e = "hello!"
+    a := "hello"
+    b := "hello"
+    c := "world"
+    d := "hell"
+    e := "hello!"
 
     // Test 1: Same content strings should be equal
     if a != b {
@@ -26,8 +26,8 @@ fn main() -> int {
     }
 
     // Test 5: Empty strings should be equal
-    let empty1 = ""
-    let empty2 = ""
+    empty1 := ""
+    empty2 := ""
     if empty1 != empty2 {
         return 5
     }

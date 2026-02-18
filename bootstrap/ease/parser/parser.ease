@@ -3,10 +3,10 @@ package parser
 // Parser - recursive descent parser for the Ease bootstrap compiler
 
 fn parse_primary(src: string, pos: int, nodes: []AstNode) -> int {
-    let kind = lex_kind(src, pos)
+    kind := lex_kind(src, pos)
 
     if kind == TK_INT() {
-        let val = lex_int_value(src, pos)
+        val := lex_int_value(src, pos)
         return new_int_node(val, nodes)
     }
 
@@ -19,13 +19,13 @@ fn parse_primary(src: string, pos: int, nodes: []AstNode) -> int {
     }
 
     if kind == TK_IDENT() {
-        let name = lex_string_value(src, pos, kind)
+        name := lex_string_value(src, pos, kind)
         return new_ident_node(name, nodes)
     }
 
     if kind == TK_LPAREN() {
         // Parenthesized expression
-        let mut new_pos = lex_end(src, pos, kind)
+        new_pos := lex_end(src, pos, kind)
         new_pos = lex_skip(src, new_pos)
         // TODO: recursively parse expression
         return -1
@@ -34,57 +34,40 @@ fn parse_primary(src: string, pos: int, nodes: []AstNode) -> int {
     return -1
 }
 
-// Parse variable declaration: let [mut] name = expr
-fn parse_let_stmt(src: string, pos: int, nodes: []AstNode) -> ParseResult {
-    // pos should be at 'let' token
-    let mut p = pos
-    let kind = lex_kind(src, p)
-    if kind != TK_LET() {
-        return ParseResult { node_idx: -1, new_pos: p }
-    }
-    p = lex_end(src, p, kind)
-    p = lex_skip(src, p)
-
-    // Check for 'mut'
-    let mut is_mut = 0
-    let next_kind = lex_kind(src, p)
-    if next_kind == TK_MUT() {
-        is_mut = 1
-        p = lex_end(src, p, next_kind)
-        p = lex_skip(src, p)
-    }
+// Parse variable declaration: name := expr
+fn parse_colonequal_stmt(src: string, pos: int, nodes: []AstNode) -> ParseResult {
+    p := pos
 
     // Parse identifier
-    let name_kind = lex_kind(src, p)
+    name_kind := lex_kind(src, p)
     if name_kind != TK_IDENT() {
         return ParseResult { node_idx: -1, new_pos: p }
     }
-    let name = lex_string_value(src, p, name_kind)
-    let name_node = new_ident_node(name, nodes)
+    name := lex_string_value(src, p, name_kind)
+    name_node := new_ident_node(name, nodes)
     p = lex_end(src, p, name_kind)
     p = lex_skip(src, p)
 
-    // Expect '='
-    let eq_kind = lex_kind(src, p)
-    if eq_kind != TK_ASSIGN() {
+    // Expect ':='
+    ce_kind := lex_kind(src, p)
+    if ce_kind != TK_COLONEQUAL() {
         return ParseResult { node_idx: -1, new_pos: p }
     }
-    p = lex_end(src, p, eq_kind)
+    p = lex_end(src, p, ce_kind)
     p = lex_skip(src, p)
 
     // Parse initializer expression
-    let expr_result = parse_expr_with_pos(src, p, nodes)
+    expr_result := parse_expr_with_pos(src, p, nodes)
     if expr_result.node_idx < 0 {
         return ParseResult { node_idx: -1, new_pos: p }
     }
-    let expr_node = expr_result.node_idx
+    expr_node := expr_result.node_idx
     p = expr_result.new_pos
 
-    // Create let statement node
-    // left = name, right = expr, int_val = is_mut
-    let stmt = AstNode {
+    // Create let statement node (reuse STMT_LET, int_val=1 for mutable)
+    stmt := AstNode {
         tag: STMT_LET(),
-        int_val: is_mut,
+        int_val: 1,
         str_val: name,
         left: name_node,
         right: expr_node,
@@ -98,8 +81,8 @@ fn parse_let_stmt(src: string, pos: int, nodes: []AstNode) -> ParseResult {
 // Parse if statement: if cond { block } [else { block }]
 fn parse_if_stmt(src: string, pos: int, nodes: []AstNode) -> ParseResult {
     // pos should be at 'if' token
-    let mut p = pos
-    let kind = lex_kind(src, p)
+    p := pos
+    kind := lex_kind(src, p)
     if kind != TK_IF() {
         return ParseResult { node_idx: -1, new_pos: p }
     }
@@ -107,41 +90,41 @@ fn parse_if_stmt(src: string, pos: int, nodes: []AstNode) -> ParseResult {
     p = lex_skip(src, p)
 
     // Parse condition expression
-    let cond_result = parse_expr_with_pos(src, p, nodes)
+    cond_result := parse_expr_with_pos(src, p, nodes)
     if cond_result.node_idx < 0 {
         return ParseResult { node_idx: -1, new_pos: p }
     }
-    let cond_node = cond_result.node_idx
+    cond_node := cond_result.node_idx
     p = cond_result.new_pos
     p = lex_skip(src, p)
 
     // Parse then block
-    let then_result = parse_block(src, p, nodes)
+    then_result := parse_block(src, p, nodes)
     if then_result.node_idx < 0 {
         return ParseResult { node_idx: -1, new_pos: p }
     }
-    let then_node = then_result.node_idx
+    then_node := then_result.node_idx
     p = then_result.new_pos
     p = lex_skip(src, p)
 
     // Check for else
-    let mut else_node = -1
-    let next_kind = lex_kind(src, p)
+    else_node := -1
+    next_kind := lex_kind(src, p)
     if next_kind == TK_ELSE() {
         p = lex_end(src, p, next_kind)
         p = lex_skip(src, p)
         // Check for else if
-        let else_kind = lex_kind(src, p)
+        else_kind := lex_kind(src, p)
         if else_kind == TK_IF() {
             // else if -> parse as nested if statement
-            let else_if_result = parse_if_stmt(src, p, nodes)
+            else_if_result := parse_if_stmt(src, p, nodes)
             if else_if_result.node_idx >= 0 {
                 else_node = else_if_result.node_idx
                 p = else_if_result.new_pos
             }
         } else {
             // else { block }
-            let else_result = parse_block(src, p, nodes)
+            else_result := parse_block(src, p, nodes)
             if else_result.node_idx >= 0 {
                 else_node = else_result.node_idx
                 p = else_result.new_pos
@@ -151,7 +134,7 @@ fn parse_if_stmt(src: string, pos: int, nodes: []AstNode) -> ParseResult {
 
     // Create if statement node
     // left = condition, right = then block, extra = else block
-    let stmt = AstNode {
+    stmt := AstNode {
         tag: STMT_IF(),
         int_val: 0,
         str_val: "",
@@ -166,8 +149,8 @@ fn parse_if_stmt(src: string, pos: int, nodes: []AstNode) -> ParseResult {
 
 fn parse_for_stmt(src: string, pos: int, nodes: []AstNode) -> ParseResult {
     // pos should be at 'for' token
-    let mut p = pos
-    let kind = lex_kind(src, p)
+    p := pos
+    kind := lex_kind(src, p)
     if kind != TK_FOR() {
         return ParseResult { node_idx: -1, new_pos: p }
     }
@@ -175,14 +158,14 @@ fn parse_for_stmt(src: string, pos: int, nodes: []AstNode) -> ParseResult {
     p = lex_skip(src, p)
 
     // Check for range-based for loop: for i in range { }
-    let next_kind = lex_kind(src, p)
-    let mut cond_node = -1
-    let mut loop_var = ""
+    next_kind := lex_kind(src, p)
+    cond_node := -1
+    loop_var := ""
 
     if next_kind == TK_IDENT() {
         // Might be: for i in range or for condition
-        let saved_pos = p
-        let var_name = lex_string_value(src, p, next_kind)
+        saved_pos := p
+        var_name := lex_string_value(src, p, next_kind)
         p = lex_end(src, p, next_kind)
         p = lex_skip(src, p)
 
@@ -193,7 +176,7 @@ fn parse_for_stmt(src: string, pos: int, nodes: []AstNode) -> ParseResult {
             p = lex_skip(src, p)
 
             // Parse range expression
-            let range_result = parse_expr_with_pos(src, p, nodes)
+            range_result := parse_expr_with_pos(src, p, nodes)
             if range_result.node_idx >= 0 {
                 cond_node = range_result.node_idx
                 p = range_result.new_pos
@@ -202,7 +185,7 @@ fn parse_for_stmt(src: string, pos: int, nodes: []AstNode) -> ParseResult {
         } else {
             // Not 'in', so restore and parse as condition expression
             p = saved_pos
-            let cond_result = parse_expr_with_pos(src, p, nodes)
+            cond_result := parse_expr_with_pos(src, p, nodes)
             if cond_result.node_idx >= 0 {
                 cond_node = cond_result.node_idx
                 p = cond_result.new_pos
@@ -211,7 +194,7 @@ fn parse_for_stmt(src: string, pos: int, nodes: []AstNode) -> ParseResult {
         }
     } else if next_kind != TK_LBRACE() {
         // Parse condition expression (not identifier, not lbrace)
-        let cond_result = parse_expr_with_pos(src, p, nodes)
+        cond_result := parse_expr_with_pos(src, p, nodes)
         if cond_result.node_idx >= 0 {
             cond_node = cond_result.node_idx
             p = cond_result.new_pos
@@ -220,17 +203,17 @@ fn parse_for_stmt(src: string, pos: int, nodes: []AstNode) -> ParseResult {
     }
 
     // Parse body block
-    let body_result = parse_block(src, p, nodes)
+    body_result := parse_block(src, p, nodes)
     if body_result.node_idx < 0 {
         return ParseResult { node_idx: -1, new_pos: p }
     }
-    let body_node = body_result.node_idx
+    body_node := body_result.node_idx
     p = body_result.new_pos
 
     // Create for statement node
     // left = condition/range (-1 for infinite loop), right = body block
     // str_val = loop variable name (for range-based loops)
-    let stmt = AstNode {
+    stmt := AstNode {
         tag: STMT_FOR(),
         int_val: 0,
         str_val: loop_var,
@@ -245,8 +228,8 @@ fn parse_for_stmt(src: string, pos: int, nodes: []AstNode) -> ParseResult {
 
 fn parse_return_stmt(src: string, pos: int, nodes: []AstNode) -> ParseResult {
     // pos should be at 'return' token
-    let mut p = pos
-    let kind = lex_kind(src, p)
+    p := pos
+    kind := lex_kind(src, p)
     if kind != TK_RETURN() {
         return ParseResult { node_idx: -1, new_pos: p }
     }
@@ -254,18 +237,18 @@ fn parse_return_stmt(src: string, pos: int, nodes: []AstNode) -> ParseResult {
     p = lex_skip(src, p)
 
     // Check if there's an expression to return
-    let next_kind = lex_kind(src, p)
-    let mut expr_node = -1
+    next_kind := lex_kind(src, p)
+    expr_node := -1
 
     // If not EOF, semicolon, or close brace, parse expression
     if next_kind != TK_EOF() && next_kind != TK_SEMI() && next_kind != TK_RBRACE() {
-        let expr_result = parse_expr_with_pos(src, p, nodes)
+        expr_result := parse_expr_with_pos(src, p, nodes)
         expr_node = expr_result.node_idx
         p = expr_result.new_pos
     }
 
     // Create return statement node
-    let stmt = AstNode {
+    stmt := AstNode {
         tag: STMT_RETURN(),
         int_val: 0,
         str_val: "",
@@ -281,18 +264,18 @@ fn parse_return_stmt(src: string, pos: int, nodes: []AstNode) -> ParseResult {
 // Parse assignment: ident = expr
 fn parse_assign_stmt(src: string, pos: int, nodes: []AstNode) -> ParseResult {
     // pos should be at identifier
-    let mut p = pos
-    let name_kind = lex_kind(src, p)
+    p := pos
+    name_kind := lex_kind(src, p)
     if name_kind != TK_IDENT() {
         return ParseResult { node_idx: -1, new_pos: p }
     }
-    let name = lex_string_value(src, p, name_kind)
-    let name_node = new_ident_node(name, nodes)
+    name := lex_string_value(src, p, name_kind)
+    name_node := new_ident_node(name, nodes)
     p = lex_end(src, p, name_kind)
     p = lex_skip(src, p)
 
     // Expect '='
-    let eq_kind = lex_kind(src, p)
+    eq_kind := lex_kind(src, p)
     if eq_kind != TK_ASSIGN() {
         return ParseResult { node_idx: -1, new_pos: p }
     }
@@ -300,15 +283,15 @@ fn parse_assign_stmt(src: string, pos: int, nodes: []AstNode) -> ParseResult {
     p = lex_skip(src, p)
 
     // Parse expression
-    let expr_result = parse_expr_with_pos(src, p, nodes)
+    expr_result := parse_expr_with_pos(src, p, nodes)
     if expr_result.node_idx < 0 {
         return ParseResult { node_idx: -1, new_pos: p }
     }
-    let expr_node = expr_result.node_idx
+    expr_node := expr_result.node_idx
     p = expr_result.new_pos
 
     // Create assignment node
-    let stmt = AstNode {
+    stmt := AstNode {
         tag: STMT_ASSIGN(),
         int_val: 0,
         str_val: name,
@@ -323,13 +306,9 @@ fn parse_assign_stmt(src: string, pos: int, nodes: []AstNode) -> ParseResult {
 
 // Parse a statement (dispatcher)
 fn parse_stmt(src: string, pos: int, nodes: []AstNode) -> ParseResult {
-    let mut p = pos
+    p := pos
     p = lex_skip(src, p)
-    let kind = lex_kind(src, p)
-
-    if kind == TK_LET() {
-        return parse_let_stmt(src, p, nodes)
-    }
+    kind := lex_kind(src, p)
 
     if kind == TK_IF() {
         return parse_if_stmt(src, p, nodes)
@@ -345,7 +324,7 @@ fn parse_stmt(src: string, pos: int, nodes: []AstNode) -> ParseResult {
 
     if kind == TK_BREAK() {
         p = lex_end(src, p, kind)
-        let stmt = AstNode {
+        stmt := AstNode {
             tag: STMT_BREAK(),
             int_val: 0,
             str_val: "",
@@ -362,23 +341,26 @@ fn parse_stmt(src: string, pos: int, nodes: []AstNode) -> ParseResult {
         return parse_block(src, p, nodes)
     }
 
-    // Check if it's an assignment (ident followed by =)
+    // Check if it's an assignment (ident followed by =) or declaration (ident followed by :=)
     if kind == TK_IDENT() {
-        let saved_pos = p
+        saved_pos := p
         p = lex_end(src, p, kind)
         p = lex_skip(src, p)
-        let next_kind = lex_kind(src, p)
+        next_kind := lex_kind(src, p)
+        if next_kind == TK_COLONEQUAL() {
+            return parse_colonequal_stmt(src, saved_pos, nodes)
+        }
         if next_kind == TK_ASSIGN() {
             return parse_assign_stmt(src, saved_pos, nodes)
         }
-        // Not an assignment, restore position and parse as expression statement
+        // Not an assignment or declaration, restore position and parse as expression statement
         p = saved_pos
     }
 
     // Expression statement
-    let expr_result = parse_expr_with_pos(src, p, nodes)
+    expr_result := parse_expr_with_pos(src, p, nodes)
     if expr_result.node_idx >= 0 {
-        let stmt = AstNode {
+        stmt := AstNode {
             tag: STMT_EXPR(),
             int_val: 0,
             str_val: "",
@@ -396,20 +378,20 @@ fn parse_stmt(src: string, pos: int, nodes: []AstNode) -> ParseResult {
 
 // Parse function parameter: name: type
 fn parse_param(src: string, pos: int, nodes: []AstNode) -> ParseResult {
-    let mut p = pos
+    p := pos
     p = lex_skip(src, p)
 
     // Parse parameter name
-    let name_kind = lex_kind(src, p)
+    name_kind := lex_kind(src, p)
     if name_kind != TK_IDENT() {
         return ParseResult { node_idx: -1, new_pos: p }
     }
-    let param_name = lex_string_value(src, p, name_kind)
+    param_name := lex_string_value(src, p, name_kind)
     p = lex_end(src, p, name_kind)
     p = lex_skip(src, p)
 
     // Expect ':'
-    let colon_kind = lex_kind(src, p)
+    colon_kind := lex_kind(src, p)
     if colon_kind != TK_COLON() {
         return ParseResult { node_idx: -1, new_pos: p }
     }
@@ -417,8 +399,8 @@ fn parse_param(src: string, pos: int, nodes: []AstNode) -> ParseResult {
     p = lex_skip(src, p)
 
     // Parse type name (simple or array type)
-    let mut type_name = ""
-    let type_kind = lex_kind(src, p)
+    type_name := ""
+    type_kind := lex_kind(src, p)
 
     if type_kind == TK_LBRACKET() {
         // Array type: []ElementType
@@ -434,7 +416,7 @@ fn parse_param(src: string, pos: int, nodes: []AstNode) -> ParseResult {
 
         // Parse element type
         if lex_kind(src, p) == TK_IDENT() {
-            let elem_type = lex_string_value(src, p, TK_IDENT())
+            elem_type := lex_string_value(src, p, TK_IDENT())
             type_name = type_name + elem_type
             p = lex_end(src, p, TK_IDENT())
         }
@@ -448,13 +430,13 @@ fn parse_param(src: string, pos: int, nodes: []AstNode) -> ParseResult {
 
     // Create parameter node
     // int_val: 1 = array type, 0 = scalar type
-    let mut param_type_tag = TYPE_UNKNOWN()
-    let mut param_is_array = 0
+    param_type_tag := TYPE_UNKNOWN()
+    param_is_array := 0
     if type_name == "string" { param_type_tag = TYPE_STRING() }
     if type_name == "int" { param_type_tag = TYPE_INT() }
     if type_name == "[]string" { param_type_tag = TYPE_STRING() param_is_array = 1 }
     if type_name == "[]int" { param_type_tag = TYPE_INT() param_is_array = 1 }
-    let param = AstNode {
+    param := AstNode {
         tag: DECL_PARAM(),
         int_val: param_is_array,
         str_val: param_name,
@@ -469,11 +451,11 @@ fn parse_param(src: string, pos: int, nodes: []AstNode) -> ParseResult {
 
 // Parse parameter list: (param1, param2, ...)
 fn parse_param_list(src: string, pos: int, nodes: []AstNode) -> ParseResult {
-    let mut p = pos
+    p := pos
     p = lex_skip(src, p)
 
     // Expect '('
-    let lparen = lex_kind(src, p)
+    lparen := lex_kind(src, p)
     if lparen != TK_LPAREN() {
         return ParseResult { node_idx: -1, new_pos: p }
     }
@@ -481,32 +463,32 @@ fn parse_param_list(src: string, pos: int, nodes: []AstNode) -> ParseResult {
     p = lex_skip(src, p)
 
     // Check for empty parameter list
-    let next = lex_kind(src, p)
+    next := lex_kind(src, p)
     if next == TK_RPAREN() {
         p = lex_end(src, p, next)
         return ParseResult { node_idx: -1, new_pos: p }  // No parameters
     }
 
     // Parse first parameter
-    let first_result = parse_param(src, p, nodes)
+    first_result := parse_param(src, p, nodes)
     if first_result.node_idx < 0 {
         return ParseResult { node_idx: -1, new_pos: p }
     }
-    let mut first_param = first_result.node_idx
+    first_param := first_result.node_idx
     p = first_result.new_pos
     p = lex_skip(src, p)
 
     // Parse remaining parameters
-    let mut last_param = first_param
+    last_param := first_param
     for {
-        let comma = lex_kind(src, p)
+        comma := lex_kind(src, p)
         if comma != TK_COMMA() {
             break
         }
         p = lex_end(src, p, comma)
         p = lex_skip(src, p)
 
-        let param_result = parse_param(src, p, nodes)
+        param_result := parse_param(src, p, nodes)
         if param_result.node_idx < 0 {
             break
         }
@@ -517,7 +499,7 @@ fn parse_param_list(src: string, pos: int, nodes: []AstNode) -> ParseResult {
     }
 
     // Expect ')'
-    let rparen = lex_kind(src, p)
+    rparen := lex_kind(src, p)
     if rparen != TK_RPAREN() {
         return ParseResult { node_idx: -1, new_pos: p }
     }
@@ -528,11 +510,11 @@ fn parse_param_list(src: string, pos: int, nodes: []AstNode) -> ParseResult {
 
 // Parse function body: { stmt* }
 fn parse_block(src: string, pos: int, nodes: []AstNode) -> ParseResult {
-    let mut p = pos
+    p := pos
     p = lex_skip(src, p)
 
     // Expect '{'
-    let lbrace = lex_kind(src, p)
+    lbrace := lex_kind(src, p)
     if lbrace != TK_LBRACE() {
         return ParseResult { node_idx: -1, new_pos: p }
     }
@@ -540,16 +522,16 @@ fn parse_block(src: string, pos: int, nodes: []AstNode) -> ParseResult {
     p = lex_skip(src, p)
 
     // Parse statements until '}'
-    let mut first_stmt = -1
-    let mut last_stmt_idx = -1
-    let mut stmt_count = 0
+    first_stmt := -1
+    last_stmt_idx := -1
+    stmt_count := 0
     for {
-        let next = lex_kind(src, p)
+        next := lex_kind(src, p)
         if next == TK_RBRACE() || next == TK_EOF() {
             break
         }
 
-        let stmt_result = parse_stmt(src, p, nodes)
+        stmt_result := parse_stmt(src, p, nodes)
         if stmt_result.node_idx < 0 {
             print("PARSE_BLOCK: stmt failed at pos ")
             print(strconv.Itoa(p))
@@ -560,7 +542,7 @@ fn parse_block(src: string, pos: int, nodes: []AstNode) -> ParseResult {
             print(", nodes=")
             print(strconv.Itoa(len(nodes)))
             print(", context=")
-            let mut ctx_e = p + 60
+            ctx_e := p + 60
             if ctx_e > len(src) { ctx_e = len(src) }
             print(str_substring(src, p, ctx_e))
             print("\n")
@@ -582,7 +564,7 @@ fn parse_block(src: string, pos: int, nodes: []AstNode) -> ParseResult {
         p = lex_skip(src, p)
 
         // Skip optional semicolon
-        let semi = lex_kind(src, p)
+        semi := lex_kind(src, p)
         if semi == TK_SEMI() {
             p = lex_end(src, p, semi)
             p = lex_skip(src, p)
@@ -590,7 +572,7 @@ fn parse_block(src: string, pos: int, nodes: []AstNode) -> ParseResult {
     }
 
     // Expect '}'
-    let rbrace = lex_kind(src, p)
+    rbrace := lex_kind(src, p)
     if rbrace != TK_RBRACE() {
         print("PARSE_BLOCK: expected RBRACE at pos ")
         print(strconv.Itoa(p))
@@ -599,7 +581,7 @@ fn parse_block(src: string, pos: int, nodes: []AstNode) -> ParseResult {
         print(", stmt_count=")
         print(strconv.Itoa(stmt_count))
         print(", context=")
-        let mut ctx_e2 = p + 60
+        ctx_e2 := p + 60
         if ctx_e2 > len(src) { ctx_e2 = len(src) }
         print(str_substring(src, p, ctx_e2))
         print("\n")
@@ -610,7 +592,7 @@ fn parse_block(src: string, pos: int, nodes: []AstNode) -> ParseResult {
     // Create block node
     // left = first statement index
     // right = last statement index (for multi-statement support)
-    let block = AstNode {
+    block := AstNode {
         tag: STMT_BLOCK(),
         int_val: 0,
         str_val: "",
@@ -625,11 +607,11 @@ fn parse_block(src: string, pos: int, nodes: []AstNode) -> ParseResult {
 
 // Parse import declaration: import ("path")
 fn parse_import_decl(src: string, pos: int, nodes: []AstNode) -> ParseResult {
-    let mut p = pos
+    p := pos
     p = lex_skip(src, p)
 
     // Expect 'import'
-    let import_kind = lex_kind(src, p)
+    import_kind := lex_kind(src, p)
     if import_kind != TK_IMPORT() {
         return ParseResult { node_idx: -1, new_pos: p }
     }
@@ -645,20 +627,20 @@ fn parse_import_decl(src: string, pos: int, nodes: []AstNode) -> ParseResult {
 
     // Parse one or more import paths (string literals)
     // Create one DECL_IMPORT node per path
-    let mut last_import_idx = -1
+    last_import_idx := -1
     for {
-        let path_kind = lex_kind(src, p)
+        path_kind := lex_kind(src, p)
         if path_kind == TK_RPAREN() {
             break
         }
         if path_kind != TK_STRING() {
             return ParseResult { node_idx: -1, new_pos: p }
         }
-        let import_path = lex_string_value(src, p, path_kind)
+        import_path := lex_string_value(src, p, path_kind)
         p = lex_end(src, p, path_kind)
         p = lex_skip(src, p)
 
-        let import_node = AstNode {
+        import_node := AstNode {
             tag: DECL_IMPORT(),
             int_val: 0,
             str_val: import_path,
@@ -682,11 +664,11 @@ fn parse_import_decl(src: string, pos: int, nodes: []AstNode) -> ParseResult {
 
 // Parse function declaration: fn name(params) -> type { body }
 fn parse_func_decl(src: string, pos: int, nodes: []AstNode) -> ParseResult {
-    let mut p = pos
+    p := pos
     p = lex_skip(src, p)
 
     // Expect 'fn'
-    let fn_kind = lex_kind(src, p)
+    fn_kind := lex_kind(src, p)
     if fn_kind != TK_FN() {
         return ParseResult { node_idx: -1, new_pos: p }
     }
@@ -694,29 +676,29 @@ fn parse_func_decl(src: string, pos: int, nodes: []AstNode) -> ParseResult {
     p = lex_skip(src, p)
 
     // Parse function name
-    let name_kind = lex_kind(src, p)
+    name_kind := lex_kind(src, p)
     if name_kind != TK_IDENT() {
         return ParseResult { node_idx: -1, new_pos: p }
     }
-    let func_name = lex_string_value(src, p, name_kind)
+    func_name := lex_string_value(src, p, name_kind)
     print(func_name)
     print("\n")
     p = lex_end(src, p, name_kind)
 
     // Parse parameter list
-    let params_result = parse_param_list(src, p, nodes)
+    params_result := parse_param_list(src, p, nodes)
     p = params_result.new_pos
     p = lex_skip(src, p)
 
     // Check for '->' (return type is optional)
-    let mut ret_type = ""
-    let arrow = lex_kind(src, p)
+    ret_type := ""
+    arrow := lex_kind(src, p)
     if arrow == TK_ARROW() {
         p = lex_end(src, p, arrow)
         p = lex_skip(src, p)
 
         // Parse return type (simple or array type)
-        let ret_type_kind = lex_kind(src, p)
+        ret_type_kind := lex_kind(src, p)
 
         if ret_type_kind == TK_LBRACKET() {
             // Array type: []ElementType
@@ -732,7 +714,7 @@ fn parse_func_decl(src: string, pos: int, nodes: []AstNode) -> ParseResult {
 
             // Parse element type
             if lex_kind(src, p) == TK_IDENT() {
-                let elem_type = lex_string_value(src, p, TK_IDENT())
+                elem_type := lex_string_value(src, p, TK_IDENT())
                 ret_type = ret_type + elem_type
                 p = lex_end(src, p, TK_IDENT())
             }
@@ -746,7 +728,7 @@ fn parse_func_decl(src: string, pos: int, nodes: []AstNode) -> ParseResult {
     }
 
     // Parse body
-    let body_result = parse_block(src, p, nodes)
+    body_result := parse_block(src, p, nodes)
     if body_result.node_idx < 0 {
         return ParseResult { node_idx: -1, new_pos: p }
     }
@@ -756,8 +738,8 @@ fn parse_func_decl(src: string, pos: int, nodes: []AstNode) -> ParseResult {
     // left = parameters (first param node)
     // right = body (block node)
     // type_tag = return type, int_val = is_array_return flag
-    let mut ret_type_tag = TYPE_UNKNOWN()
-    let mut ret_is_array = 0
+    ret_type_tag := TYPE_UNKNOWN()
+    ret_is_array := 0
     if ret_type == "int" { ret_type_tag = TYPE_INT() }
     if ret_type == "string" { ret_type_tag = TYPE_STRING() }
     if ret_type == "bool" { ret_type_tag = TYPE_BOOL() }
@@ -768,7 +750,7 @@ fn parse_func_decl(src: string, pos: int, nodes: []AstNode) -> ParseResult {
         ret_is_array = 1
     }
 
-    let func = AstNode {
+    func := AstNode {
         tag: DECL_FUNC(),
         int_val: ret_is_array,
         str_val: func_name,
@@ -783,20 +765,20 @@ fn parse_func_decl(src: string, pos: int, nodes: []AstNode) -> ParseResult {
 
 // Parse struct field: name: type
 fn parse_field(src: string, pos: int, nodes: []AstNode) -> ParseResult {
-    let mut p = pos
+    p := pos
     p = lex_skip(src, p)
 
     // Parse field name
-    let name_kind = lex_kind(src, p)
+    name_kind := lex_kind(src, p)
     if name_kind != TK_IDENT() {
         return ParseResult { node_idx: -1, new_pos: p }
     }
-    let field_name = lex_string_value(src, p, name_kind)
+    field_name := lex_string_value(src, p, name_kind)
     p = lex_end(src, p, name_kind)
     p = lex_skip(src, p)
 
     // Expect ':'
-    let colon = lex_kind(src, p)
+    colon := lex_kind(src, p)
     if colon != TK_COLON() {
         return ParseResult { node_idx: -1, new_pos: p }
     }
@@ -804,8 +786,8 @@ fn parse_field(src: string, pos: int, nodes: []AstNode) -> ParseResult {
     p = lex_skip(src, p)
 
     // Parse type (including array types like []int or []string)
-    let type_kind = lex_kind(src, p)
-    let mut type_name = ""
+    type_kind := lex_kind(src, p)
+    type_name := ""
 
     if type_kind == TK_LBRACKET() {
         // Array type: []ElementType
@@ -819,7 +801,7 @@ fn parse_field(src: string, pos: int, nodes: []AstNode) -> ParseResult {
         }
 
         if lex_kind(src, p) == TK_IDENT() {
-            let elem_type = lex_string_value(src, p, TK_IDENT())
+            elem_type := lex_string_value(src, p, TK_IDENT())
             type_name = type_name + elem_type
             p = lex_end(src, p, TK_IDENT())
         }
@@ -833,14 +815,14 @@ fn parse_field(src: string, pos: int, nodes: []AstNode) -> ParseResult {
     p = lex_skip(src, p)
 
     // Skip optional comma
-    let comma = lex_kind(src, p)
+    comma := lex_kind(src, p)
     if comma == TK_COMMA() {
         p = lex_end(src, p, comma)
     }
 
     // Resolve type_name to type_tag and is_array
-    let mut field_type_tag = TYPE_UNKNOWN()
-    let mut field_is_array = 0
+    field_type_tag := TYPE_UNKNOWN()
+    field_is_array := 0
     if type_name == "int" { field_type_tag = TYPE_INT() }
     if type_name == "bool" { field_type_tag = TYPE_BOOL() }
     if type_name == "string" { field_type_tag = TYPE_STRING() }
@@ -849,7 +831,7 @@ fn parse_field(src: string, pos: int, nodes: []AstNode) -> ParseResult {
     if type_name == "[]string" { field_type_tag = TYPE_STRING() field_is_array = 1 }
 
     // Create field node
-    let field = AstNode {
+    field := AstNode {
         tag: DECL_FIELD(),
         int_val: field_is_array,
         str_val: field_name,
@@ -864,11 +846,11 @@ fn parse_field(src: string, pos: int, nodes: []AstNode) -> ParseResult {
 
 // Parse struct declaration: struct Name { fields }
 fn parse_struct_decl(src: string, pos: int, nodes: []AstNode) -> ParseResult {
-    let mut p = pos
+    p := pos
     p = lex_skip(src, p)
 
     // Expect 'struct'
-    let struct_kind = lex_kind(src, p)
+    struct_kind := lex_kind(src, p)
     if struct_kind != TK_STRUCT() {
         return ParseResult { node_idx: -1, new_pos: p }
     }
@@ -876,16 +858,16 @@ fn parse_struct_decl(src: string, pos: int, nodes: []AstNode) -> ParseResult {
     p = lex_skip(src, p)
 
     // Parse struct name
-    let name_kind = lex_kind(src, p)
+    name_kind := lex_kind(src, p)
     if name_kind != TK_IDENT() {
         return ParseResult { node_idx: -1, new_pos: p }
     }
-    let struct_name = lex_string_value(src, p, name_kind)
+    struct_name := lex_string_value(src, p, name_kind)
     p = lex_end(src, p, name_kind)
     p = lex_skip(src, p)
 
     // Expect '{'
-    let lbrace = lex_kind(src, p)
+    lbrace := lex_kind(src, p)
     if lbrace != TK_LBRACE() {
         return ParseResult { node_idx: -1, new_pos: p }
     }
@@ -893,14 +875,14 @@ fn parse_struct_decl(src: string, pos: int, nodes: []AstNode) -> ParseResult {
     p = lex_skip(src, p)
 
     // Parse fields
-    let mut first_field = -1
+    first_field := -1
     for {
-        let next = lex_kind(src, p)
+        next := lex_kind(src, p)
         if next == TK_RBRACE() || next == TK_EOF() {
             break
         }
 
-        let field_result = parse_field(src, p, nodes)
+        field_result := parse_field(src, p, nodes)
         if field_result.node_idx < 0 {
             break
         }
@@ -913,14 +895,14 @@ fn parse_struct_decl(src: string, pos: int, nodes: []AstNode) -> ParseResult {
     }
 
     // Expect '}'
-    let rbrace = lex_kind(src, p)
+    rbrace := lex_kind(src, p)
     if rbrace != TK_RBRACE() {
         return ParseResult { node_idx: -1, new_pos: p }
     }
     p = lex_end(src, p, rbrace)
 
     // Create struct declaration node
-    let struct_decl = AstNode {
+    struct_decl := AstNode {
         tag: DECL_STRUCT(),
         int_val: 0,
         str_val: struct_name,
@@ -935,29 +917,29 @@ fn parse_struct_decl(src: string, pos: int, nodes: []AstNode) -> ParseResult {
 
 // Parse atom (literal or identifier - no parentheses yet)
 fn parse_atom(src: string, pos: int, nodes: []AstNode) -> ParseResult {
-    let mut p = pos
+    p := pos
     p = lex_skip(src, p)
-    let kind = lex_kind(src, p)
+    kind := lex_kind(src, p)
 
     if kind == TK_INT() {
-        let val = lex_int_value(src, p)
-        let node = new_int_node(val, nodes)
+        val := lex_int_value(src, p)
+        node := new_int_node(val, nodes)
         p = lex_end(src, p, kind)
         return ParseResult { node_idx: node, new_pos: p }
     }
     if kind == TK_TRUE() {
-        let node = new_bool_node(1, nodes)
+        node := new_bool_node(1, nodes)
         p = lex_end(src, p, kind)
         return ParseResult { node_idx: node, new_pos: p }
     }
     if kind == TK_FALSE() {
-        let node = new_bool_node(0, nodes)
+        node := new_bool_node(0, nodes)
         p = lex_end(src, p, kind)
         return ParseResult { node_idx: node, new_pos: p }
     }
     if kind == TK_STRING() {
-        let val = lex_string_value(src, p, kind)
-        let node = AstNode {
+        val := lex_string_value(src, p, kind)
+        node := AstNode {
             tag: EXPR_STRING(),
             int_val: 0,
             str_val: val,
@@ -971,8 +953,8 @@ fn parse_atom(src: string, pos: int, nodes: []AstNode) -> ParseResult {
         return ParseResult { node_idx: len(nodes) - 1, new_pos: p }
     }
     if kind == TK_IDENT() {
-        let name = lex_string_value(src, p, kind)
-        let node = new_ident_node(name, nodes)
+        name := lex_string_value(src, p, kind)
+        node := new_ident_node(name, nodes)
         p = lex_end(src, p, kind)
         return ParseResult { node_idx: node, new_pos: p }
     }
@@ -990,7 +972,7 @@ fn parse_atom(src: string, pos: int, nodes: []AstNode) -> ParseResult {
         p = lex_skip(src, p)
 
         // Parse element type name
-        let mut elem_type_name = "int"
+        elem_type_name := "int"
         if lex_kind(src, p) == TK_IDENT() {
             elem_type_name = lex_string_value(src, p, TK_IDENT())
             p = lex_end(src, p, TK_IDENT())
@@ -1005,8 +987,8 @@ fn parse_atom(src: string, pos: int, nodes: []AstNode) -> ParseResult {
         p = lex_skip(src, p)
 
         // Parse elements
-        let mut elem_count = 0
-        let mut first_elem_idx = -1
+        elem_count := 0
+        first_elem_idx := -1
 
         for {
             p = lex_skip(src, p)
@@ -1015,7 +997,7 @@ fn parse_atom(src: string, pos: int, nodes: []AstNode) -> ParseResult {
             }
 
             // Parse element expression
-            let elem_result = parse_expr_with_pos(src, p, nodes)
+            elem_result := parse_expr_with_pos(src, p, nodes)
             if elem_result.node_idx < 0 {
                 break
             }
@@ -1044,7 +1026,7 @@ fn parse_atom(src: string, pos: int, nodes: []AstNode) -> ParseResult {
         p = lex_end(src, p, TK_RBRACE())
 
         // Create array literal node
-        let array_node = AstNode {
+        array_node := AstNode {
             tag: EXPR_ARRAY_LIT(),
             int_val: elem_count,
             str_val: elem_type_name,  // element type
@@ -1062,26 +1044,26 @@ fn parse_atom(src: string, pos: int, nodes: []AstNode) -> ParseResult {
 
 // Parse unary: - !
 fn parse_unary(src: string, start_pos: int, nodes: []AstNode) -> ParseResult {
-    let pos = lex_skip(src, start_pos)
-    let kind = lex_kind(src, pos)
+    pos := lex_skip(src, start_pos)
+    kind := lex_kind(src, pos)
 
     if kind == TK_MINUS() {
-        let mut new_pos = lex_end(src, pos, kind)
-        let operand_result = parse_unary(src, new_pos, nodes)
+        new_pos := lex_end(src, pos, kind)
+        operand_result := parse_unary(src, new_pos, nodes)
         if operand_result.node_idx < 0 {
             return operand_result
         }
-        let unary_idx = new_unary_node(kind, operand_result.node_idx, nodes)
+        unary_idx := new_unary_node(kind, operand_result.node_idx, nodes)
         return ParseResult { node_idx: unary_idx, new_pos: operand_result.new_pos }
     }
 
     if kind == TK_NOT() {
-        let mut new_pos = lex_end(src, pos, kind)
-        let operand_result = parse_unary(src, new_pos, nodes)
+        new_pos := lex_end(src, pos, kind)
+        operand_result := parse_unary(src, new_pos, nodes)
         if operand_result.node_idx < 0 {
             return operand_result
         }
-        let unary_idx = new_unary_node(kind, operand_result.node_idx, nodes)
+        unary_idx := new_unary_node(kind, operand_result.node_idx, nodes)
         return ParseResult { node_idx: unary_idx, new_pos: operand_result.new_pos }
     }
 
@@ -1090,23 +1072,23 @@ fn parse_unary(src: string, start_pos: int, nodes: []AstNode) -> ParseResult {
 
 // Parse multiplicative: * / %
 fn parse_multiplicative(src: string, start_pos: int, nodes: []AstNode) -> ParseResult {
-    let mut result = parse_unary(src, start_pos, nodes)
+    result := parse_unary(src, start_pos, nodes)
     if result.node_idx < 0 {
         return result
     }
 
-    let mut pos = result.new_pos
-    let mut left = result.node_idx
+    pos := result.new_pos
+    left := result.node_idx
 
     for {
         pos = lex_skip(src, pos)
-        let op = lex_kind(src, pos)
+        op := lex_kind(src, pos)
         if op != TK_STAR() && op != TK_SLASH() && op != TK_PERCENT() {
             break
         }
 
         pos = lex_end(src, pos, op)
-        let right_result = parse_unary(src, pos, nodes)
+        right_result := parse_unary(src, pos, nodes)
         if right_result.node_idx < 0 {
             break
         }
@@ -1120,23 +1102,23 @@ fn parse_multiplicative(src: string, start_pos: int, nodes: []AstNode) -> ParseR
 
 // Parse additive: + -
 fn parse_additive(src: string, start_pos: int, nodes: []AstNode) -> ParseResult {
-    let mut result = parse_multiplicative(src, start_pos, nodes)
+    result := parse_multiplicative(src, start_pos, nodes)
     if result.node_idx < 0 {
         return result
     }
 
-    let mut pos = result.new_pos
-    let mut left = result.node_idx
+    pos := result.new_pos
+    left := result.node_idx
 
     for {
         pos = lex_skip(src, pos)
-        let op = lex_kind(src, pos)
+        op := lex_kind(src, pos)
         if op != TK_PLUS() && op != TK_MINUS() {
             break
         }
 
         pos = lex_end(src, pos, op)
-        let right_result = parse_multiplicative(src, pos, nodes)
+        right_result := parse_multiplicative(src, pos, nodes)
         if right_result.node_idx < 0 {
             break
         }
@@ -1150,19 +1132,19 @@ fn parse_additive(src: string, start_pos: int, nodes: []AstNode) -> ParseResult 
 
 // Parse comparison: < > <= >= == !=
 fn parse_comparison(src: string, start_pos: int, nodes: []AstNode) -> ParseResult {
-    let mut result = parse_additive(src, start_pos, nodes)
+    result := parse_additive(src, start_pos, nodes)
     if result.node_idx < 0 {
         return result
     }
 
-    let mut pos = result.new_pos
-    let mut left = result.node_idx
+    pos := result.new_pos
+    left := result.node_idx
 
     pos = lex_skip(src, pos)
-    let op = lex_kind(src, pos)
+    op := lex_kind(src, pos)
     if op == TK_DOTDOT() {
         pos = lex_end(src, pos, op)
-        let right_result = parse_additive(src, pos, nodes)
+        right_result := parse_additive(src, pos, nodes)
         if right_result.node_idx >= 0 {
             left = new_binary_node(op, left, right_result.node_idx, nodes)
             pos = right_result.new_pos
@@ -1172,7 +1154,7 @@ fn parse_comparison(src: string, start_pos: int, nodes: []AstNode) -> ParseResul
     if op == TK_LT() || op == TK_GT() || op == TK_LE() || op == TK_GE() ||
        op == TK_EQ() || op == TK_NE() {
         pos = lex_end(src, pos, op)
-        let right_result = parse_additive(src, pos, nodes)
+        right_result := parse_additive(src, pos, nodes)
         if right_result.node_idx >= 0 {
             left = new_binary_node(op, left, right_result.node_idx, nodes)
             pos = right_result.new_pos
@@ -1184,23 +1166,23 @@ fn parse_comparison(src: string, start_pos: int, nodes: []AstNode) -> ParseResul
 
 // Parse bitwise AND: &
 fn parse_bitand(src: string, start_pos: int, nodes: []AstNode) -> ParseResult {
-    let mut result = parse_comparison(src, start_pos, nodes)
+    result := parse_comparison(src, start_pos, nodes)
     if result.node_idx < 0 {
         return result
     }
 
-    let mut pos = result.new_pos
-    let mut left = result.node_idx
+    pos := result.new_pos
+    left := result.node_idx
 
     for {
         pos = lex_skip(src, pos)
-        let op = lex_kind(src, pos)
+        op := lex_kind(src, pos)
         if op != TK_AMPERSAND() {
             break
         }
 
         pos = lex_end(src, pos, op)
-        let right_result = parse_comparison(src, pos, nodes)
+        right_result := parse_comparison(src, pos, nodes)
         if right_result.node_idx < 0 {
             break
         }
@@ -1214,23 +1196,23 @@ fn parse_bitand(src: string, start_pos: int, nodes: []AstNode) -> ParseResult {
 
 // Parse XOR: ^
 fn parse_xor(src: string, start_pos: int, nodes: []AstNode) -> ParseResult {
-    let mut result = parse_bitand(src, start_pos, nodes)
+    result := parse_bitand(src, start_pos, nodes)
     if result.node_idx < 0 {
         return result
     }
 
-    let mut pos = result.new_pos
-    let mut left = result.node_idx
+    pos := result.new_pos
+    left := result.node_idx
 
     for {
         pos = lex_skip(src, pos)
-        let op = lex_kind(src, pos)
+        op := lex_kind(src, pos)
         if op != TK_CARET() {
             break
         }
 
         pos = lex_end(src, pos, op)
-        let right_result = parse_bitand(src, pos, nodes)
+        right_result := parse_bitand(src, pos, nodes)
         if right_result.node_idx < 0 {
             break
         }
@@ -1244,23 +1226,23 @@ fn parse_xor(src: string, start_pos: int, nodes: []AstNode) -> ParseResult {
 
 // Parse bitwise OR: |
 fn parse_bitor(src: string, start_pos: int, nodes: []AstNode) -> ParseResult {
-    let mut result = parse_xor(src, start_pos, nodes)
+    result := parse_xor(src, start_pos, nodes)
     if result.node_idx < 0 {
         return result
     }
 
-    let mut pos = result.new_pos
-    let mut left = result.node_idx
+    pos := result.new_pos
+    left := result.node_idx
 
     for {
         pos = lex_skip(src, pos)
-        let op = lex_kind(src, pos)
+        op := lex_kind(src, pos)
         if op != TK_PIPE() {
             break
         }
 
         pos = lex_end(src, pos, op)
-        let right_result = parse_xor(src, pos, nodes)
+        right_result := parse_xor(src, pos, nodes)
         if right_result.node_idx < 0 {
             break
         }
@@ -1274,23 +1256,23 @@ fn parse_bitor(src: string, start_pos: int, nodes: []AstNode) -> ParseResult {
 
 // Parse logical AND: &&
 fn parse_logical_and(src: string, start_pos: int, nodes: []AstNode) -> ParseResult {
-    let mut result = parse_bitor(src, start_pos, nodes)
+    result := parse_bitor(src, start_pos, nodes)
     if result.node_idx < 0 {
         return result
     }
 
-    let mut pos = result.new_pos
-    let mut left = result.node_idx
+    pos := result.new_pos
+    left := result.node_idx
 
     for {
         pos = lex_skip(src, pos)
-        let op = lex_kind(src, pos)
+        op := lex_kind(src, pos)
         if op != TK_AND() {
             break
         }
 
         pos = lex_end(src, pos, op)
-        let right_result = parse_bitor(src, pos, nodes)
+        right_result := parse_bitor(src, pos, nodes)
         if right_result.node_idx < 0 {
             break
         }
@@ -1304,23 +1286,23 @@ fn parse_logical_and(src: string, start_pos: int, nodes: []AstNode) -> ParseResu
 
 // Parse logical OR: || (top level)
 fn parse_expr_with_pos(src: string, start_pos: int, nodes: []AstNode) -> ParseResult {
-    let mut result = parse_logical_and(src, start_pos, nodes)
+    result := parse_logical_and(src, start_pos, nodes)
     if result.node_idx < 0 {
         return result
     }
 
-    let mut pos = result.new_pos
-    let mut left = result.node_idx
+    pos := result.new_pos
+    left := result.node_idx
 
     for {
         pos = lex_skip(src, pos)
-        let op = lex_kind(src, pos)
+        op := lex_kind(src, pos)
         if op != TK_OR() {
             break
         }
 
         pos = lex_end(src, pos, op)
-        let right_result = parse_logical_and(src, pos, nodes)
+        right_result := parse_logical_and(src, pos, nodes)
         if right_result.node_idx < 0 {
             break
         }
@@ -1334,21 +1316,21 @@ fn parse_expr_with_pos(src: string, start_pos: int, nodes: []AstNode) -> ParseRe
 
 // Parse primary with parentheses support (defined after parse_expr_with_pos)
 fn parse_primary_expr(src: string, pos: int, nodes: []AstNode) -> ParseResult {
-    let mut p = pos
+    p := pos
     p = lex_skip(src, p)
-    let kind = lex_kind(src, p)
+    kind := lex_kind(src, p)
 
     // Check for parenthesized expression first
     if kind == TK_LPAREN() {
         p = lex_end(src, p, kind)  // Skip '('
         // Recursively parse the full expression inside parentheses
-        let expr_result = parse_expr_with_pos(src, p, nodes)
+        expr_result := parse_expr_with_pos(src, p, nodes)
         if expr_result.node_idx < 0 {
             return ParseResult { node_idx: -1, new_pos: p }
         }
         p = expr_result.new_pos
         p = lex_skip(src, p)
-        let rparen = lex_kind(src, p)
+        rparen := lex_kind(src, p)
         if rparen != TK_RPAREN() {
             return ParseResult { node_idx: -1, new_pos: p }
         }
@@ -1357,33 +1339,33 @@ fn parse_primary_expr(src: string, pos: int, nodes: []AstNode) -> ParseResult {
     }
 
     // Otherwise, parse atom (literal or identifier)
-    let atom_result = parse_atom(src, pos, nodes)
+    atom_result := parse_atom(src, pos, nodes)
     if atom_result.node_idx < 0 {
         return atom_result
     }
 
     // Handle postfix operators (function calls, array indexing, field access) in a loop for chaining
-    let mut current_node = atom_result.node_idx
+    current_node := atom_result.node_idx
     p = atom_result.new_pos
 
     for {
         p = lex_skip(src, p)
-        let next_kind = lex_kind(src, p)
+        next_kind := lex_kind(src, p)
 
         if next_kind == TK_LPAREN() {
             // It's a function call
-            let func_name_node = current_node
+            func_name_node := current_node
             p = lex_end(src, p, next_kind)  // Skip '('
             p = lex_skip(src, p)
 
             // Parse arguments
-            let mut first_arg = -1
-            let mut arg_indices = []int{}
+            first_arg := -1
+            arg_indices := []int{}
 
             // Check if there are any arguments
             if lex_kind(src, p) != TK_RPAREN() {
                 for {
-                    let arg_result = parse_expr_with_pos(src, p, nodes)
+                    arg_result := parse_expr_with_pos(src, p, nodes)
                     if arg_result.node_idx < 0 {
                         break
                     }
@@ -1416,14 +1398,14 @@ fn parse_primary_expr(src: string, pos: int, nodes: []AstNode) -> ParseResult {
             // Create call expression node
             // left = function name node, right = first argument, int_val = arg count
             // If func_name_node is EXPR_FIELD with EXPR_IDENT base, construct qualified name (e.g. "os.ReadFile")
-            let mut func_name = nodes[func_name_node].str_val
+            func_name := nodes[func_name_node].str_val
             if nodes[func_name_node].tag == EXPR_FIELD() {
-                let base_idx = nodes[func_name_node].left
+                base_idx := nodes[func_name_node].left
                 if base_idx >= 0 && nodes[base_idx].tag == EXPR_IDENT() {
                     func_name = nodes[base_idx].str_val + "." + func_name
                 }
             }
-            let call_node = AstNode {
+            call_node := AstNode {
                 tag: EXPR_CALL(),
                 int_val: len(arg_indices),
                 str_val: func_name,
@@ -1445,13 +1427,13 @@ fn parse_primary_expr(src: string, pos: int, nodes: []AstNode) -> ParseResult {
             if next_kind == TK_LBRACE() && nodes[current_node].tag == EXPR_IDENT() {
                 // Struct literal: StructName { field1: value1, field2: value2 }
                 // Only parse if identifier starts with uppercase (struct names are capitalized)
-                let struct_name_node = current_node
-                let struct_name = nodes[struct_name_node].str_val
+                struct_name_node := current_node
+                struct_name := nodes[struct_name_node].str_val
 
                 // Check if first character is uppercase (65-90 = A-Z)
-                let mut is_uppercase = 0
+                is_uppercase := 0
                 if len(struct_name) > 0 {
-                    let first_char = str_char_at(struct_name, 0)
+                    first_char := str_char_at(struct_name, 0)
                     if first_char >= 65 && first_char <= 90 {
                         is_uppercase = 1
                     }
@@ -1465,8 +1447,8 @@ fn parse_primary_expr(src: string, pos: int, nodes: []AstNode) -> ParseResult {
                 p = lex_skip(src, p)
 
                 // Parse field initializers (simplified - just count them for now)
-                let mut first_field_idx = -1
-                let mut field_value_indices = []int{}
+                first_field_idx := -1
+                field_value_indices := []int{}
 
                 for {
                     p = lex_skip(src, p)
@@ -1478,7 +1460,7 @@ fn parse_primary_expr(src: string, pos: int, nodes: []AstNode) -> ParseResult {
                     if lex_kind(src, p) != TK_IDENT() {
                         break
                     }
-                    let field_name = lex_string_value(src, p, TK_IDENT())
+                    field_name := lex_string_value(src, p, TK_IDENT())
                     p = lex_end(src, p, TK_IDENT())
                     p = lex_skip(src, p)
 
@@ -1490,7 +1472,7 @@ fn parse_primary_expr(src: string, pos: int, nodes: []AstNode) -> ParseResult {
                     p = lex_skip(src, p)
 
                     // Parse field value expression
-                    let value_result = parse_expr_with_pos(src, p, nodes)
+                    value_result := parse_expr_with_pos(src, p, nodes)
                     if value_result.node_idx < 0 {
                         break
                     }
@@ -1519,7 +1501,7 @@ fn parse_primary_expr(src: string, pos: int, nodes: []AstNode) -> ParseResult {
                 p = lex_end(src, p, TK_RBRACE())
 
                 // Create struct literal node
-                let struct_lit_node = AstNode {
+                struct_lit_node := AstNode {
                     tag: EXPR_STRUCT_LIT(),
                     int_val: len(field_value_indices),
                     str_val: struct_name,
@@ -1537,12 +1519,12 @@ fn parse_primary_expr(src: string, pos: int, nodes: []AstNode) -> ParseResult {
             } else {
                 if next_kind == TK_LBRACKET() {
                     // Array indexing
-                    let array_node = current_node
+                    array_node := current_node
                     p = lex_end(src, p, next_kind)  // Skip '['
                     p = lex_skip(src, p)
 
                     // Parse index expression
-                    let index_result = parse_expr_with_pos(src, p, nodes)
+                    index_result := parse_expr_with_pos(src, p, nodes)
                     if index_result.node_idx < 0 {
                         return ParseResult { node_idx: -1, new_pos: p }
                     }
@@ -1557,7 +1539,7 @@ fn parse_primary_expr(src: string, pos: int, nodes: []AstNode) -> ParseResult {
 
                     // Create array index node
                     // left = array expression, right = index expression
-                    let index_node = AstNode {
+                    index_node := AstNode {
                         tag: EXPR_INDEX(),
                         int_val: 0,
                         str_val: "",
@@ -1572,21 +1554,21 @@ fn parse_primary_expr(src: string, pos: int, nodes: []AstNode) -> ParseResult {
                 } else {
                     if next_kind == TK_DOT() {
                         // Field access
-                        let base_node = current_node
+                        base_node := current_node
                         p = lex_end(src, p, next_kind)  // Skip '.'
                         p = lex_skip(src, p)
 
                         // Parse field name
-                        let field_kind = lex_kind(src, p)
+                        field_kind := lex_kind(src, p)
                         if field_kind != TK_IDENT() {
                             return ParseResult { node_idx: -1, new_pos: p }
                         }
-                        let field_name = lex_string_value(src, p, field_kind)
+                        field_name := lex_string_value(src, p, field_kind)
                         p = lex_end(src, p, field_kind)
 
                         // Create field access node
                         // left = base expression, str_val = field name
-                        let field_node = AstNode {
+                        field_node := AstNode {
                             tag: EXPR_FIELD(),
                             int_val: 0,
                             str_val: field_name,
@@ -1612,6 +1594,6 @@ fn parse_primary_expr(src: string, pos: int, nodes: []AstNode) -> ParseResult {
 
 // Wrapper for backward compatibility
 fn parse_expr_simple(src: string, nodes: []AstNode) -> int {
-    let result = parse_expr_with_pos(src, 0, nodes)
+    result := parse_expr_with_pos(src, 0, nodes)
     return result.node_idx
 }

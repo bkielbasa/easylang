@@ -4,7 +4,7 @@ struct Point {
 }
 
 fn main() -> int {
-    let mut p = Point { x: 0, y: 0 }
+    p := Point { x: 0, y: 0 }
     p.x = 10
     p.y = 20
     if p.x != 10 {
@@ -13,7 +13,7 @@ fn main() -> int {
     if p.y != 20 {
         return 2
     }
-    let mut arr = [1, 2, 3]
+    arr := [1, 2, 3]
     arr[0] = 100
     arr[1] = 200
     arr[2] = 50
@@ -23,8 +23,8 @@ fn main() -> int {
     if arr[1] != 200 {
         return 4
     }
-    let result = p.x + p.y
-    let p2 = Point { x: result, y: 0 }
+    result := p.x + p.y
+    p2 := Point { x: result, y: 0 }
     if p2.x != 30 {
         return 5
     }

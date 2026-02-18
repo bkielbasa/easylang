@@ -17,13 +17,13 @@ import (
 // Global storage for function call arguments (workaround for immutability)
 // Maps call node index -> argument indices
 // Layout: [call_idx1, arg_count1, arg1_idx, arg2_idx, ..., call_idx2, arg_count2, ...]
-let mut g_call_args = []int{}
+g_call_args := []int{}
 
 fn store_call_args(call_node_idx: int, arg_indices: []int) {
     push(g_call_args, call_node_idx)
     push(g_call_args, len(arg_indices))
-    let mut i = 0
-    let count = len(arg_indices)
+    i := 0
+    count := len(arg_indices)
     for i < count {
         push(g_call_args, arg_indices[i])
         i = i + 1
@@ -32,16 +32,16 @@ fn store_call_args(call_node_idx: int, arg_indices: []int) {
 
 fn get_call_args(call_node_idx: int) -> []int {
     // Search for call_node_idx in g_call_args
-    let mut i = 0
+    i := 0
     for {
         if i >= len(g_call_args) {
             break
         }
         if g_call_args[i] == call_node_idx {
             // Found it - next element is arg_count
-            let arg_count = g_call_args[i + 1]
-            let mut result = []int{}
-            let mut j = 0
+            arg_count := g_call_args[i + 1]
+            result := []int{}
+            j := 0
             for j < arg_count {
                 push(result, g_call_args[i + 2 + j])
                 j = j + 1
@@ -49,7 +49,7 @@ fn get_call_args(call_node_idx: int) -> []int {
             return result
         }
         // Skip to next entry: current + 1 (count) + count (args)
-        let arg_count = g_call_args[i + 1]
+        arg_count := g_call_args[i + 1]
         i = i + 2 + arg_count
     }
     return []int{}
@@ -58,28 +58,28 @@ fn get_call_args(call_node_idx: int) -> []int {
 // Global storage for struct literal field values
 // Maps struct_lit node index -> field value indices
 // Layout: same as g_call_args
-let mut g_struct_fields = []int{}
-let mut g_string_vars = []string{}
-let mut g_string_array_vars = []string{}
-let mut g_string_vars_start = 0
-let mut g_string_array_vars_start = 0
-let mut g_scalar_globals = []string{}
-let mut g_break_label = -1
-let mut g_next_label = 100000
-let mut g_func_ret_names = []string{}
-let mut g_func_ret_types = []int{}
-let mut g_func_ret_is_array = []int{}
-let mut g_import_paths = []string{}
-let mut g_import_names = []string{}
-let mut g_rename_from = []string{}
-let mut g_rename_to = []string{}
-let mut g_field_reg_names = []string{}
-let mut g_field_reg_types = []int{}
-let mut g_field_reg_is_array = []int{}
+g_struct_fields := []int{}
+g_string_vars := []string{}
+g_string_array_vars := []string{}
+g_string_vars_start := 0
+g_string_array_vars_start := 0
+g_scalar_globals := []string{}
+g_break_label := -1
+g_next_label := 100000
+g_func_ret_names := []string{}
+g_func_ret_types := []int{}
+g_func_ret_is_array := []int{}
+g_import_paths := []string{}
+g_import_names := []string{}
+g_rename_from := []string{}
+g_rename_to := []string{}
+g_field_reg_names := []string{}
+g_field_reg_types := []int{}
+g_field_reg_is_array := []int{}
 
 fn register_field_type(name: string, field_type: int, is_array: int) {
     // Only register if not already present (first definition wins)
-    let mut i = 0
+    i := 0
     for i < len(g_field_reg_names) {
         if g_field_reg_names[i] == name { return }
         i = i + 1
@@ -90,7 +90,7 @@ fn register_field_type(name: string, field_type: int, is_array: int) {
 }
 
 fn lookup_field_type(name: string) -> int {
-    let mut i = 0
+    i := 0
     for i < len(g_field_reg_names) {
         if g_field_reg_names[i] == name {
             return g_field_reg_types[i]
@@ -101,7 +101,7 @@ fn lookup_field_type(name: string) -> int {
 }
 
 fn lookup_field_is_array(name: string) -> int {
-    let mut i = 0
+    i := 0
     for i < len(g_field_reg_names) {
         if g_field_reg_names[i] == name {
             return g_field_reg_is_array[i]
@@ -118,7 +118,7 @@ fn register_func_return_type(name: string, ret_type: int, is_array: int) {
 }
 
 fn lookup_func_return_type(name: string) -> int {
-    let mut i = len(g_func_ret_names) - 1
+    i := len(g_func_ret_names) - 1
     for i >= 0 {
         if g_func_ret_names[i] == name {
             return g_func_ret_types[i]
@@ -129,7 +129,7 @@ fn lookup_func_return_type(name: string) -> int {
 }
 
 fn lookup_func_return_is_array(name: string) -> int {
-    let mut i = len(g_func_ret_names) - 1
+    i := len(g_func_ret_names) - 1
     for i >= 0 {
         if g_func_ret_names[i] == name {
             return g_func_ret_is_array[i]
@@ -141,7 +141,7 @@ fn lookup_func_return_is_array(name: string) -> int {
 
 // Find the position of '.' in a string, returns -1 if not found
 fn find_dot(name: string) -> int {
-    let mut i = 0
+    i := 0
     for i < len(name) {
         if str_char_at(name, i) == 46 { return i }
         i = i + 1
@@ -151,7 +151,7 @@ fn find_dot(name: string) -> int {
 
 // Find the last '/' in a string, returns -1 if not found
 fn find_last_slash(path: string) -> int {
-    let mut i = len(path) - 1
+    i := len(path) - 1
     for i >= 0 {
         if str_char_at(path, i) == 47 { return i }
         i = i - 1
@@ -161,7 +161,7 @@ fn find_last_slash(path: string) -> int {
 
 // Extract module name from import path: "./lexer" -> "lexer", "./sub/parser" -> "parser"
 fn extract_module_name(import_path: string) -> string {
-    let slash_pos = find_last_slash(import_path)
+    slash_pos := find_last_slash(import_path)
     if slash_pos >= 0 {
         return str_substring(import_path, slash_pos + 1, len(import_path))
     }
@@ -170,13 +170,13 @@ fn extract_module_name(import_path: string) -> string {
 
 // Resolve import base path relative to source file: "./lexer" -> "dir/lexer"
 fn resolve_import_base(source_path: string, import_path: string) -> string {
-    let slash_pos = find_last_slash(source_path)
-    let mut dir = "."
+    slash_pos := find_last_slash(source_path)
+    dir := "."
     if slash_pos >= 0 {
         dir = str_substring(source_path, 0, slash_pos)
     }
     // Strip leading "./" from import_path if present
-    let mut rel_path = import_path
+    rel_path := import_path
     if len(import_path) >= 2 && str_char_at(import_path, 0) == 46 && str_char_at(import_path, 1) == 47 {
         rel_path = str_substring(import_path, 2, len(import_path))
     }
@@ -186,7 +186,7 @@ fn resolve_import_base(source_path: string, import_path: string) -> string {
 // Resolve import path relative to source file: "./lexer" -> "dir/lexer.ease"
 // For directories, returns the directory path (without .ease)
 fn resolve_import_path(source_path: string, import_path: string) -> string {
-    let base = resolve_import_base(source_path, import_path)
+    base := resolve_import_base(source_path, import_path)
     // Check if path is a directory first
     if os.IsDir(base) == 1 {
         return base
@@ -196,7 +196,7 @@ fn resolve_import_path(source_path: string, import_path: string) -> string {
 
 // Check if a string ends with ".ease" (used for filtering directory entries)
 fn has_ease_suffix(s: string) -> int {
-    let slen = len(s)
+    slen := len(s)
     if slen < 5 { return 0 }
     if str_char_at(s, slen - 5) != 46 { return 0 }
     if str_char_at(s, slen - 4) != 101 { return 0 }
@@ -209,14 +209,14 @@ fn has_ease_suffix(s: string) -> int {
 // Check if a name starts with an uppercase letter (A-Z = 65-90)
 fn is_exported(name: string) -> int {
     if len(name) == 0 { return 0 }
-    let ch = str_char_at(name, 0)
+    ch := str_char_at(name, 0)
     if ch >= 65 && ch <= 90 { return 1 }
     return 0
 }
 
 // Look up a function name in the rename table; returns qualified name or original
 fn lookup_rename(name: string) -> string {
-    let mut i = 0
+    i := 0
     for i < len(g_rename_from) {
         if g_rename_from[i] == name {
             return g_rename_to[i]
@@ -229,8 +229,8 @@ fn lookup_rename(name: string) -> string {
 fn store_struct_fields(struct_node_idx: int, field_indices: []int) {
     push(g_struct_fields, struct_node_idx)
     push(g_struct_fields, len(field_indices))
-    let mut i = 0
-    let count = len(field_indices)
+    i := 0
+    count := len(field_indices)
     for i < count {
         push(g_struct_fields, field_indices[i])
         i = i + 1
@@ -238,33 +238,33 @@ fn store_struct_fields(struct_node_idx: int, field_indices: []int) {
 }
 
 fn get_struct_fields(struct_node_idx: int) -> []int {
-    let mut i = 0
+    i := 0
     for {
         if i >= len(g_struct_fields) {
             break
         }
         if g_struct_fields[i] == struct_node_idx {
-            let field_count = g_struct_fields[i + 1]
-            let mut result = []int{}
-            let mut j = 0
+            field_count := g_struct_fields[i + 1]
+            result := []int{}
+            j := 0
             for j < field_count {
                 push(result, g_struct_fields[i + 2 + j])
                 j = j + 1
             }
             return result
         }
-        let field_count = g_struct_fields[i + 1]
+        field_count := g_struct_fields[i + 1]
         i = i + 2 + field_count
     }
     return []int{}
 }
 
 fn count_func_params(nodes: []AstNode, func_idx: int) -> int {
-    let node = nodes[func_idx]
+    node := nodes[func_idx]
     if node.left < 0 { return 0 }
-    let mut count = 0
-    let mut pi = node.left
-    let nodes_len = len(nodes)
+    count := 0
+    pi := node.left
+    nodes_len := len(nodes)
     for pi < nodes_len {
         if nodes[pi].tag == DECL_PARAM() {
             count = count + 1
@@ -280,9 +280,9 @@ fn main() -> int {
     print("=== Bootstrap Ease Compiler (LLVM IR) ===\n\n")
 
     // Get command-line arguments
-    let argc = os.Argc()
-    let mut source = ""
-    let mut filename = ""
+    argc := os.Argc()
+    source := ""
+    filename := ""
 
     if argc > 1 {
         filename = os.Argv(1)
@@ -297,11 +297,11 @@ fn main() -> int {
 
     // Phase 1: Lexing
     print("Phase 1: Lexing\n")
-    let mut pos = 0
-    let mut token_count = 0
+    pos := 0
+    token_count := 0
     for {
         pos = lex_skip(source, pos)
-        let kind = lex_kind(source, pos)
+        kind := lex_kind(source, pos)
         if kind == TK_EOF() { break }
         token_count = token_count + 1
         pos = lex_end(source, pos, kind)
@@ -310,18 +310,18 @@ fn main() -> int {
 
     // Phase 2: Parsing
     print("Phase 2: Parsing\n")
-    let mut nodes = []AstNode{}
-    let mut parse_pos = 0
+    nodes := []AstNode{}
+    parse_pos := 0
     parse_pos = lex_skip(source, parse_pos)
-    let mut import_count = 0
-    let mut struct_count = 0
-    let mut func_names = []string{}
-    let mut func_indices = []int{}
-    let mut global_var_names = []string{}
+    import_count := 0
+    struct_count := 0
+    func_names := []string{}
+    func_indices := []int{}
+    global_var_names := []string{}
 
     for {
         parse_pos = lex_skip(source, parse_pos)
-        let kind = lex_kind(source, parse_pos)
+        kind := lex_kind(source, parse_pos)
         if kind == TK_EOF() { break }
 
         if kind == TK_PACKAGE() {
@@ -330,7 +330,7 @@ fn main() -> int {
             parse_pos = lex_skip(source, parse_pos)
             parse_pos = lex_end(source, parse_pos, lex_kind(source, parse_pos))
         } else if kind == TK_IMPORT() {
-            let import_result = parse_import_decl(source, parse_pos, nodes)
+            import_result := parse_import_decl(source, parse_pos, nodes)
             if import_result.node_idx >= 0 {
                 import_count = import_count + 1
                 parse_pos = import_result.new_pos
@@ -339,34 +339,41 @@ fn main() -> int {
                 break
             }
         } else if kind == TK_STRUCT() {
-            let struct_result = parse_struct_decl(source, parse_pos, nodes)
+            struct_result := parse_struct_decl(source, parse_pos, nodes)
             struct_count = struct_count + 1
             parse_pos = struct_result.new_pos
-        } else if kind == TK_LET() {
-            let let_result = parse_let_stmt(source, parse_pos, nodes)
-            if let_result.node_idx >= 0 {
-                let let_node = nodes[let_result.node_idx]
-                push(global_var_names, let_node.str_val)
-                // Track scalar (integer) globals vs array globals
-                if let_node.right >= 0 {
-                    let init_node = nodes[let_node.right]
-                    if init_node.tag == EXPR_INT() {
-                        push(g_scalar_globals, let_node.str_val)
-                    }
-                    if init_node.tag == EXPR_UNARY() {
-                        push(g_scalar_globals, let_node.str_val)
+        } else if kind == TK_IDENT() {
+            // Check for := global declaration
+            ce_saved := parse_pos
+            ce_end := lex_end(source, parse_pos, kind)
+            ce_next_pos := lex_skip(source, ce_end)
+            if lex_kind(source, ce_next_pos) == TK_COLONEQUAL() {
+                ce_result := parse_colonequal_stmt(source, parse_pos, nodes)
+                if ce_result.node_idx >= 0 {
+                    ce_node := nodes[ce_result.node_idx]
+                    push(global_var_names, ce_node.str_val)
+                    if ce_node.right >= 0 {
+                        ce_init := nodes[ce_node.right]
+                        if ce_init.tag == EXPR_INT() {
+                            push(g_scalar_globals, ce_node.str_val)
+                        }
+                        if ce_init.tag == EXPR_UNARY() {
+                            push(g_scalar_globals, ce_node.str_val)
+                        }
                     }
                 }
+                parse_pos = ce_result.new_pos
+            } else {
+                break
             }
-            parse_pos = let_result.new_pos
         } else if kind == TK_FN() {
-            let parse_result = parse_func_decl(source, parse_pos, nodes)
+            parse_result := parse_func_decl(source, parse_pos, nodes)
             if parse_result.node_idx < 0 {
                 print("ERROR: Failed to parse function at position " + strconv.Itoa(parse_pos) + "\n")
                 break
             }
-            let func_idx = parse_result.node_idx
-            let func_node = nodes[func_idx]
+            func_idx := parse_result.node_idx
+            func_node := nodes[func_idx]
             push(func_names, func_node.str_val)
             push(func_indices, func_idx)
             print("  " + func_node.str_val + " (" + strconv.Itoa(len(func_names)) + ")\n")
@@ -381,19 +388,19 @@ fn main() -> int {
 
     // Process imports: scan for DECL_IMPORT nodes, read and parse imported modules
     // Uses rename table approach (no AST node mutation) for bootstrap parser compatibility
-    let mut imp_i = 0
-    let main_node_count = len(nodes)
+    imp_i := 0
+    main_node_count := len(nodes)
     for imp_i < main_node_count {
         if nodes[imp_i].tag == DECL_IMPORT() {
-            let import_path = nodes[imp_i].str_val
+            import_path := nodes[imp_i].str_val
             // Skip stdlib imports (no "./" prefix) — handled by builtin dispatch
             if len(import_path) >= 2 && str_char_at(import_path, 0) == 46 && str_char_at(import_path, 1) == 47 {
-                let mod_name = extract_module_name(import_path)
-                let resolved = resolve_import_path(filename, import_path)
-                let is_dir = os.IsDir(resolved)
+                mod_name := extract_module_name(import_path)
+                resolved := resolve_import_path(filename, import_path)
+                is_dir := os.IsDir(resolved)
 
-                let mut mod_func_names = []string{}
-                let mut mod_func_indices = []int{}
+                mod_func_names := []string{}
+                mod_func_indices := []int{}
 
                 if is_dir == 1 {
                     // Directory package: load all .ease files
@@ -401,24 +408,24 @@ fn main() -> int {
                     push(g_import_paths, resolved)
                     push(g_import_names, mod_name)
 
-                    let entries = os.ListDir(resolved)
-                    let mut epos = 0
-                    let mut estart = 0
-                    let entries_len = len(entries)
+                    entries := os.ListDir(resolved)
+                    epos := 0
+                    estart := 0
+                    entries_len := len(entries)
                     for epos <= entries_len {
                         // Process entry at newline or end of string
                         if epos == entries_len || str_char_at(entries, epos) == 10 {
                             if epos > estart {
-                                let entry = str_substring(entries, estart, epos)
+                                entry := str_substring(entries, estart, epos)
                                 if has_ease_suffix(entry) == 1 {
-                                    let file_path = resolved + "/" + entry
+                                    file_path := resolved + "/" + entry
                                     print("  Loading: " + file_path + "\n")
-                                    let dir_source = os.ReadFile(file_path)
-                                    let mut dir_pos = 0
+                                    dir_source := os.ReadFile(file_path)
+                                    dir_pos := 0
                                     dir_pos = lex_skip(dir_source, dir_pos)
                                     for {
                                         dir_pos = lex_skip(dir_source, dir_pos)
-                                        let dir_kind = lex_kind(dir_source, dir_pos)
+                                        dir_kind := lex_kind(dir_source, dir_pos)
                                         if dir_kind == TK_EOF() { break }
                                         if dir_kind == TK_PACKAGE() {
                                             // Skip: package <name>
@@ -426,36 +433,42 @@ fn main() -> int {
                                             dir_pos = lex_skip(dir_source, dir_pos)
                                             dir_pos = lex_end(dir_source, dir_pos, lex_kind(dir_source, dir_pos))
                                         } else if dir_kind == TK_IMPORT() {
-                                            let dir_imp = parse_import_decl(dir_source, dir_pos, nodes)
+                                            dir_imp := parse_import_decl(dir_source, dir_pos, nodes)
                                             dir_pos = dir_imp.new_pos
                                             dir_pos = lex_skip(dir_source, dir_pos)
                                         } else if dir_kind == TK_STRUCT() {
-                                            let dir_struct = parse_struct_decl(dir_source, dir_pos, nodes)
+                                            dir_struct := parse_struct_decl(dir_source, dir_pos, nodes)
                                             dir_pos = dir_struct.new_pos
-                                        } else if dir_kind == TK_LET() {
-                                            let dir_let = parse_let_stmt(dir_source, dir_pos, nodes)
-                                            if dir_let.node_idx >= 0 {
-                                                let dir_let_node = nodes[dir_let.node_idx]
-                                                push(global_var_names, dir_let_node.str_val)
-                                                if dir_let_node.right >= 0 {
-                                                    let dir_init = nodes[dir_let_node.right]
-                                                    if dir_init.tag == EXPR_INT() {
-                                                        push(g_scalar_globals, dir_let_node.str_val)
-                                                    }
-                                                    if dir_init.tag == EXPR_UNARY() {
-                                                        push(g_scalar_globals, dir_let_node.str_val)
+                                        } else if dir_kind == TK_IDENT() {
+                                            dir_ce_end := lex_end(dir_source, dir_pos, dir_kind)
+                                            dir_ce_next := lex_skip(dir_source, dir_ce_end)
+                                            if lex_kind(dir_source, dir_ce_next) == TK_COLONEQUAL() {
+                                                dir_ce := parse_colonequal_stmt(dir_source, dir_pos, nodes)
+                                                if dir_ce.node_idx >= 0 {
+                                                    dir_ce_node := nodes[dir_ce.node_idx]
+                                                    push(global_var_names, dir_ce_node.str_val)
+                                                    if dir_ce_node.right >= 0 {
+                                                        dir_ce_init := nodes[dir_ce_node.right]
+                                                        if dir_ce_init.tag == EXPR_INT() {
+                                                            push(g_scalar_globals, dir_ce_node.str_val)
+                                                        }
+                                                        if dir_ce_init.tag == EXPR_UNARY() {
+                                                            push(g_scalar_globals, dir_ce_node.str_val)
+                                                        }
                                                     }
                                                 }
+                                                dir_pos = dir_ce.new_pos
+                                            } else {
+                                                break
                                             }
-                                            dir_pos = dir_let.new_pos
                                         } else if dir_kind == TK_FN() {
-                                            let dir_func = parse_func_decl(dir_source, dir_pos, nodes)
+                                            dir_func := parse_func_decl(dir_source, dir_pos, nodes)
                                             if dir_func.node_idx < 0 {
                                                 print("ERROR: Failed to parse function in " + file_path + " at position " + strconv.Itoa(dir_pos) + "\n")
                                                 break
                                             }
-                                            let dir_func_idx = dir_func.node_idx
-                                            let dir_orig = nodes[dir_func_idx].str_val
+                                            dir_func_idx := dir_func.node_idx
+                                            dir_orig := nodes[dir_func_idx].str_val
                                             push(mod_func_names, dir_orig)
                                             push(mod_func_indices, dir_func_idx)
                                             dir_pos = dir_func.new_pos
@@ -474,9 +487,9 @@ fn main() -> int {
                     // Register functions with visibility enforcement
                     // All functions get compiled with qualified names
                     // Only uppercase (exported) functions are added to rename table
-                    let mut mfi = 0
+                    mfi := 0
                     for mfi < len(mod_func_names) {
-                        let qualified = mod_name + "." + mod_func_names[mfi]
+                        qualified := mod_name + "." + mod_func_names[mfi]
                         push(func_names, qualified)
                         push(func_indices, mod_func_indices[mfi])
                         if is_exported(mod_func_names[mfi]) == 1 {
@@ -493,7 +506,7 @@ fn main() -> int {
 
                     // Build intra-package rename table so functions within the
                     // package can call each other by unqualified names
-                    let mut ipfi = 0
+                    ipfi := 0
                     for ipfi < len(mod_func_names) {
                         // Only add if not already in rename table (avoid duplication with exported ones)
                         if is_exported(mod_func_names[ipfi]) == 0 {
@@ -506,17 +519,17 @@ fn main() -> int {
                     // Single file import (existing behavior)
                     print("Importing module: " + mod_name + " from " + resolved + "\n")
 
-                    let mod_source = os.ReadFile(resolved)
+                    mod_source := os.ReadFile(resolved)
                     push(g_import_paths, resolved)
                     push(g_import_names, mod_name)
 
                     // Parse all top-level declarations from the imported module
-                    let mut mod_pos = 0
+                    mod_pos := 0
                     mod_pos = lex_skip(mod_source, mod_pos)
 
                     for {
                         mod_pos = lex_skip(mod_source, mod_pos)
-                        let mod_kind = lex_kind(mod_source, mod_pos)
+                        mod_kind := lex_kind(mod_source, mod_pos)
                         if mod_kind == TK_EOF() { break }
 
                         if mod_kind == TK_PACKAGE() {
@@ -525,36 +538,42 @@ fn main() -> int {
                             mod_pos = lex_skip(mod_source, mod_pos)
                             mod_pos = lex_end(mod_source, mod_pos, lex_kind(mod_source, mod_pos))
                         } else if mod_kind == TK_IMPORT() {
-                            let mod_import_result = parse_import_decl(mod_source, mod_pos, nodes)
+                            mod_import_result := parse_import_decl(mod_source, mod_pos, nodes)
                             mod_pos = mod_import_result.new_pos
                             mod_pos = lex_skip(mod_source, mod_pos)
                         } else if mod_kind == TK_STRUCT() {
-                            let mod_struct_result = parse_struct_decl(mod_source, mod_pos, nodes)
+                            mod_struct_result := parse_struct_decl(mod_source, mod_pos, nodes)
                             mod_pos = mod_struct_result.new_pos
-                        } else if mod_kind == TK_LET() {
-                            let mod_let_result = parse_let_stmt(mod_source, mod_pos, nodes)
-                            if mod_let_result.node_idx >= 0 {
-                                let mod_let_node = nodes[mod_let_result.node_idx]
-                                push(global_var_names, mod_let_node.str_val)
-                                if mod_let_node.right >= 0 {
-                                    let mod_init = nodes[mod_let_node.right]
-                                    if mod_init.tag == EXPR_INT() {
-                                        push(g_scalar_globals, mod_let_node.str_val)
-                                    }
-                                    if mod_init.tag == EXPR_UNARY() {
-                                        push(g_scalar_globals, mod_let_node.str_val)
+                        } else if mod_kind == TK_IDENT() {
+                            mod_ce_end := lex_end(mod_source, mod_pos, mod_kind)
+                            mod_ce_next := lex_skip(mod_source, mod_ce_end)
+                            if lex_kind(mod_source, mod_ce_next) == TK_COLONEQUAL() {
+                                mod_ce := parse_colonequal_stmt(mod_source, mod_pos, nodes)
+                                if mod_ce.node_idx >= 0 {
+                                    mod_ce_node := nodes[mod_ce.node_idx]
+                                    push(global_var_names, mod_ce_node.str_val)
+                                    if mod_ce_node.right >= 0 {
+                                        mod_ce_init := nodes[mod_ce_node.right]
+                                        if mod_ce_init.tag == EXPR_INT() {
+                                            push(g_scalar_globals, mod_ce_node.str_val)
+                                        }
+                                        if mod_ce_init.tag == EXPR_UNARY() {
+                                            push(g_scalar_globals, mod_ce_node.str_val)
+                                        }
                                     }
                                 }
+                                mod_pos = mod_ce.new_pos
+                            } else {
+                                break
                             }
-                            mod_pos = mod_let_result.new_pos
                         } else if mod_kind == TK_FN() {
-                            let mod_func_result = parse_func_decl(mod_source, mod_pos, nodes)
+                            mod_func_result := parse_func_decl(mod_source, mod_pos, nodes)
                             if mod_func_result.node_idx < 0 {
                                 print("ERROR: Failed to parse function in " + resolved + " at position " + strconv.Itoa(mod_pos) + "\n")
                                 break
                             }
-                            let mod_func_idx = mod_func_result.node_idx
-                            let orig_name = nodes[mod_func_idx].str_val
+                            mod_func_idx := mod_func_result.node_idx
+                            orig_name := nodes[mod_func_idx].str_val
                             push(mod_func_names, orig_name)
                             push(mod_func_indices, mod_func_idx)
                             mod_pos = mod_func_result.new_pos
@@ -566,9 +585,9 @@ fn main() -> int {
 
                     // Register imported functions with qualified names (flat merge)
                     // Add to rename table so internal calls get resolved
-                    let mut mfi = 0
+                    mfi := 0
                     for mfi < len(mod_func_names) {
-                        let qualified = mod_name + "." + mod_func_names[mfi]
+                        qualified := mod_name + "." + mod_func_names[mfi]
                         push(func_names, qualified)
                         push(func_indices, mod_func_indices[mfi])
                         push(g_rename_from, mod_func_names[mfi])
@@ -588,15 +607,15 @@ fn main() -> int {
 
     // Load bootstrap stdlib modules programmatically (not via import declarations,
     // because the Go compiler's sema would reject them due to builtin conflicts)
-    let stdlib_mods = []string{"./ease/io", "./ease/strings", "./ease/os", "./ease/strconv"}
-    let mut smi = 0
+    stdlib_mods := []string{"./ease/io", "./ease/strings", "./ease/os", "./ease/strconv"}
+    smi := 0
     for smi < len(stdlib_mods) {
-        let smod_path = stdlib_mods[smi]
-        let smod_name = extract_module_name(smod_path)
+        smod_path := stdlib_mods[smi]
+        smod_name := extract_module_name(smod_path)
 
         // Skip if this module was already loaded via import declarations
-        let mut already_loaded = 0
-        let mut ali = 0
+        already_loaded := 0
+        ali := 0
         for ali < len(g_import_names) {
             if g_import_names[ali] == smod_name {
                 already_loaded = 1
@@ -606,12 +625,12 @@ fn main() -> int {
         }
         if already_loaded == 0 {
 
-        let mut smod_resolved = resolve_import_path(filename, smod_path)
+        smod_resolved := resolve_import_path(filename, smod_path)
 
         // Fallback: if source-relative path doesn't exist, try bootstrap/ease/{name}
-        let mut smod_is_dir = os.IsDir(smod_resolved)
+        smod_is_dir := os.IsDir(smod_resolved)
         if smod_is_dir == 0 {
-            let fallback = "bootstrap/ease/" + smod_name
+            fallback := "bootstrap/ease/" + smod_name
             if os.IsDir(fallback) == 1 {
                 smod_resolved = fallback
                 smod_is_dir = 1
@@ -623,16 +642,16 @@ fn main() -> int {
         push(g_import_names, smod_name)
 
         // Collect files to parse: if directory, list .ease files; otherwise single file
-        let mut smod_files = []string{}
+        smod_files := []string{}
         if smod_is_dir == 1 {
-            let smod_entries = os.ListDir(smod_resolved)
-            let mut sepos = 0
-            let mut sestart = 0
-            let smod_entries_len = len(smod_entries)
+            smod_entries := os.ListDir(smod_resolved)
+            sepos := 0
+            sestart := 0
+            smod_entries_len := len(smod_entries)
             for sepos <= smod_entries_len {
                 if sepos == smod_entries_len || str_char_at(smod_entries, sepos) == 10 {
                     if sepos > sestart {
-                        let smod_entry = str_substring(smod_entries, sestart, sepos)
+                        smod_entry := str_substring(smod_entries, sestart, sepos)
                         if has_ease_suffix(smod_entry) == 1 {
                             push(smod_files, smod_resolved + "/" + smod_entry)
                         }
@@ -645,15 +664,15 @@ fn main() -> int {
             push(smod_files, smod_resolved)
         }
 
-        let mut sfi = 0
+        sfi := 0
         for sfi < len(smod_files) {
-            let smod_file = smod_files[sfi]
-            let smod_source = os.ReadFile(smod_file)
-            let mut smod_pos = 0
+            smod_file := smod_files[sfi]
+            smod_source := os.ReadFile(smod_file)
+            smod_pos := 0
             smod_pos = lex_skip(smod_source, smod_pos)
             for {
                 smod_pos = lex_skip(smod_source, smod_pos)
-                let smod_kind = lex_kind(smod_source, smod_pos)
+                smod_kind := lex_kind(smod_source, smod_pos)
                 if smod_kind == TK_EOF() { break }
                 if smod_kind == TK_PACKAGE() {
                     // Skip: package <name>
@@ -662,11 +681,11 @@ fn main() -> int {
                     smod_pos = lex_end(smod_source, smod_pos, lex_kind(smod_source, smod_pos))
                     smod_pos = lex_skip(smod_source, smod_pos)
                 } else if smod_kind == TK_FN() {
-                    let smod_result = parse_func_decl(smod_source, smod_pos, nodes)
+                    smod_result := parse_func_decl(smod_source, smod_pos, nodes)
                     if smod_result.node_idx < 0 { break }
-                    let smod_func_idx = smod_result.node_idx
-                    let smod_orig = nodes[smod_func_idx].str_val
-                    let smod_qualified = smod_name + "." + smod_orig
+                    smod_func_idx := smod_result.node_idx
+                    smod_orig := nodes[smod_func_idx].str_val
+                    smod_qualified := smod_name + "." + smod_orig
                     push(func_names, smod_qualified)
                     push(func_indices, smod_func_idx)
                     push(g_rename_from, smod_orig)
@@ -692,16 +711,16 @@ fn main() -> int {
     push(g_rename_to, "io.Print")
 
     // Build struct field type registry and dynamic struct registry from parsed DECL_STRUCT nodes
-    let mut sfi = 0
-    let nodes_len = len(nodes)
+    sfi := 0
+    nodes_len := len(nodes)
     for sfi < nodes_len {
         if nodes[sfi].tag == DECL_STRUCT() {
-            let struct_name = nodes[sfi].str_val
-            let mut field_names_list = []string{}
+            struct_name := nodes[sfi].str_val
+            field_names_list := []string{}
             // Walk consecutive DECL_FIELD nodes starting at struct.left
-            let mut fi = nodes[sfi].left
+            fi := nodes[sfi].left
             if fi >= 0 {
-                let mut field_idx = 0
+                field_idx := 0
                 for fi < nodes_len {
                     if nodes[fi].tag != DECL_FIELD() { break }
                     push(field_names_list, nodes[fi].str_val)
@@ -726,30 +745,30 @@ fn main() -> int {
 
     // Register all user-defined functions from parsed declarations
     // Use func_names[i] for the name (which has qualified names for imported functions)
-    let mut reg_i = 0
+    reg_i := 0
     for reg_i < len(func_indices) {
-        let fn_node = nodes[func_indices[reg_i]]
+        fn_node := nodes[func_indices[reg_i]]
         register_func_return_type(func_names[reg_i], fn_node.type_tag, fn_node.int_val)
         reg_i = reg_i + 1
     }
 
     // Phase 3: IR Generation
     print("Phase 3: IR Generation\n")
-    let mut instrs = []IRInstr{}
+    instrs := []IRInstr{}
 
-    let fn_count = len(func_names)
-    let mut gen_all_i = 0
+    fn_count := len(func_names)
+    gen_all_i := 0
     for gen_all_i < fn_count {
         // Scope string tracking to current function
         g_string_vars_start = len(g_string_vars)
         g_string_array_vars_start = len(g_string_array_vars)
 
-        let func_idx = func_indices[gen_all_i]
-        let func_name = func_names[gen_all_i]
-        let param_count = count_func_params(nodes, func_idx)
+        func_idx := func_indices[gen_all_i]
+        func_name := func_names[gen_all_i]
+        param_count := count_func_params(nodes, func_idx)
 
-        let func_label = 5000 + gen_all_i
-        let label_instr = IRInstr {
+        func_label := 5000 + gen_all_i
+        label_instr := IRInstr {
             op: OP_LABEL(),
             dest: func_label,
             arg1: param_count,
@@ -759,10 +778,10 @@ fn main() -> int {
         }
         push(instrs, label_instr)
 
-        let mut symtab_names = []string{}
-        let mut symtab_vregs = []int{}
+        symtab_names := []string{}
+        symtab_vregs := []int{}
         // Add global variables to symtab with sentinel vregs (<= -1000)
-        let mut gvi = 0
+        gvi := 0
         for gvi < len(global_var_names) {
             push(symtab_names, global_var_names[gvi])
             push(symtab_vregs, -1000 - gvi)
@@ -776,8 +795,8 @@ fn main() -> int {
 
     // Phase 4: LLVM IR Generation
     print("Phase 4: LLVM IR Generation\n")
-    let output_ll = "./tmp/output.ll"
-    let result = emit_llvm_ir(instrs, output_ll)
+    output_ll := "./tmp/output.ll"
+    result := emit_llvm_ir(instrs, output_ll)
     if result != 0 {
         return 1
     }

@@ -3,16 +3,16 @@ fn get_element(arr: [int; 3], idx: int) -> int {
 }
 
 fn main() -> int {
-    let arr = [100, 200, 300]
+    arr := [100, 200, 300]
 
     // Test direct indexing
-    let a = arr[0]
-    let b = arr[1]
-    let c = arr[2]
+    a := arr[0]
+    b := arr[1]
+    c := arr[2]
 
     // Test indexing with variable
-    let i = 1
-    let d = arr[i]
+    i := 1
+    d := arr[i]
 
     // Verify: a=100, b=200, c=300, d=200
     // Return: 100 + 200 + 300 + 200 = 800

@@ -1,9 +1,9 @@
 fn main() -> int {
-    let a = "hello"
-    let b = " world"
+    a := "hello"
+    b := " world"
 
     // Test 1: Concatenate two strings
-    let c = a + b
+    c := a + b
 
     // Check length is 11 (5 + 6)
     if len(c) != 11 {
@@ -26,13 +26,13 @@ fn main() -> int {
     }
 
     // Test 2: Concatenate with empty string
-    let d = a + ""
+    d := a + ""
     if len(d) != 5 {
         return 5
     }
 
     // Test 3: Empty + string
-    let e = "" + b
+    e := "" + b
     if len(e) != 6 {
         return 6
     }

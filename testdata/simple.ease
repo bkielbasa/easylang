@@ -3,6 +3,6 @@ fn add(a: int, b: int) -> int {
 }
 
 fn main() -> int {
-	let x = add(20, 3)
+	x := add(20, 3)
 	return x
 }

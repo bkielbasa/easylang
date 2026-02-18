@@ -1,6 +1,6 @@
 fn sum_odd(n: int) -> int {
-    let mut total = 0
-    let mut i = 0
+    total := 0
+    i := 0
     for i < n {
         i = i + 1
         if i % 2 == 0 {

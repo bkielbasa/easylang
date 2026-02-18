@@ -31,7 +31,7 @@ fn symtab_add(st: SymbolTable, name: string, vreg: int) {
 
 fn symtab_lookup(st: SymbolTable, name: string) -> int {
     // Search backwards to find the most recent binding (handles shadowing)
-    let mut i = len(st.names) - 1
+    i := len(st.names) - 1
     for i >= 0 {
         if st.names[i] == name {
             return st.vregs[i]
@@ -102,16 +102,16 @@ fn OP_MOD() -> int { return 55 }
 // ParseResult: node_idx(8), new_pos(8) = 16 bytes
 
 // Dynamic struct registry
-let mut g_struct_reg_names = []string{}
-let mut g_struct_reg_field_counts = []int{}
-let mut g_struct_reg_field_starts = []int{}
-let mut g_struct_reg_field_names = []string{}
+g_struct_reg_names := []string{}
+g_struct_reg_field_counts := []int{}
+g_struct_reg_field_starts := []int{}
+g_struct_reg_field_names := []string{}
 
 fn RegisterStruct(name: string, field_names: []string) {
     push(g_struct_reg_names, name)
     push(g_struct_reg_field_counts, len(field_names))
     push(g_struct_reg_field_starts, len(g_struct_reg_field_names))
-    let mut i = 0
+    i := 0
     for i < len(field_names) {
         push(g_struct_reg_field_names, field_names[i])
         i = i + 1
@@ -123,7 +123,7 @@ fn struct_size(struct_name: string) -> int {
     if struct_name == "IRInstr" { return 48 }
     if struct_name == "ParseResult" { return 16 }
     // Look up in dynamic registry
-    let mut ri = 0
+    ri := 0
     for ri < len(g_struct_reg_names) {
         if g_struct_reg_names[ri] == struct_name {
             return g_struct_reg_field_counts[ri] * 8
@@ -165,12 +165,12 @@ fn field_offset(struct_name: string, field_name: string) -> int {
         if field_name == "types" { return 16 }
     }
     // Look up in dynamic registry
-    let mut ri = 0
+    ri := 0
     for ri < len(g_struct_reg_names) {
         if g_struct_reg_names[ri] == struct_name {
-            let start = g_struct_reg_field_starts[ri]
-            let count = g_struct_reg_field_counts[ri]
-            let mut fi = 0
+            start := g_struct_reg_field_starts[ri]
+            count := g_struct_reg_field_counts[ri]
+            fi := 0
             for fi < count {
                 if g_struct_reg_field_names[start + fi] == field_name {
                     return fi * 8
@@ -188,13 +188,13 @@ fn get_struct_field_names(name: string) -> []string {
     if name == "IRInstr" { return []string{"op", "dest", "arg1", "arg2", "arg3", "str_val"} }
     if name == "ParseResult" { return []string{"node_idx", "new_pos"} }
     // Look up in dynamic registry
-    let mut ri = 0
+    ri := 0
     for ri < len(g_struct_reg_names) {
         if g_struct_reg_names[ri] == name {
-            let start = g_struct_reg_field_starts[ri]
-            let count = g_struct_reg_field_counts[ri]
-            let mut result = []string{}
-            let mut fi = 0
+            start := g_struct_reg_field_starts[ri]
+            count := g_struct_reg_field_counts[ri]
+            result := []string{}
+            fi := 0
             for fi < count {
                 push(result, g_struct_reg_field_names[start + fi])
                 fi = fi + 1
@@ -207,7 +207,7 @@ fn get_struct_field_names(name: string) -> []string {
 }
 
 fn is_scalar_global(name: string) -> int {
-    let mut i = 0
+    i := 0
     for i < len(g_scalar_globals) {
         if g_scalar_globals[i] == name { return 1 }
         i = i + 1

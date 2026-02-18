@@ -1,9 +1,9 @@
 fn main() -> int {
-    let arr3 = [1, 2, 3]
-    let arr5 = [10; 5]
+    arr3 := [1, 2, 3]
+    arr5 := [10; 5]
 
-    let len3 = len(arr3)
-    let len5 = len(arr5)
+    len3 := len(arr3)
+    len5 := len(arr5)
 
     // len3 = 3, len5 = 5
     // return 3 + 5 = 8

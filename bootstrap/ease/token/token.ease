@@ -62,5 +62,6 @@ fn TK_RBRACKET() -> int { return 56 }
 fn TK_COMMA() -> int { return 57 }
 fn TK_COLON() -> int { return 58 }
 fn TK_SEMI() -> int { return 59 }
+fn TK_COLONEQUAL() -> int { return 60 }
 
 fn TK_EOF() -> int { return 100 }

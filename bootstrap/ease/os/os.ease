@@ -3,13 +3,13 @@ package os
 // OS functions for the Ease bootstrap compiler
 
 fn ReadFile(path: string) -> string {
-    let fd = syscall.open(path, 0, 0)
+    fd := syscall.open(path, 0, 0)
     if fd < 0 { return "" }
-    let buf_size = 1048576
-    let buf = heap_alloc(buf_size)
-    let mut total = 0
+    buf_size := 1048576
+    buf := heap_alloc(buf_size)
+    total := 0
     for {
-        let n = syscall.read(fd, buf + total, buf_size - total)
+        n := syscall.read(fd, buf + total, buf_size - total)
         if n <= 0 { break }
         total = total + n
     }

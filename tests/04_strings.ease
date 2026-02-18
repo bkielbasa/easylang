@@ -6,9 +6,9 @@ import ("strconv")
 
 fn main() -> int {
     // Test string concatenation
-    let hello = "Hello"
-    let world = "World"
-    let mut greeting = strings.Concat(hello, " ")
+    hello := "Hello"
+    world := "World"
+    greeting := strings.Concat(hello, " ")
     greeting = strings.Concat(greeting, world)
     
     // Test string contains
@@ -27,18 +27,18 @@ fn main() -> int {
     }
     
     // Test string index of
-    let idx = strings.IndexOf(greeting, "World")
+    idx := strings.IndexOf(greeting, "World")
     if idx != 6 {
         return 4
     }
     
     // Test strconv
-    let num_str = strconv.Itoa(42)
+    num_str := strconv.Itoa(42)
     if num_str != "42" {
         return 5
     }
     
-    let num = strconv.Atoi("123")
+    num := strconv.Atoi("123")
     if num != 123 {
         return 6
     }

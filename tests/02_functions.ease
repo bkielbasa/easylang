@@ -17,17 +17,17 @@ fn factorial(n: int) -> int {
 }
 
 fn main() -> int {
-    let sum = add(5, 3)
+    sum := add(5, 3)
     if sum != 8 {
         return 1
     }
     
-    let prod = multiply(4, 7)
+    prod := multiply(4, 7)
     if prod != 28 {
         return 2
     }
     
-    let fact = factorial(5)
+    fact := factorial(5)
     if fact != 120 {
         return 3
     }

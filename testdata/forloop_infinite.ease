@@ -1,5 +1,5 @@
 fn count_down(n: int) -> int {
-    let mut x = n
+    x := n
     for {
         x = x - 1
         if x <= 0 {

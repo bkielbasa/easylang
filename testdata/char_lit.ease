@@ -1,7 +1,7 @@
 fn main() -> int {
-    let a = 'a'
-    let newline = '\n'
-    let zero = '\0'
+    a := 'a'
+    newline := '\n'
+    zero := '\0'
 
     // Test 1: 'a' should be 97
     if a != 97 {
@@ -19,7 +19,7 @@ fn main() -> int {
     }
 
     // Test 4: Compare with string indexing
-    let s = "hello"
+    s := "hello"
     if s[0] != 'h' {
         return 4
     }

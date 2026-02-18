@@ -2,21 +2,21 @@
 // This test verifies that programs with many global arrays work correctly.
 // Previously caused SIGBUS crash during initialization.
 
-let mut g1 = []int{1, 2, 3}
-let mut g2 = []int{4, 5, 6}
-let mut g3 = []int{7, 8, 9}
-let mut g4 = []int{10, 11, 12}
-let mut g5 = []int{13, 14, 15}
-let mut g6 = []int{16, 17, 18}
-let mut g7 = []int{19, 20, 21}
-let mut g8 = []int{22, 23, 24}
-let mut g9 = []int{25, 26, 27}
-let mut g10 = []int{28, 29, 30}
-let mut g11 = []int{31, 32, 33}
-let mut g12 = []int{34, 35, 36}
-let mut g13 = []int{37, 38, 39}
-let mut g14 = []int{40, 41, 42}
-let mut g15 = []int{43, 44, 45}
+g1 := []int{1, 2, 3}
+g2 := []int{4, 5, 6}
+g3 := []int{7, 8, 9}
+g4 := []int{10, 11, 12}
+g5 := []int{13, 14, 15}
+g6 := []int{16, 17, 18}
+g7 := []int{19, 20, 21}
+g8 := []int{22, 23, 24}
+g9 := []int{25, 26, 27}
+g10 := []int{28, 29, 30}
+g11 := []int{31, 32, 33}
+g12 := []int{34, 35, 36}
+g13 := []int{37, 38, 39}
+g14 := []int{40, 41, 42}
+g15 := []int{43, 44, 45}
 
 fn main() -> int {
     // Verify first and last arrays are correctly initialized

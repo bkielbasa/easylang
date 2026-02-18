@@ -22,10 +22,10 @@ fn lex_peek(src: string, pos: int) -> int {
 }
 
 fn lex_skip(src: string, pos: int) -> int {
-    let src_len = len(src)
-    let mut p = pos
+    src_len := len(src)
+    p := pos
     for p < src_len {
-        let ch = lex_peek(src, p)
+        ch := lex_peek(src, p)
 
         // Skip whitespace
         if ch == 32 || ch == 9 || ch == 10 || ch == 13 {  // space, tab, newline, CR
@@ -33,12 +33,12 @@ fn lex_skip(src: string, pos: int) -> int {
         } else {
             // Check for comments: //
             if ch == 47 && p + 1 < src_len {  // '/' character
-                let next_ch = lex_peek(src, p + 1)
+                next_ch := lex_peek(src, p + 1)
                 if next_ch == 47 {  // Second '/' - it's a comment
                     // Skip until end of line
                     p = p + 2  // Skip //
                     for p < src_len {
-                        let comment_ch = lex_peek(src, p)
+                        comment_ch := lex_peek(src, p)
                         if comment_ch == 10 || comment_ch == 13 {  // newline or CR
                             break
                         }
@@ -56,13 +56,13 @@ fn lex_skip(src: string, pos: int) -> int {
 }
 
 fn lex_kind(src: string, pos: int) -> int {
-    let src_len = len(src)
+    src_len := len(src)
     if pos >= src_len {
         return TK_EOF()
     }
 
-    let ch = lex_peek(src, pos)
-    let mut next = 0
+    ch := lex_peek(src, pos)
+    next := 0
     if pos + 1 < src_len {
         next = lex_peek(src, pos + 1)
     }
@@ -85,6 +85,7 @@ fn lex_kind(src: string, pos: int) -> int {
     if ch == 91 { return TK_LBRACKET() }  // [
     if ch == 93 { return TK_RBRACKET() }  // ]
     if ch == 44 { return TK_COMMA() }     // ,
+    if ch == 58 && next == 61 { return TK_COLONEQUAL() }  // :=
     if ch == 58 { return TK_COLON() }     // :
     if ch == 59 { return TK_SEMI() }      // ;
     if ch == 46 { return TK_DOT() }       // .
@@ -113,14 +114,12 @@ fn lex_kind(src: string, pos: int) -> int {
 
     // Identifiers and keywords
     if is_alpha(ch) {
-        let mut end = pos
+        end := pos
         for end < src_len && (is_alpha(lex_peek(src, end)) || is_digit(lex_peek(src, end))) {
             end = end + 1
         }
-        let word = str_substring(src, pos, end)
+        word := str_substring(src, pos, end)
         if word == "fn" { return TK_FN() }
-        if word == "let" { return TK_LET() }
-        if word == "mut" { return TK_MUT() }
         if word == "if" { return TK_IF() }
         if word == "else" { return TK_ELSE() }
         if word == "for" { return TK_FOR() }
@@ -144,7 +143,7 @@ fn lex_end(src: string, pos: int, kind: int) -> int {
     // Two-character tokens
     if kind == TK_ARROW() || kind == TK_LE() || kind == TK_GE() ||
        kind == TK_EQ() || kind == TK_NE() || kind == TK_AND() ||
-       kind == TK_OR() || kind == TK_DOTDOT() {
+       kind == TK_OR() || kind == TK_DOTDOT() || kind == TK_COLONEQUAL() {
         return pos + 2
     }
 
@@ -159,7 +158,7 @@ fn lex_end(src: string, pos: int, kind: int) -> int {
 
     // Numbers (decimal and hexadecimal)
     if kind == TK_INT() {
-        let mut end = pos
+        end := pos
         // Check for hex literal: 0x...
         if end + 1 < len(src) && lex_peek(src, end) == 48 && lex_peek(src, end + 1) == 120 {  // '0' and 'x'
             end = end + 2  // Skip "0x"
@@ -177,9 +176,9 @@ fn lex_end(src: string, pos: int, kind: int) -> int {
 
     // String literals
     if kind == TK_STRING() {
-        let mut end = pos + 1  // Skip opening quote
+        end := pos + 1  // Skip opening quote
         for end < len(src) {
-            let ch = lex_peek(src, end)
+            ch := lex_peek(src, end)
             if ch == 34 {  // Closing quote
                 return end + 1  // Include closing quote
             }
@@ -193,12 +192,12 @@ fn lex_end(src: string, pos: int, kind: int) -> int {
     }
 
     // Identifiers and keywords
-    if kind == TK_IDENT() || kind == TK_FN() || kind == TK_LET() || kind == TK_MUT() ||
+    if kind == TK_IDENT() || kind == TK_FN() ||
        kind == TK_IF() || kind == TK_ELSE() || kind == TK_FOR() || kind == TK_IN() ||
        kind == TK_RETURN() || kind == TK_BREAK() || kind == TK_STRUCT() ||
        kind == TK_TRUE() || kind == TK_FALSE() || kind == TK_IMPORT() ||
        kind == TK_PACKAGE() {
-        let mut end = pos
+        end := pos
         for end < len(src) && (is_alpha(lex_peek(src, end)) || is_digit(lex_peek(src, end))) {
             end = end + 1
         }
@@ -208,7 +207,7 @@ fn lex_end(src: string, pos: int, kind: int) -> int {
     // Two-character operators
     if kind == TK_ARROW() || kind == TK_LE() || kind == TK_GE() ||
        kind == TK_EQ() || kind == TK_NE() || kind == TK_AND() ||
-       kind == TK_OR() || kind == TK_DOTDOT() {
+       kind == TK_OR() || kind == TK_DOTDOT() || kind == TK_COLONEQUAL() {
         return pos + 2
     }
 
@@ -216,25 +215,25 @@ fn lex_end(src: string, pos: int, kind: int) -> int {
 }
 
 fn lex_string_value(src: string, pos: int, kind: int) -> string {
-    if kind == TK_IDENT() || kind == TK_FN() || kind == TK_LET() || kind == TK_MUT() ||
+    if kind == TK_IDENT() || kind == TK_FN() ||
        kind == TK_IF() || kind == TK_ELSE() || kind == TK_FOR() || kind == TK_IN() ||
        kind == TK_RETURN() || kind == TK_BREAK() || kind == TK_STRUCT() ||
        kind == TK_TRUE() || kind == TK_FALSE() || kind == TK_IMPORT() ||
        kind == TK_PACKAGE() {
-        let end = lex_end(src, pos, kind)
+        end := lex_end(src, pos, kind)
         return str_substring(src, pos, end)
     }
     if kind == TK_STRING() {
         // Extract string content without quotes, decode escape sequences
-        let end = lex_end(src, pos, kind)
-        let raw = str_substring(src, pos + 1, end - 1)
-        let raw_len = len(raw)
-        let mut result = ""
-        let mut ri = 0
+        end := lex_end(src, pos, kind)
+        raw := str_substring(src, pos + 1, end - 1)
+        raw_len := len(raw)
+        result := ""
+        ri := 0
         for ri < raw_len {
-            let ch = str_char_at(raw, ri)
+            ch := str_char_at(raw, ri)
             if ch == 92 && ri + 1 < raw_len {
-                let next = str_char_at(raw, ri + 1)
+                next := str_char_at(raw, ri + 1)
                 if next == 110 { result = result + "\n" }
                 if next == 116 { result = result + "\t" }
                 if next == 92  { result = result + "\\" }
@@ -252,19 +251,19 @@ fn lex_string_value(src: string, pos: int, kind: int) -> string {
 }
 
 fn lex_int_value(src: string, pos: int) -> int {
-    let end = lex_end(src, pos, TK_INT())
-    let s = str_substring(src, pos, end)
-    let mut val = 0
-    let mut i = 0
-    let s_len = len(s)
+    end := lex_end(src, pos, TK_INT())
+    s := str_substring(src, pos, end)
+    val := 0
+    i := 0
+    s_len := len(s)
 
     // Check for hex: "0x..."
     if s_len >= 2 && str_char_at(s, 0) == 48 && str_char_at(s, 1) == 120 {  // '0' and 'x'
         // Parse hex
         i = 2  // Skip "0x"
         for i < s_len {
-            let ch = str_char_at(s, i)
-            let mut digit = 0
+            ch := str_char_at(s, i)
+            digit := 0
             if ch >= 48 && ch <= 57 { digit = ch - 48 }            // '0'-'9'
             if ch >= 97 && ch <= 102 { digit = ch - 97 + 10 }      // 'a'-'f'
             if ch >= 65 && ch <= 70 { digit = ch - 65 + 10 }       // 'A'-'F'
@@ -274,7 +273,7 @@ fn lex_int_value(src: string, pos: int) -> int {
     } else {
         // Parse decimal
         for i < s_len {
-            let ch = str_char_at(s, i)
+            ch := str_char_at(s, i)
             val = val * 10 + (ch - 48)
             i = i + 1
         }

@@ -24,15 +24,15 @@ fn demo_syscalls() {
     // Open file for writing
     // Flags: O_WRONLY=1, O_CREAT=0x200, O_TRUNC=0x400 -> 0x601=1537
     // Mode: 0644 octal = 420 decimal
-    let fd = syscall.open("examples/output.txt", 1537, 420)
+    fd := syscall.open("examples/output.txt", 1537, 420)
     if fd < 0 {
         print("  ERROR: Failed to open file for writing\n")
         return
     }
 
     // Write to file
-    let msg = "File I/O works!\n"
-    let written = syscall.write(fd, msg, 16)
+    msg := "File I/O works!\n"
+    written := syscall.write(fd, msg, 16)
     syscall.close(fd)
 
     print("  ✓ Wrote ")
@@ -40,15 +40,15 @@ fn demo_syscalls() {
     print(" bytes\n")
 
     // Open file for reading
-    let fd2 = syscall.open("examples/output.txt", 0, 0) // O_RDONLY
+    fd2 := syscall.open("examples/output.txt", 0, 0) // O_RDONLY
     if fd2 < 0 {
         print("  ERROR: Failed to open file for reading\n")
         return
     }
 
     // Read from file
-    let buf = heap_alloc(100)
-    let bytes_read = syscall.read(fd2, buf, 100)
+    buf := heap_alloc(100)
+    bytes_read := syscall.read(fd2, buf, 100)
     syscall.close(fd2)
 
     print("  ✓ Read ")
@@ -58,10 +58,10 @@ fn demo_syscalls() {
 
 fn demo_text_files() {
     // Write a multiline file
-    let content = "Line 1\nLine 2\nLine 3\n"
+    content := "Line 1\nLine 2\nLine 3\n"
 
     // Using syscalls to write
-    let fd = syscall.open("examples/multiline.txt", 1537, 420)
+    fd := syscall.open("examples/multiline.txt", 1537, 420)
     if fd >= 0 {
         syscall.write(fd, content, 21)
         syscall.close(fd)
@@ -69,10 +69,10 @@ fn demo_text_files() {
     }
 
     // Read it back
-    let fd2 = syscall.open("examples/multiline.txt", 0, 0)
+    fd2 := syscall.open("examples/multiline.txt", 0, 0)
     if fd2 >= 0 {
-        let buf = heap_alloc(100)
-        let n = syscall.read(fd2, buf, 100)
+        buf := heap_alloc(100)
+        n := syscall.read(fd2, buf, 100)
         syscall.close(fd2)
         print("  ✓ Read back ")
         print(strconv.Itoa(n))

@@ -11,9 +11,9 @@ fn get_same() -> string {
 }
 
 fn main() -> int {
-    let a = get_hello()
-    let b = get_world()
-    let c = get_same()
+    a := get_hello()
+    b := get_world()
+    c := get_same()
 
     // a and c should point to the same string (string deduplication)
     // This isn't really testable without comparing pointers,

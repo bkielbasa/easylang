@@ -28,7 +28,7 @@ fn perimeter(rect: Rectangle) -> int {
 }
 
 fn sum_array(arr: []int) -> int {
-    let mut total = 0
+    total := 0
     for i in 0..len(arr) {
         total = total + arr[i]
     }
@@ -40,7 +40,7 @@ fn find_max(arr: []int) -> int {
         return 0
     }
 
-    let mut max_val = arr[0]
+    max_val := arr[0]
     for i in 1..len(arr) {
         if arr[i] > max_val {
             max_val = arr[i]
@@ -53,8 +53,8 @@ fn main() -> int {
     print("=== Data Structures Demo ===\n\n")
 
     // Points
-    let p1 = make_point(10, 20)
-    let p2 = Point { x: 30, y: 40 }
+    p1 := make_point(10, 20)
+    p2 := Point { x: 30, y: 40 }
 
     print("Point 1: (")
     print(strconv.Itoa(p1.x))
@@ -69,7 +69,7 @@ fn main() -> int {
     print(")\n\n")
 
     // Rectangle
-    let rect = Rectangle {
+    rect := Rectangle {
         top_left: p1,
         width: 50,
         height: 30,
@@ -84,7 +84,7 @@ fn main() -> int {
     print("\n\n")
 
     // Arrays
-    let numbers = []int{5, 2, 8, 1, 9, 3, 7}
+    numbers := []int{5, 2, 8, 1, 9, 3, 7}
     print("Array: [5, 2, 8, 1, 9, 3, 7]\n")
 
     print("  Sum: ")

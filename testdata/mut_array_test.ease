@@ -1,6 +1,6 @@
 fn main() -> int {
     // Test array index assignment
-    let mut arr = [1, 2, 3]
+    arr := [1, 2, 3]
     arr[0] = 100
     arr[1] = 200
     arr[2] = 42

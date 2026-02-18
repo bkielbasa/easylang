@@ -1,8 +1,8 @@
 fn main() -> int {
     // Create array with 5 elements all set to 7
-    let arr = [7; 5]
+    arr := [7; 5]
 
     // Sum all elements: 7*5 = 35
-    let sum = arr[0] + arr[1] + arr[2] + arr[3] + arr[4]
+    sum := arr[0] + arr[1] + arr[2] + arr[3] + arr[4]
     return sum
 }

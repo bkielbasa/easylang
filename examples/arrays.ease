@@ -5,11 +5,11 @@ import ("strconv")
 
 // Bubble sort
 fn bubble_sort(arr: []int) {
-    let n = len(arr)
+    n := len(arr)
     for i in 0..n {
         for j in 0..(n - i - 1) {
             if arr[j] > arr[j + 1] {
-                let temp = arr[j]
+                temp := arr[j]
                 arr[j] = arr[j + 1]
                 arr[j + 1] = temp
             }
@@ -19,11 +19,11 @@ fn bubble_sort(arr: []int) {
 
 // Binary search (requires sorted array)
 fn binary_search(arr: []int, target: int) -> int {
-    let mut left = 0
-    let mut right = len(arr) - 1
+    left := 0
+    right := len(arr) - 1
     
     for left <= right {
-        let mid = left + (right - left) / 2
+        mid := left + (right - left) / 2
         
         if arr[mid] == target {
             return mid
@@ -45,7 +45,7 @@ fn find_min(arr: []int) -> int {
         return 0
     }
     
-    let mut min_val = arr[0]
+    min_val := arr[0]
     for i in 1..len(arr) {
         if arr[i] < min_val {
             min_val = arr[i]
@@ -60,7 +60,7 @@ fn find_max(arr: []int) -> int {
         return 0
     }
     
-    let mut max_val = arr[0]
+    max_val := arr[0]
     for i in 1..len(arr) {
         if arr[i] > max_val {
             max_val = arr[i]
@@ -75,7 +75,7 @@ fn average(arr: []int) -> int {
         return 0
     }
     
-    let mut sum = 0
+    sum := 0
     for i in 0..len(arr) {
         sum = sum + arr[i]
     }
@@ -98,7 +98,7 @@ fn main() -> int {
     print("=== Array Operations Demo ===\n\n")
     
     // Create an unsorted array
-    let mut numbers = []int{64, 34, 25, 12, 22, 11, 90}
+    numbers := []int{64, 34, 25, 12, 22, 11, 90}
     
     print("Original array: ")
     print_array(numbers)
@@ -124,11 +124,11 @@ fn main() -> int {
     print("\n\n")
     
     // Binary search
-    let target = 22
+    target := 22
     print("Searching for ")
     print(strconv.Itoa(target))
     print(": ")
-    let index = binary_search(numbers, target)
+    index := binary_search(numbers, target)
     if index >= 0 {
         print("found at index ")
         print(strconv.Itoa(index))

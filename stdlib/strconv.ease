@@ -26,7 +26,7 @@ fn DigitToCharBase(digit: int) -> string {
         return DigitToChar(digit)
     }
     // 'a' = 97, so digit 10 -> 'a' (97), digit 11 -> 'b' (98), etc.
-    let charCode = 97 + (digit - 10)
+    charCode := 97 + (digit - 10)
     // TODO: Need a way to convert ASCII code to string
     // For now, hardcode common cases
     if digit == 10 { return "a" }
@@ -93,8 +93,8 @@ fn Itoa(i: int) -> string {
         return "0"
     }
 
-    let mut negative = false
-    let mut n = i
+    negative := false
+    n := i
 
     if i < 0 {
         negative = true
@@ -102,21 +102,21 @@ fn Itoa(i: int) -> string {
     }
 
     // Build digits in reverse order
-    let mut digits = []int{}
+    digits := []int{}
     for n > 0 {
         push(digits, n % 10)
         n = n / 10
     }
 
     // Build string from digits (reverse order)
-    let mut result = ""
+    result := ""
     if negative {
         result = "-"
     }
 
-    let mut idx = len(digits) - 1
+    idx := len(digits) - 1
     for idx >= 0 {
-        let digit = digits[idx]
+        digit := digits[idx]
         result = str_concat(result, DigitToChar(digit))
         idx = idx - 1
     }
@@ -147,8 +147,8 @@ fn ParseInt(s: string, base: int) -> int {
         return 0
     }
 
-    let mut idx = 0
-    let mut negative = false
+    idx := 0
+    negative := false
 
     // Check for negative sign
     if str_char_at(s, 0) == 45 {  // '-' = ASCII 45
@@ -156,10 +156,10 @@ fn ParseInt(s: string, base: int) -> int {
         idx = 1
     }
 
-    let mut result = 0
+    result := 0
     for idx < len(s) {
-        let ch = str_char_at(s, idx)
-        let digit = CharToDigit(ch)
+        ch := str_char_at(s, idx)
+        digit := CharToDigit(ch)
 
         if digit < 0 {
             return 0  // Invalid character
@@ -193,8 +193,8 @@ fn FormatInt(i: int, base: int) -> string {
         return "0"
     }
 
-    let mut negative = false
-    let mut n = i
+    negative := false
+    n := i
 
     if i < 0 {
         negative = true
@@ -202,21 +202,21 @@ fn FormatInt(i: int, base: int) -> string {
     }
 
     // Build digits in reverse order
-    let mut digits = []int{}
+    digits := []int{}
     for n > 0 {
         push(digits, n % base)
         n = n / base
     }
 
     // Build string from digits (reverse order)
-    let mut result = ""
+    result := ""
     if negative {
         result = "-"
     }
 
-    let mut idx = len(digits) - 1
+    idx := len(digits) - 1
     for idx >= 0 {
-        let digit = digits[idx]
+        digit := digits[idx]
         result = str_concat(result, DigitToCharBase(digit))
         idx = idx - 1
     }

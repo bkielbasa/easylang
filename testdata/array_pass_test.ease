@@ -7,11 +7,11 @@ fn get_second(arr: [int; 4]) -> int {
 }
 
 fn main() -> int {
-    let a = [10, 20, 30]
-    let b = [1, 2, 3, 4]
+    a := [10, 20, 30]
+    b := [1, 2, 3, 4]
 
-    let sum = sum_array(a)
-    let second = get_second(b)
+    sum := sum_array(a)
+    second := get_second(b)
 
     // sum = 60, second = 2
     // return 60 + 2 = 62

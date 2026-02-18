@@ -1,5 +1,5 @@
 fn main() -> int {
-    let s = "hello"
+    s := "hello"
 
     // Test 1: First character should be 'h' (104)
     if s[0] != 104 {
@@ -17,7 +17,7 @@ fn main() -> int {
     }
 
     // Test 4: Index with variable
-    let i = 2
+    i := 2
     if s[i] != 108 {  // 'l' = 108
         return 4
     }

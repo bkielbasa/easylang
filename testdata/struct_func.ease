@@ -12,11 +12,11 @@ fn get_x(p: Point) -> int {
 }
 
 fn main() -> int {
-    let p1 = Point { x: 1, y: 2 }
-    let p2 = Point { x: 3, y: 4 }
+    p1 := Point { x: 1, y: 2 }
+    p2 := Point { x: 3, y: 4 }
 
-    let sum = add_points(p1, p2)
-    let x1 = get_x(p1)
+    sum := add_points(p1, p2)
+    x1 := get_x(p1)
 
     // sum = 1+2+3+4 = 10, x1 = 1
     // return 10 + 1 = 11

@@ -85,421 +85,419 @@
 @.str.84 = private unnamed_addr constant [2 x i8] c"9\00"
 @.str.85 = private unnamed_addr constant [2 x i8] c"-\00"
 @.str.86 = private unnamed_addr constant [3 x i8] c"fn\00"
-@.str.87 = private unnamed_addr constant [4 x i8] c"let\00"
-@.str.88 = private unnamed_addr constant [4 x i8] c"mut\00"
-@.str.89 = private unnamed_addr constant [3 x i8] c"if\00"
-@.str.90 = private unnamed_addr constant [5 x i8] c"else\00"
-@.str.91 = private unnamed_addr constant [4 x i8] c"for\00"
-@.str.92 = private unnamed_addr constant [3 x i8] c"in\00"
-@.str.93 = private unnamed_addr constant [7 x i8] c"return\00"
-@.str.94 = private unnamed_addr constant [6 x i8] c"break\00"
-@.str.95 = private unnamed_addr constant [7 x i8] c"struct\00"
-@.str.96 = private unnamed_addr constant [5 x i8] c"true\00"
-@.str.97 = private unnamed_addr constant [6 x i8] c"false\00"
-@.str.98 = private unnamed_addr constant [7 x i8] c"import\00"
-@.str.99 = private unnamed_addr constant [8 x i8] c"package\00"
-@.str.100 = private unnamed_addr constant [2 x i8] c"\0A\00"
-@.str.101 = private unnamed_addr constant [2 x i8] c"\09\00"
-@.str.102 = private unnamed_addr constant [2 x i8] c"\5C\00"
-@.str.103 = private unnamed_addr constant [2 x i8] c"\22\00"
-@.str.104 = private unnamed_addr constant [3 x i8] c"[]\00"
-@.str.105 = private unnamed_addr constant [7 x i8] c"string\00"
-@.str.106 = private unnamed_addr constant [4 x i8] c"int\00"
-@.str.107 = private unnamed_addr constant [9 x i8] c"[]string\00"
-@.str.108 = private unnamed_addr constant [6 x i8] c"[]int\00"
-@.str.109 = private unnamed_addr constant [33 x i8] c"PARSE_BLOCK: stmt failed at pos \00"
-@.str.110 = private unnamed_addr constant [9 x i8] c", token=\00"
-@.str.111 = private unnamed_addr constant [16 x i8] c", stmts_so_far=\00"
-@.str.112 = private unnamed_addr constant [9 x i8] c", nodes=\00"
-@.str.113 = private unnamed_addr constant [11 x i8] c", context=\00"
-@.str.114 = private unnamed_addr constant [2 x i8] c"\0A\00"
-@.str.115 = private unnamed_addr constant [37 x i8] c"PARSE_BLOCK: expected RBRACE at pos \00"
-@.str.116 = private unnamed_addr constant [13 x i8] c", got token=\00"
-@.str.117 = private unnamed_addr constant [14 x i8] c", stmt_count=\00"
-@.str.118 = private unnamed_addr constant [11 x i8] c", context=\00"
-@.str.119 = private unnamed_addr constant [2 x i8] c"\0A\00"
-@.str.120 = private unnamed_addr constant [2 x i8] c"\0A\00"
-@.str.121 = private unnamed_addr constant [3 x i8] c"[]\00"
-@.str.122 = private unnamed_addr constant [4 x i8] c"int\00"
-@.str.123 = private unnamed_addr constant [7 x i8] c"string\00"
-@.str.124 = private unnamed_addr constant [5 x i8] c"bool\00"
-@.str.125 = private unnamed_addr constant [6 x i8] c"[]int\00"
-@.str.126 = private unnamed_addr constant [9 x i8] c"[]string\00"
-@.str.127 = private unnamed_addr constant [3 x i8] c"[]\00"
-@.str.128 = private unnamed_addr constant [4 x i8] c"int\00"
-@.str.129 = private unnamed_addr constant [5 x i8] c"bool\00"
-@.str.130 = private unnamed_addr constant [7 x i8] c"string\00"
-@.str.131 = private unnamed_addr constant [6 x i8] c"[]int\00"
-@.str.132 = private unnamed_addr constant [7 x i8] c"[]bool\00"
-@.str.133 = private unnamed_addr constant [9 x i8] c"[]string\00"
-@.str.134 = private unnamed_addr constant [4 x i8] c"int\00"
-@.str.135 = private unnamed_addr constant [2 x i8] c".\00"
-@.str.136 = private unnamed_addr constant [8 x i8] c"AstNode\00"
-@.str.137 = private unnamed_addr constant [8 x i8] c"IRInstr\00"
-@.str.138 = private unnamed_addr constant [12 x i8] c"ParseResult\00"
-@.str.139 = private unnamed_addr constant [8 x i8] c"AstNode\00"
-@.str.140 = private unnamed_addr constant [4 x i8] c"tag\00"
-@.str.141 = private unnamed_addr constant [8 x i8] c"int_val\00"
-@.str.142 = private unnamed_addr constant [8 x i8] c"str_val\00"
-@.str.143 = private unnamed_addr constant [5 x i8] c"left\00"
-@.str.144 = private unnamed_addr constant [6 x i8] c"right\00"
-@.str.145 = private unnamed_addr constant [6 x i8] c"extra\00"
-@.str.146 = private unnamed_addr constant [9 x i8] c"type_tag\00"
-@.str.147 = private unnamed_addr constant [8 x i8] c"IRInstr\00"
-@.str.148 = private unnamed_addr constant [3 x i8] c"op\00"
-@.str.149 = private unnamed_addr constant [5 x i8] c"dest\00"
-@.str.150 = private unnamed_addr constant [5 x i8] c"arg1\00"
-@.str.151 = private unnamed_addr constant [5 x i8] c"arg2\00"
-@.str.152 = private unnamed_addr constant [5 x i8] c"arg3\00"
-@.str.153 = private unnamed_addr constant [8 x i8] c"str_val\00"
-@.str.154 = private unnamed_addr constant [12 x i8] c"ParseResult\00"
-@.str.155 = private unnamed_addr constant [9 x i8] c"node_idx\00"
-@.str.156 = private unnamed_addr constant [8 x i8] c"new_pos\00"
-@.str.157 = private unnamed_addr constant [12 x i8] c"SymbolTable\00"
-@.str.158 = private unnamed_addr constant [6 x i8] c"names\00"
-@.str.159 = private unnamed_addr constant [6 x i8] c"vregs\00"
-@.str.160 = private unnamed_addr constant [6 x i8] c"types\00"
-@.str.161 = private unnamed_addr constant [8 x i8] c"AstNode\00"
-@.str.162 = private unnamed_addr constant [4 x i8] c"tag\00"
-@.str.163 = private unnamed_addr constant [8 x i8] c"int_val\00"
-@.str.164 = private unnamed_addr constant [8 x i8] c"str_val\00"
-@.str.165 = private unnamed_addr constant [5 x i8] c"left\00"
-@.str.166 = private unnamed_addr constant [6 x i8] c"right\00"
-@.str.167 = private unnamed_addr constant [6 x i8] c"extra\00"
-@.str.168 = private unnamed_addr constant [9 x i8] c"type_tag\00"
-@.str.169 = private unnamed_addr constant [8 x i8] c"IRInstr\00"
-@.str.170 = private unnamed_addr constant [3 x i8] c"op\00"
-@.str.171 = private unnamed_addr constant [5 x i8] c"dest\00"
-@.str.172 = private unnamed_addr constant [5 x i8] c"arg1\00"
-@.str.173 = private unnamed_addr constant [5 x i8] c"arg2\00"
-@.str.174 = private unnamed_addr constant [5 x i8] c"arg3\00"
-@.str.175 = private unnamed_addr constant [8 x i8] c"str_val\00"
-@.str.176 = private unnamed_addr constant [12 x i8] c"ParseResult\00"
-@.str.177 = private unnamed_addr constant [9 x i8] c"node_idx\00"
-@.str.178 = private unnamed_addr constant [8 x i8] c"new_pos\00"
-@.str.179 = private unnamed_addr constant [7 x i8] c"string\00"
-@.str.180 = private unnamed_addr constant [4 x i8] c"tag\00"
-@.str.181 = private unnamed_addr constant [8 x i8] c"int_val\00"
-@.str.182 = private unnamed_addr constant [8 x i8] c"str_val\00"
-@.str.183 = private unnamed_addr constant [5 x i8] c"left\00"
-@.str.184 = private unnamed_addr constant [6 x i8] c"right\00"
-@.str.185 = private unnamed_addr constant [6 x i8] c"extra\00"
-@.str.186 = private unnamed_addr constant [9 x i8] c"type_tag\00"
-@.str.187 = private unnamed_addr constant [9 x i8] c"node_idx\00"
-@.str.188 = private unnamed_addr constant [8 x i8] c"new_pos\00"
-@.str.189 = private unnamed_addr constant [3 x i8] c"op\00"
-@.str.190 = private unnamed_addr constant [5 x i8] c"dest\00"
-@.str.191 = private unnamed_addr constant [5 x i8] c"arg1\00"
-@.str.192 = private unnamed_addr constant [5 x i8] c"arg2\00"
-@.str.193 = private unnamed_addr constant [5 x i8] c"arg3\00"
-@.str.194 = private unnamed_addr constant [12 x i8] c"array_index\00"
-@.str.195 = private unnamed_addr constant [8 x i8] c"str_val\00"
-@.str.196 = private unnamed_addr constant [6 x i8] c"instr\00"
-@.str.197 = private unnamed_addr constant [7 x i8] c"instrs\00"
-@.str.198 = private unnamed_addr constant [4 x i8] c"len\00"
-@.str.199 = private unnamed_addr constant [5 x i8] c"push\00"
-@.str.200 = private unnamed_addr constant [5 x i8] c"poke\00"
-@.str.201 = private unnamed_addr constant [5 x i8] c"peek\00"
-@.str.202 = private unnamed_addr constant [11 x i8] c"heap_alloc\00"
-@.str.203 = private unnamed_addr constant [8 x i8] c"os.Argc\00"
-@.str.204 = private unnamed_addr constant [8 x i8] c"os.Argv\00"
-@.str.205 = private unnamed_addr constant [12 x i8] c"str_char_at\00"
-@.str.206 = private unnamed_addr constant [13 x i8] c"syscall.open\00"
-@.str.207 = private unnamed_addr constant [14 x i8] c"syscall.write\00"
-@.str.208 = private unnamed_addr constant [14 x i8] c"syscall.close\00"
-@.str.209 = private unnamed_addr constant [13 x i8] c"syscall.read\00"
-@.str.210 = private unnamed_addr constant [9 x i8] c"os.IsDir\00"
-@.str.211 = private unnamed_addr constant [11 x i8] c"os.ListDir\00"
-@.str.212 = private unnamed_addr constant [2 x i8] c"0\00"
-@.str.213 = private unnamed_addr constant [2 x i8] c"1\00"
-@.str.214 = private unnamed_addr constant [2 x i8] c"2\00"
-@.str.215 = private unnamed_addr constant [2 x i8] c"3\00"
-@.str.216 = private unnamed_addr constant [2 x i8] c"4\00"
-@.str.217 = private unnamed_addr constant [2 x i8] c"5\00"
-@.str.218 = private unnamed_addr constant [2 x i8] c"6\00"
-@.str.219 = private unnamed_addr constant [2 x i8] c"7\00"
-@.str.220 = private unnamed_addr constant [2 x i8] c"8\00"
-@.str.221 = private unnamed_addr constant [2 x i8] c"9\00"
-@.str.222 = private unnamed_addr constant [2 x i8] c"A\00"
-@.str.223 = private unnamed_addr constant [2 x i8] c"B\00"
-@.str.224 = private unnamed_addr constant [2 x i8] c"C\00"
-@.str.225 = private unnamed_addr constant [2 x i8] c"D\00"
-@.str.226 = private unnamed_addr constant [2 x i8] c"E\00"
-@.str.227 = private unnamed_addr constant [2 x i8] c"F\00"
-@.str.228 = private unnamed_addr constant [2 x i8] c"0\00"
-@.str.229 = private unnamed_addr constant [3 x i8] c"c\22\00"
-@.str.230 = private unnamed_addr constant [2 x i8] c"\5C\00"
-@.str.231 = private unnamed_addr constant [5 x i8] c"\5C00\22\00"
-@.str.232 = private unnamed_addr constant [2 x i8] c"_\00"
-@.str.233 = private unnamed_addr constant [5 x i8] c"main\00"
-@.str.234 = private unnamed_addr constant [10 x i8] c"ease_main\00"
-@.str.235 = private unnamed_addr constant [4 x i8] c"%t.\00"
-@.str.236 = private unnamed_addr constant [3 x i8] c"  \00"
-@.str.237 = private unnamed_addr constant [21 x i8] c" = load i64, ptr %v.\00"
-@.str.238 = private unnamed_addr constant [2 x i8] c"\0A\00"
-@.str.239 = private unnamed_addr constant [3 x i8] c"  \00"
-@.str.240 = private unnamed_addr constant [17 x i8] c" = inttoptr i64 \00"
-@.str.241 = private unnamed_addr constant [9 x i8] c" to ptr\0A\00"
-@.str.242 = private unnamed_addr constant [13 x i8] c"  store i64 \00"
-@.str.243 = private unnamed_addr constant [10 x i8] c", ptr %v.\00"
-@.str.244 = private unnamed_addr constant [2 x i8] c"\0A\00"
-@.str.245 = private unnamed_addr constant [3 x i8] c"  \00"
-@.str.246 = private unnamed_addr constant [17 x i8] c" = ptrtoint ptr \00"
-@.str.247 = private unnamed_addr constant [9 x i8] c" to i64\0A\00"
-@.str.248 = private unnamed_addr constant [3 x i8] c"  \00"
-@.str.249 = private unnamed_addr constant [4 x i8] c" = \00"
-@.str.250 = private unnamed_addr constant [6 x i8] c" i64 \00"
-@.str.251 = private unnamed_addr constant [3 x i8] c", \00"
-@.str.252 = private unnamed_addr constant [2 x i8] c"\0A\00"
-@.str.253 = private unnamed_addr constant [3 x i8] c"  \00"
-@.str.254 = private unnamed_addr constant [9 x i8] c" = icmp \00"
-@.str.255 = private unnamed_addr constant [6 x i8] c" i64 \00"
-@.str.256 = private unnamed_addr constant [3 x i8] c", \00"
-@.str.257 = private unnamed_addr constant [2 x i8] c"\0A\00"
-@.str.258 = private unnamed_addr constant [3 x i8] c"  \00"
-@.str.259 = private unnamed_addr constant [12 x i8] c" = zext i1 \00"
-@.str.260 = private unnamed_addr constant [9 x i8] c" to i64\0A\00"
-@.str.261 = private unnamed_addr constant [26 x i8] c"declare ptr @malloc(i64)\0A\00"
-@.str.262 = private unnamed_addr constant [31 x i8] c"declare ptr @calloc(i64, i64)\0A\00"
-@.str.263 = private unnamed_addr constant [36 x i8] c"declare ptr @memcpy(ptr, ptr, i64)\0A\00"
-@.str.264 = private unnamed_addr constant [36 x i8] c"declare ptr @memset(ptr, i32, i64)\0A\00"
-@.str.265 = private unnamed_addr constant [36 x i8] c"declare i64 @ease_str_eq(ptr, ptr)\0A\00"
-@.str.266 = private unnamed_addr constant [36 x i8] c"declare i64 @ease_str_ne(ptr, ptr)\0A\00"
-@.str.267 = private unnamed_addr constant [32 x i8] c"declare i64 @ease_str_len(ptr)\0A\00"
-@.str.268 = private unnamed_addr constant [40 x i8] c"declare ptr @ease_str_concat(ptr, ptr)\0A\00"
-@.str.269 = private unnamed_addr constant [44 x i8] c"declare ptr @ease_str_slice(ptr, i64, i64)\0A\00"
-@.str.270 = private unnamed_addr constant [41 x i8] c"declare i64 @ease_str_char_at(ptr, i64)\0A\00"
-@.str.271 = private unnamed_addr constant [46 x i8] c"declare void @ease_array_push(ptr, ptr, i64)\0A\00"
-@.str.272 = private unnamed_addr constant [40 x i8] c"declare i64 @ease_write_file(ptr, ptr)\0A\00"
-@.str.273 = private unnamed_addr constant [35 x i8] c"declare ptr @ease_int_to_str(i64)\0A\00"
-@.str.274 = private unnamed_addr constant [35 x i8] c"declare i64 @ease_str_to_int(ptr)\0A\00"
-@.str.275 = private unnamed_addr constant [35 x i8] c"declare void @ease_poke(ptr, i64)\0A\00"
-@.str.276 = private unnamed_addr constant [29 x i8] c"declare i64 @ease_peek(ptr)\0A\00"
-@.str.277 = private unnamed_addr constant [42 x i8] c"declare void @ease_memset(ptr, i64, i64)\0A\00"
-@.str.278 = private unnamed_addr constant [47 x i8] c"declare i64 @ease_syscall_open(ptr, i64, i64)\0A\00"
-@.str.279 = private unnamed_addr constant [47 x i8] c"declare i64 @ease_syscall_read(i64, ptr, i64)\0A\00"
-@.str.280 = private unnamed_addr constant [48 x i8] c"declare i64 @ease_syscall_write(i64, ptr, i64)\0A\00"
-@.str.281 = private unnamed_addr constant [38 x i8] c"declare i64 @ease_syscall_close(i64)\0A\00"
-@.str.282 = private unnamed_addr constant [26 x i8] c"declare i64 @ease_argc()\0A\00"
-@.str.283 = private unnamed_addr constant [29 x i8] c"declare ptr @ease_argv(i64)\0A\00"
-@.str.284 = private unnamed_addr constant [31 x i8] c"declare i64 @ease_is_dir(ptr)\0A\00"
-@.str.285 = private unnamed_addr constant [33 x i8] c"declare ptr @ease_list_dir(ptr)\0A\00"
+@.str.87 = private unnamed_addr constant [3 x i8] c"if\00"
+@.str.88 = private unnamed_addr constant [5 x i8] c"else\00"
+@.str.89 = private unnamed_addr constant [4 x i8] c"for\00"
+@.str.90 = private unnamed_addr constant [3 x i8] c"in\00"
+@.str.91 = private unnamed_addr constant [7 x i8] c"return\00"
+@.str.92 = private unnamed_addr constant [6 x i8] c"break\00"
+@.str.93 = private unnamed_addr constant [7 x i8] c"struct\00"
+@.str.94 = private unnamed_addr constant [5 x i8] c"true\00"
+@.str.95 = private unnamed_addr constant [6 x i8] c"false\00"
+@.str.96 = private unnamed_addr constant [7 x i8] c"import\00"
+@.str.97 = private unnamed_addr constant [8 x i8] c"package\00"
+@.str.98 = private unnamed_addr constant [2 x i8] c"\0A\00"
+@.str.99 = private unnamed_addr constant [2 x i8] c"\09\00"
+@.str.100 = private unnamed_addr constant [2 x i8] c"\5C\00"
+@.str.101 = private unnamed_addr constant [2 x i8] c"\22\00"
+@.str.102 = private unnamed_addr constant [3 x i8] c"[]\00"
+@.str.103 = private unnamed_addr constant [7 x i8] c"string\00"
+@.str.104 = private unnamed_addr constant [4 x i8] c"int\00"
+@.str.105 = private unnamed_addr constant [9 x i8] c"[]string\00"
+@.str.106 = private unnamed_addr constant [6 x i8] c"[]int\00"
+@.str.107 = private unnamed_addr constant [33 x i8] c"PARSE_BLOCK: stmt failed at pos \00"
+@.str.108 = private unnamed_addr constant [9 x i8] c", token=\00"
+@.str.109 = private unnamed_addr constant [16 x i8] c", stmts_so_far=\00"
+@.str.110 = private unnamed_addr constant [9 x i8] c", nodes=\00"
+@.str.111 = private unnamed_addr constant [11 x i8] c", context=\00"
+@.str.112 = private unnamed_addr constant [2 x i8] c"\0A\00"
+@.str.113 = private unnamed_addr constant [37 x i8] c"PARSE_BLOCK: expected RBRACE at pos \00"
+@.str.114 = private unnamed_addr constant [13 x i8] c", got token=\00"
+@.str.115 = private unnamed_addr constant [14 x i8] c", stmt_count=\00"
+@.str.116 = private unnamed_addr constant [11 x i8] c", context=\00"
+@.str.117 = private unnamed_addr constant [2 x i8] c"\0A\00"
+@.str.118 = private unnamed_addr constant [2 x i8] c"\0A\00"
+@.str.119 = private unnamed_addr constant [3 x i8] c"[]\00"
+@.str.120 = private unnamed_addr constant [4 x i8] c"int\00"
+@.str.121 = private unnamed_addr constant [7 x i8] c"string\00"
+@.str.122 = private unnamed_addr constant [5 x i8] c"bool\00"
+@.str.123 = private unnamed_addr constant [6 x i8] c"[]int\00"
+@.str.124 = private unnamed_addr constant [9 x i8] c"[]string\00"
+@.str.125 = private unnamed_addr constant [3 x i8] c"[]\00"
+@.str.126 = private unnamed_addr constant [4 x i8] c"int\00"
+@.str.127 = private unnamed_addr constant [5 x i8] c"bool\00"
+@.str.128 = private unnamed_addr constant [7 x i8] c"string\00"
+@.str.129 = private unnamed_addr constant [6 x i8] c"[]int\00"
+@.str.130 = private unnamed_addr constant [7 x i8] c"[]bool\00"
+@.str.131 = private unnamed_addr constant [9 x i8] c"[]string\00"
+@.str.132 = private unnamed_addr constant [4 x i8] c"int\00"
+@.str.133 = private unnamed_addr constant [2 x i8] c".\00"
+@.str.134 = private unnamed_addr constant [8 x i8] c"AstNode\00"
+@.str.135 = private unnamed_addr constant [8 x i8] c"IRInstr\00"
+@.str.136 = private unnamed_addr constant [12 x i8] c"ParseResult\00"
+@.str.137 = private unnamed_addr constant [8 x i8] c"AstNode\00"
+@.str.138 = private unnamed_addr constant [4 x i8] c"tag\00"
+@.str.139 = private unnamed_addr constant [8 x i8] c"int_val\00"
+@.str.140 = private unnamed_addr constant [8 x i8] c"str_val\00"
+@.str.141 = private unnamed_addr constant [5 x i8] c"left\00"
+@.str.142 = private unnamed_addr constant [6 x i8] c"right\00"
+@.str.143 = private unnamed_addr constant [6 x i8] c"extra\00"
+@.str.144 = private unnamed_addr constant [9 x i8] c"type_tag\00"
+@.str.145 = private unnamed_addr constant [8 x i8] c"IRInstr\00"
+@.str.146 = private unnamed_addr constant [3 x i8] c"op\00"
+@.str.147 = private unnamed_addr constant [5 x i8] c"dest\00"
+@.str.148 = private unnamed_addr constant [5 x i8] c"arg1\00"
+@.str.149 = private unnamed_addr constant [5 x i8] c"arg2\00"
+@.str.150 = private unnamed_addr constant [5 x i8] c"arg3\00"
+@.str.151 = private unnamed_addr constant [8 x i8] c"str_val\00"
+@.str.152 = private unnamed_addr constant [12 x i8] c"ParseResult\00"
+@.str.153 = private unnamed_addr constant [9 x i8] c"node_idx\00"
+@.str.154 = private unnamed_addr constant [8 x i8] c"new_pos\00"
+@.str.155 = private unnamed_addr constant [12 x i8] c"SymbolTable\00"
+@.str.156 = private unnamed_addr constant [6 x i8] c"names\00"
+@.str.157 = private unnamed_addr constant [6 x i8] c"vregs\00"
+@.str.158 = private unnamed_addr constant [6 x i8] c"types\00"
+@.str.159 = private unnamed_addr constant [8 x i8] c"AstNode\00"
+@.str.160 = private unnamed_addr constant [4 x i8] c"tag\00"
+@.str.161 = private unnamed_addr constant [8 x i8] c"int_val\00"
+@.str.162 = private unnamed_addr constant [8 x i8] c"str_val\00"
+@.str.163 = private unnamed_addr constant [5 x i8] c"left\00"
+@.str.164 = private unnamed_addr constant [6 x i8] c"right\00"
+@.str.165 = private unnamed_addr constant [6 x i8] c"extra\00"
+@.str.166 = private unnamed_addr constant [9 x i8] c"type_tag\00"
+@.str.167 = private unnamed_addr constant [8 x i8] c"IRInstr\00"
+@.str.168 = private unnamed_addr constant [3 x i8] c"op\00"
+@.str.169 = private unnamed_addr constant [5 x i8] c"dest\00"
+@.str.170 = private unnamed_addr constant [5 x i8] c"arg1\00"
+@.str.171 = private unnamed_addr constant [5 x i8] c"arg2\00"
+@.str.172 = private unnamed_addr constant [5 x i8] c"arg3\00"
+@.str.173 = private unnamed_addr constant [8 x i8] c"str_val\00"
+@.str.174 = private unnamed_addr constant [12 x i8] c"ParseResult\00"
+@.str.175 = private unnamed_addr constant [9 x i8] c"node_idx\00"
+@.str.176 = private unnamed_addr constant [8 x i8] c"new_pos\00"
+@.str.177 = private unnamed_addr constant [7 x i8] c"string\00"
+@.str.178 = private unnamed_addr constant [4 x i8] c"tag\00"
+@.str.179 = private unnamed_addr constant [8 x i8] c"int_val\00"
+@.str.180 = private unnamed_addr constant [8 x i8] c"str_val\00"
+@.str.181 = private unnamed_addr constant [5 x i8] c"left\00"
+@.str.182 = private unnamed_addr constant [6 x i8] c"right\00"
+@.str.183 = private unnamed_addr constant [6 x i8] c"extra\00"
+@.str.184 = private unnamed_addr constant [9 x i8] c"type_tag\00"
+@.str.185 = private unnamed_addr constant [9 x i8] c"node_idx\00"
+@.str.186 = private unnamed_addr constant [8 x i8] c"new_pos\00"
+@.str.187 = private unnamed_addr constant [3 x i8] c"op\00"
+@.str.188 = private unnamed_addr constant [5 x i8] c"dest\00"
+@.str.189 = private unnamed_addr constant [5 x i8] c"arg1\00"
+@.str.190 = private unnamed_addr constant [5 x i8] c"arg2\00"
+@.str.191 = private unnamed_addr constant [5 x i8] c"arg3\00"
+@.str.192 = private unnamed_addr constant [12 x i8] c"array_index\00"
+@.str.193 = private unnamed_addr constant [8 x i8] c"str_val\00"
+@.str.194 = private unnamed_addr constant [6 x i8] c"instr\00"
+@.str.195 = private unnamed_addr constant [7 x i8] c"instrs\00"
+@.str.196 = private unnamed_addr constant [4 x i8] c"len\00"
+@.str.197 = private unnamed_addr constant [5 x i8] c"push\00"
+@.str.198 = private unnamed_addr constant [5 x i8] c"poke\00"
+@.str.199 = private unnamed_addr constant [5 x i8] c"peek\00"
+@.str.200 = private unnamed_addr constant [11 x i8] c"heap_alloc\00"
+@.str.201 = private unnamed_addr constant [8 x i8] c"os.Argc\00"
+@.str.202 = private unnamed_addr constant [8 x i8] c"os.Argv\00"
+@.str.203 = private unnamed_addr constant [12 x i8] c"str_char_at\00"
+@.str.204 = private unnamed_addr constant [13 x i8] c"syscall.open\00"
+@.str.205 = private unnamed_addr constant [14 x i8] c"syscall.write\00"
+@.str.206 = private unnamed_addr constant [14 x i8] c"syscall.close\00"
+@.str.207 = private unnamed_addr constant [13 x i8] c"syscall.read\00"
+@.str.208 = private unnamed_addr constant [9 x i8] c"os.IsDir\00"
+@.str.209 = private unnamed_addr constant [11 x i8] c"os.ListDir\00"
+@.str.210 = private unnamed_addr constant [2 x i8] c"0\00"
+@.str.211 = private unnamed_addr constant [2 x i8] c"1\00"
+@.str.212 = private unnamed_addr constant [2 x i8] c"2\00"
+@.str.213 = private unnamed_addr constant [2 x i8] c"3\00"
+@.str.214 = private unnamed_addr constant [2 x i8] c"4\00"
+@.str.215 = private unnamed_addr constant [2 x i8] c"5\00"
+@.str.216 = private unnamed_addr constant [2 x i8] c"6\00"
+@.str.217 = private unnamed_addr constant [2 x i8] c"7\00"
+@.str.218 = private unnamed_addr constant [2 x i8] c"8\00"
+@.str.219 = private unnamed_addr constant [2 x i8] c"9\00"
+@.str.220 = private unnamed_addr constant [2 x i8] c"A\00"
+@.str.221 = private unnamed_addr constant [2 x i8] c"B\00"
+@.str.222 = private unnamed_addr constant [2 x i8] c"C\00"
+@.str.223 = private unnamed_addr constant [2 x i8] c"D\00"
+@.str.224 = private unnamed_addr constant [2 x i8] c"E\00"
+@.str.225 = private unnamed_addr constant [2 x i8] c"F\00"
+@.str.226 = private unnamed_addr constant [2 x i8] c"0\00"
+@.str.227 = private unnamed_addr constant [3 x i8] c"c\22\00"
+@.str.228 = private unnamed_addr constant [2 x i8] c"\5C\00"
+@.str.229 = private unnamed_addr constant [5 x i8] c"\5C00\22\00"
+@.str.230 = private unnamed_addr constant [2 x i8] c"_\00"
+@.str.231 = private unnamed_addr constant [5 x i8] c"main\00"
+@.str.232 = private unnamed_addr constant [10 x i8] c"ease_main\00"
+@.str.233 = private unnamed_addr constant [4 x i8] c"%t.\00"
+@.str.234 = private unnamed_addr constant [3 x i8] c"  \00"
+@.str.235 = private unnamed_addr constant [21 x i8] c" = load i64, ptr %v.\00"
+@.str.236 = private unnamed_addr constant [2 x i8] c"\0A\00"
+@.str.237 = private unnamed_addr constant [3 x i8] c"  \00"
+@.str.238 = private unnamed_addr constant [17 x i8] c" = inttoptr i64 \00"
+@.str.239 = private unnamed_addr constant [9 x i8] c" to ptr\0A\00"
+@.str.240 = private unnamed_addr constant [13 x i8] c"  store i64 \00"
+@.str.241 = private unnamed_addr constant [10 x i8] c", ptr %v.\00"
+@.str.242 = private unnamed_addr constant [2 x i8] c"\0A\00"
+@.str.243 = private unnamed_addr constant [3 x i8] c"  \00"
+@.str.244 = private unnamed_addr constant [17 x i8] c" = ptrtoint ptr \00"
+@.str.245 = private unnamed_addr constant [9 x i8] c" to i64\0A\00"
+@.str.246 = private unnamed_addr constant [3 x i8] c"  \00"
+@.str.247 = private unnamed_addr constant [4 x i8] c" = \00"
+@.str.248 = private unnamed_addr constant [6 x i8] c" i64 \00"
+@.str.249 = private unnamed_addr constant [3 x i8] c", \00"
+@.str.250 = private unnamed_addr constant [2 x i8] c"\0A\00"
+@.str.251 = private unnamed_addr constant [3 x i8] c"  \00"
+@.str.252 = private unnamed_addr constant [9 x i8] c" = icmp \00"
+@.str.253 = private unnamed_addr constant [6 x i8] c" i64 \00"
+@.str.254 = private unnamed_addr constant [3 x i8] c", \00"
+@.str.255 = private unnamed_addr constant [2 x i8] c"\0A\00"
+@.str.256 = private unnamed_addr constant [3 x i8] c"  \00"
+@.str.257 = private unnamed_addr constant [12 x i8] c" = zext i1 \00"
+@.str.258 = private unnamed_addr constant [9 x i8] c" to i64\0A\00"
+@.str.259 = private unnamed_addr constant [26 x i8] c"declare ptr @malloc(i64)\0A\00"
+@.str.260 = private unnamed_addr constant [31 x i8] c"declare ptr @calloc(i64, i64)\0A\00"
+@.str.261 = private unnamed_addr constant [36 x i8] c"declare ptr @memcpy(ptr, ptr, i64)\0A\00"
+@.str.262 = private unnamed_addr constant [36 x i8] c"declare ptr @memset(ptr, i32, i64)\0A\00"
+@.str.263 = private unnamed_addr constant [36 x i8] c"declare i64 @ease_str_eq(ptr, ptr)\0A\00"
+@.str.264 = private unnamed_addr constant [36 x i8] c"declare i64 @ease_str_ne(ptr, ptr)\0A\00"
+@.str.265 = private unnamed_addr constant [32 x i8] c"declare i64 @ease_str_len(ptr)\0A\00"
+@.str.266 = private unnamed_addr constant [40 x i8] c"declare ptr @ease_str_concat(ptr, ptr)\0A\00"
+@.str.267 = private unnamed_addr constant [44 x i8] c"declare ptr @ease_str_slice(ptr, i64, i64)\0A\00"
+@.str.268 = private unnamed_addr constant [41 x i8] c"declare i64 @ease_str_char_at(ptr, i64)\0A\00"
+@.str.269 = private unnamed_addr constant [46 x i8] c"declare void @ease_array_push(ptr, ptr, i64)\0A\00"
+@.str.270 = private unnamed_addr constant [40 x i8] c"declare i64 @ease_write_file(ptr, ptr)\0A\00"
+@.str.271 = private unnamed_addr constant [35 x i8] c"declare ptr @ease_int_to_str(i64)\0A\00"
+@.str.272 = private unnamed_addr constant [35 x i8] c"declare i64 @ease_str_to_int(ptr)\0A\00"
+@.str.273 = private unnamed_addr constant [35 x i8] c"declare void @ease_poke(ptr, i64)\0A\00"
+@.str.274 = private unnamed_addr constant [29 x i8] c"declare i64 @ease_peek(ptr)\0A\00"
+@.str.275 = private unnamed_addr constant [42 x i8] c"declare void @ease_memset(ptr, i64, i64)\0A\00"
+@.str.276 = private unnamed_addr constant [47 x i8] c"declare i64 @ease_syscall_open(ptr, i64, i64)\0A\00"
+@.str.277 = private unnamed_addr constant [47 x i8] c"declare i64 @ease_syscall_read(i64, ptr, i64)\0A\00"
+@.str.278 = private unnamed_addr constant [48 x i8] c"declare i64 @ease_syscall_write(i64, ptr, i64)\0A\00"
+@.str.279 = private unnamed_addr constant [38 x i8] c"declare i64 @ease_syscall_close(i64)\0A\00"
+@.str.280 = private unnamed_addr constant [26 x i8] c"declare i64 @ease_argc()\0A\00"
+@.str.281 = private unnamed_addr constant [29 x i8] c"declare ptr @ease_argv(i64)\0A\00"
+@.str.282 = private unnamed_addr constant [31 x i8] c"declare i64 @ease_is_dir(ptr)\0A\00"
+@.str.283 = private unnamed_addr constant [33 x i8] c"declare ptr @ease_list_dir(ptr)\0A\00"
+@.str.284 = private unnamed_addr constant [2 x i8] c"\0A\00"
+@.str.285 = private unnamed_addr constant [36 x i8] c"ERROR: Failed to open output file: \00"
 @.str.286 = private unnamed_addr constant [2 x i8] c"\0A\00"
-@.str.287 = private unnamed_addr constant [36 x i8] c"ERROR: Failed to open output file: \00"
-@.str.288 = private unnamed_addr constant [2 x i8] c"\0A\00"
-@.str.289 = private unnamed_addr constant [7 x i8] c"@.str.\00"
-@.str.290 = private unnamed_addr constant [35 x i8] c" = private unnamed_addr constant [\00"
-@.str.291 = private unnamed_addr constant [8 x i8] c" x i8] \00"
-@.str.292 = private unnamed_addr constant [2 x i8] c"\0A\00"
-@.str.293 = private unnamed_addr constant [2 x i8] c"\0A\00"
+@.str.287 = private unnamed_addr constant [7 x i8] c"@.str.\00"
+@.str.288 = private unnamed_addr constant [35 x i8] c" = private unnamed_addr constant [\00"
+@.str.289 = private unnamed_addr constant [8 x i8] c" x i8] \00"
+@.str.290 = private unnamed_addr constant [2 x i8] c"\0A\00"
+@.str.291 = private unnamed_addr constant [2 x i8] c"\0A\00"
+@.str.292 = private unnamed_addr constant [2 x i8] c"@\00"
+@.str.293 = private unnamed_addr constant [17 x i8] c" = global i64 0\0A\00"
 @.str.294 = private unnamed_addr constant [2 x i8] c"@\00"
-@.str.295 = private unnamed_addr constant [17 x i8] c" = global i64 0\0A\00"
-@.str.296 = private unnamed_addr constant [2 x i8] c"@\00"
-@.str.297 = private unnamed_addr constant [37 x i8] c" = global [24 x i8] zeroinitializer\0A\00"
+@.str.295 = private unnamed_addr constant [37 x i8] c" = global [24 x i8] zeroinitializer\0A\00"
+@.str.296 = private unnamed_addr constant [2 x i8] c"\0A\00"
+@.str.297 = private unnamed_addr constant [20 x i8] c"Generated LLVM IR: \00"
 @.str.298 = private unnamed_addr constant [2 x i8] c"\0A\00"
-@.str.299 = private unnamed_addr constant [20 x i8] c"Generated LLVM IR: \00"
-@.str.300 = private unnamed_addr constant [2 x i8] c"\0A\00"
-@.str.301 = private unnamed_addr constant [3 x i8] c", \00"
-@.str.302 = private unnamed_addr constant [12 x i8] c"i64 %param.\00"
-@.str.303 = private unnamed_addr constant [13 x i8] c"define i64 @\00"
-@.str.304 = private unnamed_addr constant [2 x i8] c"(\00"
-@.str.305 = private unnamed_addr constant [5 x i8] c") {\0A\00"
-@.str.306 = private unnamed_addr constant [6 x i8] c"  %v.\00"
-@.str.307 = private unnamed_addr constant [15 x i8] c" = alloca i64\0A\00"
-@.str.308 = private unnamed_addr constant [20 x i8] c"  store i64 %param.\00"
-@.str.309 = private unnamed_addr constant [10 x i8] c", ptr %v.\00"
-@.str.310 = private unnamed_addr constant [2 x i8] c"\0A\00"
-@.str.311 = private unnamed_addr constant [20 x i8] c"  br label %B.body\0A\00"
-@.str.312 = private unnamed_addr constant [9 x i8] c"B.body:\0A\00"
-@.str.313 = private unnamed_addr constant [15 x i8] c"  br label %L.\00"
-@.str.314 = private unnamed_addr constant [2 x i8] c"\0A\00"
-@.str.315 = private unnamed_addr constant [3 x i8] c"L.\00"
-@.str.316 = private unnamed_addr constant [3 x i8] c":\0A\00"
-@.str.317 = private unnamed_addr constant [3 x i8] c"  \00"
-@.str.318 = private unnamed_addr constant [23 x i8] c" = ptrtoint ptr @.str.\00"
-@.str.319 = private unnamed_addr constant [9 x i8] c" to i64\0A\00"
-@.str.320 = private unnamed_addr constant [3 x i8] c"  \00"
-@.str.321 = private unnamed_addr constant [18 x i8] c" = ptrtoint ptr @\00"
-@.str.322 = private unnamed_addr constant [9 x i8] c" to i64\0A\00"
-@.str.323 = private unnamed_addr constant [4 x i8] c"add\00"
-@.str.324 = private unnamed_addr constant [4 x i8] c"sub\00"
-@.str.325 = private unnamed_addr constant [4 x i8] c"mul\00"
-@.str.326 = private unnamed_addr constant [5 x i8] c"sdiv\00"
-@.str.327 = private unnamed_addr constant [5 x i8] c"srem\00"
-@.str.328 = private unnamed_addr constant [4 x i8] c"and\00"
-@.str.329 = private unnamed_addr constant [3 x i8] c"or\00"
-@.str.330 = private unnamed_addr constant [4 x i8] c"xor\00"
-@.str.331 = private unnamed_addr constant [4 x i8] c"and\00"
-@.str.332 = private unnamed_addr constant [3 x i8] c"or\00"
-@.str.333 = private unnamed_addr constant [3 x i8] c"  \00"
-@.str.334 = private unnamed_addr constant [12 x i8] c" = xor i64 \00"
-@.str.335 = private unnamed_addr constant [5 x i8] c", 1\0A\00"
-@.str.336 = private unnamed_addr constant [3 x i8] c"eq\00"
-@.str.337 = private unnamed_addr constant [3 x i8] c"ne\00"
-@.str.338 = private unnamed_addr constant [4 x i8] c"slt\00"
-@.str.339 = private unnamed_addr constant [4 x i8] c"sle\00"
-@.str.340 = private unnamed_addr constant [4 x i8] c"sgt\00"
-@.str.341 = private unnamed_addr constant [4 x i8] c"sge\00"
-@.str.342 = private unnamed_addr constant [12 x i8] c"array_index\00"
-@.str.343 = private unnamed_addr constant [3 x i8] c"  \00"
-@.str.344 = private unnamed_addr constant [17 x i8] c" = inttoptr i64 \00"
-@.str.345 = private unnamed_addr constant [9 x i8] c" to ptr\0A\00"
-@.str.346 = private unnamed_addr constant [3 x i8] c"  \00"
-@.str.347 = private unnamed_addr constant [18 x i8] c" = load i64, ptr \00"
-@.str.348 = private unnamed_addr constant [2 x i8] c"\0A\00"
-@.str.349 = private unnamed_addr constant [3 x i8] c"  \00"
-@.str.350 = private unnamed_addr constant [12 x i8] c" = mul i64 \00"
-@.str.351 = private unnamed_addr constant [5 x i8] c", 8\0A\00"
-@.str.352 = private unnamed_addr constant [3 x i8] c"  \00"
-@.str.353 = private unnamed_addr constant [12 x i8] c" = add i64 \00"
-@.str.354 = private unnamed_addr constant [3 x i8] c", \00"
-@.str.355 = private unnamed_addr constant [2 x i8] c"\0A\00"
-@.str.356 = private unnamed_addr constant [3 x i8] c"  \00"
-@.str.357 = private unnamed_addr constant [12 x i8] c" = add i64 \00"
-@.str.358 = private unnamed_addr constant [3 x i8] c", \00"
-@.str.359 = private unnamed_addr constant [2 x i8] c"\0A\00"
-@.str.360 = private unnamed_addr constant [3 x i8] c"  \00"
-@.str.361 = private unnamed_addr constant [17 x i8] c" = inttoptr i64 \00"
-@.str.362 = private unnamed_addr constant [9 x i8] c" to ptr\0A\00"
-@.str.363 = private unnamed_addr constant [3 x i8] c"  \00"
-@.str.364 = private unnamed_addr constant [18 x i8] c" = load i64, ptr \00"
-@.str.365 = private unnamed_addr constant [2 x i8] c"\0A\00"
-@.str.366 = private unnamed_addr constant [3 x i8] c"  \00"
-@.str.367 = private unnamed_addr constant [17 x i8] c" = inttoptr i64 \00"
-@.str.368 = private unnamed_addr constant [9 x i8] c" to ptr\0A\00"
-@.str.369 = private unnamed_addr constant [13 x i8] c"  store i64 \00"
-@.str.370 = private unnamed_addr constant [7 x i8] c", ptr \00"
-@.str.371 = private unnamed_addr constant [2 x i8] c"\0A\00"
-@.str.372 = private unnamed_addr constant [3 x i8] c"  \00"
-@.str.373 = private unnamed_addr constant [25 x i8] c" = call ptr @malloc(i64 \00"
-@.str.374 = private unnamed_addr constant [3 x i8] c")\0A\00"
-@.str.375 = private unnamed_addr constant [3 x i8] c"  \00"
-@.str.376 = private unnamed_addr constant [25 x i8] c" = call ptr @memset(ptr \00"
-@.str.377 = private unnamed_addr constant [14 x i8] c", i32 0, i64 \00"
-@.str.378 = private unnamed_addr constant [3 x i8] c")\0A\00"
-@.str.379 = private unnamed_addr constant [3 x i8] c"  \00"
-@.str.380 = private unnamed_addr constant [12 x i8] c" = add i64 \00"
-@.str.381 = private unnamed_addr constant [3 x i8] c", \00"
-@.str.382 = private unnamed_addr constant [2 x i8] c"\0A\00"
-@.str.383 = private unnamed_addr constant [24 x i8] c"  call ptr @memcpy(ptr \00"
-@.str.384 = private unnamed_addr constant [7 x i8] c", ptr \00"
-@.str.385 = private unnamed_addr constant [7 x i8] c", i64 \00"
-@.str.386 = private unnamed_addr constant [3 x i8] c")\0A\00"
-@.str.387 = private unnamed_addr constant [3 x i8] c"  \00"
-@.str.388 = private unnamed_addr constant [12 x i8] c" = add i64 \00"
-@.str.389 = private unnamed_addr constant [5 x i8] c", 8\0A\00"
-@.str.390 = private unnamed_addr constant [3 x i8] c"  \00"
-@.str.391 = private unnamed_addr constant [17 x i8] c" = inttoptr i64 \00"
-@.str.392 = private unnamed_addr constant [9 x i8] c" to ptr\0A\00"
-@.str.393 = private unnamed_addr constant [3 x i8] c"  \00"
-@.str.394 = private unnamed_addr constant [18 x i8] c" = load i64, ptr \00"
-@.str.395 = private unnamed_addr constant [2 x i8] c"\0A\00"
-@.str.396 = private unnamed_addr constant [3 x i8] c"  \00"
-@.str.397 = private unnamed_addr constant [17 x i8] c" = inttoptr i64 \00"
-@.str.398 = private unnamed_addr constant [9 x i8] c" to ptr\0A\00"
-@.str.399 = private unnamed_addr constant [3 x i8] c"  \00"
-@.str.400 = private unnamed_addr constant [31 x i8] c" = call i64 @ease_str_len(ptr \00"
-@.str.401 = private unnamed_addr constant [3 x i8] c")\0A\00"
-@.str.402 = private unnamed_addr constant [3 x i8] c"  \00"
-@.str.403 = private unnamed_addr constant [15 x i8] c" = alloca i64\0A\00"
-@.str.404 = private unnamed_addr constant [13 x i8] c"  store i64 \00"
-@.str.405 = private unnamed_addr constant [7 x i8] c", ptr \00"
-@.str.406 = private unnamed_addr constant [2 x i8] c"\0A\00"
-@.str.407 = private unnamed_addr constant [34 x i8] c"  call void @ease_array_push(ptr \00"
-@.str.408 = private unnamed_addr constant [7 x i8] c", ptr \00"
-@.str.409 = private unnamed_addr constant [10 x i8] c", i64 8)\0A\00"
-@.str.410 = private unnamed_addr constant [28 x i8] c"  call void @ease_poke(ptr \00"
-@.str.411 = private unnamed_addr constant [7 x i8] c", i64 \00"
-@.str.412 = private unnamed_addr constant [3 x i8] c")\0A\00"
-@.str.413 = private unnamed_addr constant [3 x i8] c"  \00"
-@.str.414 = private unnamed_addr constant [28 x i8] c" = call i64 @ease_peek(ptr \00"
-@.str.415 = private unnamed_addr constant [3 x i8] c")\0A\00"
-@.str.416 = private unnamed_addr constant [3 x i8] c"  \00"
-@.str.417 = private unnamed_addr constant [25 x i8] c" = call ptr @malloc(i64 \00"
-@.str.418 = private unnamed_addr constant [3 x i8] c")\0A\00"
-@.str.419 = private unnamed_addr constant [3 x i8] c"  \00"
-@.str.420 = private unnamed_addr constant [25 x i8] c" = call ptr @memset(ptr \00"
-@.str.421 = private unnamed_addr constant [14 x i8] c", i32 0, i64 \00"
-@.str.422 = private unnamed_addr constant [3 x i8] c")\0A\00"
+@.str.299 = private unnamed_addr constant [3 x i8] c", \00"
+@.str.300 = private unnamed_addr constant [12 x i8] c"i64 %param.\00"
+@.str.301 = private unnamed_addr constant [13 x i8] c"define i64 @\00"
+@.str.302 = private unnamed_addr constant [2 x i8] c"(\00"
+@.str.303 = private unnamed_addr constant [5 x i8] c") {\0A\00"
+@.str.304 = private unnamed_addr constant [6 x i8] c"  %v.\00"
+@.str.305 = private unnamed_addr constant [15 x i8] c" = alloca i64\0A\00"
+@.str.306 = private unnamed_addr constant [20 x i8] c"  store i64 %param.\00"
+@.str.307 = private unnamed_addr constant [10 x i8] c", ptr %v.\00"
+@.str.308 = private unnamed_addr constant [2 x i8] c"\0A\00"
+@.str.309 = private unnamed_addr constant [20 x i8] c"  br label %B.body\0A\00"
+@.str.310 = private unnamed_addr constant [9 x i8] c"B.body:\0A\00"
+@.str.311 = private unnamed_addr constant [15 x i8] c"  br label %L.\00"
+@.str.312 = private unnamed_addr constant [2 x i8] c"\0A\00"
+@.str.313 = private unnamed_addr constant [3 x i8] c"L.\00"
+@.str.314 = private unnamed_addr constant [3 x i8] c":\0A\00"
+@.str.315 = private unnamed_addr constant [3 x i8] c"  \00"
+@.str.316 = private unnamed_addr constant [23 x i8] c" = ptrtoint ptr @.str.\00"
+@.str.317 = private unnamed_addr constant [9 x i8] c" to i64\0A\00"
+@.str.318 = private unnamed_addr constant [3 x i8] c"  \00"
+@.str.319 = private unnamed_addr constant [18 x i8] c" = ptrtoint ptr @\00"
+@.str.320 = private unnamed_addr constant [9 x i8] c" to i64\0A\00"
+@.str.321 = private unnamed_addr constant [4 x i8] c"add\00"
+@.str.322 = private unnamed_addr constant [4 x i8] c"sub\00"
+@.str.323 = private unnamed_addr constant [4 x i8] c"mul\00"
+@.str.324 = private unnamed_addr constant [5 x i8] c"sdiv\00"
+@.str.325 = private unnamed_addr constant [5 x i8] c"srem\00"
+@.str.326 = private unnamed_addr constant [4 x i8] c"and\00"
+@.str.327 = private unnamed_addr constant [3 x i8] c"or\00"
+@.str.328 = private unnamed_addr constant [4 x i8] c"xor\00"
+@.str.329 = private unnamed_addr constant [4 x i8] c"and\00"
+@.str.330 = private unnamed_addr constant [3 x i8] c"or\00"
+@.str.331 = private unnamed_addr constant [3 x i8] c"  \00"
+@.str.332 = private unnamed_addr constant [12 x i8] c" = xor i64 \00"
+@.str.333 = private unnamed_addr constant [5 x i8] c", 1\0A\00"
+@.str.334 = private unnamed_addr constant [3 x i8] c"eq\00"
+@.str.335 = private unnamed_addr constant [3 x i8] c"ne\00"
+@.str.336 = private unnamed_addr constant [4 x i8] c"slt\00"
+@.str.337 = private unnamed_addr constant [4 x i8] c"sle\00"
+@.str.338 = private unnamed_addr constant [4 x i8] c"sgt\00"
+@.str.339 = private unnamed_addr constant [4 x i8] c"sge\00"
+@.str.340 = private unnamed_addr constant [12 x i8] c"array_index\00"
+@.str.341 = private unnamed_addr constant [3 x i8] c"  \00"
+@.str.342 = private unnamed_addr constant [17 x i8] c" = inttoptr i64 \00"
+@.str.343 = private unnamed_addr constant [9 x i8] c" to ptr\0A\00"
+@.str.344 = private unnamed_addr constant [3 x i8] c"  \00"
+@.str.345 = private unnamed_addr constant [18 x i8] c" = load i64, ptr \00"
+@.str.346 = private unnamed_addr constant [2 x i8] c"\0A\00"
+@.str.347 = private unnamed_addr constant [3 x i8] c"  \00"
+@.str.348 = private unnamed_addr constant [12 x i8] c" = mul i64 \00"
+@.str.349 = private unnamed_addr constant [5 x i8] c", 8\0A\00"
+@.str.350 = private unnamed_addr constant [3 x i8] c"  \00"
+@.str.351 = private unnamed_addr constant [12 x i8] c" = add i64 \00"
+@.str.352 = private unnamed_addr constant [3 x i8] c", \00"
+@.str.353 = private unnamed_addr constant [2 x i8] c"\0A\00"
+@.str.354 = private unnamed_addr constant [3 x i8] c"  \00"
+@.str.355 = private unnamed_addr constant [12 x i8] c" = add i64 \00"
+@.str.356 = private unnamed_addr constant [3 x i8] c", \00"
+@.str.357 = private unnamed_addr constant [2 x i8] c"\0A\00"
+@.str.358 = private unnamed_addr constant [3 x i8] c"  \00"
+@.str.359 = private unnamed_addr constant [17 x i8] c" = inttoptr i64 \00"
+@.str.360 = private unnamed_addr constant [9 x i8] c" to ptr\0A\00"
+@.str.361 = private unnamed_addr constant [3 x i8] c"  \00"
+@.str.362 = private unnamed_addr constant [18 x i8] c" = load i64, ptr \00"
+@.str.363 = private unnamed_addr constant [2 x i8] c"\0A\00"
+@.str.364 = private unnamed_addr constant [3 x i8] c"  \00"
+@.str.365 = private unnamed_addr constant [17 x i8] c" = inttoptr i64 \00"
+@.str.366 = private unnamed_addr constant [9 x i8] c" to ptr\0A\00"
+@.str.367 = private unnamed_addr constant [13 x i8] c"  store i64 \00"
+@.str.368 = private unnamed_addr constant [7 x i8] c", ptr \00"
+@.str.369 = private unnamed_addr constant [2 x i8] c"\0A\00"
+@.str.370 = private unnamed_addr constant [3 x i8] c"  \00"
+@.str.371 = private unnamed_addr constant [25 x i8] c" = call ptr @malloc(i64 \00"
+@.str.372 = private unnamed_addr constant [3 x i8] c")\0A\00"
+@.str.373 = private unnamed_addr constant [3 x i8] c"  \00"
+@.str.374 = private unnamed_addr constant [25 x i8] c" = call ptr @memset(ptr \00"
+@.str.375 = private unnamed_addr constant [14 x i8] c", i32 0, i64 \00"
+@.str.376 = private unnamed_addr constant [3 x i8] c")\0A\00"
+@.str.377 = private unnamed_addr constant [3 x i8] c"  \00"
+@.str.378 = private unnamed_addr constant [12 x i8] c" = add i64 \00"
+@.str.379 = private unnamed_addr constant [3 x i8] c", \00"
+@.str.380 = private unnamed_addr constant [2 x i8] c"\0A\00"
+@.str.381 = private unnamed_addr constant [24 x i8] c"  call ptr @memcpy(ptr \00"
+@.str.382 = private unnamed_addr constant [7 x i8] c", ptr \00"
+@.str.383 = private unnamed_addr constant [7 x i8] c", i64 \00"
+@.str.384 = private unnamed_addr constant [3 x i8] c")\0A\00"
+@.str.385 = private unnamed_addr constant [3 x i8] c"  \00"
+@.str.386 = private unnamed_addr constant [12 x i8] c" = add i64 \00"
+@.str.387 = private unnamed_addr constant [5 x i8] c", 8\0A\00"
+@.str.388 = private unnamed_addr constant [3 x i8] c"  \00"
+@.str.389 = private unnamed_addr constant [17 x i8] c" = inttoptr i64 \00"
+@.str.390 = private unnamed_addr constant [9 x i8] c" to ptr\0A\00"
+@.str.391 = private unnamed_addr constant [3 x i8] c"  \00"
+@.str.392 = private unnamed_addr constant [18 x i8] c" = load i64, ptr \00"
+@.str.393 = private unnamed_addr constant [2 x i8] c"\0A\00"
+@.str.394 = private unnamed_addr constant [3 x i8] c"  \00"
+@.str.395 = private unnamed_addr constant [17 x i8] c" = inttoptr i64 \00"
+@.str.396 = private unnamed_addr constant [9 x i8] c" to ptr\0A\00"
+@.str.397 = private unnamed_addr constant [3 x i8] c"  \00"
+@.str.398 = private unnamed_addr constant [31 x i8] c" = call i64 @ease_str_len(ptr \00"
+@.str.399 = private unnamed_addr constant [3 x i8] c")\0A\00"
+@.str.400 = private unnamed_addr constant [3 x i8] c"  \00"
+@.str.401 = private unnamed_addr constant [15 x i8] c" = alloca i64\0A\00"
+@.str.402 = private unnamed_addr constant [13 x i8] c"  store i64 \00"
+@.str.403 = private unnamed_addr constant [7 x i8] c", ptr \00"
+@.str.404 = private unnamed_addr constant [2 x i8] c"\0A\00"
+@.str.405 = private unnamed_addr constant [34 x i8] c"  call void @ease_array_push(ptr \00"
+@.str.406 = private unnamed_addr constant [7 x i8] c", ptr \00"
+@.str.407 = private unnamed_addr constant [10 x i8] c", i64 8)\0A\00"
+@.str.408 = private unnamed_addr constant [28 x i8] c"  call void @ease_poke(ptr \00"
+@.str.409 = private unnamed_addr constant [7 x i8] c", i64 \00"
+@.str.410 = private unnamed_addr constant [3 x i8] c")\0A\00"
+@.str.411 = private unnamed_addr constant [3 x i8] c"  \00"
+@.str.412 = private unnamed_addr constant [28 x i8] c" = call i64 @ease_peek(ptr \00"
+@.str.413 = private unnamed_addr constant [3 x i8] c")\0A\00"
+@.str.414 = private unnamed_addr constant [3 x i8] c"  \00"
+@.str.415 = private unnamed_addr constant [25 x i8] c" = call ptr @malloc(i64 \00"
+@.str.416 = private unnamed_addr constant [3 x i8] c")\0A\00"
+@.str.417 = private unnamed_addr constant [3 x i8] c"  \00"
+@.str.418 = private unnamed_addr constant [25 x i8] c" = call ptr @memset(ptr \00"
+@.str.419 = private unnamed_addr constant [14 x i8] c", i32 0, i64 \00"
+@.str.420 = private unnamed_addr constant [3 x i8] c")\0A\00"
+@.str.421 = private unnamed_addr constant [3 x i8] c"  \00"
+@.str.422 = private unnamed_addr constant [26 x i8] c" = call i64 @ease_argc()\0A\00"
 @.str.423 = private unnamed_addr constant [3 x i8] c"  \00"
-@.str.424 = private unnamed_addr constant [26 x i8] c" = call i64 @ease_argc()\0A\00"
-@.str.425 = private unnamed_addr constant [3 x i8] c"  \00"
-@.str.426 = private unnamed_addr constant [28 x i8] c" = call ptr @ease_argv(i64 \00"
-@.str.427 = private unnamed_addr constant [3 x i8] c")\0A\00"
-@.str.428 = private unnamed_addr constant [3 x i8] c"  \00"
-@.str.429 = private unnamed_addr constant [34 x i8] c" = call ptr @ease_int_to_str(i64 \00"
-@.str.430 = private unnamed_addr constant [3 x i8] c")\0A\00"
-@.str.431 = private unnamed_addr constant [3 x i8] c"  \00"
-@.str.432 = private unnamed_addr constant [30 x i8] c" = call i64 @ease_str_eq(ptr \00"
-@.str.433 = private unnamed_addr constant [7 x i8] c", ptr \00"
-@.str.434 = private unnamed_addr constant [3 x i8] c")\0A\00"
-@.str.435 = private unnamed_addr constant [3 x i8] c"  \00"
-@.str.436 = private unnamed_addr constant [30 x i8] c" = call i64 @ease_str_ne(ptr \00"
-@.str.437 = private unnamed_addr constant [7 x i8] c", ptr \00"
-@.str.438 = private unnamed_addr constant [3 x i8] c")\0A\00"
-@.str.439 = private unnamed_addr constant [3 x i8] c"  \00"
-@.str.440 = private unnamed_addr constant [34 x i8] c" = call ptr @ease_str_concat(ptr \00"
-@.str.441 = private unnamed_addr constant [7 x i8] c", ptr \00"
-@.str.442 = private unnamed_addr constant [3 x i8] c")\0A\00"
-@.str.443 = private unnamed_addr constant [3 x i8] c"  \00"
-@.str.444 = private unnamed_addr constant [35 x i8] c" = call i64 @ease_str_char_at(ptr \00"
-@.str.445 = private unnamed_addr constant [7 x i8] c", i64 \00"
-@.str.446 = private unnamed_addr constant [3 x i8] c")\0A\00"
-@.str.447 = private unnamed_addr constant [3 x i8] c"  \00"
-@.str.448 = private unnamed_addr constant [36 x i8] c" = call i64 @ease_syscall_open(ptr \00"
-@.str.449 = private unnamed_addr constant [7 x i8] c", i64 \00"
-@.str.450 = private unnamed_addr constant [7 x i8] c", i64 \00"
-@.str.451 = private unnamed_addr constant [3 x i8] c")\0A\00"
-@.str.452 = private unnamed_addr constant [3 x i8] c"  \00"
-@.str.453 = private unnamed_addr constant [37 x i8] c" = call i64 @ease_syscall_write(i64 \00"
-@.str.454 = private unnamed_addr constant [7 x i8] c", ptr \00"
-@.str.455 = private unnamed_addr constant [7 x i8] c", i64 \00"
-@.str.456 = private unnamed_addr constant [3 x i8] c")\0A\00"
-@.str.457 = private unnamed_addr constant [3 x i8] c"  \00"
-@.str.458 = private unnamed_addr constant [37 x i8] c" = call i64 @ease_syscall_close(i64 \00"
-@.str.459 = private unnamed_addr constant [3 x i8] c")\0A\00"
-@.str.460 = private unnamed_addr constant [3 x i8] c"  \00"
-@.str.461 = private unnamed_addr constant [36 x i8] c" = call i64 @ease_syscall_read(i64 \00"
-@.str.462 = private unnamed_addr constant [7 x i8] c", ptr \00"
-@.str.463 = private unnamed_addr constant [7 x i8] c", i64 \00"
-@.str.464 = private unnamed_addr constant [3 x i8] c")\0A\00"
-@.str.465 = private unnamed_addr constant [3 x i8] c"  \00"
-@.str.466 = private unnamed_addr constant [30 x i8] c" = call i64 @ease_is_dir(ptr \00"
-@.str.467 = private unnamed_addr constant [3 x i8] c")\0A\00"
-@.str.468 = private unnamed_addr constant [3 x i8] c"  \00"
-@.str.469 = private unnamed_addr constant [32 x i8] c" = call ptr @ease_list_dir(ptr \00"
-@.str.470 = private unnamed_addr constant [3 x i8] c")\0A\00"
-@.str.471 = private unnamed_addr constant [3 x i8] c", \00"
-@.str.472 = private unnamed_addr constant [5 x i8] c"i64 \00"
-@.str.473 = private unnamed_addr constant [3 x i8] c"  \00"
-@.str.474 = private unnamed_addr constant [14 x i8] c" = call i64 @\00"
-@.str.475 = private unnamed_addr constant [2 x i8] c"(\00"
-@.str.476 = private unnamed_addr constant [3 x i8] c")\0A\00"
-@.str.477 = private unnamed_addr constant [13 x i8] c"  call i64 @\00"
-@.str.478 = private unnamed_addr constant [2 x i8] c"(\00"
-@.str.479 = private unnamed_addr constant [3 x i8] c")\0A\00"
-@.str.480 = private unnamed_addr constant [11 x i8] c"  ret i64 \00"
-@.str.481 = private unnamed_addr constant [2 x i8] c"\0A\00"
-@.str.482 = private unnamed_addr constant [13 x i8] c"  ret i64 0\0A\00"
-@.str.483 = private unnamed_addr constant [15 x i8] c"  br label %L.\00"
-@.str.484 = private unnamed_addr constant [2 x i8] c"\0A\00"
-@.str.485 = private unnamed_addr constant [3 x i8] c"  \00"
-@.str.486 = private unnamed_addr constant [16 x i8] c" = icmp eq i64 \00"
-@.str.487 = private unnamed_addr constant [5 x i8] c", 0\0A\00"
-@.str.488 = private unnamed_addr constant [8 x i8] c"L.fall.\00"
-@.str.489 = private unnamed_addr constant [9 x i8] c"  br i1 \00"
-@.str.490 = private unnamed_addr constant [12 x i8] c", label %L.\00"
-@.str.491 = private unnamed_addr constant [10 x i8] c", label %\00"
-@.str.492 = private unnamed_addr constant [2 x i8] c"\0A\00"
-@.str.493 = private unnamed_addr constant [3 x i8] c":\0A\00"
-@.str.494 = private unnamed_addr constant [13 x i8] c"  ret i64 0\0A\00"
-@.str.495 = private unnamed_addr constant [4 x i8] c"}\0A\0A\00"
-@.str.496 = private unnamed_addr constant [2 x i8] c"a\00"
-@.str.497 = private unnamed_addr constant [2 x i8] c"b\00"
-@.str.498 = private unnamed_addr constant [2 x i8] c"c\00"
-@.str.499 = private unnamed_addr constant [2 x i8] c"d\00"
-@.str.500 = private unnamed_addr constant [2 x i8] c"e\00"
-@.str.501 = private unnamed_addr constant [2 x i8] c"f\00"
+@.str.424 = private unnamed_addr constant [28 x i8] c" = call ptr @ease_argv(i64 \00"
+@.str.425 = private unnamed_addr constant [3 x i8] c")\0A\00"
+@.str.426 = private unnamed_addr constant [3 x i8] c"  \00"
+@.str.427 = private unnamed_addr constant [34 x i8] c" = call ptr @ease_int_to_str(i64 \00"
+@.str.428 = private unnamed_addr constant [3 x i8] c")\0A\00"
+@.str.429 = private unnamed_addr constant [3 x i8] c"  \00"
+@.str.430 = private unnamed_addr constant [30 x i8] c" = call i64 @ease_str_eq(ptr \00"
+@.str.431 = private unnamed_addr constant [7 x i8] c", ptr \00"
+@.str.432 = private unnamed_addr constant [3 x i8] c")\0A\00"
+@.str.433 = private unnamed_addr constant [3 x i8] c"  \00"
+@.str.434 = private unnamed_addr constant [30 x i8] c" = call i64 @ease_str_ne(ptr \00"
+@.str.435 = private unnamed_addr constant [7 x i8] c", ptr \00"
+@.str.436 = private unnamed_addr constant [3 x i8] c")\0A\00"
+@.str.437 = private unnamed_addr constant [3 x i8] c"  \00"
+@.str.438 = private unnamed_addr constant [34 x i8] c" = call ptr @ease_str_concat(ptr \00"
+@.str.439 = private unnamed_addr constant [7 x i8] c", ptr \00"
+@.str.440 = private unnamed_addr constant [3 x i8] c")\0A\00"
+@.str.441 = private unnamed_addr constant [3 x i8] c"  \00"
+@.str.442 = private unnamed_addr constant [35 x i8] c" = call i64 @ease_str_char_at(ptr \00"
+@.str.443 = private unnamed_addr constant [7 x i8] c", i64 \00"
+@.str.444 = private unnamed_addr constant [3 x i8] c")\0A\00"
+@.str.445 = private unnamed_addr constant [3 x i8] c"  \00"
+@.str.446 = private unnamed_addr constant [36 x i8] c" = call i64 @ease_syscall_open(ptr \00"
+@.str.447 = private unnamed_addr constant [7 x i8] c", i64 \00"
+@.str.448 = private unnamed_addr constant [7 x i8] c", i64 \00"
+@.str.449 = private unnamed_addr constant [3 x i8] c")\0A\00"
+@.str.450 = private unnamed_addr constant [3 x i8] c"  \00"
+@.str.451 = private unnamed_addr constant [37 x i8] c" = call i64 @ease_syscall_write(i64 \00"
+@.str.452 = private unnamed_addr constant [7 x i8] c", ptr \00"
+@.str.453 = private unnamed_addr constant [7 x i8] c", i64 \00"
+@.str.454 = private unnamed_addr constant [3 x i8] c")\0A\00"
+@.str.455 = private unnamed_addr constant [3 x i8] c"  \00"
+@.str.456 = private unnamed_addr constant [37 x i8] c" = call i64 @ease_syscall_close(i64 \00"
+@.str.457 = private unnamed_addr constant [3 x i8] c")\0A\00"
+@.str.458 = private unnamed_addr constant [3 x i8] c"  \00"
+@.str.459 = private unnamed_addr constant [36 x i8] c" = call i64 @ease_syscall_read(i64 \00"
+@.str.460 = private unnamed_addr constant [7 x i8] c", ptr \00"
+@.str.461 = private unnamed_addr constant [7 x i8] c", i64 \00"
+@.str.462 = private unnamed_addr constant [3 x i8] c")\0A\00"
+@.str.463 = private unnamed_addr constant [3 x i8] c"  \00"
+@.str.464 = private unnamed_addr constant [30 x i8] c" = call i64 @ease_is_dir(ptr \00"
+@.str.465 = private unnamed_addr constant [3 x i8] c")\0A\00"
+@.str.466 = private unnamed_addr constant [3 x i8] c"  \00"
+@.str.467 = private unnamed_addr constant [32 x i8] c" = call ptr @ease_list_dir(ptr \00"
+@.str.468 = private unnamed_addr constant [3 x i8] c")\0A\00"
+@.str.469 = private unnamed_addr constant [3 x i8] c", \00"
+@.str.470 = private unnamed_addr constant [5 x i8] c"i64 \00"
+@.str.471 = private unnamed_addr constant [3 x i8] c"  \00"
+@.str.472 = private unnamed_addr constant [14 x i8] c" = call i64 @\00"
+@.str.473 = private unnamed_addr constant [2 x i8] c"(\00"
+@.str.474 = private unnamed_addr constant [3 x i8] c")\0A\00"
+@.str.475 = private unnamed_addr constant [13 x i8] c"  call i64 @\00"
+@.str.476 = private unnamed_addr constant [2 x i8] c"(\00"
+@.str.477 = private unnamed_addr constant [3 x i8] c")\0A\00"
+@.str.478 = private unnamed_addr constant [11 x i8] c"  ret i64 \00"
+@.str.479 = private unnamed_addr constant [2 x i8] c"\0A\00"
+@.str.480 = private unnamed_addr constant [13 x i8] c"  ret i64 0\0A\00"
+@.str.481 = private unnamed_addr constant [15 x i8] c"  br label %L.\00"
+@.str.482 = private unnamed_addr constant [2 x i8] c"\0A\00"
+@.str.483 = private unnamed_addr constant [3 x i8] c"  \00"
+@.str.484 = private unnamed_addr constant [16 x i8] c" = icmp eq i64 \00"
+@.str.485 = private unnamed_addr constant [5 x i8] c", 0\0A\00"
+@.str.486 = private unnamed_addr constant [8 x i8] c"L.fall.\00"
+@.str.487 = private unnamed_addr constant [9 x i8] c"  br i1 \00"
+@.str.488 = private unnamed_addr constant [12 x i8] c", label %L.\00"
+@.str.489 = private unnamed_addr constant [10 x i8] c", label %\00"
+@.str.490 = private unnamed_addr constant [2 x i8] c"\0A\00"
+@.str.491 = private unnamed_addr constant [3 x i8] c":\0A\00"
+@.str.492 = private unnamed_addr constant [13 x i8] c"  ret i64 0\0A\00"
+@.str.493 = private unnamed_addr constant [4 x i8] c"}\0A\0A\00"
+@.str.494 = private unnamed_addr constant [2 x i8] c"a\00"
+@.str.495 = private unnamed_addr constant [2 x i8] c"b\00"
+@.str.496 = private unnamed_addr constant [2 x i8] c"c\00"
+@.str.497 = private unnamed_addr constant [2 x i8] c"d\00"
+@.str.498 = private unnamed_addr constant [2 x i8] c"e\00"
+@.str.499 = private unnamed_addr constant [2 x i8] c"f\00"
 
 @g_call_args = global [24 x i8] zeroinitializer
 @g_field_reg_names = global [24 x i8] zeroinitializer
@@ -2689,19 +2687,14 @@ define i64 @ease_main() {
   %v.766 = alloca i64
   %v.770 = alloca i64
   %v.771 = alloca i64
-  %v.776 = alloca i64
+  %v.773 = alloca i64
   %v.777 = alloca i64
   %v.778 = alloca i64
-  %v.779 = alloca i64
-  %v.780 = alloca i64
+  %v.781 = alloca i64
   %v.782 = alloca i64
-  %v.783 = alloca i64
-  %v.784 = alloca i64
   %v.785 = alloca i64
+  %v.786 = alloca i64
   %v.787 = alloca i64
-  %v.788 = alloca i64
-  %v.789 = alloca i64
-  %v.791 = alloca i64
   %v.792 = alloca i64
   %v.793 = alloca i64
   %v.794 = alloca i64
@@ -2709,77 +2702,74 @@ define i64 @ease_main() {
   %v.796 = alloca i64
   %v.798 = alloca i64
   %v.799 = alloca i64
+  %v.800 = alloca i64
+  %v.801 = alloca i64
+  %v.803 = alloca i64
   %v.804 = alloca i64
   %v.805 = alloca i64
-  %v.806 = alloca i64
+  %v.807 = alloca i64
   %v.808 = alloca i64
   %v.809 = alloca i64
+  %v.810 = alloca i64
+  %v.811 = alloca i64
+  %v.812 = alloca i64
+  %v.814 = alloca i64
+  %v.815 = alloca i64
   %v.820 = alloca i64
+  %v.821 = alloca i64
+  %v.822 = alloca i64
   %v.824 = alloca i64
   %v.825 = alloca i64
-  %v.830 = alloca i64
-  %v.831 = alloca i64
-  %v.832 = alloca i64
-  %v.833 = alloca i64
-  %v.834 = alloca i64
   %v.836 = alloca i64
-  %v.838 = alloca i64
-  %v.839 = alloca i64
-  %v.840 = alloca i64
-  %v.841 = alloca i64
-  %v.843 = alloca i64
-  %v.848 = alloca i64
-  %v.849 = alloca i64
+  %v.844 = alloca i64
+  %v.845 = alloca i64
   %v.850 = alloca i64
   %v.851 = alloca i64
   %v.852 = alloca i64
-  %v.855 = alloca i64
+  %v.853 = alloca i64
+  %v.854 = alloca i64
   %v.856 = alloca i64
-  %v.857 = alloca i64
   %v.858 = alloca i64
   %v.859 = alloca i64
   %v.860 = alloca i64
-  %v.862 = alloca i64
+  %v.861 = alloca i64
   %v.863 = alloca i64
-  %v.864 = alloca i64
-  %v.865 = alloca i64
-  %v.867 = alloca i64
   %v.868 = alloca i64
+  %v.869 = alloca i64
+  %v.870 = alloca i64
+  %v.871 = alloca i64
   %v.872 = alloca i64
+  %v.875 = alloca i64
+  %v.876 = alloca i64
+  %v.877 = alloca i64
+  %v.878 = alloca i64
+  %v.879 = alloca i64
+  %v.880 = alloca i64
+  %v.882 = alloca i64
+  %v.883 = alloca i64
   %v.884 = alloca i64
   %v.885 = alloca i64
   %v.887 = alloca i64
   %v.888 = alloca i64
-  %v.889 = alloca i64
-  %v.890 = alloca i64
   %v.892 = alloca i64
-  %v.893 = alloca i64
-  %v.894 = alloca i64
-  %v.895 = alloca i64
-  %v.896 = alloca i64
-  %v.898 = alloca i64
-  %v.900 = alloca i64
-  %v.901 = alloca i64
-  %v.902 = alloca i64
-  %v.903 = alloca i64
+  %v.904 = alloca i64
   %v.905 = alloca i64
-  %v.906 = alloca i64
   %v.907 = alloca i64
   %v.908 = alloca i64
   %v.909 = alloca i64
   %v.910 = alloca i64
-  %v.911 = alloca i64
   %v.912 = alloca i64
   %v.913 = alloca i64
   %v.914 = alloca i64
   %v.915 = alloca i64
   %v.916 = alloca i64
-  %v.917 = alloca i64
   %v.918 = alloca i64
-  %v.919 = alloca i64
   %v.920 = alloca i64
+  %v.921 = alloca i64
+  %v.922 = alloca i64
   %v.923 = alloca i64
-  %v.924 = alloca i64
+  %v.925 = alloca i64
+  %v.926 = alloca i64
   %v.927 = alloca i64
   %v.928 = alloca i64
   %v.929 = alloca i64
@@ -2792,238 +2782,240 @@ define i64 @ease_main() {
   %v.936 = alloca i64
   %v.937 = alloca i64
   %v.938 = alloca i64
+  %v.939 = alloca i64
   %v.940 = alloca i64
-  %v.941 = alloca i64
-  %v.942 = alloca i64
   %v.943 = alloca i64
   %v.944 = alloca i64
-  %v.945 = alloca i64
-  %v.946 = alloca i64
+  %v.947 = alloca i64
   %v.948 = alloca i64
   %v.949 = alloca i64
+  %v.950 = alloca i64
   %v.951 = alloca i64
+  %v.952 = alloca i64
   %v.953 = alloca i64
   %v.954 = alloca i64
   %v.955 = alloca i64
   %v.956 = alloca i64
   %v.957 = alloca i64
   %v.958 = alloca i64
-  %v.959 = alloca i64
   %v.960 = alloca i64
+  %v.961 = alloca i64
   %v.962 = alloca i64
+  %v.963 = alloca i64
   %v.964 = alloca i64
   %v.965 = alloca i64
   %v.966 = alloca i64
-  %v.967 = alloca i64
   %v.968 = alloca i64
-  %v.970 = alloca i64
+  %v.969 = alloca i64
+  %v.971 = alloca i64
+  %v.973 = alloca i64
+  %v.974 = alloca i64
   %v.975 = alloca i64
   %v.976 = alloca i64
+  %v.977 = alloca i64
   %v.978 = alloca i64
   %v.979 = alloca i64
   %v.980 = alloca i64
   %v.982 = alloca i64
-  %v.983 = alloca i64
   %v.984 = alloca i64
   %v.985 = alloca i64
   %v.986 = alloca i64
   %v.987 = alloca i64
   %v.988 = alloca i64
-  %v.989 = alloca i64
-  %v.991 = alloca i64
-  %v.993 = alloca i64
-  %v.994 = alloca i64
+  %v.990 = alloca i64
   %v.995 = alloca i64
   %v.996 = alloca i64
+  %v.998 = alloca i64
   %v.999 = alloca i64
+  %v.1000 = alloca i64
+  %v.1002 = alloca i64
+  %v.1003 = alloca i64
   %v.1004 = alloca i64
+  %v.1005 = alloca i64
+  %v.1006 = alloca i64
+  %v.1007 = alloca i64
   %v.1008 = alloca i64
   %v.1009 = alloca i64
-  %v.1010 = alloca i64
   %v.1011 = alloca i64
-  %v.1017 = alloca i64
-  %v.1018 = alloca i64
-  %v.1023 = alloca i64
-  %v.1027 = alloca i64
+  %v.1013 = alloca i64
+  %v.1014 = alloca i64
+  %v.1015 = alloca i64
+  %v.1016 = alloca i64
+  %v.1019 = alloca i64
+  %v.1024 = alloca i64
+  %v.1028 = alloca i64
+  %v.1029 = alloca i64
+  %v.1030 = alloca i64
   %v.1031 = alloca i64
-  %v.1035 = alloca i64
-  %v.1039 = alloca i64
-  %v.1040 = alloca i64
-  %v.1045 = alloca i64
-  %v.1046 = alloca i64
+  %v.1037 = alloca i64
+  %v.1038 = alloca i64
+  %v.1043 = alloca i64
   %v.1047 = alloca i64
   %v.1051 = alloca i64
   %v.1055 = alloca i64
-  %v.1056 = alloca i64
-  %v.1061 = alloca i64
-  %v.1062 = alloca i64
-  %v.1063 = alloca i64
+  %v.1059 = alloca i64
+  %v.1060 = alloca i64
+  %v.1065 = alloca i64
+  %v.1066 = alloca i64
   %v.1067 = alloca i64
-  %v.1068 = alloca i64
-  %v.1073 = alloca i64
-  %v.1074 = alloca i64
+  %v.1071 = alloca i64
   %v.1075 = alloca i64
   %v.1076 = alloca i64
-  %v.1077 = alloca i64
-  %v.1079 = alloca i64
-  %v.1080 = alloca i64
   %v.1081 = alloca i64
   %v.1082 = alloca i64
-  %v.1084 = alloca i64
-  %v.1085 = alloca i64
-  %v.1086 = alloca i64
+  %v.1083 = alloca i64
+  %v.1087 = alloca i64
   %v.1088 = alloca i64
-  %v.1089 = alloca i64
-  %v.1090 = alloca i64
-  %v.1091 = alloca i64
-  %v.1092 = alloca i64
   %v.1093 = alloca i64
-  %v.1095 = alloca i64
-  %v.1096 = alloca i64
+  %v.1094 = alloca i64
+  %v.1097 = alloca i64
+  %v.1098 = alloca i64
   %v.1101 = alloca i64
   %v.1102 = alloca i64
   %v.1103 = alloca i64
-  %v.1105 = alloca i64
-  %v.1106 = alloca i64
+  %v.1108 = alloca i64
+  %v.1109 = alloca i64
+  %v.1110 = alloca i64
+  %v.1111 = alloca i64
+  %v.1112 = alloca i64
+  %v.1114 = alloca i64
+  %v.1115 = alloca i64
+  %v.1116 = alloca i64
   %v.1117 = alloca i64
+  %v.1119 = alloca i64
+  %v.1120 = alloca i64
   %v.1121 = alloca i64
-  %v.1122 = alloca i64
+  %v.1123 = alloca i64
+  %v.1124 = alloca i64
+  %v.1125 = alloca i64
+  %v.1126 = alloca i64
   %v.1127 = alloca i64
   %v.1128 = alloca i64
-  %v.1129 = alloca i64
   %v.1130 = alloca i64
   %v.1131 = alloca i64
-  %v.1133 = alloca i64
-  %v.1134 = alloca i64
-  %v.1135 = alloca i64
   %v.1136 = alloca i64
+  %v.1137 = alloca i64
   %v.1138 = alloca i64
-  %v.1139 = alloca i64
   %v.1140 = alloca i64
   %v.1141 = alloca i64
-  %v.1143 = alloca i64
-  %v.1148 = alloca i64
-  %v.1149 = alloca i64
-  %v.1150 = alloca i64
-  %v.1151 = alloca i64
   %v.1152 = alloca i64
-  %v.1155 = alloca i64
-  %v.1159 = alloca i64
+  %v.1160 = alloca i64
+  %v.1161 = alloca i64
+  %v.1166 = alloca i64
+  %v.1167 = alloca i64
+  %v.1168 = alloca i64
+  %v.1169 = alloca i64
+  %v.1170 = alloca i64
+  %v.1172 = alloca i64
+  %v.1173 = alloca i64
+  %v.1174 = alloca i64
+  %v.1175 = alloca i64
   %v.1177 = alloca i64
   %v.1178 = alloca i64
-  %v.1183 = alloca i64
-  %v.1184 = alloca i64
+  %v.1179 = alloca i64
+  %v.1180 = alloca i64
+  %v.1182 = alloca i64
+  %v.1187 = alloca i64
   %v.1188 = alloca i64
   %v.1189 = alloca i64
+  %v.1190 = alloca i64
   %v.1191 = alloca i64
-  %v.1192 = alloca i64
   %v.1194 = alloca i64
-  %v.1195 = alloca i64
-  %v.1196 = alloca i64
-  %v.1197 = alloca i64
   %v.1198 = alloca i64
-  %v.1200 = alloca i64
-  %v.1202 = alloca i64
-  %v.1204 = alloca i64
-  %v.1205 = alloca i64
-  %v.1206 = alloca i64
-  %v.1208 = alloca i64
-  %v.1209 = alloca i64
-  %v.1211 = alloca i64
   %v.1216 = alloca i64
   %v.1217 = alloca i64
-  %v.1218 = alloca i64
-  %v.1219 = alloca i64
-  %v.1220 = alloca i64
   %v.1222 = alloca i64
   %v.1223 = alloca i64
-  %v.1224 = alloca i64
-  %v.1225 = alloca i64
   %v.1227 = alloca i64
   %v.1228 = alloca i64
-  %v.1229 = alloca i64
+  %v.1230 = alloca i64
+  %v.1231 = alloca i64
   %v.1233 = alloca i64
   %v.1234 = alloca i64
+  %v.1235 = alloca i64
   %v.1236 = alloca i64
   %v.1237 = alloca i64
   %v.1239 = alloca i64
   %v.1241 = alloca i64
-  %v.1242 = alloca i64
   %v.1243 = alloca i64
+  %v.1244 = alloca i64
   %v.1245 = alloca i64
-  %v.1246 = alloca i64
+  %v.1247 = alloca i64
   %v.1248 = alloca i64
-  %v.1249 = alloca i64
   %v.1250 = alloca i64
-  %v.1251 = alloca i64
-  %v.1252 = alloca i64
+  %v.1255 = alloca i64
+  %v.1256 = alloca i64
   %v.1257 = alloca i64
   %v.1258 = alloca i64
+  %v.1259 = alloca i64
+  %v.1261 = alloca i64
+  %v.1262 = alloca i64
+  %v.1263 = alloca i64
   %v.1264 = alloca i64
-  %v.1265 = alloca i64
   %v.1266 = alloca i64
   %v.1267 = alloca i64
   %v.1268 = alloca i64
-  %v.1269 = alloca i64
-  %v.1270 = alloca i64
   %v.1272 = alloca i64
-  %v.1274 = alloca i64
+  %v.1273 = alloca i64
   %v.1275 = alloca i64
   %v.1276 = alloca i64
   %v.1278 = alloca i64
   %v.1280 = alloca i64
   %v.1281 = alloca i64
+  %v.1282 = alloca i64
   %v.1284 = alloca i64
+  %v.1285 = alloca i64
+  %v.1287 = alloca i64
+  %v.1288 = alloca i64
   %v.1289 = alloca i64
-  %v.1293 = alloca i64
-  %v.1294 = alloca i64
-  %v.1295 = alloca i64
+  %v.1290 = alloca i64
+  %v.1291 = alloca i64
   %v.1296 = alloca i64
-  %v.1302 = alloca i64
+  %v.1297 = alloca i64
   %v.1303 = alloca i64
+  %v.1304 = alloca i64
+  %v.1305 = alloca i64
+  %v.1306 = alloca i64
+  %v.1307 = alloca i64
   %v.1308 = alloca i64
-  %v.1312 = alloca i64
-  %v.1316 = alloca i64
+  %v.1309 = alloca i64
+  %v.1311 = alloca i64
+  %v.1313 = alloca i64
+  %v.1314 = alloca i64
+  %v.1315 = alloca i64
+  %v.1317 = alloca i64
+  %v.1319 = alloca i64
   %v.1320 = alloca i64
-  %v.1324 = alloca i64
-  %v.1325 = alloca i64
-  %v.1330 = alloca i64
-  %v.1331 = alloca i64
+  %v.1323 = alloca i64
+  %v.1328 = alloca i64
   %v.1332 = alloca i64
-  %v.1336 = alloca i64
-  %v.1340 = alloca i64
+  %v.1333 = alloca i64
+  %v.1334 = alloca i64
+  %v.1335 = alloca i64
   %v.1341 = alloca i64
-  %v.1346 = alloca i64
+  %v.1342 = alloca i64
   %v.1347 = alloca i64
-  %v.1348 = alloca i64
-  %v.1352 = alloca i64
-  %v.1353 = alloca i64
-  %v.1358 = alloca i64
+  %v.1351 = alloca i64
+  %v.1355 = alloca i64
   %v.1359 = alloca i64
-  %v.1360 = alloca i64
-  %v.1361 = alloca i64
-  %v.1362 = alloca i64
+  %v.1363 = alloca i64
   %v.1364 = alloca i64
-  %v.1365 = alloca i64
-  %v.1366 = alloca i64
-  %v.1367 = alloca i64
   %v.1369 = alloca i64
   %v.1370 = alloca i64
   %v.1371 = alloca i64
-  %v.1373 = alloca i64
-  %v.1374 = alloca i64
   %v.1375 = alloca i64
-  %v.1376 = alloca i64
-  %v.1377 = alloca i64
-  %v.1378 = alloca i64
+  %v.1379 = alloca i64
   %v.1380 = alloca i64
-  %v.1381 = alloca i64
+  %v.1385 = alloca i64
   %v.1386 = alloca i64
   %v.1387 = alloca i64
-  %v.1388 = alloca i64
-  %v.1390 = alloca i64
   %v.1391 = alloca i64
+  %v.1392 = alloca i64
+  %v.1397 = alloca i64
+  %v.1398 = alloca i64
+  %v.1401 = alloca i64
   %v.1402 = alloca i64
+  %v.1405 = alloca i64
   %v.1406 = alloca i64
   %v.1407 = alloca i64
   %v.1412 = alloca i64
@@ -3038,29 +3030,27 @@ define i64 @ease_main() {
   %v.1423 = alloca i64
   %v.1424 = alloca i64
   %v.1425 = alloca i64
-  %v.1426 = alloca i64
+  %v.1427 = alloca i64
   %v.1428 = alloca i64
-  %v.1433 = alloca i64
+  %v.1429 = alloca i64
+  %v.1430 = alloca i64
+  %v.1431 = alloca i64
+  %v.1432 = alloca i64
   %v.1434 = alloca i64
   %v.1435 = alloca i64
-  %v.1436 = alloca i64
-  %v.1437 = alloca i64
   %v.1440 = alloca i64
+  %v.1441 = alloca i64
+  %v.1442 = alloca i64
   %v.1444 = alloca i64
+  %v.1445 = alloca i64
   %v.1456 = alloca i64
-  %v.1457 = alloca i64
-  %v.1459 = alloca i64
-  %v.1460 = alloca i64
-  %v.1462 = alloca i64
-  %v.1463 = alloca i64
   %v.1464 = alloca i64
   %v.1465 = alloca i64
-  %v.1466 = alloca i64
-  %v.1468 = alloca i64
   %v.1470 = alloca i64
   %v.1471 = alloca i64
+  %v.1472 = alloca i64
   %v.1473 = alloca i64
-  %v.1475 = alloca i64
+  %v.1474 = alloca i64
   %v.1476 = alloca i64
   %v.1477 = alloca i64
   %v.1478 = alloca i64
@@ -3070,184 +3060,188 @@ define i64 @ease_main() {
   %v.1483 = alloca i64
   %v.1484 = alloca i64
   %v.1486 = alloca i64
-  %v.1487 = alloca i64
-  %v.1488 = alloca i64
-  %v.1499 = alloca i64
-  %v.1500 = alloca i64
-  %v.1504 = alloca i64
-  %v.1505 = alloca i64
-  %v.1506 = alloca i64
-  %v.1507 = alloca i64
-  %v.1509 = alloca i64
-  %v.1510 = alloca i64
-  %v.1511 = alloca i64
-  %v.1513 = alloca i64
+  %v.1491 = alloca i64
+  %v.1492 = alloca i64
+  %v.1493 = alloca i64
+  %v.1494 = alloca i64
+  %v.1495 = alloca i64
+  %v.1498 = alloca i64
+  %v.1502 = alloca i64
   %v.1514 = alloca i64
   %v.1515 = alloca i64
-  %v.1516 = alloca i64
+  %v.1517 = alloca i64
   %v.1518 = alloca i64
+  %v.1520 = alloca i64
+  %v.1521 = alloca i64
   %v.1522 = alloca i64
   %v.1523 = alloca i64
   %v.1524 = alloca i64
-  %v.1525 = alloca i64
   %v.1526 = alloca i64
-  %v.1527 = alloca i64
   %v.1528 = alloca i64
-  %v.1530 = alloca i64
-  %v.1532 = alloca i64
+  %v.1529 = alloca i64
+  %v.1531 = alloca i64
+  %v.1533 = alloca i64
   %v.1534 = alloca i64
+  %v.1535 = alloca i64
   %v.1536 = alloca i64
   %v.1537 = alloca i64
   %v.1539 = alloca i64
   %v.1540 = alloca i64
+  %v.1541 = alloca i64
   %v.1542 = alloca i64
   %v.1544 = alloca i64
   %v.1545 = alloca i64
   %v.1546 = alloca i64
-  %v.1548 = alloca i64
-  %v.1549 = alloca i64
-  %v.1551 = alloca i64
-  %v.1552 = alloca i64
-  %v.1554 = alloca i64
-  %v.1555 = alloca i64
-  %v.1556 = alloca i64
   %v.1557 = alloca i64
   %v.1558 = alloca i64
-  %v.1559 = alloca i64
-  %v.1561 = alloca i64
   %v.1562 = alloca i64
   %v.1563 = alloca i64
+  %v.1564 = alloca i64
   %v.1565 = alloca i64
-  %v.1566 = alloca i64
   %v.1567 = alloca i64
+  %v.1568 = alloca i64
   %v.1569 = alloca i64
-  %v.1575 = alloca i64
+  %v.1571 = alloca i64
+  %v.1572 = alloca i64
+  %v.1573 = alloca i64
+  %v.1574 = alloca i64
   %v.1576 = alloca i64
   %v.1580 = alloca i64
   %v.1581 = alloca i64
+  %v.1582 = alloca i64
+  %v.1583 = alloca i64
+  %v.1584 = alloca i64
   %v.1585 = alloca i64
   %v.1586 = alloca i64
-  %v.1587 = alloca i64
   %v.1588 = alloca i64
-  %v.1589 = alloca i64
   %v.1590 = alloca i64
   %v.1592 = alloca i64
-  %v.1593 = alloca i64
   %v.1594 = alloca i64
   %v.1595 = alloca i64
-  %v.1596 = alloca i64
   %v.1597 = alloca i64
+  %v.1598 = alloca i64
   %v.1600 = alloca i64
-  %v.1608 = alloca i64
+  %v.1602 = alloca i64
+  %v.1603 = alloca i64
+  %v.1604 = alloca i64
+  %v.1606 = alloca i64
+  %v.1607 = alloca i64
   %v.1609 = alloca i64
   %v.1610 = alloca i64
-  %v.1611 = alloca i64
   %v.1612 = alloca i64
   %v.1613 = alloca i64
   %v.1614 = alloca i64
+  %v.1615 = alloca i64
   %v.1616 = alloca i64
   %v.1617 = alloca i64
   %v.1619 = alloca i64
+  %v.1620 = alloca i64
   %v.1621 = alloca i64
-  %v.1622 = alloca i64
   %v.1623 = alloca i64
   %v.1624 = alloca i64
   %v.1625 = alloca i64
   %v.1627 = alloca i64
-  %v.1628 = alloca i64
-  %v.1629 = alloca i64
-  %v.1630 = alloca i64
-  %v.1631 = alloca i64
-  %v.1632 = alloca i64
   %v.1633 = alloca i64
   %v.1634 = alloca i64
-  %v.1636 = alloca i64
   %v.1638 = alloca i64
   %v.1639 = alloca i64
-  %v.1640 = alloca i64
-  %v.1641 = alloca i64
-  %v.1642 = alloca i64
+  %v.1643 = alloca i64
   %v.1644 = alloca i64
-  %v.1649 = alloca i64
+  %v.1645 = alloca i64
+  %v.1646 = alloca i64
+  %v.1647 = alloca i64
+  %v.1648 = alloca i64
   %v.1650 = alloca i64
+  %v.1651 = alloca i64
   %v.1652 = alloca i64
   %v.1653 = alloca i64
   %v.1654 = alloca i64
-  %v.1656 = alloca i64
-  %v.1657 = alloca i64
+  %v.1655 = alloca i64
   %v.1658 = alloca i64
   %v.1666 = alloca i64
   %v.1667 = alloca i64
+  %v.1668 = alloca i64
+  %v.1669 = alloca i64
+  %v.1670 = alloca i64
+  %v.1671 = alloca i64
   %v.1672 = alloca i64
-  %v.1673 = alloca i64
+  %v.1674 = alloca i64
+  %v.1675 = alloca i64
+  %v.1677 = alloca i64
+  %v.1679 = alloca i64
+  %v.1680 = alloca i64
   %v.1681 = alloca i64
   %v.1682 = alloca i64
-  %v.1684 = alloca i64
+  %v.1683 = alloca i64
   %v.1685 = alloca i64
+  %v.1686 = alloca i64
   %v.1687 = alloca i64
   %v.1688 = alloca i64
+  %v.1689 = alloca i64
   %v.1690 = alloca i64
   %v.1691 = alloca i64
   %v.1692 = alloca i64
-  %v.1693 = alloca i64
+  %v.1694 = alloca i64
   %v.1696 = alloca i64
-  %v.1701 = alloca i64
-  %v.1705 = alloca i64
-  %v.1706 = alloca i64
+  %v.1697 = alloca i64
+  %v.1698 = alloca i64
+  %v.1699 = alloca i64
+  %v.1700 = alloca i64
+  %v.1702 = alloca i64
   %v.1707 = alloca i64
   %v.1708 = alloca i64
+  %v.1710 = alloca i64
+  %v.1711 = alloca i64
+  %v.1712 = alloca i64
   %v.1714 = alloca i64
   %v.1715 = alloca i64
-  %v.1720 = alloca i64
+  %v.1716 = alloca i64
   %v.1724 = alloca i64
-  %v.1728 = alloca i64
-  %v.1732 = alloca i64
-  %v.1736 = alloca i64
+  %v.1725 = alloca i64
+  %v.1730 = alloca i64
+  %v.1731 = alloca i64
+  %v.1739 = alloca i64
   %v.1740 = alloca i64
-  %v.1741 = alloca i64
+  %v.1742 = alloca i64
+  %v.1743 = alloca i64
+  %v.1745 = alloca i64
   %v.1746 = alloca i64
-  %v.1747 = alloca i64
   %v.1748 = alloca i64
   %v.1749 = alloca i64
   %v.1750 = alloca i64
-  %v.1756 = alloca i64
-  %v.1757 = alloca i64
-  %v.1758 = alloca i64
+  %v.1751 = alloca i64
+  %v.1754 = alloca i64
   %v.1759 = alloca i64
-  %v.1760 = alloca i64
-  %v.1761 = alloca i64
-  %v.1762 = alloca i64
   %v.1763 = alloca i64
   %v.1764 = alloca i64
-  %v.1767 = alloca i64
-  %v.1769 = alloca i64
-  %v.1771 = alloca i64
+  %v.1765 = alloca i64
+  %v.1766 = alloca i64
   %v.1772 = alloca i64
   %v.1773 = alloca i64
-  %v.1774 = alloca i64
-  %v.1775 = alloca i64
-  %v.1777 = alloca i64
   %v.1778 = alloca i64
-  %v.1779 = alloca i64
-  %v.1780 = alloca i64
   %v.1782 = alloca i64
-  %v.1783 = alloca i64
-  %v.1787 = alloca i64
+  %v.1786 = alloca i64
+  %v.1790 = alloca i64
   %v.1794 = alloca i64
   %v.1798 = alloca i64
+  %v.1799 = alloca i64
   %v.1804 = alloca i64
   %v.1805 = alloca i64
-  %v.1812 = alloca i64
-  %v.1813 = alloca i64
+  %v.1806 = alloca i64
+  %v.1807 = alloca i64
+  %v.1808 = alloca i64
+  %v.1814 = alloca i64
+  %v.1815 = alloca i64
+  %v.1816 = alloca i64
   %v.1817 = alloca i64
   %v.1818 = alloca i64
+  %v.1819 = alloca i64
   %v.1820 = alloca i64
   %v.1821 = alloca i64
-  %v.1823 = alloca i64
-  %v.1824 = alloca i64
+  %v.1822 = alloca i64
   %v.1825 = alloca i64
-  %v.1826 = alloca i64
-  %v.1828 = alloca i64
+  %v.1827 = alloca i64
+  %v.1829 = alloca i64
   %v.1830 = alloca i64
   %v.1831 = alloca i64
   %v.1832 = alloca i64
@@ -3256,154 +3250,180 @@ define i64 @ease_main() {
   %v.1836 = alloca i64
   %v.1837 = alloca i64
   %v.1838 = alloca i64
-  %v.1839 = alloca i64
   %v.1840 = alloca i64
   %v.1841 = alloca i64
-  %v.1842 = alloca i64
-  %v.1843 = alloca i64
-  %v.1844 = alloca i64
   %v.1845 = alloca i64
-  %v.1847 = alloca i64
-  %v.1848 = alloca i64
-  %v.1850 = alloca i64
   %v.1852 = alloca i64
-  %v.1853 = alloca i64
-  %v.1854 = alloca i64
-  %v.1855 = alloca i64
-  %v.1861 = alloca i64
+  %v.1856 = alloca i64
   %v.1862 = alloca i64
-  %v.1864 = alloca i64
-  %v.1865 = alloca i64
-  %v.1866 = alloca i64
-  %v.1867 = alloca i64
-  %v.1869 = alloca i64
+  %v.1863 = alloca i64
   %v.1870 = alloca i64
   %v.1871 = alloca i64
-  %v.1872 = alloca i64
-  %v.1873 = alloca i64
-  %v.1874 = alloca i64
+  %v.1875 = alloca i64
+  %v.1876 = alloca i64
   %v.1878 = alloca i64
+  %v.1879 = alloca i64
+  %v.1881 = alloca i64
   %v.1882 = alloca i64
   %v.1883 = alloca i64
   %v.1884 = alloca i64
-  %v.1885 = alloca i64
+  %v.1886 = alloca i64
   %v.1888 = alloca i64
   %v.1889 = alloca i64
   %v.1890 = alloca i64
-  %v.1892 = alloca i64
+  %v.1891 = alloca i64
   %v.1893 = alloca i64
+  %v.1894 = alloca i64
+  %v.1895 = alloca i64
+  %v.1896 = alloca i64
+  %v.1897 = alloca i64
+  %v.1898 = alloca i64
+  %v.1899 = alloca i64
+  %v.1900 = alloca i64
+  %v.1901 = alloca i64
   %v.1902 = alloca i64
+  %v.1903 = alloca i64
+  %v.1905 = alloca i64
   %v.1906 = alloca i64
-  %v.1907 = alloca i64
+  %v.1908 = alloca i64
+  %v.1910 = alloca i64
   %v.1911 = alloca i64
   %v.1912 = alloca i64
   %v.1913 = alloca i64
-  %v.1917 = alloca i64
-  %v.1918 = alloca i64
   %v.1919 = alloca i64
   %v.1920 = alloca i64
+  %v.1922 = alloca i64
+  %v.1923 = alloca i64
   %v.1924 = alloca i64
   %v.1925 = alloca i64
-  %v.1926 = alloca i64
   %v.1927 = alloca i64
+  %v.1928 = alloca i64
+  %v.1929 = alloca i64
+  %v.1930 = alloca i64
   %v.1931 = alloca i64
   %v.1932 = alloca i64
-  %v.1933 = alloca i64
-  %v.1935 = alloca i64
   %v.1936 = alloca i64
-  %v.1938 = alloca i64
-  %v.1939 = alloca i64
   %v.1940 = alloca i64
   %v.1941 = alloca i64
   %v.1942 = alloca i64
   %v.1943 = alloca i64
+  %v.1946 = alloca i64
   %v.1947 = alloca i64
   %v.1948 = alloca i64
-  %v.1949 = alloca i64
-  %v.1953 = alloca i64
-  %v.1955 = alloca i64
-  %v.1956 = alloca i64
-  %v.1957 = alloca i64
-  %v.1958 = alloca i64
-  %v.1959 = alloca i64
+  %v.1950 = alloca i64
+  %v.1951 = alloca i64
   %v.1960 = alloca i64
-  %v.1961 = alloca i64
-  %v.1962 = alloca i64
   %v.1964 = alloca i64
-  %v.1966 = alloca i64
-  %v.1967 = alloca i64
-  %v.1968 = alloca i64
+  %v.1965 = alloca i64
+  %v.1969 = alloca i64
   %v.1970 = alloca i64
   %v.1971 = alloca i64
-  %v.1972 = alloca i64
-  %v.1974 = alloca i64
   %v.1975 = alloca i64
   %v.1976 = alloca i64
   %v.1977 = alloca i64
-  %v.1980 = alloca i64
-  %v.1981 = alloca i64
+  %v.1978 = alloca i64
   %v.1982 = alloca i64
   %v.1983 = alloca i64
   %v.1984 = alloca i64
   %v.1985 = alloca i64
-  %v.1986 = alloca i64
-  %v.1987 = alloca i64
   %v.1989 = alloca i64
+  %v.1990 = alloca i64
   %v.1991 = alloca i64
   %v.1993 = alloca i64
   %v.1994 = alloca i64
   %v.1996 = alloca i64
   %v.1997 = alloca i64
+  %v.1998 = alloca i64
   %v.1999 = alloca i64
+  %v.2000 = alloca i64
   %v.2001 = alloca i64
-  %v.2003 = alloca i64
-  %v.2004 = alloca i64
   %v.2005 = alloca i64
   %v.2006 = alloca i64
   %v.2007 = alloca i64
-  %v.2008 = alloca i64
-  %v.2009 = alloca i64
-  %v.2010 = alloca i64
-  %v.2012 = alloca i64
+  %v.2011 = alloca i64
   %v.2013 = alloca i64
+  %v.2014 = alloca i64
   %v.2015 = alloca i64
+  %v.2016 = alloca i64
   %v.2017 = alloca i64
   %v.2018 = alloca i64
   %v.2019 = alloca i64
   %v.2020 = alloca i64
   %v.2022 = alloca i64
-  %v.2023 = alloca i64
+  %v.2024 = alloca i64
+  %v.2025 = alloca i64
+  %v.2026 = alloca i64
+  %v.2028 = alloca i64
+  %v.2029 = alloca i64
+  %v.2030 = alloca i64
   %v.2032 = alloca i64
   %v.2033 = alloca i64
   %v.2034 = alloca i64
+  %v.2035 = alloca i64
   %v.2038 = alloca i64
   %v.2039 = alloca i64
+  %v.2040 = alloca i64
   %v.2041 = alloca i64
   %v.2042 = alloca i64
   %v.2043 = alloca i64
   %v.2044 = alloca i64
-  %v.2046 = alloca i64
+  %v.2045 = alloca i64
   %v.2047 = alloca i64
   %v.2049 = alloca i64
-  %v.2050 = alloca i64
   %v.2051 = alloca i64
+  %v.2052 = alloca i64
   %v.2054 = alloca i64
   %v.2055 = alloca i64
-  %v.2056 = alloca i64
   %v.2057 = alloca i64
   %v.2059 = alloca i64
+  %v.2061 = alloca i64
+  %v.2062 = alloca i64
+  %v.2063 = alloca i64
   %v.2064 = alloca i64
+  %v.2065 = alloca i64
   %v.2066 = alloca i64
   %v.2067 = alloca i64
-  %v.2069 = alloca i64
+  %v.2068 = alloca i64
   %v.2070 = alloca i64
   %v.2071 = alloca i64
-  %v.2072 = alloca i64
   %v.2073 = alloca i64
   %v.2075 = alloca i64
   %v.2076 = alloca i64
+  %v.2077 = alloca i64
   %v.2078 = alloca i64
-  %v.2079 = alloca i64
+  %v.2080 = alloca i64
+  %v.2081 = alloca i64
+  %v.2090 = alloca i64
+  %v.2091 = alloca i64
+  %v.2092 = alloca i64
+  %v.2096 = alloca i64
+  %v.2097 = alloca i64
+  %v.2099 = alloca i64
+  %v.2100 = alloca i64
+  %v.2101 = alloca i64
+  %v.2102 = alloca i64
+  %v.2104 = alloca i64
+  %v.2105 = alloca i64
+  %v.2107 = alloca i64
+  %v.2108 = alloca i64
+  %v.2109 = alloca i64
+  %v.2112 = alloca i64
+  %v.2113 = alloca i64
+  %v.2114 = alloca i64
+  %v.2115 = alloca i64
+  %v.2117 = alloca i64
+  %v.2122 = alloca i64
+  %v.2124 = alloca i64
+  %v.2125 = alloca i64
+  %v.2127 = alloca i64
+  %v.2128 = alloca i64
+  %v.2129 = alloca i64
+  %v.2130 = alloca i64
+  %v.2131 = alloca i64
+  %v.2133 = alloca i64
+  %v.2134 = alloca i64
+  %v.2136 = alloca i64
+  %v.2137 = alloca i64
   br label %B.body
 B.body:
   %t.5860 = ptrtoint ptr @.str.3 to i64
@@ -3775,7 +3795,7 @@ L.fall.757:
   store i64 %t.7670, ptr %v.672
   br label %L.99
 L.98:
-  %t.7709 = call i64 @token_TK_LET()
+  %t.7709 = call i64 @token_TK_IDENT()
   store i64 %t.7709, ptr %v.770
   %t.7710 = load i64, ptr %v.698
   %t.7711 = load i64, ptr %v.770
@@ -3786,326 +3806,360 @@ L.98:
   %t.7721 = icmp eq i64 %t.7720, 0
   br i1 %t.7721, label %L.100, label %L.fall.772
 L.fall.772:
-  %t.7760 = load i64, ptr %v.592
-  %t.7761 = load i64, ptr %v.672
-  %t.7762 = load i64, ptr %v.670
-  %t.7769 = call i64 @parser_parse_let_stmt(i64 %t.7760, i64 %t.7761, i64 %t.7762)
-  store i64 %t.7769, ptr %v.776
-  %t.7770 = load i64, ptr %v.776
-  store i64 %t.7770, ptr %v.777
+  %t.7730 = load i64, ptr %v.672
+  store i64 %t.7730, ptr %v.773
+  %t.7770 = load i64, ptr %v.592
+  %t.7771 = load i64, ptr %v.672
+  %t.7772 = load i64, ptr %v.698
+  %t.7779 = call i64 @lexer_lex_end(i64 %t.7770, i64 %t.7771, i64 %t.7772)
+  store i64 %t.7779, ptr %v.777
   %t.7780 = load i64, ptr %v.777
-  %t.7786 = inttoptr i64 %t.7780 to ptr
-  %t.7787 = load i64, ptr %t.7786
-  store i64 %t.7787, ptr %v.778
-  store i64 0, ptr %v.779
-  %t.7800 = load i64, ptr %v.778
-  %t.7801 = load i64, ptr %v.779
-  %t.7802 = icmp sge i64 %t.7800, %t.7801
-  %t.7803 = zext i1 %t.7802 to i64
-  store i64 %t.7803, ptr %v.780
-  %t.7810 = load i64, ptr %v.780
-  %t.7811 = icmp eq i64 %t.7810, 0
-  br i1 %t.7811, label %L.102, label %L.fall.781
-L.fall.781:
-  %t.7820 = load i64, ptr %v.777
-  %t.7826 = inttoptr i64 %t.7820 to ptr
-  %t.7827 = load i64, ptr %t.7826
-  store i64 %t.7827, ptr %v.782
-  %t.7830 = load i64, ptr %v.670
-  %t.7831 = inttoptr i64 %t.7830 to ptr
-  %t.7832 = load i64, ptr %t.7831
-  %t.7833 = load i64, ptr %v.782
-  %t.7834 = mul i64 %t.7833, 8
-  %t.7835 = add i64 %t.7832, %t.7834
-  %t.7836 = inttoptr i64 %t.7835 to ptr
-  %t.7837 = load i64, ptr %t.7836
-  store i64 %t.7837, ptr %v.783
-  %t.7840 = load i64, ptr %v.783
-  store i64 %t.7840, ptr %v.784
-  %t.7850 = load i64, ptr %v.784
-  %t.7852 = add i64 %t.7850, 16
-  %t.7856 = inttoptr i64 %t.7852 to ptr
-  %t.7857 = load i64, ptr %t.7856
-  store i64 %t.7857, ptr %v.785
-  %t.7860 = load i64, ptr %v.689
-  %t.7861 = inttoptr i64 %t.7860 to ptr
-  %t.7862 = load i64, ptr %v.785
-  %t.7863 = alloca i64
-  store i64 %t.7862, ptr %t.7863
-  call void @ease_array_push(ptr %t.7861, ptr %t.7863, i64 8)
-  %t.7870 = load i64, ptr %v.784
-  %t.7872 = add i64 %t.7870, 32
-  %t.7876 = inttoptr i64 %t.7872 to ptr
-  %t.7877 = load i64, ptr %t.7876
-  store i64 %t.7877, ptr %v.787
-  store i64 0, ptr %v.788
-  %t.7890 = load i64, ptr %v.787
-  %t.7891 = load i64, ptr %v.788
-  %t.7892 = icmp sge i64 %t.7890, %t.7891
-  %t.7893 = zext i1 %t.7892 to i64
-  store i64 %t.7893, ptr %v.789
-  %t.7900 = load i64, ptr %v.789
-  %t.7901 = icmp eq i64 %t.7900, 0
-  br i1 %t.7901, label %L.104, label %L.fall.790
-L.fall.790:
-  %t.7910 = load i64, ptr %v.784
-  %t.7912 = add i64 %t.7910, 32
-  %t.7916 = inttoptr i64 %t.7912 to ptr
-  %t.7917 = load i64, ptr %t.7916
-  store i64 %t.7917, ptr %v.791
-  %t.7920 = load i64, ptr %v.670
-  %t.7921 = inttoptr i64 %t.7920 to ptr
-  %t.7922 = load i64, ptr %t.7921
-  %t.7923 = load i64, ptr %v.791
-  %t.7924 = mul i64 %t.7923, 8
-  %t.7925 = add i64 %t.7922, %t.7924
-  %t.7926 = inttoptr i64 %t.7925 to ptr
-  %t.7927 = load i64, ptr %t.7926
-  store i64 %t.7927, ptr %v.792
+  store i64 %t.7780, ptr %v.778
+  %t.7810 = load i64, ptr %v.592
+  %t.7811 = load i64, ptr %v.778
+  %t.7819 = call i64 @lexer_lex_skip(i64 %t.7810, i64 %t.7811)
+  store i64 %t.7819, ptr %v.781
+  %t.7820 = load i64, ptr %v.781
+  store i64 %t.7820, ptr %v.782
+  %t.7850 = load i64, ptr %v.592
+  %t.7851 = load i64, ptr %v.782
+  %t.7859 = call i64 @lexer_lex_kind(i64 %t.7850, i64 %t.7851)
+  store i64 %t.7859, ptr %v.785
+  %t.7869 = call i64 @token_TK_COLONEQUAL()
+  store i64 %t.7869, ptr %v.786
+  %t.7870 = load i64, ptr %v.785
+  %t.7871 = load i64, ptr %v.786
+  %t.7872 = icmp eq i64 %t.7870, %t.7871
+  %t.7873 = zext i1 %t.7872 to i64
+  store i64 %t.7873, ptr %v.787
+  %t.7880 = load i64, ptr %v.787
+  %t.7881 = icmp eq i64 %t.7880, 0
+  br i1 %t.7881, label %L.102, label %L.fall.788
+L.fall.788:
+  %t.7920 = load i64, ptr %v.592
+  %t.7921 = load i64, ptr %v.672
+  %t.7922 = load i64, ptr %v.670
+  %t.7929 = call i64 @parser_parse_colonequal_stmt(i64 %t.7920, i64 %t.7921, i64 %t.7922)
+  store i64 %t.7929, ptr %v.792
   %t.7930 = load i64, ptr %v.792
   store i64 %t.7930, ptr %v.793
   %t.7940 = load i64, ptr %v.793
   %t.7946 = inttoptr i64 %t.7940 to ptr
   %t.7947 = load i64, ptr %t.7946
   store i64 %t.7947, ptr %v.794
-  %t.7959 = call i64 @ast_EXPR_INT()
-  store i64 %t.7959, ptr %v.795
+  store i64 0, ptr %v.795
   %t.7960 = load i64, ptr %v.794
   %t.7961 = load i64, ptr %v.795
-  %t.7962 = icmp eq i64 %t.7960, %t.7961
+  %t.7962 = icmp sge i64 %t.7960, %t.7961
   %t.7963 = zext i1 %t.7962 to i64
   store i64 %t.7963, ptr %v.796
   %t.7970 = load i64, ptr %v.796
   %t.7971 = icmp eq i64 %t.7970, 0
-  br i1 %t.7971, label %L.106, label %L.fall.797
+  br i1 %t.7971, label %L.104, label %L.fall.797
 L.fall.797:
-  %t.7980 = ptrtoint ptr @g_scalar_globals to i64
-  store i64 %t.7980, ptr %v.798
-  %t.7990 = load i64, ptr %v.784
-  %t.7992 = add i64 %t.7990, 16
-  %t.7996 = inttoptr i64 %t.7992 to ptr
+  %t.7980 = load i64, ptr %v.793
+  %t.7986 = inttoptr i64 %t.7980 to ptr
+  %t.7987 = load i64, ptr %t.7986
+  store i64 %t.7987, ptr %v.798
+  %t.7990 = load i64, ptr %v.670
+  %t.7991 = inttoptr i64 %t.7990 to ptr
+  %t.7992 = load i64, ptr %t.7991
+  %t.7993 = load i64, ptr %v.798
+  %t.7994 = mul i64 %t.7993, 8
+  %t.7995 = add i64 %t.7992, %t.7994
+  %t.7996 = inttoptr i64 %t.7995 to ptr
   %t.7997 = load i64, ptr %t.7996
   store i64 %t.7997, ptr %v.799
-  %t.8000 = load i64, ptr %v.798
-  %t.8001 = inttoptr i64 %t.8000 to ptr
-  %t.8002 = load i64, ptr %v.799
-  %t.8003 = alloca i64
-  store i64 %t.8002, ptr %t.8003
-  call void @ease_array_push(ptr %t.8001, ptr %t.8003, i64 8)
-  br label %L.107
-L.106:
-  br label %L.107
-L.107:
-  %t.8040 = load i64, ptr %v.793
-  %t.8046 = inttoptr i64 %t.8040 to ptr
-  %t.8047 = load i64, ptr %t.8046
-  store i64 %t.8047, ptr %v.804
-  %t.8059 = call i64 @ast_EXPR_UNARY()
-  store i64 %t.8059, ptr %v.805
-  %t.8060 = load i64, ptr %v.804
-  %t.8061 = load i64, ptr %v.805
-  %t.8062 = icmp eq i64 %t.8060, %t.8061
-  %t.8063 = zext i1 %t.8062 to i64
-  store i64 %t.8063, ptr %v.806
-  %t.8070 = load i64, ptr %v.806
-  %t.8071 = icmp eq i64 %t.8070, 0
-  br i1 %t.8071, label %L.108, label %L.fall.807
-L.fall.807:
-  %t.8080 = ptrtoint ptr @g_scalar_globals to i64
-  store i64 %t.8080, ptr %v.808
-  %t.8090 = load i64, ptr %v.784
-  %t.8092 = add i64 %t.8090, 16
-  %t.8096 = inttoptr i64 %t.8092 to ptr
-  %t.8097 = load i64, ptr %t.8096
-  store i64 %t.8097, ptr %v.809
-  %t.8100 = load i64, ptr %v.808
-  %t.8101 = inttoptr i64 %t.8100 to ptr
-  %t.8102 = load i64, ptr %v.809
-  %t.8103 = alloca i64
-  store i64 %t.8102, ptr %t.8103
-  call void @ease_array_push(ptr %t.8101, ptr %t.8103, i64 8)
+  %t.8000 = load i64, ptr %v.799
+  store i64 %t.8000, ptr %v.800
+  %t.8010 = load i64, ptr %v.800
+  %t.8012 = add i64 %t.8010, 16
+  %t.8016 = inttoptr i64 %t.8012 to ptr
+  %t.8017 = load i64, ptr %t.8016
+  store i64 %t.8017, ptr %v.801
+  %t.8020 = load i64, ptr %v.689
+  %t.8021 = inttoptr i64 %t.8020 to ptr
+  %t.8022 = load i64, ptr %v.801
+  %t.8023 = alloca i64
+  store i64 %t.8022, ptr %t.8023
+  call void @ease_array_push(ptr %t.8021, ptr %t.8023, i64 8)
+  %t.8030 = load i64, ptr %v.800
+  %t.8032 = add i64 %t.8030, 32
+  %t.8036 = inttoptr i64 %t.8032 to ptr
+  %t.8037 = load i64, ptr %t.8036
+  store i64 %t.8037, ptr %v.803
+  store i64 0, ptr %v.804
+  %t.8050 = load i64, ptr %v.803
+  %t.8051 = load i64, ptr %v.804
+  %t.8052 = icmp sge i64 %t.8050, %t.8051
+  %t.8053 = zext i1 %t.8052 to i64
+  store i64 %t.8053, ptr %v.805
+  %t.8060 = load i64, ptr %v.805
+  %t.8061 = icmp eq i64 %t.8060, 0
+  br i1 %t.8061, label %L.106, label %L.fall.806
+L.fall.806:
+  %t.8070 = load i64, ptr %v.800
+  %t.8072 = add i64 %t.8070, 32
+  %t.8076 = inttoptr i64 %t.8072 to ptr
+  %t.8077 = load i64, ptr %t.8076
+  store i64 %t.8077, ptr %v.807
+  %t.8080 = load i64, ptr %v.670
+  %t.8081 = inttoptr i64 %t.8080 to ptr
+  %t.8082 = load i64, ptr %t.8081
+  %t.8083 = load i64, ptr %v.807
+  %t.8084 = mul i64 %t.8083, 8
+  %t.8085 = add i64 %t.8082, %t.8084
+  %t.8086 = inttoptr i64 %t.8085 to ptr
+  %t.8087 = load i64, ptr %t.8086
+  store i64 %t.8087, ptr %v.808
+  %t.8090 = load i64, ptr %v.808
+  store i64 %t.8090, ptr %v.809
+  %t.8100 = load i64, ptr %v.809
+  %t.8106 = inttoptr i64 %t.8100 to ptr
+  %t.8107 = load i64, ptr %t.8106
+  store i64 %t.8107, ptr %v.810
+  %t.8119 = call i64 @ast_EXPR_INT()
+  store i64 %t.8119, ptr %v.811
+  %t.8120 = load i64, ptr %v.810
+  %t.8121 = load i64, ptr %v.811
+  %t.8122 = icmp eq i64 %t.8120, %t.8121
+  %t.8123 = zext i1 %t.8122 to i64
+  store i64 %t.8123, ptr %v.812
+  %t.8130 = load i64, ptr %v.812
+  %t.8131 = icmp eq i64 %t.8130, 0
+  br i1 %t.8131, label %L.108, label %L.fall.813
+L.fall.813:
+  %t.8140 = ptrtoint ptr @g_scalar_globals to i64
+  store i64 %t.8140, ptr %v.814
+  %t.8150 = load i64, ptr %v.800
+  %t.8152 = add i64 %t.8150, 16
+  %t.8156 = inttoptr i64 %t.8152 to ptr
+  %t.8157 = load i64, ptr %t.8156
+  store i64 %t.8157, ptr %v.815
+  %t.8160 = load i64, ptr %v.814
+  %t.8161 = inttoptr i64 %t.8160 to ptr
+  %t.8162 = load i64, ptr %v.815
+  %t.8163 = alloca i64
+  store i64 %t.8162, ptr %t.8163
+  call void @ease_array_push(ptr %t.8161, ptr %t.8163, i64 8)
   br label %L.109
 L.108:
   br label %L.109
 L.109:
+  %t.8200 = load i64, ptr %v.809
+  %t.8206 = inttoptr i64 %t.8200 to ptr
+  %t.8207 = load i64, ptr %t.8206
+  store i64 %t.8207, ptr %v.820
+  %t.8219 = call i64 @ast_EXPR_UNARY()
+  store i64 %t.8219, ptr %v.821
+  %t.8220 = load i64, ptr %v.820
+  %t.8221 = load i64, ptr %v.821
+  %t.8222 = icmp eq i64 %t.8220, %t.8221
+  %t.8223 = zext i1 %t.8222 to i64
+  store i64 %t.8223, ptr %v.822
+  %t.8230 = load i64, ptr %v.822
+  %t.8231 = icmp eq i64 %t.8230, 0
+  br i1 %t.8231, label %L.110, label %L.fall.823
+L.fall.823:
+  %t.8240 = ptrtoint ptr @g_scalar_globals to i64
+  store i64 %t.8240, ptr %v.824
+  %t.8250 = load i64, ptr %v.800
+  %t.8252 = add i64 %t.8250, 16
+  %t.8256 = inttoptr i64 %t.8252 to ptr
+  %t.8257 = load i64, ptr %t.8256
+  store i64 %t.8257, ptr %v.825
+  %t.8260 = load i64, ptr %v.824
+  %t.8261 = inttoptr i64 %t.8260 to ptr
+  %t.8262 = load i64, ptr %v.825
+  %t.8263 = alloca i64
+  store i64 %t.8262, ptr %t.8263
+  call void @ease_array_push(ptr %t.8261, ptr %t.8263, i64 8)
+  br label %L.111
+L.110:
+  br label %L.111
+L.111:
+  br label %L.107
+L.106:
+  br label %L.107
+L.107:
   br label %L.105
 L.104:
   br label %L.105
 L.105:
+  %t.8360 = load i64, ptr %v.793
+  %t.8362 = add i64 %t.8360, 8
+  %t.8366 = inttoptr i64 %t.8362 to ptr
+  %t.8367 = load i64, ptr %t.8366
+  store i64 %t.8367, ptr %v.836
+  %t.8370 = load i64, ptr %v.836
+  store i64 %t.8370, ptr %v.672
   br label %L.103
 L.102:
-  br label %L.103
+  br label %L.89
 L.103:
-  %t.8200 = load i64, ptr %v.777
-  %t.8202 = add i64 %t.8200, 8
-  %t.8206 = inttoptr i64 %t.8202 to ptr
-  %t.8207 = load i64, ptr %t.8206
-  store i64 %t.8207, ptr %v.820
-  %t.8210 = load i64, ptr %v.820
-  store i64 %t.8210, ptr %v.672
   br label %L.101
 L.100:
-  %t.8249 = call i64 @token_TK_FN()
-  store i64 %t.8249, ptr %v.824
-  %t.8250 = load i64, ptr %v.698
-  %t.8251 = load i64, ptr %v.824
-  %t.8252 = icmp eq i64 %t.8250, %t.8251
-  %t.8253 = zext i1 %t.8252 to i64
-  store i64 %t.8253, ptr %v.825
-  %t.8260 = load i64, ptr %v.825
-  %t.8261 = icmp eq i64 %t.8260, 0
-  br i1 %t.8261, label %L.110, label %L.fall.826
-L.fall.826:
-  %t.8300 = load i64, ptr %v.592
-  %t.8301 = load i64, ptr %v.672
-  %t.8302 = load i64, ptr %v.670
-  %t.8309 = call i64 @parser_parse_func_decl(i64 %t.8300, i64 %t.8301, i64 %t.8302)
-  store i64 %t.8309, ptr %v.830
-  %t.8310 = load i64, ptr %v.830
-  store i64 %t.8310, ptr %v.831
-  %t.8320 = load i64, ptr %v.831
-  %t.8326 = inttoptr i64 %t.8320 to ptr
-  %t.8327 = load i64, ptr %t.8326
-  store i64 %t.8327, ptr %v.832
-  store i64 0, ptr %v.833
-  %t.8340 = load i64, ptr %v.832
-  %t.8341 = load i64, ptr %v.833
-  %t.8342 = icmp slt i64 %t.8340, %t.8341
-  %t.8343 = zext i1 %t.8342 to i64
-  store i64 %t.8343, ptr %v.834
-  %t.8350 = load i64, ptr %v.834
-  %t.8351 = icmp eq i64 %t.8350, 0
-  br i1 %t.8351, label %L.112, label %L.fall.835
-L.fall.835:
-  %t.8360 = ptrtoint ptr @.str.13 to i64
-  store i64 %t.8360, ptr %v.836
-  %t.8380 = load i64, ptr %v.672
-  %t.8389 = call i64 @strconv_Itoa(i64 %t.8380)
-  store i64 %t.8389, ptr %v.838
-  %t.8390 = load i64, ptr %v.836
-  %t.8391 = inttoptr i64 %t.8390 to ptr
-  %t.8392 = load i64, ptr %v.838
-  %t.8393 = inttoptr i64 %t.8392 to ptr
-  %t.8394 = call ptr @ease_str_concat(ptr %t.8391, ptr %t.8393)
-  %t.8395 = ptrtoint ptr %t.8394 to i64
-  store i64 %t.8395, ptr %v.839
-  %t.8400 = ptrtoint ptr @.str.14 to i64
-  store i64 %t.8400, ptr %v.840
-  %t.8410 = load i64, ptr %v.839
-  %t.8411 = inttoptr i64 %t.8410 to ptr
-  %t.8412 = load i64, ptr %v.840
-  %t.8413 = inttoptr i64 %t.8412 to ptr
-  %t.8414 = call ptr @ease_str_concat(ptr %t.8411, ptr %t.8413)
-  %t.8415 = ptrtoint ptr %t.8414 to i64
-  store i64 %t.8415, ptr %v.841
-  %t.8430 = load i64, ptr %v.841
-  %t.8439 = call i64 @io_Print(i64 %t.8430)
-  store i64 %t.8439, ptr %v.843
-  br label %L.89
-L.112:
-  br label %L.113
-L.113:
-  %t.8480 = load i64, ptr %v.831
-  %t.8486 = inttoptr i64 %t.8480 to ptr
-  %t.8487 = load i64, ptr %t.8486
-  store i64 %t.8487, ptr %v.848
-  %t.8490 = load i64, ptr %v.848
-  store i64 %t.8490, ptr %v.849
-  %t.8500 = load i64, ptr %v.670
-  %t.8501 = inttoptr i64 %t.8500 to ptr
-  %t.8502 = load i64, ptr %t.8501
-  %t.8503 = load i64, ptr %v.849
-  %t.8504 = mul i64 %t.8503, 8
-  %t.8505 = add i64 %t.8502, %t.8504
-  %t.8506 = inttoptr i64 %t.8505 to ptr
-  %t.8507 = load i64, ptr %t.8506
-  store i64 %t.8507, ptr %v.850
+  %t.8449 = call i64 @token_TK_FN()
+  store i64 %t.8449, ptr %v.844
+  %t.8450 = load i64, ptr %v.698
+  %t.8451 = load i64, ptr %v.844
+  %t.8452 = icmp eq i64 %t.8450, %t.8451
+  %t.8453 = zext i1 %t.8452 to i64
+  store i64 %t.8453, ptr %v.845
+  %t.8460 = load i64, ptr %v.845
+  %t.8461 = icmp eq i64 %t.8460, 0
+  br i1 %t.8461, label %L.112, label %L.fall.846
+L.fall.846:
+  %t.8500 = load i64, ptr %v.592
+  %t.8501 = load i64, ptr %v.672
+  %t.8502 = load i64, ptr %v.670
+  %t.8509 = call i64 @parser_parse_func_decl(i64 %t.8500, i64 %t.8501, i64 %t.8502)
+  store i64 %t.8509, ptr %v.850
   %t.8510 = load i64, ptr %v.850
   store i64 %t.8510, ptr %v.851
   %t.8520 = load i64, ptr %v.851
-  %t.8522 = add i64 %t.8520, 16
-  %t.8526 = inttoptr i64 %t.8522 to ptr
+  %t.8526 = inttoptr i64 %t.8520 to ptr
   %t.8527 = load i64, ptr %t.8526
   store i64 %t.8527, ptr %v.852
-  %t.8530 = load i64, ptr %v.683
-  %t.8531 = inttoptr i64 %t.8530 to ptr
-  %t.8532 = load i64, ptr %v.852
-  %t.8533 = alloca i64
-  store i64 %t.8532, ptr %t.8533
-  call void @ease_array_push(ptr %t.8531, ptr %t.8533, i64 8)
-  %t.8540 = load i64, ptr %v.686
-  %t.8541 = inttoptr i64 %t.8540 to ptr
-  %t.8542 = load i64, ptr %v.849
-  %t.8543 = alloca i64
-  store i64 %t.8542, ptr %t.8543
-  call void @ease_array_push(ptr %t.8541, ptr %t.8543, i64 8)
-  %t.8550 = ptrtoint ptr @.str.15 to i64
-  store i64 %t.8550, ptr %v.855
-  %t.8560 = load i64, ptr %v.851
-  %t.8562 = add i64 %t.8560, 16
-  %t.8566 = inttoptr i64 %t.8562 to ptr
-  %t.8567 = load i64, ptr %t.8566
-  store i64 %t.8567, ptr %v.856
-  %t.8570 = load i64, ptr %v.855
-  %t.8571 = inttoptr i64 %t.8570 to ptr
-  %t.8572 = load i64, ptr %v.856
-  %t.8573 = inttoptr i64 %t.8572 to ptr
-  %t.8574 = call ptr @ease_str_concat(ptr %t.8571, ptr %t.8573)
-  %t.8575 = ptrtoint ptr %t.8574 to i64
-  store i64 %t.8575, ptr %v.857
-  %t.8580 = ptrtoint ptr @.str.16 to i64
-  store i64 %t.8580, ptr %v.858
-  %t.8590 = load i64, ptr %v.857
+  store i64 0, ptr %v.853
+  %t.8540 = load i64, ptr %v.852
+  %t.8541 = load i64, ptr %v.853
+  %t.8542 = icmp slt i64 %t.8540, %t.8541
+  %t.8543 = zext i1 %t.8542 to i64
+  store i64 %t.8543, ptr %v.854
+  %t.8550 = load i64, ptr %v.854
+  %t.8551 = icmp eq i64 %t.8550, 0
+  br i1 %t.8551, label %L.114, label %L.fall.855
+L.fall.855:
+  %t.8560 = ptrtoint ptr @.str.13 to i64
+  store i64 %t.8560, ptr %v.856
+  %t.8580 = load i64, ptr %v.672
+  %t.8589 = call i64 @strconv_Itoa(i64 %t.8580)
+  store i64 %t.8589, ptr %v.858
+  %t.8590 = load i64, ptr %v.856
   %t.8591 = inttoptr i64 %t.8590 to ptr
   %t.8592 = load i64, ptr %v.858
   %t.8593 = inttoptr i64 %t.8592 to ptr
   %t.8594 = call ptr @ease_str_concat(ptr %t.8591, ptr %t.8593)
   %t.8595 = ptrtoint ptr %t.8594 to i64
   store i64 %t.8595, ptr %v.859
-  %t.8600 = load i64, ptr %v.683
-  %t.8601 = add i64 %t.8600, 8
-  %t.8602 = inttoptr i64 %t.8601 to ptr
-  %t.8603 = load i64, ptr %t.8602
-  store i64 %t.8603, ptr %v.860
-  %t.8620 = load i64, ptr %v.860
-  %t.8629 = call i64 @strconv_Itoa(i64 %t.8620)
-  store i64 %t.8629, ptr %v.862
-  %t.8630 = load i64, ptr %v.859
-  %t.8631 = inttoptr i64 %t.8630 to ptr
-  %t.8632 = load i64, ptr %v.862
-  %t.8633 = inttoptr i64 %t.8632 to ptr
-  %t.8634 = call ptr @ease_str_concat(ptr %t.8631, ptr %t.8633)
-  %t.8635 = ptrtoint ptr %t.8634 to i64
-  store i64 %t.8635, ptr %v.863
-  %t.8640 = ptrtoint ptr @.str.17 to i64
-  store i64 %t.8640, ptr %v.864
-  %t.8650 = load i64, ptr %v.863
-  %t.8651 = inttoptr i64 %t.8650 to ptr
-  %t.8652 = load i64, ptr %v.864
-  %t.8653 = inttoptr i64 %t.8652 to ptr
-  %t.8654 = call ptr @ease_str_concat(ptr %t.8651, ptr %t.8653)
-  %t.8655 = ptrtoint ptr %t.8654 to i64
-  store i64 %t.8655, ptr %v.865
-  %t.8670 = load i64, ptr %v.865
-  %t.8679 = call i64 @io_Print(i64 %t.8670)
-  store i64 %t.8679, ptr %v.867
-  %t.8680 = load i64, ptr %v.831
-  %t.8682 = add i64 %t.8680, 8
-  %t.8686 = inttoptr i64 %t.8682 to ptr
+  %t.8600 = ptrtoint ptr @.str.14 to i64
+  store i64 %t.8600, ptr %v.860
+  %t.8610 = load i64, ptr %v.859
+  %t.8611 = inttoptr i64 %t.8610 to ptr
+  %t.8612 = load i64, ptr %v.860
+  %t.8613 = inttoptr i64 %t.8612 to ptr
+  %t.8614 = call ptr @ease_str_concat(ptr %t.8611, ptr %t.8613)
+  %t.8615 = ptrtoint ptr %t.8614 to i64
+  store i64 %t.8615, ptr %v.861
+  %t.8630 = load i64, ptr %v.861
+  %t.8639 = call i64 @io_Print(i64 %t.8630)
+  store i64 %t.8639, ptr %v.863
+  br label %L.89
+L.114:
+  br label %L.115
+L.115:
+  %t.8680 = load i64, ptr %v.851
+  %t.8686 = inttoptr i64 %t.8680 to ptr
   %t.8687 = load i64, ptr %t.8686
   store i64 %t.8687, ptr %v.868
   %t.8690 = load i64, ptr %v.868
-  store i64 %t.8690, ptr %v.672
-  %t.8720 = load i64, ptr %v.592
-  %t.8721 = load i64, ptr %v.672
-  %t.8729 = call i64 @lexer_lex_skip(i64 %t.8720, i64 %t.8721)
-  store i64 %t.8729, ptr %v.872
-  %t.8730 = load i64, ptr %v.872
-  store i64 %t.8730, ptr %v.672
-  br label %L.111
-L.110:
+  store i64 %t.8690, ptr %v.869
+  %t.8700 = load i64, ptr %v.670
+  %t.8701 = inttoptr i64 %t.8700 to ptr
+  %t.8702 = load i64, ptr %t.8701
+  %t.8703 = load i64, ptr %v.869
+  %t.8704 = mul i64 %t.8703, 8
+  %t.8705 = add i64 %t.8702, %t.8704
+  %t.8706 = inttoptr i64 %t.8705 to ptr
+  %t.8707 = load i64, ptr %t.8706
+  store i64 %t.8707, ptr %v.870
+  %t.8710 = load i64, ptr %v.870
+  store i64 %t.8710, ptr %v.871
+  %t.8720 = load i64, ptr %v.871
+  %t.8722 = add i64 %t.8720, 16
+  %t.8726 = inttoptr i64 %t.8722 to ptr
+  %t.8727 = load i64, ptr %t.8726
+  store i64 %t.8727, ptr %v.872
+  %t.8730 = load i64, ptr %v.683
+  %t.8731 = inttoptr i64 %t.8730 to ptr
+  %t.8732 = load i64, ptr %v.872
+  %t.8733 = alloca i64
+  store i64 %t.8732, ptr %t.8733
+  call void @ease_array_push(ptr %t.8731, ptr %t.8733, i64 8)
+  %t.8740 = load i64, ptr %v.686
+  %t.8741 = inttoptr i64 %t.8740 to ptr
+  %t.8742 = load i64, ptr %v.869
+  %t.8743 = alloca i64
+  store i64 %t.8742, ptr %t.8743
+  call void @ease_array_push(ptr %t.8741, ptr %t.8743, i64 8)
+  %t.8750 = ptrtoint ptr @.str.15 to i64
+  store i64 %t.8750, ptr %v.875
+  %t.8760 = load i64, ptr %v.871
+  %t.8762 = add i64 %t.8760, 16
+  %t.8766 = inttoptr i64 %t.8762 to ptr
+  %t.8767 = load i64, ptr %t.8766
+  store i64 %t.8767, ptr %v.876
+  %t.8770 = load i64, ptr %v.875
+  %t.8771 = inttoptr i64 %t.8770 to ptr
+  %t.8772 = load i64, ptr %v.876
+  %t.8773 = inttoptr i64 %t.8772 to ptr
+  %t.8774 = call ptr @ease_str_concat(ptr %t.8771, ptr %t.8773)
+  %t.8775 = ptrtoint ptr %t.8774 to i64
+  store i64 %t.8775, ptr %v.877
+  %t.8780 = ptrtoint ptr @.str.16 to i64
+  store i64 %t.8780, ptr %v.878
+  %t.8790 = load i64, ptr %v.877
+  %t.8791 = inttoptr i64 %t.8790 to ptr
+  %t.8792 = load i64, ptr %v.878
+  %t.8793 = inttoptr i64 %t.8792 to ptr
+  %t.8794 = call ptr @ease_str_concat(ptr %t.8791, ptr %t.8793)
+  %t.8795 = ptrtoint ptr %t.8794 to i64
+  store i64 %t.8795, ptr %v.879
+  %t.8800 = load i64, ptr %v.683
+  %t.8801 = add i64 %t.8800, 8
+  %t.8802 = inttoptr i64 %t.8801 to ptr
+  %t.8803 = load i64, ptr %t.8802
+  store i64 %t.8803, ptr %v.880
+  %t.8820 = load i64, ptr %v.880
+  %t.8829 = call i64 @strconv_Itoa(i64 %t.8820)
+  store i64 %t.8829, ptr %v.882
+  %t.8830 = load i64, ptr %v.879
+  %t.8831 = inttoptr i64 %t.8830 to ptr
+  %t.8832 = load i64, ptr %v.882
+  %t.8833 = inttoptr i64 %t.8832 to ptr
+  %t.8834 = call ptr @ease_str_concat(ptr %t.8831, ptr %t.8833)
+  %t.8835 = ptrtoint ptr %t.8834 to i64
+  store i64 %t.8835, ptr %v.883
+  %t.8840 = ptrtoint ptr @.str.17 to i64
+  store i64 %t.8840, ptr %v.884
+  %t.8850 = load i64, ptr %v.883
+  %t.8851 = inttoptr i64 %t.8850 to ptr
+  %t.8852 = load i64, ptr %v.884
+  %t.8853 = inttoptr i64 %t.8852 to ptr
+  %t.8854 = call ptr @ease_str_concat(ptr %t.8851, ptr %t.8853)
+  %t.8855 = ptrtoint ptr %t.8854 to i64
+  store i64 %t.8855, ptr %v.885
+  %t.8870 = load i64, ptr %v.885
+  %t.8879 = call i64 @io_Print(i64 %t.8870)
+  store i64 %t.8879, ptr %v.887
+  %t.8880 = load i64, ptr %v.851
+  %t.8882 = add i64 %t.8880, 8
+  %t.8886 = inttoptr i64 %t.8882 to ptr
+  %t.8887 = load i64, ptr %t.8886
+  store i64 %t.8887, ptr %v.888
+  %t.8890 = load i64, ptr %v.888
+  store i64 %t.8890, ptr %v.672
+  %t.8920 = load i64, ptr %v.592
+  %t.8921 = load i64, ptr %v.672
+  %t.8929 = call i64 @lexer_lex_skip(i64 %t.8920, i64 %t.8921)
+  store i64 %t.8929, ptr %v.892
+  %t.8930 = load i64, ptr %v.892
+  store i64 %t.8930, ptr %v.672
+  br label %L.113
+L.112:
   br label %L.89
-L.111:
+L.113:
   br label %L.101
 L.101:
   br label %L.99
@@ -4116,626 +4170,529 @@ L.95:
 L.93:
   br label %L.88
 L.89:
-  %t.8840 = ptrtoint ptr @.str.18 to i64
-  store i64 %t.8840, ptr %v.884
-  %t.8850 = load i64, ptr %v.683
-  %t.8851 = add i64 %t.8850, 8
-  %t.8852 = inttoptr i64 %t.8851 to ptr
-  %t.8853 = load i64, ptr %t.8852
-  store i64 %t.8853, ptr %v.885
-  %t.8870 = load i64, ptr %v.885
-  %t.8879 = call i64 @strconv_Itoa(i64 %t.8870)
-  store i64 %t.8879, ptr %v.887
-  %t.8880 = load i64, ptr %v.884
-  %t.8881 = inttoptr i64 %t.8880 to ptr
-  %t.8882 = load i64, ptr %v.887
-  %t.8883 = inttoptr i64 %t.8882 to ptr
-  %t.8884 = call ptr @ease_str_concat(ptr %t.8881, ptr %t.8883)
-  %t.8885 = ptrtoint ptr %t.8884 to i64
-  store i64 %t.8885, ptr %v.888
-  %t.8890 = ptrtoint ptr @.str.19 to i64
-  store i64 %t.8890, ptr %v.889
-  %t.8900 = load i64, ptr %v.888
-  %t.8901 = inttoptr i64 %t.8900 to ptr
-  %t.8902 = load i64, ptr %v.889
-  %t.8903 = inttoptr i64 %t.8902 to ptr
-  %t.8904 = call ptr @ease_str_concat(ptr %t.8901, ptr %t.8903)
-  %t.8905 = ptrtoint ptr %t.8904 to i64
-  store i64 %t.8905, ptr %v.890
-  %t.8920 = load i64, ptr %v.890
-  %t.8929 = call i64 @io_Print(i64 %t.8920)
-  store i64 %t.8929, ptr %v.892
-  store i64 0, ptr %v.893
-  %t.8940 = load i64, ptr %v.893
-  store i64 %t.8940, ptr %v.894
-  %t.8950 = load i64, ptr %v.670
-  %t.8951 = add i64 %t.8950, 8
-  %t.8952 = inttoptr i64 %t.8951 to ptr
-  %t.8953 = load i64, ptr %t.8952
-  store i64 %t.8953, ptr %v.895
-  %t.8960 = load i64, ptr %v.895
-  store i64 %t.8960, ptr %v.896
-  br label %L.114
-L.114:
-  %t.8980 = load i64, ptr %v.894
-  %t.8981 = load i64, ptr %v.896
-  %t.8982 = icmp slt i64 %t.8980, %t.8981
-  %t.8983 = zext i1 %t.8982 to i64
-  store i64 %t.8983, ptr %v.898
-  %t.8990 = load i64, ptr %v.898
-  %t.8991 = icmp eq i64 %t.8990, 0
-  br i1 %t.8991, label %L.115, label %L.fall.899
-L.fall.899:
-  %t.9000 = load i64, ptr %v.670
-  %t.9001 = inttoptr i64 %t.9000 to ptr
-  %t.9002 = load i64, ptr %t.9001
-  %t.9003 = load i64, ptr %v.894
-  %t.9004 = mul i64 %t.9003, 8
-  %t.9005 = add i64 %t.9002, %t.9004
-  %t.9006 = inttoptr i64 %t.9005 to ptr
-  %t.9007 = load i64, ptr %t.9006
-  store i64 %t.9007, ptr %v.900
-  %t.9010 = load i64, ptr %v.900
-  %t.9016 = inttoptr i64 %t.9010 to ptr
-  %t.9017 = load i64, ptr %t.9016
-  store i64 %t.9017, ptr %v.901
-  %t.9029 = call i64 @ast_DECL_IMPORT()
-  store i64 %t.9029, ptr %v.902
-  %t.9030 = load i64, ptr %v.901
-  %t.9031 = load i64, ptr %v.902
-  %t.9032 = icmp eq i64 %t.9030, %t.9031
-  %t.9033 = zext i1 %t.9032 to i64
-  store i64 %t.9033, ptr %v.903
-  %t.9040 = load i64, ptr %v.903
-  %t.9041 = icmp eq i64 %t.9040, 0
-  br i1 %t.9041, label %L.116, label %L.fall.904
-L.fall.904:
-  %t.9050 = load i64, ptr %v.670
-  %t.9051 = inttoptr i64 %t.9050 to ptr
-  %t.9052 = load i64, ptr %t.9051
-  %t.9053 = load i64, ptr %v.894
-  %t.9054 = mul i64 %t.9053, 8
-  %t.9055 = add i64 %t.9052, %t.9054
-  %t.9056 = inttoptr i64 %t.9055 to ptr
-  %t.9057 = load i64, ptr %t.9056
-  store i64 %t.9057, ptr %v.905
-  %t.9060 = load i64, ptr %v.905
-  %t.9062 = add i64 %t.9060, 16
-  %t.9066 = inttoptr i64 %t.9062 to ptr
-  %t.9067 = load i64, ptr %t.9066
-  store i64 %t.9067, ptr %v.906
-  %t.9070 = load i64, ptr %v.906
-  store i64 %t.9070, ptr %v.907
-  %t.9080 = load i64, ptr %v.907
+  %t.9040 = ptrtoint ptr @.str.18 to i64
+  store i64 %t.9040, ptr %v.904
+  %t.9050 = load i64, ptr %v.683
+  %t.9051 = add i64 %t.9050, 8
+  %t.9052 = inttoptr i64 %t.9051 to ptr
+  %t.9053 = load i64, ptr %t.9052
+  store i64 %t.9053, ptr %v.905
+  %t.9070 = load i64, ptr %v.905
+  %t.9079 = call i64 @strconv_Itoa(i64 %t.9070)
+  store i64 %t.9079, ptr %v.907
+  %t.9080 = load i64, ptr %v.904
   %t.9081 = inttoptr i64 %t.9080 to ptr
-  %t.9082 = call i64 @ease_str_len(ptr %t.9081)
-  store i64 %t.9082, ptr %v.908
-  store i64 2, ptr %v.909
+  %t.9082 = load i64, ptr %v.907
+  %t.9083 = inttoptr i64 %t.9082 to ptr
+  %t.9084 = call ptr @ease_str_concat(ptr %t.9081, ptr %t.9083)
+  %t.9085 = ptrtoint ptr %t.9084 to i64
+  store i64 %t.9085, ptr %v.908
+  %t.9090 = ptrtoint ptr @.str.19 to i64
+  store i64 %t.9090, ptr %v.909
   %t.9100 = load i64, ptr %v.908
-  %t.9101 = load i64, ptr %v.909
-  %t.9102 = icmp sge i64 %t.9100, %t.9101
-  %t.9103 = zext i1 %t.9102 to i64
-  store i64 %t.9103, ptr %v.910
-  store i64 0, ptr %v.911
-  %t.9120 = load i64, ptr %v.907
-  %t.9121 = inttoptr i64 %t.9120 to ptr
-  %t.9122 = load i64, ptr %v.911
-  %t.9123 = call i64 @ease_str_char_at(ptr %t.9121, i64 %t.9122)
-  store i64 %t.9123, ptr %v.912
-  store i64 46, ptr %v.913
-  %t.9140 = load i64, ptr %v.912
-  %t.9141 = load i64, ptr %v.913
-  %t.9142 = icmp eq i64 %t.9140, %t.9141
-  %t.9143 = zext i1 %t.9142 to i64
-  store i64 %t.9143, ptr %v.914
-  %t.9150 = load i64, ptr %v.910
-  %t.9151 = load i64, ptr %v.914
-  %t.9152 = and i64 %t.9150, %t.9151
-  store i64 %t.9152, ptr %v.915
-  store i64 1, ptr %v.916
-  %t.9170 = load i64, ptr %v.907
-  %t.9171 = inttoptr i64 %t.9170 to ptr
-  %t.9172 = load i64, ptr %v.916
-  %t.9173 = call i64 @ease_str_char_at(ptr %t.9171, i64 %t.9172)
-  store i64 %t.9173, ptr %v.917
-  store i64 47, ptr %v.918
-  %t.9190 = load i64, ptr %v.917
-  %t.9191 = load i64, ptr %v.918
-  %t.9192 = icmp eq i64 %t.9190, %t.9191
-  %t.9193 = zext i1 %t.9192 to i64
-  store i64 %t.9193, ptr %v.919
-  %t.9200 = load i64, ptr %v.915
-  %t.9201 = load i64, ptr %v.919
-  %t.9202 = and i64 %t.9200, %t.9201
-  store i64 %t.9202, ptr %v.920
+  %t.9101 = inttoptr i64 %t.9100 to ptr
+  %t.9102 = load i64, ptr %v.909
+  %t.9103 = inttoptr i64 %t.9102 to ptr
+  %t.9104 = call ptr @ease_str_concat(ptr %t.9101, ptr %t.9103)
+  %t.9105 = ptrtoint ptr %t.9104 to i64
+  store i64 %t.9105, ptr %v.910
+  %t.9120 = load i64, ptr %v.910
+  %t.9129 = call i64 @io_Print(i64 %t.9120)
+  store i64 %t.9129, ptr %v.912
+  store i64 0, ptr %v.913
+  %t.9140 = load i64, ptr %v.913
+  store i64 %t.9140, ptr %v.914
+  %t.9150 = load i64, ptr %v.670
+  %t.9151 = add i64 %t.9150, 8
+  %t.9152 = inttoptr i64 %t.9151 to ptr
+  %t.9153 = load i64, ptr %t.9152
+  store i64 %t.9153, ptr %v.915
+  %t.9160 = load i64, ptr %v.915
+  store i64 %t.9160, ptr %v.916
+  br label %L.116
+L.116:
+  %t.9180 = load i64, ptr %v.914
+  %t.9181 = load i64, ptr %v.916
+  %t.9182 = icmp slt i64 %t.9180, %t.9181
+  %t.9183 = zext i1 %t.9182 to i64
+  store i64 %t.9183, ptr %v.918
+  %t.9190 = load i64, ptr %v.918
+  %t.9191 = icmp eq i64 %t.9190, 0
+  br i1 %t.9191, label %L.117, label %L.fall.919
+L.fall.919:
+  %t.9200 = load i64, ptr %v.670
+  %t.9201 = inttoptr i64 %t.9200 to ptr
+  %t.9202 = load i64, ptr %t.9201
+  %t.9203 = load i64, ptr %v.914
+  %t.9204 = mul i64 %t.9203, 8
+  %t.9205 = add i64 %t.9202, %t.9204
+  %t.9206 = inttoptr i64 %t.9205 to ptr
+  %t.9207 = load i64, ptr %t.9206
+  store i64 %t.9207, ptr %v.920
   %t.9210 = load i64, ptr %v.920
-  %t.9211 = icmp eq i64 %t.9210, 0
-  br i1 %t.9211, label %L.118, label %L.fall.921
-L.fall.921:
-  %t.9230 = load i64, ptr %v.907
-  %t.9239 = call i64 @extract_module_name(i64 %t.9230)
-  store i64 %t.9239, ptr %v.923
+  %t.9216 = inttoptr i64 %t.9210 to ptr
+  %t.9217 = load i64, ptr %t.9216
+  store i64 %t.9217, ptr %v.921
+  %t.9229 = call i64 @ast_DECL_IMPORT()
+  store i64 %t.9229, ptr %v.922
+  %t.9230 = load i64, ptr %v.921
+  %t.9231 = load i64, ptr %v.922
+  %t.9232 = icmp eq i64 %t.9230, %t.9231
+  %t.9233 = zext i1 %t.9232 to i64
+  store i64 %t.9233, ptr %v.923
   %t.9240 = load i64, ptr %v.923
-  store i64 %t.9240, ptr %v.924
-  %t.9270 = load i64, ptr %v.594
-  %t.9271 = load i64, ptr %v.907
-  %t.9279 = call i64 @resolve_import_path(i64 %t.9270, i64 %t.9271)
-  store i64 %t.9279, ptr %v.927
+  %t.9241 = icmp eq i64 %t.9240, 0
+  br i1 %t.9241, label %L.118, label %L.fall.924
+L.fall.924:
+  %t.9250 = load i64, ptr %v.670
+  %t.9251 = inttoptr i64 %t.9250 to ptr
+  %t.9252 = load i64, ptr %t.9251
+  %t.9253 = load i64, ptr %v.914
+  %t.9254 = mul i64 %t.9253, 8
+  %t.9255 = add i64 %t.9252, %t.9254
+  %t.9256 = inttoptr i64 %t.9255 to ptr
+  %t.9257 = load i64, ptr %t.9256
+  store i64 %t.9257, ptr %v.925
+  %t.9260 = load i64, ptr %v.925
+  %t.9262 = add i64 %t.9260, 16
+  %t.9266 = inttoptr i64 %t.9262 to ptr
+  %t.9267 = load i64, ptr %t.9266
+  store i64 %t.9267, ptr %v.926
+  %t.9270 = load i64, ptr %v.926
+  store i64 %t.9270, ptr %v.927
   %t.9280 = load i64, ptr %v.927
-  store i64 %t.9280, ptr %v.928
-  %t.9290 = load i64, ptr %v.928
-  %t.9291 = inttoptr i64 %t.9290 to ptr
-  %t.9292 = call i64 @ease_is_dir(ptr %t.9291)
-  store i64 %t.9292, ptr %v.929
-  %t.9300 = load i64, ptr %v.929
-  store i64 %t.9300, ptr %v.930
-  store i64 24, ptr %v.931
-  %t.9320 = load i64, ptr %v.931
-  %t.9321 = call ptr @malloc(i64 %t.9320)
-  %t.9322 = call ptr @memset(ptr %t.9321, i32 0, i64 %t.9320)
-  %t.9323 = ptrtoint ptr %t.9321 to i64
+  %t.9281 = inttoptr i64 %t.9280 to ptr
+  %t.9282 = call i64 @ease_str_len(ptr %t.9281)
+  store i64 %t.9282, ptr %v.928
+  store i64 2, ptr %v.929
+  %t.9300 = load i64, ptr %v.928
+  %t.9301 = load i64, ptr %v.929
+  %t.9302 = icmp sge i64 %t.9300, %t.9301
+  %t.9303 = zext i1 %t.9302 to i64
+  store i64 %t.9303, ptr %v.930
+  store i64 0, ptr %v.931
+  %t.9320 = load i64, ptr %v.927
+  %t.9321 = inttoptr i64 %t.9320 to ptr
+  %t.9322 = load i64, ptr %v.931
+  %t.9323 = call i64 @ease_str_char_at(ptr %t.9321, i64 %t.9322)
   store i64 %t.9323, ptr %v.932
-  %t.9330 = load i64, ptr %v.932
-  store i64 %t.9330, ptr %v.933
-  store i64 24, ptr %v.934
-  %t.9350 = load i64, ptr %v.934
-  %t.9351 = call ptr @malloc(i64 %t.9350)
-  %t.9352 = call ptr @memset(ptr %t.9351, i32 0, i64 %t.9350)
-  %t.9353 = ptrtoint ptr %t.9351 to i64
-  store i64 %t.9353, ptr %v.935
-  %t.9360 = load i64, ptr %v.935
-  store i64 %t.9360, ptr %v.936
-  store i64 1, ptr %v.937
-  %t.9380 = load i64, ptr %v.930
-  %t.9381 = load i64, ptr %v.937
-  %t.9382 = icmp eq i64 %t.9380, %t.9381
-  %t.9383 = zext i1 %t.9382 to i64
-  store i64 %t.9383, ptr %v.938
-  %t.9390 = load i64, ptr %v.938
-  %t.9391 = icmp eq i64 %t.9390, 0
-  br i1 %t.9391, label %L.120, label %L.fall.939
-L.fall.939:
-  %t.9400 = ptrtoint ptr @.str.20 to i64
-  store i64 %t.9400, ptr %v.940
+  store i64 46, ptr %v.933
+  %t.9340 = load i64, ptr %v.932
+  %t.9341 = load i64, ptr %v.933
+  %t.9342 = icmp eq i64 %t.9340, %t.9341
+  %t.9343 = zext i1 %t.9342 to i64
+  store i64 %t.9343, ptr %v.934
+  %t.9350 = load i64, ptr %v.930
+  %t.9351 = load i64, ptr %v.934
+  %t.9352 = and i64 %t.9350, %t.9351
+  store i64 %t.9352, ptr %v.935
+  store i64 1, ptr %v.936
+  %t.9370 = load i64, ptr %v.927
+  %t.9371 = inttoptr i64 %t.9370 to ptr
+  %t.9372 = load i64, ptr %v.936
+  %t.9373 = call i64 @ease_str_char_at(ptr %t.9371, i64 %t.9372)
+  store i64 %t.9373, ptr %v.937
+  store i64 47, ptr %v.938
+  %t.9390 = load i64, ptr %v.937
+  %t.9391 = load i64, ptr %v.938
+  %t.9392 = icmp eq i64 %t.9390, %t.9391
+  %t.9393 = zext i1 %t.9392 to i64
+  store i64 %t.9393, ptr %v.939
+  %t.9400 = load i64, ptr %v.935
+  %t.9401 = load i64, ptr %v.939
+  %t.9402 = and i64 %t.9400, %t.9401
+  store i64 %t.9402, ptr %v.940
   %t.9410 = load i64, ptr %v.940
-  %t.9411 = inttoptr i64 %t.9410 to ptr
-  %t.9412 = load i64, ptr %v.924
-  %t.9413 = inttoptr i64 %t.9412 to ptr
-  %t.9414 = call ptr @ease_str_concat(ptr %t.9411, ptr %t.9413)
-  %t.9415 = ptrtoint ptr %t.9414 to i64
-  store i64 %t.9415, ptr %v.941
-  %t.9420 = ptrtoint ptr @.str.21 to i64
-  store i64 %t.9420, ptr %v.942
-  %t.9430 = load i64, ptr %v.941
-  %t.9431 = inttoptr i64 %t.9430 to ptr
-  %t.9432 = load i64, ptr %v.942
-  %t.9433 = inttoptr i64 %t.9432 to ptr
-  %t.9434 = call ptr @ease_str_concat(ptr %t.9431, ptr %t.9433)
-  %t.9435 = ptrtoint ptr %t.9434 to i64
-  store i64 %t.9435, ptr %v.943
+  %t.9411 = icmp eq i64 %t.9410, 0
+  br i1 %t.9411, label %L.120, label %L.fall.941
+L.fall.941:
+  %t.9430 = load i64, ptr %v.927
+  %t.9439 = call i64 @extract_module_name(i64 %t.9430)
+  store i64 %t.9439, ptr %v.943
   %t.9440 = load i64, ptr %v.943
-  %t.9441 = inttoptr i64 %t.9440 to ptr
-  %t.9442 = load i64, ptr %v.928
-  %t.9443 = inttoptr i64 %t.9442 to ptr
-  %t.9444 = call ptr @ease_str_concat(ptr %t.9441, ptr %t.9443)
-  %t.9445 = ptrtoint ptr %t.9444 to i64
-  store i64 %t.9445, ptr %v.944
-  %t.9450 = ptrtoint ptr @.str.22 to i64
-  store i64 %t.9450, ptr %v.945
-  %t.9460 = load i64, ptr %v.944
-  %t.9461 = inttoptr i64 %t.9460 to ptr
-  %t.9462 = load i64, ptr %v.945
-  %t.9463 = inttoptr i64 %t.9462 to ptr
-  %t.9464 = call ptr @ease_str_concat(ptr %t.9461, ptr %t.9463)
-  %t.9465 = ptrtoint ptr %t.9464 to i64
-  store i64 %t.9465, ptr %v.946
-  %t.9480 = load i64, ptr %v.946
-  %t.9489 = call i64 @io_Print(i64 %t.9480)
-  store i64 %t.9489, ptr %v.948
-  %t.9490 = ptrtoint ptr @g_import_paths to i64
-  store i64 %t.9490, ptr %v.949
+  store i64 %t.9440, ptr %v.944
+  %t.9470 = load i64, ptr %v.594
+  %t.9471 = load i64, ptr %v.927
+  %t.9479 = call i64 @resolve_import_path(i64 %t.9470, i64 %t.9471)
+  store i64 %t.9479, ptr %v.947
+  %t.9480 = load i64, ptr %v.947
+  store i64 %t.9480, ptr %v.948
+  %t.9490 = load i64, ptr %v.948
+  %t.9491 = inttoptr i64 %t.9490 to ptr
+  %t.9492 = call i64 @ease_is_dir(ptr %t.9491)
+  store i64 %t.9492, ptr %v.949
   %t.9500 = load i64, ptr %v.949
-  %t.9501 = inttoptr i64 %t.9500 to ptr
-  %t.9502 = load i64, ptr %v.928
-  %t.9503 = alloca i64
-  store i64 %t.9502, ptr %t.9503
-  call void @ease_array_push(ptr %t.9501, ptr %t.9503, i64 8)
-  %t.9510 = ptrtoint ptr @g_import_names to i64
-  store i64 %t.9510, ptr %v.951
+  store i64 %t.9500, ptr %v.950
+  store i64 24, ptr %v.951
   %t.9520 = load i64, ptr %v.951
-  %t.9521 = inttoptr i64 %t.9520 to ptr
-  %t.9522 = load i64, ptr %v.924
-  %t.9523 = alloca i64
-  store i64 %t.9522, ptr %t.9523
-  call void @ease_array_push(ptr %t.9521, ptr %t.9523, i64 8)
-  %t.9530 = load i64, ptr %v.928
-  %t.9531 = inttoptr i64 %t.9530 to ptr
-  %t.9532 = call ptr @ease_list_dir(ptr %t.9531)
-  %t.9533 = ptrtoint ptr %t.9532 to i64
-  store i64 %t.9533, ptr %v.953
-  %t.9540 = load i64, ptr %v.953
-  store i64 %t.9540, ptr %v.954
-  store i64 0, ptr %v.955
+  %t.9521 = call ptr @malloc(i64 %t.9520)
+  %t.9522 = call ptr @memset(ptr %t.9521, i32 0, i64 %t.9520)
+  %t.9523 = ptrtoint ptr %t.9521 to i64
+  store i64 %t.9523, ptr %v.952
+  %t.9530 = load i64, ptr %v.952
+  store i64 %t.9530, ptr %v.953
+  store i64 24, ptr %v.954
+  %t.9550 = load i64, ptr %v.954
+  %t.9551 = call ptr @malloc(i64 %t.9550)
+  %t.9552 = call ptr @memset(ptr %t.9551, i32 0, i64 %t.9550)
+  %t.9553 = ptrtoint ptr %t.9551 to i64
+  store i64 %t.9553, ptr %v.955
   %t.9560 = load i64, ptr %v.955
   store i64 %t.9560, ptr %v.956
-  store i64 0, ptr %v.957
-  %t.9580 = load i64, ptr %v.957
-  store i64 %t.9580, ptr %v.958
-  %t.9590 = load i64, ptr %v.954
-  %t.9591 = inttoptr i64 %t.9590 to ptr
-  %t.9592 = call i64 @ease_str_len(ptr %t.9591)
-  store i64 %t.9592, ptr %v.959
-  %t.9600 = load i64, ptr %v.959
+  store i64 1, ptr %v.957
+  %t.9580 = load i64, ptr %v.950
+  %t.9581 = load i64, ptr %v.957
+  %t.9582 = icmp eq i64 %t.9580, %t.9581
+  %t.9583 = zext i1 %t.9582 to i64
+  store i64 %t.9583, ptr %v.958
+  %t.9590 = load i64, ptr %v.958
+  %t.9591 = icmp eq i64 %t.9590, 0
+  br i1 %t.9591, label %L.122, label %L.fall.959
+L.fall.959:
+  %t.9600 = ptrtoint ptr @.str.20 to i64
   store i64 %t.9600, ptr %v.960
-  br label %L.122
-L.122:
-  %t.9620 = load i64, ptr %v.956
-  %t.9621 = load i64, ptr %v.960
-  %t.9622 = icmp sle i64 %t.9620, %t.9621
-  %t.9623 = zext i1 %t.9622 to i64
-  store i64 %t.9623, ptr %v.962
-  %t.9630 = load i64, ptr %v.962
-  %t.9631 = icmp eq i64 %t.9630, 0
-  br i1 %t.9631, label %L.123, label %L.fall.963
-L.fall.963:
-  %t.9640 = load i64, ptr %v.956
-  %t.9641 = load i64, ptr %v.960
-  %t.9642 = icmp eq i64 %t.9640, %t.9641
-  %t.9643 = zext i1 %t.9642 to i64
-  store i64 %t.9643, ptr %v.964
-  %t.9650 = load i64, ptr %v.954
-  %t.9651 = inttoptr i64 %t.9650 to ptr
-  %t.9652 = load i64, ptr %v.956
-  %t.9653 = call i64 @ease_str_char_at(ptr %t.9651, i64 %t.9652)
-  store i64 %t.9653, ptr %v.965
-  store i64 10, ptr %v.966
-  %t.9670 = load i64, ptr %v.965
-  %t.9671 = load i64, ptr %v.966
-  %t.9672 = icmp eq i64 %t.9670, %t.9671
-  %t.9673 = zext i1 %t.9672 to i64
-  store i64 %t.9673, ptr %v.967
-  %t.9680 = load i64, ptr %v.964
-  %t.9681 = load i64, ptr %v.967
-  %t.9682 = or i64 %t.9680, %t.9681
-  store i64 %t.9682, ptr %v.968
-  %t.9690 = load i64, ptr %v.968
-  %t.9691 = icmp eq i64 %t.9690, 0
-  br i1 %t.9691, label %L.124, label %L.fall.969
-L.fall.969:
-  %t.9700 = load i64, ptr %v.956
-  %t.9701 = load i64, ptr %v.958
-  %t.9702 = icmp sgt i64 %t.9700, %t.9701
-  %t.9703 = zext i1 %t.9702 to i64
-  store i64 %t.9703, ptr %v.970
-  %t.9710 = load i64, ptr %v.970
-  %t.9711 = icmp eq i64 %t.9710, 0
-  br i1 %t.9711, label %L.126, label %L.fall.971
-L.fall.971:
-  %t.9750 = load i64, ptr %v.954
-  %t.9751 = load i64, ptr %v.958
-  %t.9752 = load i64, ptr %v.956
-  %t.9759 = call i64 @strings_str_substring(i64 %t.9750, i64 %t.9751, i64 %t.9752)
-  store i64 %t.9759, ptr %v.975
+  %t.9610 = load i64, ptr %v.960
+  %t.9611 = inttoptr i64 %t.9610 to ptr
+  %t.9612 = load i64, ptr %v.944
+  %t.9613 = inttoptr i64 %t.9612 to ptr
+  %t.9614 = call ptr @ease_str_concat(ptr %t.9611, ptr %t.9613)
+  %t.9615 = ptrtoint ptr %t.9614 to i64
+  store i64 %t.9615, ptr %v.961
+  %t.9620 = ptrtoint ptr @.str.21 to i64
+  store i64 %t.9620, ptr %v.962
+  %t.9630 = load i64, ptr %v.961
+  %t.9631 = inttoptr i64 %t.9630 to ptr
+  %t.9632 = load i64, ptr %v.962
+  %t.9633 = inttoptr i64 %t.9632 to ptr
+  %t.9634 = call ptr @ease_str_concat(ptr %t.9631, ptr %t.9633)
+  %t.9635 = ptrtoint ptr %t.9634 to i64
+  store i64 %t.9635, ptr %v.963
+  %t.9640 = load i64, ptr %v.963
+  %t.9641 = inttoptr i64 %t.9640 to ptr
+  %t.9642 = load i64, ptr %v.948
+  %t.9643 = inttoptr i64 %t.9642 to ptr
+  %t.9644 = call ptr @ease_str_concat(ptr %t.9641, ptr %t.9643)
+  %t.9645 = ptrtoint ptr %t.9644 to i64
+  store i64 %t.9645, ptr %v.964
+  %t.9650 = ptrtoint ptr @.str.22 to i64
+  store i64 %t.9650, ptr %v.965
+  %t.9660 = load i64, ptr %v.964
+  %t.9661 = inttoptr i64 %t.9660 to ptr
+  %t.9662 = load i64, ptr %v.965
+  %t.9663 = inttoptr i64 %t.9662 to ptr
+  %t.9664 = call ptr @ease_str_concat(ptr %t.9661, ptr %t.9663)
+  %t.9665 = ptrtoint ptr %t.9664 to i64
+  store i64 %t.9665, ptr %v.966
+  %t.9680 = load i64, ptr %v.966
+  %t.9689 = call i64 @io_Print(i64 %t.9680)
+  store i64 %t.9689, ptr %v.968
+  %t.9690 = ptrtoint ptr @g_import_paths to i64
+  store i64 %t.9690, ptr %v.969
+  %t.9700 = load i64, ptr %v.969
+  %t.9701 = inttoptr i64 %t.9700 to ptr
+  %t.9702 = load i64, ptr %v.948
+  %t.9703 = alloca i64
+  store i64 %t.9702, ptr %t.9703
+  call void @ease_array_push(ptr %t.9701, ptr %t.9703, i64 8)
+  %t.9710 = ptrtoint ptr @g_import_names to i64
+  store i64 %t.9710, ptr %v.971
+  %t.9720 = load i64, ptr %v.971
+  %t.9721 = inttoptr i64 %t.9720 to ptr
+  %t.9722 = load i64, ptr %v.944
+  %t.9723 = alloca i64
+  store i64 %t.9722, ptr %t.9723
+  call void @ease_array_push(ptr %t.9721, ptr %t.9723, i64 8)
+  %t.9730 = load i64, ptr %v.948
+  %t.9731 = inttoptr i64 %t.9730 to ptr
+  %t.9732 = call ptr @ease_list_dir(ptr %t.9731)
+  %t.9733 = ptrtoint ptr %t.9732 to i64
+  store i64 %t.9733, ptr %v.973
+  %t.9740 = load i64, ptr %v.973
+  store i64 %t.9740, ptr %v.974
+  store i64 0, ptr %v.975
   %t.9760 = load i64, ptr %v.975
   store i64 %t.9760, ptr %v.976
-  %t.9780 = load i64, ptr %v.976
-  %t.9789 = call i64 @has_ease_suffix(i64 %t.9780)
-  store i64 %t.9789, ptr %v.978
-  store i64 1, ptr %v.979
-  %t.9800 = load i64, ptr %v.978
-  %t.9801 = load i64, ptr %v.979
-  %t.9802 = icmp eq i64 %t.9800, %t.9801
-  %t.9803 = zext i1 %t.9802 to i64
-  store i64 %t.9803, ptr %v.980
-  %t.9810 = load i64, ptr %v.980
-  %t.9811 = icmp eq i64 %t.9810, 0
-  br i1 %t.9811, label %L.128, label %L.fall.981
-L.fall.981:
-  %t.9820 = ptrtoint ptr @.str.23 to i64
-  store i64 %t.9820, ptr %v.982
-  %t.9830 = load i64, ptr %v.928
-  %t.9831 = inttoptr i64 %t.9830 to ptr
-  %t.9832 = load i64, ptr %v.982
-  %t.9833 = inttoptr i64 %t.9832 to ptr
-  %t.9834 = call ptr @ease_str_concat(ptr %t.9831, ptr %t.9833)
-  %t.9835 = ptrtoint ptr %t.9834 to i64
-  store i64 %t.9835, ptr %v.983
-  %t.9840 = load i64, ptr %v.983
-  %t.9841 = inttoptr i64 %t.9840 to ptr
-  %t.9842 = load i64, ptr %v.976
-  %t.9843 = inttoptr i64 %t.9842 to ptr
-  %t.9844 = call ptr @ease_str_concat(ptr %t.9841, ptr %t.9843)
-  %t.9845 = ptrtoint ptr %t.9844 to i64
-  store i64 %t.9845, ptr %v.984
-  %t.9850 = load i64, ptr %v.984
-  store i64 %t.9850, ptr %v.985
-  %t.9860 = ptrtoint ptr @.str.24 to i64
-  store i64 %t.9860, ptr %v.986
-  %t.9870 = load i64, ptr %v.986
-  %t.9871 = inttoptr i64 %t.9870 to ptr
-  %t.9872 = load i64, ptr %v.985
-  %t.9873 = inttoptr i64 %t.9872 to ptr
-  %t.9874 = call ptr @ease_str_concat(ptr %t.9871, ptr %t.9873)
-  %t.9875 = ptrtoint ptr %t.9874 to i64
-  store i64 %t.9875, ptr %v.987
-  %t.9880 = ptrtoint ptr @.str.25 to i64
-  store i64 %t.9880, ptr %v.988
-  %t.9890 = load i64, ptr %v.987
-  %t.9891 = inttoptr i64 %t.9890 to ptr
-  %t.9892 = load i64, ptr %v.988
-  %t.9893 = inttoptr i64 %t.9892 to ptr
-  %t.9894 = call ptr @ease_str_concat(ptr %t.9891, ptr %t.9893)
-  %t.9895 = ptrtoint ptr %t.9894 to i64
-  store i64 %t.9895, ptr %v.989
-  %t.9910 = load i64, ptr %v.989
-  %t.9919 = call i64 @io_Print(i64 %t.9910)
-  store i64 %t.9919, ptr %v.991
-  %t.9930 = load i64, ptr %v.985
-  %t.9939 = call i64 @os_ReadFile(i64 %t.9930)
-  store i64 %t.9939, ptr %v.993
-  %t.9940 = load i64, ptr %v.993
-  store i64 %t.9940, ptr %v.994
-  store i64 0, ptr %v.995
+  store i64 0, ptr %v.977
+  %t.9780 = load i64, ptr %v.977
+  store i64 %t.9780, ptr %v.978
+  %t.9790 = load i64, ptr %v.974
+  %t.9791 = inttoptr i64 %t.9790 to ptr
+  %t.9792 = call i64 @ease_str_len(ptr %t.9791)
+  store i64 %t.9792, ptr %v.979
+  %t.9800 = load i64, ptr %v.979
+  store i64 %t.9800, ptr %v.980
+  br label %L.124
+L.124:
+  %t.9820 = load i64, ptr %v.976
+  %t.9821 = load i64, ptr %v.980
+  %t.9822 = icmp sle i64 %t.9820, %t.9821
+  %t.9823 = zext i1 %t.9822 to i64
+  store i64 %t.9823, ptr %v.982
+  %t.9830 = load i64, ptr %v.982
+  %t.9831 = icmp eq i64 %t.9830, 0
+  br i1 %t.9831, label %L.125, label %L.fall.983
+L.fall.983:
+  %t.9840 = load i64, ptr %v.976
+  %t.9841 = load i64, ptr %v.980
+  %t.9842 = icmp eq i64 %t.9840, %t.9841
+  %t.9843 = zext i1 %t.9842 to i64
+  store i64 %t.9843, ptr %v.984
+  %t.9850 = load i64, ptr %v.974
+  %t.9851 = inttoptr i64 %t.9850 to ptr
+  %t.9852 = load i64, ptr %v.976
+  %t.9853 = call i64 @ease_str_char_at(ptr %t.9851, i64 %t.9852)
+  store i64 %t.9853, ptr %v.985
+  store i64 10, ptr %v.986
+  %t.9870 = load i64, ptr %v.985
+  %t.9871 = load i64, ptr %v.986
+  %t.9872 = icmp eq i64 %t.9870, %t.9871
+  %t.9873 = zext i1 %t.9872 to i64
+  store i64 %t.9873, ptr %v.987
+  %t.9880 = load i64, ptr %v.984
+  %t.9881 = load i64, ptr %v.987
+  %t.9882 = or i64 %t.9880, %t.9881
+  store i64 %t.9882, ptr %v.988
+  %t.9890 = load i64, ptr %v.988
+  %t.9891 = icmp eq i64 %t.9890, 0
+  br i1 %t.9891, label %L.126, label %L.fall.989
+L.fall.989:
+  %t.9900 = load i64, ptr %v.976
+  %t.9901 = load i64, ptr %v.978
+  %t.9902 = icmp sgt i64 %t.9900, %t.9901
+  %t.9903 = zext i1 %t.9902 to i64
+  store i64 %t.9903, ptr %v.990
+  %t.9910 = load i64, ptr %v.990
+  %t.9911 = icmp eq i64 %t.9910, 0
+  br i1 %t.9911, label %L.128, label %L.fall.991
+L.fall.991:
+  %t.9950 = load i64, ptr %v.974
+  %t.9951 = load i64, ptr %v.978
+  %t.9952 = load i64, ptr %v.976
+  %t.9959 = call i64 @strings_str_substring(i64 %t.9950, i64 %t.9951, i64 %t.9952)
+  store i64 %t.9959, ptr %v.995
   %t.9960 = load i64, ptr %v.995
   store i64 %t.9960, ptr %v.996
-  %t.9990 = load i64, ptr %v.994
-  %t.9991 = load i64, ptr %v.996
-  %t.9999 = call i64 @lexer_lex_skip(i64 %t.9990, i64 %t.9991)
-  store i64 %t.9999, ptr %v.999
-  %t.10000 = load i64, ptr %v.999
-  store i64 %t.10000, ptr %v.996
-  br label %L.130
-L.130:
-  %t.10040 = load i64, ptr %v.994
-  %t.10041 = load i64, ptr %v.996
-  %t.10049 = call i64 @lexer_lex_skip(i64 %t.10040, i64 %t.10041)
-  store i64 %t.10049, ptr %v.1004
+  %t.9980 = load i64, ptr %v.996
+  %t.9989 = call i64 @has_ease_suffix(i64 %t.9980)
+  store i64 %t.9989, ptr %v.998
+  store i64 1, ptr %v.999
+  %t.10000 = load i64, ptr %v.998
+  %t.10001 = load i64, ptr %v.999
+  %t.10002 = icmp eq i64 %t.10000, %t.10001
+  %t.10003 = zext i1 %t.10002 to i64
+  store i64 %t.10003, ptr %v.1000
+  %t.10010 = load i64, ptr %v.1000
+  %t.10011 = icmp eq i64 %t.10010, 0
+  br i1 %t.10011, label %L.130, label %L.fall.1001
+L.fall.1001:
+  %t.10020 = ptrtoint ptr @.str.23 to i64
+  store i64 %t.10020, ptr %v.1002
+  %t.10030 = load i64, ptr %v.948
+  %t.10031 = inttoptr i64 %t.10030 to ptr
+  %t.10032 = load i64, ptr %v.1002
+  %t.10033 = inttoptr i64 %t.10032 to ptr
+  %t.10034 = call ptr @ease_str_concat(ptr %t.10031, ptr %t.10033)
+  %t.10035 = ptrtoint ptr %t.10034 to i64
+  store i64 %t.10035, ptr %v.1003
+  %t.10040 = load i64, ptr %v.1003
+  %t.10041 = inttoptr i64 %t.10040 to ptr
+  %t.10042 = load i64, ptr %v.996
+  %t.10043 = inttoptr i64 %t.10042 to ptr
+  %t.10044 = call ptr @ease_str_concat(ptr %t.10041, ptr %t.10043)
+  %t.10045 = ptrtoint ptr %t.10044 to i64
+  store i64 %t.10045, ptr %v.1004
   %t.10050 = load i64, ptr %v.1004
-  store i64 %t.10050, ptr %v.996
-  %t.10080 = load i64, ptr %v.994
-  %t.10081 = load i64, ptr %v.996
-  %t.10089 = call i64 @lexer_lex_kind(i64 %t.10080, i64 %t.10081)
-  store i64 %t.10089, ptr %v.1008
-  %t.10090 = load i64, ptr %v.1008
-  store i64 %t.10090, ptr %v.1009
-  %t.10109 = call i64 @token_TK_EOF()
-  store i64 %t.10109, ptr %v.1010
+  store i64 %t.10050, ptr %v.1005
+  %t.10060 = ptrtoint ptr @.str.24 to i64
+  store i64 %t.10060, ptr %v.1006
+  %t.10070 = load i64, ptr %v.1006
+  %t.10071 = inttoptr i64 %t.10070 to ptr
+  %t.10072 = load i64, ptr %v.1005
+  %t.10073 = inttoptr i64 %t.10072 to ptr
+  %t.10074 = call ptr @ease_str_concat(ptr %t.10071, ptr %t.10073)
+  %t.10075 = ptrtoint ptr %t.10074 to i64
+  store i64 %t.10075, ptr %v.1007
+  %t.10080 = ptrtoint ptr @.str.25 to i64
+  store i64 %t.10080, ptr %v.1008
+  %t.10090 = load i64, ptr %v.1007
+  %t.10091 = inttoptr i64 %t.10090 to ptr
+  %t.10092 = load i64, ptr %v.1008
+  %t.10093 = inttoptr i64 %t.10092 to ptr
+  %t.10094 = call ptr @ease_str_concat(ptr %t.10091, ptr %t.10093)
+  %t.10095 = ptrtoint ptr %t.10094 to i64
+  store i64 %t.10095, ptr %v.1009
   %t.10110 = load i64, ptr %v.1009
-  %t.10111 = load i64, ptr %v.1010
-  %t.10112 = icmp eq i64 %t.10110, %t.10111
-  %t.10113 = zext i1 %t.10112 to i64
-  store i64 %t.10113, ptr %v.1011
-  %t.10120 = load i64, ptr %v.1011
-  %t.10121 = icmp eq i64 %t.10120, 0
-  br i1 %t.10121, label %L.132, label %L.fall.1012
-L.fall.1012:
-  br label %L.131
+  %t.10119 = call i64 @io_Print(i64 %t.10110)
+  store i64 %t.10119, ptr %v.1011
+  %t.10130 = load i64, ptr %v.1005
+  %t.10139 = call i64 @os_ReadFile(i64 %t.10130)
+  store i64 %t.10139, ptr %v.1013
+  %t.10140 = load i64, ptr %v.1013
+  store i64 %t.10140, ptr %v.1014
+  store i64 0, ptr %v.1015
+  %t.10160 = load i64, ptr %v.1015
+  store i64 %t.10160, ptr %v.1016
+  %t.10190 = load i64, ptr %v.1014
+  %t.10191 = load i64, ptr %v.1016
+  %t.10199 = call i64 @lexer_lex_skip(i64 %t.10190, i64 %t.10191)
+  store i64 %t.10199, ptr %v.1019
+  %t.10200 = load i64, ptr %v.1019
+  store i64 %t.10200, ptr %v.1016
+  br label %L.132
 L.132:
+  %t.10240 = load i64, ptr %v.1014
+  %t.10241 = load i64, ptr %v.1016
+  %t.10249 = call i64 @lexer_lex_skip(i64 %t.10240, i64 %t.10241)
+  store i64 %t.10249, ptr %v.1024
+  %t.10250 = load i64, ptr %v.1024
+  store i64 %t.10250, ptr %v.1016
+  %t.10280 = load i64, ptr %v.1014
+  %t.10281 = load i64, ptr %v.1016
+  %t.10289 = call i64 @lexer_lex_kind(i64 %t.10280, i64 %t.10281)
+  store i64 %t.10289, ptr %v.1028
+  %t.10290 = load i64, ptr %v.1028
+  store i64 %t.10290, ptr %v.1029
+  %t.10309 = call i64 @token_TK_EOF()
+  store i64 %t.10309, ptr %v.1030
+  %t.10310 = load i64, ptr %v.1029
+  %t.10311 = load i64, ptr %v.1030
+  %t.10312 = icmp eq i64 %t.10310, %t.10311
+  %t.10313 = zext i1 %t.10312 to i64
+  store i64 %t.10313, ptr %v.1031
+  %t.10320 = load i64, ptr %v.1031
+  %t.10321 = icmp eq i64 %t.10320, 0
+  br i1 %t.10321, label %L.134, label %L.fall.1032
+L.fall.1032:
   br label %L.133
-L.133:
-  %t.10179 = call i64 @token_TK_PACKAGE()
-  store i64 %t.10179, ptr %v.1017
-  %t.10180 = load i64, ptr %v.1009
-  %t.10181 = load i64, ptr %v.1017
-  %t.10182 = icmp eq i64 %t.10180, %t.10181
-  %t.10183 = zext i1 %t.10182 to i64
-  store i64 %t.10183, ptr %v.1018
-  %t.10190 = load i64, ptr %v.1018
-  %t.10191 = icmp eq i64 %t.10190, 0
-  br i1 %t.10191, label %L.134, label %L.fall.1019
-L.fall.1019:
-  %t.10230 = load i64, ptr %v.994
-  %t.10231 = load i64, ptr %v.996
-  %t.10232 = load i64, ptr %v.1009
-  %t.10239 = call i64 @lexer_lex_end(i64 %t.10230, i64 %t.10231, i64 %t.10232)
-  store i64 %t.10239, ptr %v.1023
-  %t.10240 = load i64, ptr %v.1023
-  store i64 %t.10240, ptr %v.996
-  %t.10270 = load i64, ptr %v.994
-  %t.10271 = load i64, ptr %v.996
-  %t.10279 = call i64 @lexer_lex_skip(i64 %t.10270, i64 %t.10271)
-  store i64 %t.10279, ptr %v.1027
-  %t.10280 = load i64, ptr %v.1027
-  store i64 %t.10280, ptr %v.996
-  %t.10310 = load i64, ptr %v.994
-  %t.10311 = load i64, ptr %v.996
-  %t.10319 = call i64 @lexer_lex_kind(i64 %t.10310, i64 %t.10311)
-  store i64 %t.10319, ptr %v.1031
-  %t.10350 = load i64, ptr %v.994
-  %t.10351 = load i64, ptr %v.996
-  %t.10352 = load i64, ptr %v.1031
-  %t.10359 = call i64 @lexer_lex_end(i64 %t.10350, i64 %t.10351, i64 %t.10352)
-  store i64 %t.10359, ptr %v.1035
-  %t.10360 = load i64, ptr %v.1035
-  store i64 %t.10360, ptr %v.996
-  br label %L.135
 L.134:
-  %t.10399 = call i64 @token_TK_IMPORT()
-  store i64 %t.10399, ptr %v.1039
-  %t.10400 = load i64, ptr %v.1009
-  %t.10401 = load i64, ptr %v.1039
-  %t.10402 = icmp eq i64 %t.10400, %t.10401
-  %t.10403 = zext i1 %t.10402 to i64
-  store i64 %t.10403, ptr %v.1040
-  %t.10410 = load i64, ptr %v.1040
-  %t.10411 = icmp eq i64 %t.10410, 0
-  br i1 %t.10411, label %L.136, label %L.fall.1041
-L.fall.1041:
-  %t.10450 = load i64, ptr %v.994
-  %t.10451 = load i64, ptr %v.996
-  %t.10452 = load i64, ptr %v.670
-  %t.10459 = call i64 @parser_parse_import_decl(i64 %t.10450, i64 %t.10451, i64 %t.10452)
-  store i64 %t.10459, ptr %v.1045
-  %t.10460 = load i64, ptr %v.1045
-  store i64 %t.10460, ptr %v.1046
-  %t.10470 = load i64, ptr %v.1046
-  %t.10472 = add i64 %t.10470, 8
-  %t.10476 = inttoptr i64 %t.10472 to ptr
-  %t.10477 = load i64, ptr %t.10476
-  store i64 %t.10477, ptr %v.1047
+  br label %L.135
+L.135:
+  %t.10379 = call i64 @token_TK_PACKAGE()
+  store i64 %t.10379, ptr %v.1037
+  %t.10380 = load i64, ptr %v.1029
+  %t.10381 = load i64, ptr %v.1037
+  %t.10382 = icmp eq i64 %t.10380, %t.10381
+  %t.10383 = zext i1 %t.10382 to i64
+  store i64 %t.10383, ptr %v.1038
+  %t.10390 = load i64, ptr %v.1038
+  %t.10391 = icmp eq i64 %t.10390, 0
+  br i1 %t.10391, label %L.136, label %L.fall.1039
+L.fall.1039:
+  %t.10430 = load i64, ptr %v.1014
+  %t.10431 = load i64, ptr %v.1016
+  %t.10432 = load i64, ptr %v.1029
+  %t.10439 = call i64 @lexer_lex_end(i64 %t.10430, i64 %t.10431, i64 %t.10432)
+  store i64 %t.10439, ptr %v.1043
+  %t.10440 = load i64, ptr %v.1043
+  store i64 %t.10440, ptr %v.1016
+  %t.10470 = load i64, ptr %v.1014
+  %t.10471 = load i64, ptr %v.1016
+  %t.10479 = call i64 @lexer_lex_skip(i64 %t.10470, i64 %t.10471)
+  store i64 %t.10479, ptr %v.1047
   %t.10480 = load i64, ptr %v.1047
-  store i64 %t.10480, ptr %v.996
-  %t.10510 = load i64, ptr %v.994
-  %t.10511 = load i64, ptr %v.996
-  %t.10519 = call i64 @lexer_lex_skip(i64 %t.10510, i64 %t.10511)
+  store i64 %t.10480, ptr %v.1016
+  %t.10510 = load i64, ptr %v.1014
+  %t.10511 = load i64, ptr %v.1016
+  %t.10519 = call i64 @lexer_lex_kind(i64 %t.10510, i64 %t.10511)
   store i64 %t.10519, ptr %v.1051
-  %t.10520 = load i64, ptr %v.1051
-  store i64 %t.10520, ptr %v.996
+  %t.10550 = load i64, ptr %v.1014
+  %t.10551 = load i64, ptr %v.1016
+  %t.10552 = load i64, ptr %v.1051
+  %t.10559 = call i64 @lexer_lex_end(i64 %t.10550, i64 %t.10551, i64 %t.10552)
+  store i64 %t.10559, ptr %v.1055
+  %t.10560 = load i64, ptr %v.1055
+  store i64 %t.10560, ptr %v.1016
   br label %L.137
 L.136:
-  %t.10559 = call i64 @token_TK_STRUCT()
-  store i64 %t.10559, ptr %v.1055
-  %t.10560 = load i64, ptr %v.1009
-  %t.10561 = load i64, ptr %v.1055
-  %t.10562 = icmp eq i64 %t.10560, %t.10561
-  %t.10563 = zext i1 %t.10562 to i64
-  store i64 %t.10563, ptr %v.1056
-  %t.10570 = load i64, ptr %v.1056
-  %t.10571 = icmp eq i64 %t.10570, 0
-  br i1 %t.10571, label %L.138, label %L.fall.1057
-L.fall.1057:
-  %t.10610 = load i64, ptr %v.994
-  %t.10611 = load i64, ptr %v.996
-  %t.10612 = load i64, ptr %v.670
-  %t.10619 = call i64 @parser_parse_struct_decl(i64 %t.10610, i64 %t.10611, i64 %t.10612)
-  store i64 %t.10619, ptr %v.1061
-  %t.10620 = load i64, ptr %v.1061
-  store i64 %t.10620, ptr %v.1062
-  %t.10630 = load i64, ptr %v.1062
-  %t.10632 = add i64 %t.10630, 8
-  %t.10636 = inttoptr i64 %t.10632 to ptr
-  %t.10637 = load i64, ptr %t.10636
-  store i64 %t.10637, ptr %v.1063
-  %t.10640 = load i64, ptr %v.1063
-  store i64 %t.10640, ptr %v.996
+  %t.10599 = call i64 @token_TK_IMPORT()
+  store i64 %t.10599, ptr %v.1059
+  %t.10600 = load i64, ptr %v.1029
+  %t.10601 = load i64, ptr %v.1059
+  %t.10602 = icmp eq i64 %t.10600, %t.10601
+  %t.10603 = zext i1 %t.10602 to i64
+  store i64 %t.10603, ptr %v.1060
+  %t.10610 = load i64, ptr %v.1060
+  %t.10611 = icmp eq i64 %t.10610, 0
+  br i1 %t.10611, label %L.138, label %L.fall.1061
+L.fall.1061:
+  %t.10650 = load i64, ptr %v.1014
+  %t.10651 = load i64, ptr %v.1016
+  %t.10652 = load i64, ptr %v.670
+  %t.10659 = call i64 @parser_parse_import_decl(i64 %t.10650, i64 %t.10651, i64 %t.10652)
+  store i64 %t.10659, ptr %v.1065
+  %t.10660 = load i64, ptr %v.1065
+  store i64 %t.10660, ptr %v.1066
+  %t.10670 = load i64, ptr %v.1066
+  %t.10672 = add i64 %t.10670, 8
+  %t.10676 = inttoptr i64 %t.10672 to ptr
+  %t.10677 = load i64, ptr %t.10676
+  store i64 %t.10677, ptr %v.1067
+  %t.10680 = load i64, ptr %v.1067
+  store i64 %t.10680, ptr %v.1016
+  %t.10710 = load i64, ptr %v.1014
+  %t.10711 = load i64, ptr %v.1016
+  %t.10719 = call i64 @lexer_lex_skip(i64 %t.10710, i64 %t.10711)
+  store i64 %t.10719, ptr %v.1071
+  %t.10720 = load i64, ptr %v.1071
+  store i64 %t.10720, ptr %v.1016
   br label %L.139
 L.138:
-  %t.10679 = call i64 @token_TK_LET()
-  store i64 %t.10679, ptr %v.1067
-  %t.10680 = load i64, ptr %v.1009
-  %t.10681 = load i64, ptr %v.1067
-  %t.10682 = icmp eq i64 %t.10680, %t.10681
-  %t.10683 = zext i1 %t.10682 to i64
-  store i64 %t.10683, ptr %v.1068
-  %t.10690 = load i64, ptr %v.1068
-  %t.10691 = icmp eq i64 %t.10690, 0
-  br i1 %t.10691, label %L.140, label %L.fall.1069
-L.fall.1069:
-  %t.10730 = load i64, ptr %v.994
-  %t.10731 = load i64, ptr %v.996
-  %t.10732 = load i64, ptr %v.670
-  %t.10739 = call i64 @parser_parse_let_stmt(i64 %t.10730, i64 %t.10731, i64 %t.10732)
-  store i64 %t.10739, ptr %v.1073
-  %t.10740 = load i64, ptr %v.1073
-  store i64 %t.10740, ptr %v.1074
-  %t.10750 = load i64, ptr %v.1074
-  %t.10756 = inttoptr i64 %t.10750 to ptr
-  %t.10757 = load i64, ptr %t.10756
-  store i64 %t.10757, ptr %v.1075
-  store i64 0, ptr %v.1076
-  %t.10770 = load i64, ptr %v.1075
-  %t.10771 = load i64, ptr %v.1076
-  %t.10772 = icmp sge i64 %t.10770, %t.10771
-  %t.10773 = zext i1 %t.10772 to i64
-  store i64 %t.10773, ptr %v.1077
-  %t.10780 = load i64, ptr %v.1077
-  %t.10781 = icmp eq i64 %t.10780, 0
-  br i1 %t.10781, label %L.142, label %L.fall.1078
-L.fall.1078:
-  %t.10790 = load i64, ptr %v.1074
-  %t.10796 = inttoptr i64 %t.10790 to ptr
-  %t.10797 = load i64, ptr %t.10796
-  store i64 %t.10797, ptr %v.1079
-  %t.10800 = load i64, ptr %v.670
-  %t.10801 = inttoptr i64 %t.10800 to ptr
-  %t.10802 = load i64, ptr %t.10801
-  %t.10803 = load i64, ptr %v.1079
-  %t.10804 = mul i64 %t.10803, 8
-  %t.10805 = add i64 %t.10802, %t.10804
-  %t.10806 = inttoptr i64 %t.10805 to ptr
-  %t.10807 = load i64, ptr %t.10806
-  store i64 %t.10807, ptr %v.1080
-  %t.10810 = load i64, ptr %v.1080
-  store i64 %t.10810, ptr %v.1081
+  %t.10759 = call i64 @token_TK_STRUCT()
+  store i64 %t.10759, ptr %v.1075
+  %t.10760 = load i64, ptr %v.1029
+  %t.10761 = load i64, ptr %v.1075
+  %t.10762 = icmp eq i64 %t.10760, %t.10761
+  %t.10763 = zext i1 %t.10762 to i64
+  store i64 %t.10763, ptr %v.1076
+  %t.10770 = load i64, ptr %v.1076
+  %t.10771 = icmp eq i64 %t.10770, 0
+  br i1 %t.10771, label %L.140, label %L.fall.1077
+L.fall.1077:
+  %t.10810 = load i64, ptr %v.1014
+  %t.10811 = load i64, ptr %v.1016
+  %t.10812 = load i64, ptr %v.670
+  %t.10819 = call i64 @parser_parse_struct_decl(i64 %t.10810, i64 %t.10811, i64 %t.10812)
+  store i64 %t.10819, ptr %v.1081
   %t.10820 = load i64, ptr %v.1081
-  %t.10822 = add i64 %t.10820, 16
-  %t.10826 = inttoptr i64 %t.10822 to ptr
-  %t.10827 = load i64, ptr %t.10826
-  store i64 %t.10827, ptr %v.1082
-  %t.10830 = load i64, ptr %v.689
-  %t.10831 = inttoptr i64 %t.10830 to ptr
-  %t.10832 = load i64, ptr %v.1082
-  %t.10833 = alloca i64
-  store i64 %t.10832, ptr %t.10833
-  call void @ease_array_push(ptr %t.10831, ptr %t.10833, i64 8)
-  %t.10840 = load i64, ptr %v.1081
-  %t.10842 = add i64 %t.10840, 32
-  %t.10846 = inttoptr i64 %t.10842 to ptr
-  %t.10847 = load i64, ptr %t.10846
-  store i64 %t.10847, ptr %v.1084
-  store i64 0, ptr %v.1085
-  %t.10860 = load i64, ptr %v.1084
-  %t.10861 = load i64, ptr %v.1085
-  %t.10862 = icmp sge i64 %t.10860, %t.10861
-  %t.10863 = zext i1 %t.10862 to i64
-  store i64 %t.10863, ptr %v.1086
-  %t.10870 = load i64, ptr %v.1086
-  %t.10871 = icmp eq i64 %t.10870, 0
-  br i1 %t.10871, label %L.144, label %L.fall.1087
-L.fall.1087:
-  %t.10880 = load i64, ptr %v.1081
-  %t.10882 = add i64 %t.10880, 32
-  %t.10886 = inttoptr i64 %t.10882 to ptr
-  %t.10887 = load i64, ptr %t.10886
-  store i64 %t.10887, ptr %v.1088
-  %t.10890 = load i64, ptr %v.670
-  %t.10891 = inttoptr i64 %t.10890 to ptr
-  %t.10892 = load i64, ptr %t.10891
-  %t.10893 = load i64, ptr %v.1088
-  %t.10894 = mul i64 %t.10893, 8
-  %t.10895 = add i64 %t.10892, %t.10894
-  %t.10896 = inttoptr i64 %t.10895 to ptr
-  %t.10897 = load i64, ptr %t.10896
-  store i64 %t.10897, ptr %v.1089
-  %t.10900 = load i64, ptr %v.1089
-  store i64 %t.10900, ptr %v.1090
-  %t.10910 = load i64, ptr %v.1090
-  %t.10916 = inttoptr i64 %t.10910 to ptr
-  %t.10917 = load i64, ptr %t.10916
-  store i64 %t.10917, ptr %v.1091
-  %t.10929 = call i64 @ast_EXPR_INT()
-  store i64 %t.10929, ptr %v.1092
-  %t.10930 = load i64, ptr %v.1091
-  %t.10931 = load i64, ptr %v.1092
-  %t.10932 = icmp eq i64 %t.10930, %t.10931
-  %t.10933 = zext i1 %t.10932 to i64
-  store i64 %t.10933, ptr %v.1093
+  store i64 %t.10820, ptr %v.1082
+  %t.10830 = load i64, ptr %v.1082
+  %t.10832 = add i64 %t.10830, 8
+  %t.10836 = inttoptr i64 %t.10832 to ptr
+  %t.10837 = load i64, ptr %t.10836
+  store i64 %t.10837, ptr %v.1083
+  %t.10840 = load i64, ptr %v.1083
+  store i64 %t.10840, ptr %v.1016
+  br label %L.141
+L.140:
+  %t.10879 = call i64 @token_TK_IDENT()
+  store i64 %t.10879, ptr %v.1087
+  %t.10880 = load i64, ptr %v.1029
+  %t.10881 = load i64, ptr %v.1087
+  %t.10882 = icmp eq i64 %t.10880, %t.10881
+  %t.10883 = zext i1 %t.10882 to i64
+  store i64 %t.10883, ptr %v.1088
+  %t.10890 = load i64, ptr %v.1088
+  %t.10891 = icmp eq i64 %t.10890, 0
+  br i1 %t.10891, label %L.142, label %L.fall.1089
+L.fall.1089:
+  %t.10930 = load i64, ptr %v.1014
+  %t.10931 = load i64, ptr %v.1016
+  %t.10932 = load i64, ptr %v.1029
+  %t.10939 = call i64 @lexer_lex_end(i64 %t.10930, i64 %t.10931, i64 %t.10932)
+  store i64 %t.10939, ptr %v.1093
   %t.10940 = load i64, ptr %v.1093
-  %t.10941 = icmp eq i64 %t.10940, 0
-  br i1 %t.10941, label %L.146, label %L.fall.1094
-L.fall.1094:
-  %t.10950 = ptrtoint ptr @g_scalar_globals to i64
-  store i64 %t.10950, ptr %v.1095
-  %t.10960 = load i64, ptr %v.1081
-  %t.10962 = add i64 %t.10960, 16
-  %t.10966 = inttoptr i64 %t.10962 to ptr
-  %t.10967 = load i64, ptr %t.10966
-  store i64 %t.10967, ptr %v.1096
-  %t.10970 = load i64, ptr %v.1095
-  %t.10971 = inttoptr i64 %t.10970 to ptr
-  %t.10972 = load i64, ptr %v.1096
-  %t.10973 = alloca i64
-  store i64 %t.10972, ptr %t.10973
-  call void @ease_array_push(ptr %t.10971, ptr %t.10973, i64 8)
-  br label %L.147
-L.146:
-  br label %L.147
-L.147:
-  %t.11010 = load i64, ptr %v.1090
-  %t.11016 = inttoptr i64 %t.11010 to ptr
-  %t.11017 = load i64, ptr %t.11016
-  store i64 %t.11017, ptr %v.1101
-  %t.11029 = call i64 @ast_EXPR_UNARY()
+  store i64 %t.10940, ptr %v.1094
+  %t.10970 = load i64, ptr %v.1014
+  %t.10971 = load i64, ptr %v.1094
+  %t.10979 = call i64 @lexer_lex_skip(i64 %t.10970, i64 %t.10971)
+  store i64 %t.10979, ptr %v.1097
+  %t.10980 = load i64, ptr %v.1097
+  store i64 %t.10980, ptr %v.1098
+  %t.11010 = load i64, ptr %v.1014
+  %t.11011 = load i64, ptr %v.1098
+  %t.11019 = call i64 @lexer_lex_kind(i64 %t.11010, i64 %t.11011)
+  store i64 %t.11019, ptr %v.1101
+  %t.11029 = call i64 @token_TK_COLONEQUAL()
   store i64 %t.11029, ptr %v.1102
   %t.11030 = load i64, ptr %v.1101
   %t.11031 = load i64, ptr %v.1102
@@ -4744,863 +4701,850 @@ L.147:
   store i64 %t.11033, ptr %v.1103
   %t.11040 = load i64, ptr %v.1103
   %t.11041 = icmp eq i64 %t.11040, 0
-  br i1 %t.11041, label %L.148, label %L.fall.1104
+  br i1 %t.11041, label %L.144, label %L.fall.1104
 L.fall.1104:
-  %t.11050 = ptrtoint ptr @g_scalar_globals to i64
-  store i64 %t.11050, ptr %v.1105
-  %t.11060 = load i64, ptr %v.1081
-  %t.11062 = add i64 %t.11060, 16
-  %t.11066 = inttoptr i64 %t.11062 to ptr
-  %t.11067 = load i64, ptr %t.11066
-  store i64 %t.11067, ptr %v.1106
-  %t.11070 = load i64, ptr %v.1105
-  %t.11071 = inttoptr i64 %t.11070 to ptr
-  %t.11072 = load i64, ptr %v.1106
-  %t.11073 = alloca i64
-  store i64 %t.11072, ptr %t.11073
-  call void @ease_array_push(ptr %t.11071, ptr %t.11073, i64 8)
+  %t.11080 = load i64, ptr %v.1014
+  %t.11081 = load i64, ptr %v.1016
+  %t.11082 = load i64, ptr %v.670
+  %t.11089 = call i64 @parser_parse_colonequal_stmt(i64 %t.11080, i64 %t.11081, i64 %t.11082)
+  store i64 %t.11089, ptr %v.1108
+  %t.11090 = load i64, ptr %v.1108
+  store i64 %t.11090, ptr %v.1109
+  %t.11100 = load i64, ptr %v.1109
+  %t.11106 = inttoptr i64 %t.11100 to ptr
+  %t.11107 = load i64, ptr %t.11106
+  store i64 %t.11107, ptr %v.1110
+  store i64 0, ptr %v.1111
+  %t.11120 = load i64, ptr %v.1110
+  %t.11121 = load i64, ptr %v.1111
+  %t.11122 = icmp sge i64 %t.11120, %t.11121
+  %t.11123 = zext i1 %t.11122 to i64
+  store i64 %t.11123, ptr %v.1112
+  %t.11130 = load i64, ptr %v.1112
+  %t.11131 = icmp eq i64 %t.11130, 0
+  br i1 %t.11131, label %L.146, label %L.fall.1113
+L.fall.1113:
+  %t.11140 = load i64, ptr %v.1109
+  %t.11146 = inttoptr i64 %t.11140 to ptr
+  %t.11147 = load i64, ptr %t.11146
+  store i64 %t.11147, ptr %v.1114
+  %t.11150 = load i64, ptr %v.670
+  %t.11151 = inttoptr i64 %t.11150 to ptr
+  %t.11152 = load i64, ptr %t.11151
+  %t.11153 = load i64, ptr %v.1114
+  %t.11154 = mul i64 %t.11153, 8
+  %t.11155 = add i64 %t.11152, %t.11154
+  %t.11156 = inttoptr i64 %t.11155 to ptr
+  %t.11157 = load i64, ptr %t.11156
+  store i64 %t.11157, ptr %v.1115
+  %t.11160 = load i64, ptr %v.1115
+  store i64 %t.11160, ptr %v.1116
+  %t.11170 = load i64, ptr %v.1116
+  %t.11172 = add i64 %t.11170, 16
+  %t.11176 = inttoptr i64 %t.11172 to ptr
+  %t.11177 = load i64, ptr %t.11176
+  store i64 %t.11177, ptr %v.1117
+  %t.11180 = load i64, ptr %v.689
+  %t.11181 = inttoptr i64 %t.11180 to ptr
+  %t.11182 = load i64, ptr %v.1117
+  %t.11183 = alloca i64
+  store i64 %t.11182, ptr %t.11183
+  call void @ease_array_push(ptr %t.11181, ptr %t.11183, i64 8)
+  %t.11190 = load i64, ptr %v.1116
+  %t.11192 = add i64 %t.11190, 32
+  %t.11196 = inttoptr i64 %t.11192 to ptr
+  %t.11197 = load i64, ptr %t.11196
+  store i64 %t.11197, ptr %v.1119
+  store i64 0, ptr %v.1120
+  %t.11210 = load i64, ptr %v.1119
+  %t.11211 = load i64, ptr %v.1120
+  %t.11212 = icmp sge i64 %t.11210, %t.11211
+  %t.11213 = zext i1 %t.11212 to i64
+  store i64 %t.11213, ptr %v.1121
+  %t.11220 = load i64, ptr %v.1121
+  %t.11221 = icmp eq i64 %t.11220, 0
+  br i1 %t.11221, label %L.148, label %L.fall.1122
+L.fall.1122:
+  %t.11230 = load i64, ptr %v.1116
+  %t.11232 = add i64 %t.11230, 32
+  %t.11236 = inttoptr i64 %t.11232 to ptr
+  %t.11237 = load i64, ptr %t.11236
+  store i64 %t.11237, ptr %v.1123
+  %t.11240 = load i64, ptr %v.670
+  %t.11241 = inttoptr i64 %t.11240 to ptr
+  %t.11242 = load i64, ptr %t.11241
+  %t.11243 = load i64, ptr %v.1123
+  %t.11244 = mul i64 %t.11243, 8
+  %t.11245 = add i64 %t.11242, %t.11244
+  %t.11246 = inttoptr i64 %t.11245 to ptr
+  %t.11247 = load i64, ptr %t.11246
+  store i64 %t.11247, ptr %v.1124
+  %t.11250 = load i64, ptr %v.1124
+  store i64 %t.11250, ptr %v.1125
+  %t.11260 = load i64, ptr %v.1125
+  %t.11266 = inttoptr i64 %t.11260 to ptr
+  %t.11267 = load i64, ptr %t.11266
+  store i64 %t.11267, ptr %v.1126
+  %t.11279 = call i64 @ast_EXPR_INT()
+  store i64 %t.11279, ptr %v.1127
+  %t.11280 = load i64, ptr %v.1126
+  %t.11281 = load i64, ptr %v.1127
+  %t.11282 = icmp eq i64 %t.11280, %t.11281
+  %t.11283 = zext i1 %t.11282 to i64
+  store i64 %t.11283, ptr %v.1128
+  %t.11290 = load i64, ptr %v.1128
+  %t.11291 = icmp eq i64 %t.11290, 0
+  br i1 %t.11291, label %L.150, label %L.fall.1129
+L.fall.1129:
+  %t.11300 = ptrtoint ptr @g_scalar_globals to i64
+  store i64 %t.11300, ptr %v.1130
+  %t.11310 = load i64, ptr %v.1116
+  %t.11312 = add i64 %t.11310, 16
+  %t.11316 = inttoptr i64 %t.11312 to ptr
+  %t.11317 = load i64, ptr %t.11316
+  store i64 %t.11317, ptr %v.1131
+  %t.11320 = load i64, ptr %v.1130
+  %t.11321 = inttoptr i64 %t.11320 to ptr
+  %t.11322 = load i64, ptr %v.1131
+  %t.11323 = alloca i64
+  store i64 %t.11322, ptr %t.11323
+  call void @ease_array_push(ptr %t.11321, ptr %t.11323, i64 8)
+  br label %L.151
+L.150:
+  br label %L.151
+L.151:
+  %t.11360 = load i64, ptr %v.1125
+  %t.11366 = inttoptr i64 %t.11360 to ptr
+  %t.11367 = load i64, ptr %t.11366
+  store i64 %t.11367, ptr %v.1136
+  %t.11379 = call i64 @ast_EXPR_UNARY()
+  store i64 %t.11379, ptr %v.1137
+  %t.11380 = load i64, ptr %v.1136
+  %t.11381 = load i64, ptr %v.1137
+  %t.11382 = icmp eq i64 %t.11380, %t.11381
+  %t.11383 = zext i1 %t.11382 to i64
+  store i64 %t.11383, ptr %v.1138
+  %t.11390 = load i64, ptr %v.1138
+  %t.11391 = icmp eq i64 %t.11390, 0
+  br i1 %t.11391, label %L.152, label %L.fall.1139
+L.fall.1139:
+  %t.11400 = ptrtoint ptr @g_scalar_globals to i64
+  store i64 %t.11400, ptr %v.1140
+  %t.11410 = load i64, ptr %v.1116
+  %t.11412 = add i64 %t.11410, 16
+  %t.11416 = inttoptr i64 %t.11412 to ptr
+  %t.11417 = load i64, ptr %t.11416
+  store i64 %t.11417, ptr %v.1141
+  %t.11420 = load i64, ptr %v.1140
+  %t.11421 = inttoptr i64 %t.11420 to ptr
+  %t.11422 = load i64, ptr %v.1141
+  %t.11423 = alloca i64
+  store i64 %t.11422, ptr %t.11423
+  call void @ease_array_push(ptr %t.11421, ptr %t.11423, i64 8)
+  br label %L.153
+L.152:
+  br label %L.153
+L.153:
   br label %L.149
 L.148:
   br label %L.149
 L.149:
+  br label %L.147
+L.146:
+  br label %L.147
+L.147:
+  %t.11520 = load i64, ptr %v.1109
+  %t.11522 = add i64 %t.11520, 8
+  %t.11526 = inttoptr i64 %t.11522 to ptr
+  %t.11527 = load i64, ptr %t.11526
+  store i64 %t.11527, ptr %v.1152
+  %t.11530 = load i64, ptr %v.1152
+  store i64 %t.11530, ptr %v.1016
   br label %L.145
 L.144:
-  br label %L.145
+  br label %L.133
 L.145:
   br label %L.143
 L.142:
+  %t.11609 = call i64 @token_TK_FN()
+  store i64 %t.11609, ptr %v.1160
+  %t.11610 = load i64, ptr %v.1029
+  %t.11611 = load i64, ptr %v.1160
+  %t.11612 = icmp eq i64 %t.11610, %t.11611
+  %t.11613 = zext i1 %t.11612 to i64
+  store i64 %t.11613, ptr %v.1161
+  %t.11620 = load i64, ptr %v.1161
+  %t.11621 = icmp eq i64 %t.11620, 0
+  br i1 %t.11621, label %L.154, label %L.fall.1162
+L.fall.1162:
+  %t.11660 = load i64, ptr %v.1014
+  %t.11661 = load i64, ptr %v.1016
+  %t.11662 = load i64, ptr %v.670
+  %t.11669 = call i64 @parser_parse_func_decl(i64 %t.11660, i64 %t.11661, i64 %t.11662)
+  store i64 %t.11669, ptr %v.1166
+  %t.11670 = load i64, ptr %v.1166
+  store i64 %t.11670, ptr %v.1167
+  %t.11680 = load i64, ptr %v.1167
+  %t.11686 = inttoptr i64 %t.11680 to ptr
+  %t.11687 = load i64, ptr %t.11686
+  store i64 %t.11687, ptr %v.1168
+  store i64 0, ptr %v.1169
+  %t.11700 = load i64, ptr %v.1168
+  %t.11701 = load i64, ptr %v.1169
+  %t.11702 = icmp slt i64 %t.11700, %t.11701
+  %t.11703 = zext i1 %t.11702 to i64
+  store i64 %t.11703, ptr %v.1170
+  %t.11710 = load i64, ptr %v.1170
+  %t.11711 = icmp eq i64 %t.11710, 0
+  br i1 %t.11711, label %L.156, label %L.fall.1171
+L.fall.1171:
+  %t.11720 = ptrtoint ptr @.str.26 to i64
+  store i64 %t.11720, ptr %v.1172
+  %t.11730 = load i64, ptr %v.1172
+  %t.11731 = inttoptr i64 %t.11730 to ptr
+  %t.11732 = load i64, ptr %v.1005
+  %t.11733 = inttoptr i64 %t.11732 to ptr
+  %t.11734 = call ptr @ease_str_concat(ptr %t.11731, ptr %t.11733)
+  %t.11735 = ptrtoint ptr %t.11734 to i64
+  store i64 %t.11735, ptr %v.1173
+  %t.11740 = ptrtoint ptr @.str.27 to i64
+  store i64 %t.11740, ptr %v.1174
+  %t.11750 = load i64, ptr %v.1173
+  %t.11751 = inttoptr i64 %t.11750 to ptr
+  %t.11752 = load i64, ptr %v.1174
+  %t.11753 = inttoptr i64 %t.11752 to ptr
+  %t.11754 = call ptr @ease_str_concat(ptr %t.11751, ptr %t.11753)
+  %t.11755 = ptrtoint ptr %t.11754 to i64
+  store i64 %t.11755, ptr %v.1175
+  %t.11770 = load i64, ptr %v.1016
+  %t.11779 = call i64 @strconv_Itoa(i64 %t.11770)
+  store i64 %t.11779, ptr %v.1177
+  %t.11780 = load i64, ptr %v.1175
+  %t.11781 = inttoptr i64 %t.11780 to ptr
+  %t.11782 = load i64, ptr %v.1177
+  %t.11783 = inttoptr i64 %t.11782 to ptr
+  %t.11784 = call ptr @ease_str_concat(ptr %t.11781, ptr %t.11783)
+  %t.11785 = ptrtoint ptr %t.11784 to i64
+  store i64 %t.11785, ptr %v.1178
+  %t.11790 = ptrtoint ptr @.str.28 to i64
+  store i64 %t.11790, ptr %v.1179
+  %t.11800 = load i64, ptr %v.1178
+  %t.11801 = inttoptr i64 %t.11800 to ptr
+  %t.11802 = load i64, ptr %v.1179
+  %t.11803 = inttoptr i64 %t.11802 to ptr
+  %t.11804 = call ptr @ease_str_concat(ptr %t.11801, ptr %t.11803)
+  %t.11805 = ptrtoint ptr %t.11804 to i64
+  store i64 %t.11805, ptr %v.1180
+  %t.11820 = load i64, ptr %v.1180
+  %t.11829 = call i64 @io_Print(i64 %t.11820)
+  store i64 %t.11829, ptr %v.1182
+  br label %L.133
+L.156:
+  br label %L.157
+L.157:
+  %t.11870 = load i64, ptr %v.1167
+  %t.11876 = inttoptr i64 %t.11870 to ptr
+  %t.11877 = load i64, ptr %t.11876
+  store i64 %t.11877, ptr %v.1187
+  %t.11880 = load i64, ptr %v.1187
+  store i64 %t.11880, ptr %v.1188
+  %t.11890 = load i64, ptr %v.670
+  %t.11891 = inttoptr i64 %t.11890 to ptr
+  %t.11892 = load i64, ptr %t.11891
+  %t.11893 = load i64, ptr %v.1188
+  %t.11894 = mul i64 %t.11893, 8
+  %t.11895 = add i64 %t.11892, %t.11894
+  %t.11896 = inttoptr i64 %t.11895 to ptr
+  %t.11897 = load i64, ptr %t.11896
+  store i64 %t.11897, ptr %v.1189
+  %t.11900 = load i64, ptr %v.1189
+  %t.11902 = add i64 %t.11900, 16
+  %t.11906 = inttoptr i64 %t.11902 to ptr
+  %t.11907 = load i64, ptr %t.11906
+  store i64 %t.11907, ptr %v.1190
+  %t.11910 = load i64, ptr %v.1190
+  store i64 %t.11910, ptr %v.1191
+  %t.11920 = load i64, ptr %v.953
+  %t.11921 = inttoptr i64 %t.11920 to ptr
+  %t.11922 = load i64, ptr %v.1191
+  %t.11923 = alloca i64
+  store i64 %t.11922, ptr %t.11923
+  call void @ease_array_push(ptr %t.11921, ptr %t.11923, i64 8)
+  %t.11930 = load i64, ptr %v.956
+  %t.11931 = inttoptr i64 %t.11930 to ptr
+  %t.11932 = load i64, ptr %v.1188
+  %t.11933 = alloca i64
+  store i64 %t.11932, ptr %t.11933
+  call void @ease_array_push(ptr %t.11931, ptr %t.11933, i64 8)
+  %t.11940 = load i64, ptr %v.1167
+  %t.11942 = add i64 %t.11940, 8
+  %t.11946 = inttoptr i64 %t.11942 to ptr
+  %t.11947 = load i64, ptr %t.11946
+  store i64 %t.11947, ptr %v.1194
+  %t.11950 = load i64, ptr %v.1194
+  store i64 %t.11950, ptr %v.1016
+  %t.11980 = load i64, ptr %v.1014
+  %t.11981 = load i64, ptr %v.1016
+  %t.11989 = call i64 @lexer_lex_skip(i64 %t.11980, i64 %t.11981)
+  store i64 %t.11989, ptr %v.1198
+  %t.11990 = load i64, ptr %v.1198
+  store i64 %t.11990, ptr %v.1016
+  br label %L.155
+L.154:
+  br label %L.133
+L.155:
   br label %L.143
 L.143:
-  %t.11170 = load i64, ptr %v.1074
-  %t.11172 = add i64 %t.11170, 8
-  %t.11176 = inttoptr i64 %t.11172 to ptr
-  %t.11177 = load i64, ptr %t.11176
-  store i64 %t.11177, ptr %v.1117
-  %t.11180 = load i64, ptr %v.1117
-  store i64 %t.11180, ptr %v.996
-  br label %L.141
-L.140:
-  %t.11219 = call i64 @token_TK_FN()
-  store i64 %t.11219, ptr %v.1121
-  %t.11220 = load i64, ptr %v.1009
-  %t.11221 = load i64, ptr %v.1121
-  %t.11222 = icmp eq i64 %t.11220, %t.11221
-  %t.11223 = zext i1 %t.11222 to i64
-  store i64 %t.11223, ptr %v.1122
-  %t.11230 = load i64, ptr %v.1122
-  %t.11231 = icmp eq i64 %t.11230, 0
-  br i1 %t.11231, label %L.150, label %L.fall.1123
-L.fall.1123:
-  %t.11270 = load i64, ptr %v.994
-  %t.11271 = load i64, ptr %v.996
-  %t.11272 = load i64, ptr %v.670
-  %t.11279 = call i64 @parser_parse_func_decl(i64 %t.11270, i64 %t.11271, i64 %t.11272)
-  store i64 %t.11279, ptr %v.1127
-  %t.11280 = load i64, ptr %v.1127
-  store i64 %t.11280, ptr %v.1128
-  %t.11290 = load i64, ptr %v.1128
-  %t.11296 = inttoptr i64 %t.11290 to ptr
-  %t.11297 = load i64, ptr %t.11296
-  store i64 %t.11297, ptr %v.1129
-  store i64 0, ptr %v.1130
-  %t.11310 = load i64, ptr %v.1129
-  %t.11311 = load i64, ptr %v.1130
-  %t.11312 = icmp slt i64 %t.11310, %t.11311
-  %t.11313 = zext i1 %t.11312 to i64
-  store i64 %t.11313, ptr %v.1131
-  %t.11320 = load i64, ptr %v.1131
-  %t.11321 = icmp eq i64 %t.11320, 0
-  br i1 %t.11321, label %L.152, label %L.fall.1132
-L.fall.1132:
-  %t.11330 = ptrtoint ptr @.str.26 to i64
-  store i64 %t.11330, ptr %v.1133
-  %t.11340 = load i64, ptr %v.1133
-  %t.11341 = inttoptr i64 %t.11340 to ptr
-  %t.11342 = load i64, ptr %v.985
-  %t.11343 = inttoptr i64 %t.11342 to ptr
-  %t.11344 = call ptr @ease_str_concat(ptr %t.11341, ptr %t.11343)
-  %t.11345 = ptrtoint ptr %t.11344 to i64
-  store i64 %t.11345, ptr %v.1134
-  %t.11350 = ptrtoint ptr @.str.27 to i64
-  store i64 %t.11350, ptr %v.1135
-  %t.11360 = load i64, ptr %v.1134
-  %t.11361 = inttoptr i64 %t.11360 to ptr
-  %t.11362 = load i64, ptr %v.1135
-  %t.11363 = inttoptr i64 %t.11362 to ptr
-  %t.11364 = call ptr @ease_str_concat(ptr %t.11361, ptr %t.11363)
-  %t.11365 = ptrtoint ptr %t.11364 to i64
-  store i64 %t.11365, ptr %v.1136
-  %t.11380 = load i64, ptr %v.996
-  %t.11389 = call i64 @strconv_Itoa(i64 %t.11380)
-  store i64 %t.11389, ptr %v.1138
-  %t.11390 = load i64, ptr %v.1136
-  %t.11391 = inttoptr i64 %t.11390 to ptr
-  %t.11392 = load i64, ptr %v.1138
-  %t.11393 = inttoptr i64 %t.11392 to ptr
-  %t.11394 = call ptr @ease_str_concat(ptr %t.11391, ptr %t.11393)
-  %t.11395 = ptrtoint ptr %t.11394 to i64
-  store i64 %t.11395, ptr %v.1139
-  %t.11400 = ptrtoint ptr @.str.28 to i64
-  store i64 %t.11400, ptr %v.1140
-  %t.11410 = load i64, ptr %v.1139
-  %t.11411 = inttoptr i64 %t.11410 to ptr
-  %t.11412 = load i64, ptr %v.1140
-  %t.11413 = inttoptr i64 %t.11412 to ptr
-  %t.11414 = call ptr @ease_str_concat(ptr %t.11411, ptr %t.11413)
-  %t.11415 = ptrtoint ptr %t.11414 to i64
-  store i64 %t.11415, ptr %v.1141
-  %t.11430 = load i64, ptr %v.1141
-  %t.11439 = call i64 @io_Print(i64 %t.11430)
-  store i64 %t.11439, ptr %v.1143
-  br label %L.131
-L.152:
-  br label %L.153
-L.153:
-  %t.11480 = load i64, ptr %v.1128
-  %t.11486 = inttoptr i64 %t.11480 to ptr
-  %t.11487 = load i64, ptr %t.11486
-  store i64 %t.11487, ptr %v.1148
-  %t.11490 = load i64, ptr %v.1148
-  store i64 %t.11490, ptr %v.1149
-  %t.11500 = load i64, ptr %v.670
-  %t.11501 = inttoptr i64 %t.11500 to ptr
-  %t.11502 = load i64, ptr %t.11501
-  %t.11503 = load i64, ptr %v.1149
-  %t.11504 = mul i64 %t.11503, 8
-  %t.11505 = add i64 %t.11502, %t.11504
-  %t.11506 = inttoptr i64 %t.11505 to ptr
-  %t.11507 = load i64, ptr %t.11506
-  store i64 %t.11507, ptr %v.1150
-  %t.11510 = load i64, ptr %v.1150
-  %t.11512 = add i64 %t.11510, 16
-  %t.11516 = inttoptr i64 %t.11512 to ptr
-  %t.11517 = load i64, ptr %t.11516
-  store i64 %t.11517, ptr %v.1151
-  %t.11520 = load i64, ptr %v.1151
-  store i64 %t.11520, ptr %v.1152
-  %t.11530 = load i64, ptr %v.933
-  %t.11531 = inttoptr i64 %t.11530 to ptr
-  %t.11532 = load i64, ptr %v.1152
-  %t.11533 = alloca i64
-  store i64 %t.11532, ptr %t.11533
-  call void @ease_array_push(ptr %t.11531, ptr %t.11533, i64 8)
-  %t.11540 = load i64, ptr %v.936
-  %t.11541 = inttoptr i64 %t.11540 to ptr
-  %t.11542 = load i64, ptr %v.1149
-  %t.11543 = alloca i64
-  store i64 %t.11542, ptr %t.11543
-  call void @ease_array_push(ptr %t.11541, ptr %t.11543, i64 8)
-  %t.11550 = load i64, ptr %v.1128
-  %t.11552 = add i64 %t.11550, 8
-  %t.11556 = inttoptr i64 %t.11552 to ptr
-  %t.11557 = load i64, ptr %t.11556
-  store i64 %t.11557, ptr %v.1155
-  %t.11560 = load i64, ptr %v.1155
-  store i64 %t.11560, ptr %v.996
-  %t.11590 = load i64, ptr %v.994
-  %t.11591 = load i64, ptr %v.996
-  %t.11599 = call i64 @lexer_lex_skip(i64 %t.11590, i64 %t.11591)
-  store i64 %t.11599, ptr %v.1159
-  %t.11600 = load i64, ptr %v.1159
-  store i64 %t.11600, ptr %v.996
-  br label %L.151
-L.150:
-  br label %L.131
-L.151:
   br label %L.141
 L.141:
   br label %L.139
 L.139:
   br label %L.137
 L.137:
-  br label %L.135
-L.135:
-  br label %L.130
+  br label %L.132
+L.133:
+  br label %L.131
+L.130:
+  br label %L.131
 L.131:
   br label %L.129
 L.128:
   br label %L.129
 L.129:
+  store i64 1, ptr %v.1216
+  %t.12170 = load i64, ptr %v.976
+  %t.12171 = load i64, ptr %v.1216
+  %t.12172 = add i64 %t.12170, %t.12171
+  store i64 %t.12172, ptr %v.1217
+  %t.12180 = load i64, ptr %v.1217
+  store i64 %t.12180, ptr %v.978
   br label %L.127
 L.126:
   br label %L.127
 L.127:
-  store i64 1, ptr %v.1177
-  %t.11780 = load i64, ptr %v.956
-  %t.11781 = load i64, ptr %v.1177
-  %t.11782 = add i64 %t.11780, %t.11781
-  store i64 %t.11782, ptr %v.1178
-  %t.11790 = load i64, ptr %v.1178
-  store i64 %t.11790, ptr %v.958
-  br label %L.125
-L.124:
-  br label %L.125
+  store i64 1, ptr %v.1222
+  %t.12230 = load i64, ptr %v.976
+  %t.12231 = load i64, ptr %v.1222
+  %t.12232 = add i64 %t.12230, %t.12231
+  store i64 %t.12232, ptr %v.1223
+  %t.12240 = load i64, ptr %v.1223
+  store i64 %t.12240, ptr %v.976
+  br label %L.124
 L.125:
-  store i64 1, ptr %v.1183
-  %t.11840 = load i64, ptr %v.956
-  %t.11841 = load i64, ptr %v.1183
-  %t.11842 = add i64 %t.11840, %t.11841
-  store i64 %t.11842, ptr %v.1184
-  %t.11850 = load i64, ptr %v.1184
-  store i64 %t.11850, ptr %v.956
-  br label %L.122
-L.123:
-  store i64 0, ptr %v.1188
-  %t.11890 = load i64, ptr %v.1188
-  store i64 %t.11890, ptr %v.1189
-  br label %L.154
-L.154:
-  %t.11910 = load i64, ptr %v.933
-  %t.11911 = add i64 %t.11910, 8
-  %t.11912 = inttoptr i64 %t.11911 to ptr
-  %t.11913 = load i64, ptr %t.11912
-  store i64 %t.11913, ptr %v.1191
-  %t.11920 = load i64, ptr %v.1189
-  %t.11921 = load i64, ptr %v.1191
-  %t.11922 = icmp slt i64 %t.11920, %t.11921
-  %t.11923 = zext i1 %t.11922 to i64
-  store i64 %t.11923, ptr %v.1192
-  %t.11930 = load i64, ptr %v.1192
-  %t.11931 = icmp eq i64 %t.11930, 0
-  br i1 %t.11931, label %L.155, label %L.fall.1193
-L.fall.1193:
-  %t.11940 = ptrtoint ptr @.str.29 to i64
-  store i64 %t.11940, ptr %v.1194
-  %t.11950 = load i64, ptr %v.924
-  %t.11951 = inttoptr i64 %t.11950 to ptr
-  %t.11952 = load i64, ptr %v.1194
-  %t.11953 = inttoptr i64 %t.11952 to ptr
-  %t.11954 = call ptr @ease_str_concat(ptr %t.11951, ptr %t.11953)
-  %t.11955 = ptrtoint ptr %t.11954 to i64
-  store i64 %t.11955, ptr %v.1195
-  %t.11960 = load i64, ptr %v.933
-  %t.11961 = inttoptr i64 %t.11960 to ptr
-  %t.11962 = load i64, ptr %t.11961
-  %t.11963 = load i64, ptr %v.1189
-  %t.11964 = mul i64 %t.11963, 8
-  %t.11965 = add i64 %t.11962, %t.11964
-  %t.11966 = inttoptr i64 %t.11965 to ptr
-  %t.11967 = load i64, ptr %t.11966
-  store i64 %t.11967, ptr %v.1196
-  %t.11970 = load i64, ptr %v.1195
-  %t.11971 = inttoptr i64 %t.11970 to ptr
-  %t.11972 = load i64, ptr %v.1196
-  %t.11973 = inttoptr i64 %t.11972 to ptr
-  %t.11974 = call ptr @ease_str_concat(ptr %t.11971, ptr %t.11973)
-  %t.11975 = ptrtoint ptr %t.11974 to i64
-  store i64 %t.11975, ptr %v.1197
-  %t.11980 = load i64, ptr %v.1197
-  store i64 %t.11980, ptr %v.1198
-  %t.11990 = load i64, ptr %v.683
-  %t.11991 = inttoptr i64 %t.11990 to ptr
-  %t.11992 = load i64, ptr %v.1198
-  %t.11993 = alloca i64
-  store i64 %t.11992, ptr %t.11993
-  call void @ease_array_push(ptr %t.11991, ptr %t.11993, i64 8)
-  %t.12000 = load i64, ptr %v.936
-  %t.12001 = inttoptr i64 %t.12000 to ptr
-  %t.12002 = load i64, ptr %t.12001
-  %t.12003 = load i64, ptr %v.1189
-  %t.12004 = mul i64 %t.12003, 8
-  %t.12005 = add i64 %t.12002, %t.12004
-  %t.12006 = inttoptr i64 %t.12005 to ptr
-  %t.12007 = load i64, ptr %t.12006
-  store i64 %t.12007, ptr %v.1200
-  %t.12010 = load i64, ptr %v.686
-  %t.12011 = inttoptr i64 %t.12010 to ptr
-  %t.12012 = load i64, ptr %v.1200
-  %t.12013 = alloca i64
-  store i64 %t.12012, ptr %t.12013
-  call void @ease_array_push(ptr %t.12011, ptr %t.12013, i64 8)
-  %t.12020 = load i64, ptr %v.933
-  %t.12021 = inttoptr i64 %t.12020 to ptr
-  %t.12022 = load i64, ptr %t.12021
-  %t.12023 = load i64, ptr %v.1189
-  %t.12024 = mul i64 %t.12023, 8
-  %t.12025 = add i64 %t.12022, %t.12024
-  %t.12026 = inttoptr i64 %t.12025 to ptr
-  %t.12027 = load i64, ptr %t.12026
-  store i64 %t.12027, ptr %v.1202
-  %t.12040 = load i64, ptr %v.1202
-  %t.12049 = call i64 @is_exported(i64 %t.12040)
-  store i64 %t.12049, ptr %v.1204
-  store i64 1, ptr %v.1205
-  %t.12060 = load i64, ptr %v.1204
-  %t.12061 = load i64, ptr %v.1205
-  %t.12062 = icmp eq i64 %t.12060, %t.12061
-  %t.12063 = zext i1 %t.12062 to i64
-  store i64 %t.12063, ptr %v.1206
-  %t.12070 = load i64, ptr %v.1206
-  %t.12071 = icmp eq i64 %t.12070, 0
-  br i1 %t.12071, label %L.156, label %L.fall.1207
-L.fall.1207:
-  %t.12080 = ptrtoint ptr @g_rename_from to i64
-  store i64 %t.12080, ptr %v.1208
-  %t.12090 = load i64, ptr %v.933
-  %t.12091 = inttoptr i64 %t.12090 to ptr
-  %t.12092 = load i64, ptr %t.12091
-  %t.12093 = load i64, ptr %v.1189
-  %t.12094 = mul i64 %t.12093, 8
-  %t.12095 = add i64 %t.12092, %t.12094
-  %t.12096 = inttoptr i64 %t.12095 to ptr
-  %t.12097 = load i64, ptr %t.12096
-  store i64 %t.12097, ptr %v.1209
-  %t.12100 = load i64, ptr %v.1208
-  %t.12101 = inttoptr i64 %t.12100 to ptr
-  %t.12102 = load i64, ptr %v.1209
-  %t.12103 = alloca i64
-  store i64 %t.12102, ptr %t.12103
-  call void @ease_array_push(ptr %t.12101, ptr %t.12103, i64 8)
-  %t.12110 = ptrtoint ptr @g_rename_to to i64
-  store i64 %t.12110, ptr %v.1211
-  %t.12120 = load i64, ptr %v.1211
-  %t.12121 = inttoptr i64 %t.12120 to ptr
-  %t.12122 = load i64, ptr %v.1198
-  %t.12123 = alloca i64
-  store i64 %t.12122, ptr %t.12123
-  call void @ease_array_push(ptr %t.12121, ptr %t.12123, i64 8)
-  br label %L.157
-L.156:
-  br label %L.157
-L.157:
-  %t.12160 = ptrtoint ptr @.str.30 to i64
-  store i64 %t.12160, ptr %v.1216
-  %t.12170 = load i64, ptr %v.1216
-  %t.12171 = inttoptr i64 %t.12170 to ptr
-  %t.12172 = load i64, ptr %v.1198
-  %t.12173 = inttoptr i64 %t.12172 to ptr
-  %t.12174 = call ptr @ease_str_concat(ptr %t.12171, ptr %t.12173)
-  %t.12175 = ptrtoint ptr %t.12174 to i64
-  store i64 %t.12175, ptr %v.1217
-  %t.12180 = ptrtoint ptr @.str.31 to i64
-  store i64 %t.12180, ptr %v.1218
-  %t.12190 = load i64, ptr %v.1217
-  %t.12191 = inttoptr i64 %t.12190 to ptr
-  %t.12192 = load i64, ptr %v.1218
-  %t.12193 = inttoptr i64 %t.12192 to ptr
-  %t.12194 = call ptr @ease_str_concat(ptr %t.12191, ptr %t.12193)
-  %t.12195 = ptrtoint ptr %t.12194 to i64
-  store i64 %t.12195, ptr %v.1219
-  %t.12200 = load i64, ptr %v.683
-  %t.12201 = add i64 %t.12200, 8
-  %t.12202 = inttoptr i64 %t.12201 to ptr
-  %t.12203 = load i64, ptr %t.12202
-  store i64 %t.12203, ptr %v.1220
-  %t.12220 = load i64, ptr %v.1220
-  %t.12229 = call i64 @strconv_Itoa(i64 %t.12220)
-  store i64 %t.12229, ptr %v.1222
-  %t.12230 = load i64, ptr %v.1219
-  %t.12231 = inttoptr i64 %t.12230 to ptr
-  %t.12232 = load i64, ptr %v.1222
-  %t.12233 = inttoptr i64 %t.12232 to ptr
-  %t.12234 = call ptr @ease_str_concat(ptr %t.12231, ptr %t.12233)
-  %t.12235 = ptrtoint ptr %t.12234 to i64
-  store i64 %t.12235, ptr %v.1223
-  %t.12240 = ptrtoint ptr @.str.32 to i64
-  store i64 %t.12240, ptr %v.1224
-  %t.12250 = load i64, ptr %v.1223
-  %t.12251 = inttoptr i64 %t.12250 to ptr
-  %t.12252 = load i64, ptr %v.1224
-  %t.12253 = inttoptr i64 %t.12252 to ptr
-  %t.12254 = call ptr @ease_str_concat(ptr %t.12251, ptr %t.12253)
-  %t.12255 = ptrtoint ptr %t.12254 to i64
-  store i64 %t.12255, ptr %v.1225
-  %t.12270 = load i64, ptr %v.1225
-  %t.12279 = call i64 @io_Print(i64 %t.12270)
-  store i64 %t.12279, ptr %v.1227
-  store i64 1, ptr %v.1228
-  %t.12290 = load i64, ptr %v.1189
-  %t.12291 = load i64, ptr %v.1228
-  %t.12292 = add i64 %t.12290, %t.12291
-  store i64 %t.12292, ptr %v.1229
-  %t.12300 = load i64, ptr %v.1229
-  store i64 %t.12300, ptr %v.1189
-  br label %L.154
-L.155:
-  store i64 0, ptr %v.1233
-  %t.12340 = load i64, ptr %v.1233
-  store i64 %t.12340, ptr %v.1234
+  store i64 0, ptr %v.1227
+  %t.12280 = load i64, ptr %v.1227
+  store i64 %t.12280, ptr %v.1228
   br label %L.158
 L.158:
-  %t.12360 = load i64, ptr %v.933
-  %t.12361 = add i64 %t.12360, 8
-  %t.12362 = inttoptr i64 %t.12361 to ptr
-  %t.12363 = load i64, ptr %t.12362
-  store i64 %t.12363, ptr %v.1236
-  %t.12370 = load i64, ptr %v.1234
-  %t.12371 = load i64, ptr %v.1236
-  %t.12372 = icmp slt i64 %t.12370, %t.12371
-  %t.12373 = zext i1 %t.12372 to i64
-  store i64 %t.12373, ptr %v.1237
-  %t.12380 = load i64, ptr %v.1237
-  %t.12381 = icmp eq i64 %t.12380, 0
-  br i1 %t.12381, label %L.159, label %L.fall.1238
-L.fall.1238:
-  %t.12390 = load i64, ptr %v.933
+  %t.12300 = load i64, ptr %v.953
+  %t.12301 = add i64 %t.12300, 8
+  %t.12302 = inttoptr i64 %t.12301 to ptr
+  %t.12303 = load i64, ptr %t.12302
+  store i64 %t.12303, ptr %v.1230
+  %t.12310 = load i64, ptr %v.1228
+  %t.12311 = load i64, ptr %v.1230
+  %t.12312 = icmp slt i64 %t.12310, %t.12311
+  %t.12313 = zext i1 %t.12312 to i64
+  store i64 %t.12313, ptr %v.1231
+  %t.12320 = load i64, ptr %v.1231
+  %t.12321 = icmp eq i64 %t.12320, 0
+  br i1 %t.12321, label %L.159, label %L.fall.1232
+L.fall.1232:
+  %t.12330 = ptrtoint ptr @.str.29 to i64
+  store i64 %t.12330, ptr %v.1233
+  %t.12340 = load i64, ptr %v.944
+  %t.12341 = inttoptr i64 %t.12340 to ptr
+  %t.12342 = load i64, ptr %v.1233
+  %t.12343 = inttoptr i64 %t.12342 to ptr
+  %t.12344 = call ptr @ease_str_concat(ptr %t.12341, ptr %t.12343)
+  %t.12345 = ptrtoint ptr %t.12344 to i64
+  store i64 %t.12345, ptr %v.1234
+  %t.12350 = load i64, ptr %v.953
+  %t.12351 = inttoptr i64 %t.12350 to ptr
+  %t.12352 = load i64, ptr %t.12351
+  %t.12353 = load i64, ptr %v.1228
+  %t.12354 = mul i64 %t.12353, 8
+  %t.12355 = add i64 %t.12352, %t.12354
+  %t.12356 = inttoptr i64 %t.12355 to ptr
+  %t.12357 = load i64, ptr %t.12356
+  store i64 %t.12357, ptr %v.1235
+  %t.12360 = load i64, ptr %v.1234
+  %t.12361 = inttoptr i64 %t.12360 to ptr
+  %t.12362 = load i64, ptr %v.1235
+  %t.12363 = inttoptr i64 %t.12362 to ptr
+  %t.12364 = call ptr @ease_str_concat(ptr %t.12361, ptr %t.12363)
+  %t.12365 = ptrtoint ptr %t.12364 to i64
+  store i64 %t.12365, ptr %v.1236
+  %t.12370 = load i64, ptr %v.1236
+  store i64 %t.12370, ptr %v.1237
+  %t.12380 = load i64, ptr %v.683
+  %t.12381 = inttoptr i64 %t.12380 to ptr
+  %t.12382 = load i64, ptr %v.1237
+  %t.12383 = alloca i64
+  store i64 %t.12382, ptr %t.12383
+  call void @ease_array_push(ptr %t.12381, ptr %t.12383, i64 8)
+  %t.12390 = load i64, ptr %v.956
   %t.12391 = inttoptr i64 %t.12390 to ptr
   %t.12392 = load i64, ptr %t.12391
-  %t.12393 = load i64, ptr %v.1234
+  %t.12393 = load i64, ptr %v.1228
   %t.12394 = mul i64 %t.12393, 8
   %t.12395 = add i64 %t.12392, %t.12394
   %t.12396 = inttoptr i64 %t.12395 to ptr
   %t.12397 = load i64, ptr %t.12396
   store i64 %t.12397, ptr %v.1239
-  %t.12410 = load i64, ptr %v.1239
-  %t.12419 = call i64 @is_exported(i64 %t.12410)
-  store i64 %t.12419, ptr %v.1241
-  store i64 0, ptr %v.1242
+  %t.12400 = load i64, ptr %v.686
+  %t.12401 = inttoptr i64 %t.12400 to ptr
+  %t.12402 = load i64, ptr %v.1239
+  %t.12403 = alloca i64
+  store i64 %t.12402, ptr %t.12403
+  call void @ease_array_push(ptr %t.12401, ptr %t.12403, i64 8)
+  %t.12410 = load i64, ptr %v.953
+  %t.12411 = inttoptr i64 %t.12410 to ptr
+  %t.12412 = load i64, ptr %t.12411
+  %t.12413 = load i64, ptr %v.1228
+  %t.12414 = mul i64 %t.12413, 8
+  %t.12415 = add i64 %t.12412, %t.12414
+  %t.12416 = inttoptr i64 %t.12415 to ptr
+  %t.12417 = load i64, ptr %t.12416
+  store i64 %t.12417, ptr %v.1241
   %t.12430 = load i64, ptr %v.1241
-  %t.12431 = load i64, ptr %v.1242
-  %t.12432 = icmp eq i64 %t.12430, %t.12431
-  %t.12433 = zext i1 %t.12432 to i64
-  store i64 %t.12433, ptr %v.1243
-  %t.12440 = load i64, ptr %v.1243
-  %t.12441 = icmp eq i64 %t.12440, 0
-  br i1 %t.12441, label %L.160, label %L.fall.1244
-L.fall.1244:
-  %t.12450 = ptrtoint ptr @g_rename_from to i64
-  store i64 %t.12450, ptr %v.1245
-  %t.12460 = load i64, ptr %v.933
-  %t.12461 = inttoptr i64 %t.12460 to ptr
-  %t.12462 = load i64, ptr %t.12461
-  %t.12463 = load i64, ptr %v.1234
-  %t.12464 = mul i64 %t.12463, 8
-  %t.12465 = add i64 %t.12462, %t.12464
-  %t.12466 = inttoptr i64 %t.12465 to ptr
-  %t.12467 = load i64, ptr %t.12466
-  store i64 %t.12467, ptr %v.1246
-  %t.12470 = load i64, ptr %v.1245
-  %t.12471 = inttoptr i64 %t.12470 to ptr
-  %t.12472 = load i64, ptr %v.1246
-  %t.12473 = alloca i64
-  store i64 %t.12472, ptr %t.12473
-  call void @ease_array_push(ptr %t.12471, ptr %t.12473, i64 8)
-  %t.12480 = ptrtoint ptr @g_rename_to to i64
-  store i64 %t.12480, ptr %v.1248
-  %t.12490 = ptrtoint ptr @.str.33 to i64
-  store i64 %t.12490, ptr %v.1249
-  %t.12500 = load i64, ptr %v.924
-  %t.12501 = inttoptr i64 %t.12500 to ptr
-  %t.12502 = load i64, ptr %v.1249
-  %t.12503 = inttoptr i64 %t.12502 to ptr
-  %t.12504 = call ptr @ease_str_concat(ptr %t.12501, ptr %t.12503)
-  %t.12505 = ptrtoint ptr %t.12504 to i64
-  store i64 %t.12505, ptr %v.1250
-  %t.12510 = load i64, ptr %v.933
+  %t.12439 = call i64 @is_exported(i64 %t.12430)
+  store i64 %t.12439, ptr %v.1243
+  store i64 1, ptr %v.1244
+  %t.12450 = load i64, ptr %v.1243
+  %t.12451 = load i64, ptr %v.1244
+  %t.12452 = icmp eq i64 %t.12450, %t.12451
+  %t.12453 = zext i1 %t.12452 to i64
+  store i64 %t.12453, ptr %v.1245
+  %t.12460 = load i64, ptr %v.1245
+  %t.12461 = icmp eq i64 %t.12460, 0
+  br i1 %t.12461, label %L.160, label %L.fall.1246
+L.fall.1246:
+  %t.12470 = ptrtoint ptr @g_rename_from to i64
+  store i64 %t.12470, ptr %v.1247
+  %t.12480 = load i64, ptr %v.953
+  %t.12481 = inttoptr i64 %t.12480 to ptr
+  %t.12482 = load i64, ptr %t.12481
+  %t.12483 = load i64, ptr %v.1228
+  %t.12484 = mul i64 %t.12483, 8
+  %t.12485 = add i64 %t.12482, %t.12484
+  %t.12486 = inttoptr i64 %t.12485 to ptr
+  %t.12487 = load i64, ptr %t.12486
+  store i64 %t.12487, ptr %v.1248
+  %t.12490 = load i64, ptr %v.1247
+  %t.12491 = inttoptr i64 %t.12490 to ptr
+  %t.12492 = load i64, ptr %v.1248
+  %t.12493 = alloca i64
+  store i64 %t.12492, ptr %t.12493
+  call void @ease_array_push(ptr %t.12491, ptr %t.12493, i64 8)
+  %t.12500 = ptrtoint ptr @g_rename_to to i64
+  store i64 %t.12500, ptr %v.1250
+  %t.12510 = load i64, ptr %v.1250
   %t.12511 = inttoptr i64 %t.12510 to ptr
-  %t.12512 = load i64, ptr %t.12511
-  %t.12513 = load i64, ptr %v.1234
-  %t.12514 = mul i64 %t.12513, 8
-  %t.12515 = add i64 %t.12512, %t.12514
-  %t.12516 = inttoptr i64 %t.12515 to ptr
-  %t.12517 = load i64, ptr %t.12516
-  store i64 %t.12517, ptr %v.1251
-  %t.12520 = load i64, ptr %v.1250
-  %t.12521 = inttoptr i64 %t.12520 to ptr
-  %t.12522 = load i64, ptr %v.1251
-  %t.12523 = inttoptr i64 %t.12522 to ptr
-  %t.12524 = call ptr @ease_str_concat(ptr %t.12521, ptr %t.12523)
-  %t.12525 = ptrtoint ptr %t.12524 to i64
-  store i64 %t.12525, ptr %v.1252
-  %t.12530 = load i64, ptr %v.1248
-  %t.12531 = inttoptr i64 %t.12530 to ptr
-  %t.12532 = load i64, ptr %v.1252
-  %t.12533 = alloca i64
-  store i64 %t.12532, ptr %t.12533
-  call void @ease_array_push(ptr %t.12531, ptr %t.12533, i64 8)
+  %t.12512 = load i64, ptr %v.1237
+  %t.12513 = alloca i64
+  store i64 %t.12512, ptr %t.12513
+  call void @ease_array_push(ptr %t.12511, ptr %t.12513, i64 8)
   br label %L.161
 L.160:
   br label %L.161
 L.161:
-  store i64 1, ptr %v.1257
-  %t.12580 = load i64, ptr %v.1234
-  %t.12581 = load i64, ptr %v.1257
-  %t.12582 = add i64 %t.12580, %t.12581
-  store i64 %t.12582, ptr %v.1258
-  %t.12590 = load i64, ptr %v.1258
-  store i64 %t.12590, ptr %v.1234
+  %t.12550 = ptrtoint ptr @.str.30 to i64
+  store i64 %t.12550, ptr %v.1255
+  %t.12560 = load i64, ptr %v.1255
+  %t.12561 = inttoptr i64 %t.12560 to ptr
+  %t.12562 = load i64, ptr %v.1237
+  %t.12563 = inttoptr i64 %t.12562 to ptr
+  %t.12564 = call ptr @ease_str_concat(ptr %t.12561, ptr %t.12563)
+  %t.12565 = ptrtoint ptr %t.12564 to i64
+  store i64 %t.12565, ptr %v.1256
+  %t.12570 = ptrtoint ptr @.str.31 to i64
+  store i64 %t.12570, ptr %v.1257
+  %t.12580 = load i64, ptr %v.1256
+  %t.12581 = inttoptr i64 %t.12580 to ptr
+  %t.12582 = load i64, ptr %v.1257
+  %t.12583 = inttoptr i64 %t.12582 to ptr
+  %t.12584 = call ptr @ease_str_concat(ptr %t.12581, ptr %t.12583)
+  %t.12585 = ptrtoint ptr %t.12584 to i64
+  store i64 %t.12585, ptr %v.1258
+  %t.12590 = load i64, ptr %v.683
+  %t.12591 = add i64 %t.12590, 8
+  %t.12592 = inttoptr i64 %t.12591 to ptr
+  %t.12593 = load i64, ptr %t.12592
+  store i64 %t.12593, ptr %v.1259
+  %t.12610 = load i64, ptr %v.1259
+  %t.12619 = call i64 @strconv_Itoa(i64 %t.12610)
+  store i64 %t.12619, ptr %v.1261
+  %t.12620 = load i64, ptr %v.1258
+  %t.12621 = inttoptr i64 %t.12620 to ptr
+  %t.12622 = load i64, ptr %v.1261
+  %t.12623 = inttoptr i64 %t.12622 to ptr
+  %t.12624 = call ptr @ease_str_concat(ptr %t.12621, ptr %t.12623)
+  %t.12625 = ptrtoint ptr %t.12624 to i64
+  store i64 %t.12625, ptr %v.1262
+  %t.12630 = ptrtoint ptr @.str.32 to i64
+  store i64 %t.12630, ptr %v.1263
+  %t.12640 = load i64, ptr %v.1262
+  %t.12641 = inttoptr i64 %t.12640 to ptr
+  %t.12642 = load i64, ptr %v.1263
+  %t.12643 = inttoptr i64 %t.12642 to ptr
+  %t.12644 = call ptr @ease_str_concat(ptr %t.12641, ptr %t.12643)
+  %t.12645 = ptrtoint ptr %t.12644 to i64
+  store i64 %t.12645, ptr %v.1264
+  %t.12660 = load i64, ptr %v.1264
+  %t.12669 = call i64 @io_Print(i64 %t.12660)
+  store i64 %t.12669, ptr %v.1266
+  store i64 1, ptr %v.1267
+  %t.12680 = load i64, ptr %v.1228
+  %t.12681 = load i64, ptr %v.1267
+  %t.12682 = add i64 %t.12680, %t.12681
+  store i64 %t.12682, ptr %v.1268
+  %t.12690 = load i64, ptr %v.1268
+  store i64 %t.12690, ptr %v.1228
   br label %L.158
 L.159:
-  br label %L.121
-L.120:
-  %t.12640 = ptrtoint ptr @.str.34 to i64
-  store i64 %t.12640, ptr %v.1264
-  %t.12650 = load i64, ptr %v.1264
-  %t.12651 = inttoptr i64 %t.12650 to ptr
-  %t.12652 = load i64, ptr %v.924
-  %t.12653 = inttoptr i64 %t.12652 to ptr
-  %t.12654 = call ptr @ease_str_concat(ptr %t.12651, ptr %t.12653)
-  %t.12655 = ptrtoint ptr %t.12654 to i64
-  store i64 %t.12655, ptr %v.1265
-  %t.12660 = ptrtoint ptr @.str.35 to i64
-  store i64 %t.12660, ptr %v.1266
-  %t.12670 = load i64, ptr %v.1265
-  %t.12671 = inttoptr i64 %t.12670 to ptr
-  %t.12672 = load i64, ptr %v.1266
-  %t.12673 = inttoptr i64 %t.12672 to ptr
-  %t.12674 = call ptr @ease_str_concat(ptr %t.12671, ptr %t.12673)
-  %t.12675 = ptrtoint ptr %t.12674 to i64
-  store i64 %t.12675, ptr %v.1267
-  %t.12680 = load i64, ptr %v.1267
-  %t.12681 = inttoptr i64 %t.12680 to ptr
-  %t.12682 = load i64, ptr %v.928
-  %t.12683 = inttoptr i64 %t.12682 to ptr
-  %t.12684 = call ptr @ease_str_concat(ptr %t.12681, ptr %t.12683)
-  %t.12685 = ptrtoint ptr %t.12684 to i64
-  store i64 %t.12685, ptr %v.1268
-  %t.12690 = ptrtoint ptr @.str.36 to i64
-  store i64 %t.12690, ptr %v.1269
-  %t.12700 = load i64, ptr %v.1268
-  %t.12701 = inttoptr i64 %t.12700 to ptr
-  %t.12702 = load i64, ptr %v.1269
-  %t.12703 = inttoptr i64 %t.12702 to ptr
-  %t.12704 = call ptr @ease_str_concat(ptr %t.12701, ptr %t.12703)
-  %t.12705 = ptrtoint ptr %t.12704 to i64
-  store i64 %t.12705, ptr %v.1270
-  %t.12720 = load i64, ptr %v.1270
-  %t.12729 = call i64 @io_Print(i64 %t.12720)
-  store i64 %t.12729, ptr %v.1272
-  %t.12740 = load i64, ptr %v.928
-  %t.12749 = call i64 @os_ReadFile(i64 %t.12740)
-  store i64 %t.12749, ptr %v.1274
-  %t.12750 = load i64, ptr %v.1274
-  store i64 %t.12750, ptr %v.1275
-  %t.12760 = ptrtoint ptr @g_import_paths to i64
-  store i64 %t.12760, ptr %v.1276
-  %t.12770 = load i64, ptr %v.1276
-  %t.12771 = inttoptr i64 %t.12770 to ptr
-  %t.12772 = load i64, ptr %v.928
-  %t.12773 = alloca i64
-  store i64 %t.12772, ptr %t.12773
-  call void @ease_array_push(ptr %t.12771, ptr %t.12773, i64 8)
-  %t.12780 = ptrtoint ptr @g_import_names to i64
-  store i64 %t.12780, ptr %v.1278
-  %t.12790 = load i64, ptr %v.1278
-  %t.12791 = inttoptr i64 %t.12790 to ptr
-  %t.12792 = load i64, ptr %v.924
-  %t.12793 = alloca i64
-  store i64 %t.12792, ptr %t.12793
-  call void @ease_array_push(ptr %t.12791, ptr %t.12793, i64 8)
-  store i64 0, ptr %v.1280
-  %t.12810 = load i64, ptr %v.1280
-  store i64 %t.12810, ptr %v.1281
-  %t.12840 = load i64, ptr %v.1275
-  %t.12841 = load i64, ptr %v.1281
-  %t.12849 = call i64 @lexer_lex_skip(i64 %t.12840, i64 %t.12841)
-  store i64 %t.12849, ptr %v.1284
-  %t.12850 = load i64, ptr %v.1284
-  store i64 %t.12850, ptr %v.1281
+  store i64 0, ptr %v.1272
+  %t.12730 = load i64, ptr %v.1272
+  store i64 %t.12730, ptr %v.1273
   br label %L.162
 L.162:
-  %t.12890 = load i64, ptr %v.1275
-  %t.12891 = load i64, ptr %v.1281
-  %t.12899 = call i64 @lexer_lex_skip(i64 %t.12890, i64 %t.12891)
-  store i64 %t.12899, ptr %v.1289
-  %t.12900 = load i64, ptr %v.1289
-  store i64 %t.12900, ptr %v.1281
-  %t.12930 = load i64, ptr %v.1275
-  %t.12931 = load i64, ptr %v.1281
-  %t.12939 = call i64 @lexer_lex_kind(i64 %t.12930, i64 %t.12931)
-  store i64 %t.12939, ptr %v.1293
-  %t.12940 = load i64, ptr %v.1293
-  store i64 %t.12940, ptr %v.1294
-  %t.12959 = call i64 @token_TK_EOF()
-  store i64 %t.12959, ptr %v.1295
-  %t.12960 = load i64, ptr %v.1294
-  %t.12961 = load i64, ptr %v.1295
-  %t.12962 = icmp eq i64 %t.12960, %t.12961
-  %t.12963 = zext i1 %t.12962 to i64
-  store i64 %t.12963, ptr %v.1296
-  %t.12970 = load i64, ptr %v.1296
-  %t.12971 = icmp eq i64 %t.12970, 0
-  br i1 %t.12971, label %L.164, label %L.fall.1297
-L.fall.1297:
-  br label %L.163
+  %t.12750 = load i64, ptr %v.953
+  %t.12751 = add i64 %t.12750, 8
+  %t.12752 = inttoptr i64 %t.12751 to ptr
+  %t.12753 = load i64, ptr %t.12752
+  store i64 %t.12753, ptr %v.1275
+  %t.12760 = load i64, ptr %v.1273
+  %t.12761 = load i64, ptr %v.1275
+  %t.12762 = icmp slt i64 %t.12760, %t.12761
+  %t.12763 = zext i1 %t.12762 to i64
+  store i64 %t.12763, ptr %v.1276
+  %t.12770 = load i64, ptr %v.1276
+  %t.12771 = icmp eq i64 %t.12770, 0
+  br i1 %t.12771, label %L.163, label %L.fall.1277
+L.fall.1277:
+  %t.12780 = load i64, ptr %v.953
+  %t.12781 = inttoptr i64 %t.12780 to ptr
+  %t.12782 = load i64, ptr %t.12781
+  %t.12783 = load i64, ptr %v.1273
+  %t.12784 = mul i64 %t.12783, 8
+  %t.12785 = add i64 %t.12782, %t.12784
+  %t.12786 = inttoptr i64 %t.12785 to ptr
+  %t.12787 = load i64, ptr %t.12786
+  store i64 %t.12787, ptr %v.1278
+  %t.12800 = load i64, ptr %v.1278
+  %t.12809 = call i64 @is_exported(i64 %t.12800)
+  store i64 %t.12809, ptr %v.1280
+  store i64 0, ptr %v.1281
+  %t.12820 = load i64, ptr %v.1280
+  %t.12821 = load i64, ptr %v.1281
+  %t.12822 = icmp eq i64 %t.12820, %t.12821
+  %t.12823 = zext i1 %t.12822 to i64
+  store i64 %t.12823, ptr %v.1282
+  %t.12830 = load i64, ptr %v.1282
+  %t.12831 = icmp eq i64 %t.12830, 0
+  br i1 %t.12831, label %L.164, label %L.fall.1283
+L.fall.1283:
+  %t.12840 = ptrtoint ptr @g_rename_from to i64
+  store i64 %t.12840, ptr %v.1284
+  %t.12850 = load i64, ptr %v.953
+  %t.12851 = inttoptr i64 %t.12850 to ptr
+  %t.12852 = load i64, ptr %t.12851
+  %t.12853 = load i64, ptr %v.1273
+  %t.12854 = mul i64 %t.12853, 8
+  %t.12855 = add i64 %t.12852, %t.12854
+  %t.12856 = inttoptr i64 %t.12855 to ptr
+  %t.12857 = load i64, ptr %t.12856
+  store i64 %t.12857, ptr %v.1285
+  %t.12860 = load i64, ptr %v.1284
+  %t.12861 = inttoptr i64 %t.12860 to ptr
+  %t.12862 = load i64, ptr %v.1285
+  %t.12863 = alloca i64
+  store i64 %t.12862, ptr %t.12863
+  call void @ease_array_push(ptr %t.12861, ptr %t.12863, i64 8)
+  %t.12870 = ptrtoint ptr @g_rename_to to i64
+  store i64 %t.12870, ptr %v.1287
+  %t.12880 = ptrtoint ptr @.str.33 to i64
+  store i64 %t.12880, ptr %v.1288
+  %t.12890 = load i64, ptr %v.944
+  %t.12891 = inttoptr i64 %t.12890 to ptr
+  %t.12892 = load i64, ptr %v.1288
+  %t.12893 = inttoptr i64 %t.12892 to ptr
+  %t.12894 = call ptr @ease_str_concat(ptr %t.12891, ptr %t.12893)
+  %t.12895 = ptrtoint ptr %t.12894 to i64
+  store i64 %t.12895, ptr %v.1289
+  %t.12900 = load i64, ptr %v.953
+  %t.12901 = inttoptr i64 %t.12900 to ptr
+  %t.12902 = load i64, ptr %t.12901
+  %t.12903 = load i64, ptr %v.1273
+  %t.12904 = mul i64 %t.12903, 8
+  %t.12905 = add i64 %t.12902, %t.12904
+  %t.12906 = inttoptr i64 %t.12905 to ptr
+  %t.12907 = load i64, ptr %t.12906
+  store i64 %t.12907, ptr %v.1290
+  %t.12910 = load i64, ptr %v.1289
+  %t.12911 = inttoptr i64 %t.12910 to ptr
+  %t.12912 = load i64, ptr %v.1290
+  %t.12913 = inttoptr i64 %t.12912 to ptr
+  %t.12914 = call ptr @ease_str_concat(ptr %t.12911, ptr %t.12913)
+  %t.12915 = ptrtoint ptr %t.12914 to i64
+  store i64 %t.12915, ptr %v.1291
+  %t.12920 = load i64, ptr %v.1287
+  %t.12921 = inttoptr i64 %t.12920 to ptr
+  %t.12922 = load i64, ptr %v.1291
+  %t.12923 = alloca i64
+  store i64 %t.12922, ptr %t.12923
+  call void @ease_array_push(ptr %t.12921, ptr %t.12923, i64 8)
+  br label %L.165
 L.164:
   br label %L.165
 L.165:
-  %t.13029 = call i64 @token_TK_PACKAGE()
-  store i64 %t.13029, ptr %v.1302
-  %t.13030 = load i64, ptr %v.1294
-  %t.13031 = load i64, ptr %v.1302
-  %t.13032 = icmp eq i64 %t.13030, %t.13031
-  %t.13033 = zext i1 %t.13032 to i64
-  store i64 %t.13033, ptr %v.1303
+  store i64 1, ptr %v.1296
+  %t.12970 = load i64, ptr %v.1273
+  %t.12971 = load i64, ptr %v.1296
+  %t.12972 = add i64 %t.12970, %t.12971
+  store i64 %t.12972, ptr %v.1297
+  %t.12980 = load i64, ptr %v.1297
+  store i64 %t.12980, ptr %v.1273
+  br label %L.162
+L.163:
+  br label %L.123
+L.122:
+  %t.13030 = ptrtoint ptr @.str.34 to i64
+  store i64 %t.13030, ptr %v.1303
   %t.13040 = load i64, ptr %v.1303
-  %t.13041 = icmp eq i64 %t.13040, 0
-  br i1 %t.13041, label %L.166, label %L.fall.1304
-L.fall.1304:
-  %t.13080 = load i64, ptr %v.1275
-  %t.13081 = load i64, ptr %v.1281
-  %t.13082 = load i64, ptr %v.1294
-  %t.13089 = call i64 @lexer_lex_end(i64 %t.13080, i64 %t.13081, i64 %t.13082)
-  store i64 %t.13089, ptr %v.1308
-  %t.13090 = load i64, ptr %v.1308
-  store i64 %t.13090, ptr %v.1281
-  %t.13120 = load i64, ptr %v.1275
-  %t.13121 = load i64, ptr %v.1281
-  %t.13129 = call i64 @lexer_lex_skip(i64 %t.13120, i64 %t.13121)
-  store i64 %t.13129, ptr %v.1312
-  %t.13130 = load i64, ptr %v.1312
-  store i64 %t.13130, ptr %v.1281
-  %t.13160 = load i64, ptr %v.1275
-  %t.13161 = load i64, ptr %v.1281
-  %t.13169 = call i64 @lexer_lex_kind(i64 %t.13160, i64 %t.13161)
-  store i64 %t.13169, ptr %v.1316
-  %t.13200 = load i64, ptr %v.1275
-  %t.13201 = load i64, ptr %v.1281
-  %t.13202 = load i64, ptr %v.1316
-  %t.13209 = call i64 @lexer_lex_end(i64 %t.13200, i64 %t.13201, i64 %t.13202)
-  store i64 %t.13209, ptr %v.1320
-  %t.13210 = load i64, ptr %v.1320
-  store i64 %t.13210, ptr %v.1281
-  br label %L.167
+  %t.13041 = inttoptr i64 %t.13040 to ptr
+  %t.13042 = load i64, ptr %v.944
+  %t.13043 = inttoptr i64 %t.13042 to ptr
+  %t.13044 = call ptr @ease_str_concat(ptr %t.13041, ptr %t.13043)
+  %t.13045 = ptrtoint ptr %t.13044 to i64
+  store i64 %t.13045, ptr %v.1304
+  %t.13050 = ptrtoint ptr @.str.35 to i64
+  store i64 %t.13050, ptr %v.1305
+  %t.13060 = load i64, ptr %v.1304
+  %t.13061 = inttoptr i64 %t.13060 to ptr
+  %t.13062 = load i64, ptr %v.1305
+  %t.13063 = inttoptr i64 %t.13062 to ptr
+  %t.13064 = call ptr @ease_str_concat(ptr %t.13061, ptr %t.13063)
+  %t.13065 = ptrtoint ptr %t.13064 to i64
+  store i64 %t.13065, ptr %v.1306
+  %t.13070 = load i64, ptr %v.1306
+  %t.13071 = inttoptr i64 %t.13070 to ptr
+  %t.13072 = load i64, ptr %v.948
+  %t.13073 = inttoptr i64 %t.13072 to ptr
+  %t.13074 = call ptr @ease_str_concat(ptr %t.13071, ptr %t.13073)
+  %t.13075 = ptrtoint ptr %t.13074 to i64
+  store i64 %t.13075, ptr %v.1307
+  %t.13080 = ptrtoint ptr @.str.36 to i64
+  store i64 %t.13080, ptr %v.1308
+  %t.13090 = load i64, ptr %v.1307
+  %t.13091 = inttoptr i64 %t.13090 to ptr
+  %t.13092 = load i64, ptr %v.1308
+  %t.13093 = inttoptr i64 %t.13092 to ptr
+  %t.13094 = call ptr @ease_str_concat(ptr %t.13091, ptr %t.13093)
+  %t.13095 = ptrtoint ptr %t.13094 to i64
+  store i64 %t.13095, ptr %v.1309
+  %t.13110 = load i64, ptr %v.1309
+  %t.13119 = call i64 @io_Print(i64 %t.13110)
+  store i64 %t.13119, ptr %v.1311
+  %t.13130 = load i64, ptr %v.948
+  %t.13139 = call i64 @os_ReadFile(i64 %t.13130)
+  store i64 %t.13139, ptr %v.1313
+  %t.13140 = load i64, ptr %v.1313
+  store i64 %t.13140, ptr %v.1314
+  %t.13150 = ptrtoint ptr @g_import_paths to i64
+  store i64 %t.13150, ptr %v.1315
+  %t.13160 = load i64, ptr %v.1315
+  %t.13161 = inttoptr i64 %t.13160 to ptr
+  %t.13162 = load i64, ptr %v.948
+  %t.13163 = alloca i64
+  store i64 %t.13162, ptr %t.13163
+  call void @ease_array_push(ptr %t.13161, ptr %t.13163, i64 8)
+  %t.13170 = ptrtoint ptr @g_import_names to i64
+  store i64 %t.13170, ptr %v.1317
+  %t.13180 = load i64, ptr %v.1317
+  %t.13181 = inttoptr i64 %t.13180 to ptr
+  %t.13182 = load i64, ptr %v.944
+  %t.13183 = alloca i64
+  store i64 %t.13182, ptr %t.13183
+  call void @ease_array_push(ptr %t.13181, ptr %t.13183, i64 8)
+  store i64 0, ptr %v.1319
+  %t.13200 = load i64, ptr %v.1319
+  store i64 %t.13200, ptr %v.1320
+  %t.13230 = load i64, ptr %v.1314
+  %t.13231 = load i64, ptr %v.1320
+  %t.13239 = call i64 @lexer_lex_skip(i64 %t.13230, i64 %t.13231)
+  store i64 %t.13239, ptr %v.1323
+  %t.13240 = load i64, ptr %v.1323
+  store i64 %t.13240, ptr %v.1320
+  br label %L.166
 L.166:
-  %t.13249 = call i64 @token_TK_IMPORT()
-  store i64 %t.13249, ptr %v.1324
-  %t.13250 = load i64, ptr %v.1294
-  %t.13251 = load i64, ptr %v.1324
-  %t.13252 = icmp eq i64 %t.13250, %t.13251
-  %t.13253 = zext i1 %t.13252 to i64
-  store i64 %t.13253, ptr %v.1325
-  %t.13260 = load i64, ptr %v.1325
-  %t.13261 = icmp eq i64 %t.13260, 0
-  br i1 %t.13261, label %L.168, label %L.fall.1326
-L.fall.1326:
-  %t.13300 = load i64, ptr %v.1275
-  %t.13301 = load i64, ptr %v.1281
-  %t.13302 = load i64, ptr %v.670
-  %t.13309 = call i64 @parser_parse_import_decl(i64 %t.13300, i64 %t.13301, i64 %t.13302)
-  store i64 %t.13309, ptr %v.1330
-  %t.13310 = load i64, ptr %v.1330
-  store i64 %t.13310, ptr %v.1331
-  %t.13320 = load i64, ptr %v.1331
-  %t.13322 = add i64 %t.13320, 8
-  %t.13326 = inttoptr i64 %t.13322 to ptr
-  %t.13327 = load i64, ptr %t.13326
-  store i64 %t.13327, ptr %v.1332
+  %t.13280 = load i64, ptr %v.1314
+  %t.13281 = load i64, ptr %v.1320
+  %t.13289 = call i64 @lexer_lex_skip(i64 %t.13280, i64 %t.13281)
+  store i64 %t.13289, ptr %v.1328
+  %t.13290 = load i64, ptr %v.1328
+  store i64 %t.13290, ptr %v.1320
+  %t.13320 = load i64, ptr %v.1314
+  %t.13321 = load i64, ptr %v.1320
+  %t.13329 = call i64 @lexer_lex_kind(i64 %t.13320, i64 %t.13321)
+  store i64 %t.13329, ptr %v.1332
   %t.13330 = load i64, ptr %v.1332
-  store i64 %t.13330, ptr %v.1281
-  %t.13360 = load i64, ptr %v.1275
-  %t.13361 = load i64, ptr %v.1281
-  %t.13369 = call i64 @lexer_lex_skip(i64 %t.13360, i64 %t.13361)
-  store i64 %t.13369, ptr %v.1336
-  %t.13370 = load i64, ptr %v.1336
-  store i64 %t.13370, ptr %v.1281
-  br label %L.169
+  store i64 %t.13330, ptr %v.1333
+  %t.13349 = call i64 @token_TK_EOF()
+  store i64 %t.13349, ptr %v.1334
+  %t.13350 = load i64, ptr %v.1333
+  %t.13351 = load i64, ptr %v.1334
+  %t.13352 = icmp eq i64 %t.13350, %t.13351
+  %t.13353 = zext i1 %t.13352 to i64
+  store i64 %t.13353, ptr %v.1335
+  %t.13360 = load i64, ptr %v.1335
+  %t.13361 = icmp eq i64 %t.13360, 0
+  br i1 %t.13361, label %L.168, label %L.fall.1336
+L.fall.1336:
+  br label %L.167
 L.168:
-  %t.13409 = call i64 @token_TK_STRUCT()
-  store i64 %t.13409, ptr %v.1340
-  %t.13410 = load i64, ptr %v.1294
-  %t.13411 = load i64, ptr %v.1340
-  %t.13412 = icmp eq i64 %t.13410, %t.13411
-  %t.13413 = zext i1 %t.13412 to i64
-  store i64 %t.13413, ptr %v.1341
-  %t.13420 = load i64, ptr %v.1341
-  %t.13421 = icmp eq i64 %t.13420, 0
-  br i1 %t.13421, label %L.170, label %L.fall.1342
-L.fall.1342:
-  %t.13460 = load i64, ptr %v.1275
-  %t.13461 = load i64, ptr %v.1281
-  %t.13462 = load i64, ptr %v.670
-  %t.13469 = call i64 @parser_parse_struct_decl(i64 %t.13460, i64 %t.13461, i64 %t.13462)
-  store i64 %t.13469, ptr %v.1346
-  %t.13470 = load i64, ptr %v.1346
-  store i64 %t.13470, ptr %v.1347
+  br label %L.169
+L.169:
+  %t.13419 = call i64 @token_TK_PACKAGE()
+  store i64 %t.13419, ptr %v.1341
+  %t.13420 = load i64, ptr %v.1333
+  %t.13421 = load i64, ptr %v.1341
+  %t.13422 = icmp eq i64 %t.13420, %t.13421
+  %t.13423 = zext i1 %t.13422 to i64
+  store i64 %t.13423, ptr %v.1342
+  %t.13430 = load i64, ptr %v.1342
+  %t.13431 = icmp eq i64 %t.13430, 0
+  br i1 %t.13431, label %L.170, label %L.fall.1343
+L.fall.1343:
+  %t.13470 = load i64, ptr %v.1314
+  %t.13471 = load i64, ptr %v.1320
+  %t.13472 = load i64, ptr %v.1333
+  %t.13479 = call i64 @lexer_lex_end(i64 %t.13470, i64 %t.13471, i64 %t.13472)
+  store i64 %t.13479, ptr %v.1347
   %t.13480 = load i64, ptr %v.1347
-  %t.13482 = add i64 %t.13480, 8
-  %t.13486 = inttoptr i64 %t.13482 to ptr
-  %t.13487 = load i64, ptr %t.13486
-  store i64 %t.13487, ptr %v.1348
-  %t.13490 = load i64, ptr %v.1348
-  store i64 %t.13490, ptr %v.1281
+  store i64 %t.13480, ptr %v.1320
+  %t.13510 = load i64, ptr %v.1314
+  %t.13511 = load i64, ptr %v.1320
+  %t.13519 = call i64 @lexer_lex_skip(i64 %t.13510, i64 %t.13511)
+  store i64 %t.13519, ptr %v.1351
+  %t.13520 = load i64, ptr %v.1351
+  store i64 %t.13520, ptr %v.1320
+  %t.13550 = load i64, ptr %v.1314
+  %t.13551 = load i64, ptr %v.1320
+  %t.13559 = call i64 @lexer_lex_kind(i64 %t.13550, i64 %t.13551)
+  store i64 %t.13559, ptr %v.1355
+  %t.13590 = load i64, ptr %v.1314
+  %t.13591 = load i64, ptr %v.1320
+  %t.13592 = load i64, ptr %v.1355
+  %t.13599 = call i64 @lexer_lex_end(i64 %t.13590, i64 %t.13591, i64 %t.13592)
+  store i64 %t.13599, ptr %v.1359
+  %t.13600 = load i64, ptr %v.1359
+  store i64 %t.13600, ptr %v.1320
   br label %L.171
 L.170:
-  %t.13529 = call i64 @token_TK_LET()
-  store i64 %t.13529, ptr %v.1352
-  %t.13530 = load i64, ptr %v.1294
-  %t.13531 = load i64, ptr %v.1352
-  %t.13532 = icmp eq i64 %t.13530, %t.13531
-  %t.13533 = zext i1 %t.13532 to i64
-  store i64 %t.13533, ptr %v.1353
-  %t.13540 = load i64, ptr %v.1353
-  %t.13541 = icmp eq i64 %t.13540, 0
-  br i1 %t.13541, label %L.172, label %L.fall.1354
-L.fall.1354:
-  %t.13580 = load i64, ptr %v.1275
-  %t.13581 = load i64, ptr %v.1281
-  %t.13582 = load i64, ptr %v.670
-  %t.13589 = call i64 @parser_parse_let_stmt(i64 %t.13580, i64 %t.13581, i64 %t.13582)
-  store i64 %t.13589, ptr %v.1358
-  %t.13590 = load i64, ptr %v.1358
-  store i64 %t.13590, ptr %v.1359
-  %t.13600 = load i64, ptr %v.1359
-  %t.13606 = inttoptr i64 %t.13600 to ptr
-  %t.13607 = load i64, ptr %t.13606
-  store i64 %t.13607, ptr %v.1360
-  store i64 0, ptr %v.1361
-  %t.13620 = load i64, ptr %v.1360
-  %t.13621 = load i64, ptr %v.1361
-  %t.13622 = icmp sge i64 %t.13620, %t.13621
-  %t.13623 = zext i1 %t.13622 to i64
-  store i64 %t.13623, ptr %v.1362
-  %t.13630 = load i64, ptr %v.1362
-  %t.13631 = icmp eq i64 %t.13630, 0
-  br i1 %t.13631, label %L.174, label %L.fall.1363
-L.fall.1363:
-  %t.13640 = load i64, ptr %v.1359
-  %t.13646 = inttoptr i64 %t.13640 to ptr
-  %t.13647 = load i64, ptr %t.13646
-  store i64 %t.13647, ptr %v.1364
-  %t.13650 = load i64, ptr %v.670
-  %t.13651 = inttoptr i64 %t.13650 to ptr
-  %t.13652 = load i64, ptr %t.13651
-  %t.13653 = load i64, ptr %v.1364
-  %t.13654 = mul i64 %t.13653, 8
-  %t.13655 = add i64 %t.13652, %t.13654
-  %t.13656 = inttoptr i64 %t.13655 to ptr
-  %t.13657 = load i64, ptr %t.13656
-  store i64 %t.13657, ptr %v.1365
-  %t.13660 = load i64, ptr %v.1365
-  store i64 %t.13660, ptr %v.1366
-  %t.13670 = load i64, ptr %v.1366
-  %t.13672 = add i64 %t.13670, 16
-  %t.13676 = inttoptr i64 %t.13672 to ptr
-  %t.13677 = load i64, ptr %t.13676
-  store i64 %t.13677, ptr %v.1367
-  %t.13680 = load i64, ptr %v.689
-  %t.13681 = inttoptr i64 %t.13680 to ptr
-  %t.13682 = load i64, ptr %v.1367
-  %t.13683 = alloca i64
-  store i64 %t.13682, ptr %t.13683
-  call void @ease_array_push(ptr %t.13681, ptr %t.13683, i64 8)
-  %t.13690 = load i64, ptr %v.1366
-  %t.13692 = add i64 %t.13690, 32
-  %t.13696 = inttoptr i64 %t.13692 to ptr
-  %t.13697 = load i64, ptr %t.13696
-  store i64 %t.13697, ptr %v.1369
-  store i64 0, ptr %v.1370
-  %t.13710 = load i64, ptr %v.1369
-  %t.13711 = load i64, ptr %v.1370
-  %t.13712 = icmp sge i64 %t.13710, %t.13711
-  %t.13713 = zext i1 %t.13712 to i64
-  store i64 %t.13713, ptr %v.1371
+  %t.13639 = call i64 @token_TK_IMPORT()
+  store i64 %t.13639, ptr %v.1363
+  %t.13640 = load i64, ptr %v.1333
+  %t.13641 = load i64, ptr %v.1363
+  %t.13642 = icmp eq i64 %t.13640, %t.13641
+  %t.13643 = zext i1 %t.13642 to i64
+  store i64 %t.13643, ptr %v.1364
+  %t.13650 = load i64, ptr %v.1364
+  %t.13651 = icmp eq i64 %t.13650, 0
+  br i1 %t.13651, label %L.172, label %L.fall.1365
+L.fall.1365:
+  %t.13690 = load i64, ptr %v.1314
+  %t.13691 = load i64, ptr %v.1320
+  %t.13692 = load i64, ptr %v.670
+  %t.13699 = call i64 @parser_parse_import_decl(i64 %t.13690, i64 %t.13691, i64 %t.13692)
+  store i64 %t.13699, ptr %v.1369
+  %t.13700 = load i64, ptr %v.1369
+  store i64 %t.13700, ptr %v.1370
+  %t.13710 = load i64, ptr %v.1370
+  %t.13712 = add i64 %t.13710, 8
+  %t.13716 = inttoptr i64 %t.13712 to ptr
+  %t.13717 = load i64, ptr %t.13716
+  store i64 %t.13717, ptr %v.1371
   %t.13720 = load i64, ptr %v.1371
-  %t.13721 = icmp eq i64 %t.13720, 0
-  br i1 %t.13721, label %L.176, label %L.fall.1372
-L.fall.1372:
-  %t.13730 = load i64, ptr %v.1366
-  %t.13732 = add i64 %t.13730, 32
-  %t.13736 = inttoptr i64 %t.13732 to ptr
-  %t.13737 = load i64, ptr %t.13736
-  store i64 %t.13737, ptr %v.1373
-  %t.13740 = load i64, ptr %v.670
-  %t.13741 = inttoptr i64 %t.13740 to ptr
-  %t.13742 = load i64, ptr %t.13741
-  %t.13743 = load i64, ptr %v.1373
-  %t.13744 = mul i64 %t.13743, 8
-  %t.13745 = add i64 %t.13742, %t.13744
-  %t.13746 = inttoptr i64 %t.13745 to ptr
-  %t.13747 = load i64, ptr %t.13746
-  store i64 %t.13747, ptr %v.1374
-  %t.13750 = load i64, ptr %v.1374
-  store i64 %t.13750, ptr %v.1375
+  store i64 %t.13720, ptr %v.1320
+  %t.13750 = load i64, ptr %v.1314
+  %t.13751 = load i64, ptr %v.1320
+  %t.13759 = call i64 @lexer_lex_skip(i64 %t.13750, i64 %t.13751)
+  store i64 %t.13759, ptr %v.1375
   %t.13760 = load i64, ptr %v.1375
-  %t.13766 = inttoptr i64 %t.13760 to ptr
-  %t.13767 = load i64, ptr %t.13766
-  store i64 %t.13767, ptr %v.1376
-  %t.13779 = call i64 @ast_EXPR_INT()
-  store i64 %t.13779, ptr %v.1377
-  %t.13780 = load i64, ptr %v.1376
-  %t.13781 = load i64, ptr %v.1377
-  %t.13782 = icmp eq i64 %t.13780, %t.13781
-  %t.13783 = zext i1 %t.13782 to i64
-  store i64 %t.13783, ptr %v.1378
-  %t.13790 = load i64, ptr %v.1378
-  %t.13791 = icmp eq i64 %t.13790, 0
-  br i1 %t.13791, label %L.178, label %L.fall.1379
-L.fall.1379:
-  %t.13800 = ptrtoint ptr @g_scalar_globals to i64
-  store i64 %t.13800, ptr %v.1380
-  %t.13810 = load i64, ptr %v.1366
-  %t.13812 = add i64 %t.13810, 16
-  %t.13816 = inttoptr i64 %t.13812 to ptr
-  %t.13817 = load i64, ptr %t.13816
-  store i64 %t.13817, ptr %v.1381
-  %t.13820 = load i64, ptr %v.1380
-  %t.13821 = inttoptr i64 %t.13820 to ptr
-  %t.13822 = load i64, ptr %v.1381
-  %t.13823 = alloca i64
-  store i64 %t.13822, ptr %t.13823
-  call void @ease_array_push(ptr %t.13821, ptr %t.13823, i64 8)
-  br label %L.179
-L.178:
-  br label %L.179
-L.179:
-  %t.13860 = load i64, ptr %v.1375
-  %t.13866 = inttoptr i64 %t.13860 to ptr
-  %t.13867 = load i64, ptr %t.13866
-  store i64 %t.13867, ptr %v.1386
-  %t.13879 = call i64 @ast_EXPR_UNARY()
-  store i64 %t.13879, ptr %v.1387
-  %t.13880 = load i64, ptr %v.1386
-  %t.13881 = load i64, ptr %v.1387
-  %t.13882 = icmp eq i64 %t.13880, %t.13881
-  %t.13883 = zext i1 %t.13882 to i64
-  store i64 %t.13883, ptr %v.1388
-  %t.13890 = load i64, ptr %v.1388
-  %t.13891 = icmp eq i64 %t.13890, 0
-  br i1 %t.13891, label %L.180, label %L.fall.1389
-L.fall.1389:
-  %t.13900 = ptrtoint ptr @g_scalar_globals to i64
-  store i64 %t.13900, ptr %v.1390
-  %t.13910 = load i64, ptr %v.1366
-  %t.13912 = add i64 %t.13910, 16
-  %t.13916 = inttoptr i64 %t.13912 to ptr
-  %t.13917 = load i64, ptr %t.13916
-  store i64 %t.13917, ptr %v.1391
-  %t.13920 = load i64, ptr %v.1390
-  %t.13921 = inttoptr i64 %t.13920 to ptr
-  %t.13922 = load i64, ptr %v.1391
-  %t.13923 = alloca i64
-  store i64 %t.13922, ptr %t.13923
-  call void @ease_array_push(ptr %t.13921, ptr %t.13923, i64 8)
-  br label %L.181
-L.180:
-  br label %L.181
-L.181:
-  br label %L.177
-L.176:
-  br label %L.177
-L.177:
-  br label %L.175
-L.174:
-  br label %L.175
-L.175:
-  %t.14020 = load i64, ptr %v.1359
-  %t.14022 = add i64 %t.14020, 8
-  %t.14026 = inttoptr i64 %t.14022 to ptr
-  %t.14027 = load i64, ptr %t.14026
-  store i64 %t.14027, ptr %v.1402
-  %t.14030 = load i64, ptr %v.1402
-  store i64 %t.14030, ptr %v.1281
+  store i64 %t.13760, ptr %v.1320
   br label %L.173
 L.172:
-  %t.14069 = call i64 @token_TK_FN()
+  %t.13799 = call i64 @token_TK_STRUCT()
+  store i64 %t.13799, ptr %v.1379
+  %t.13800 = load i64, ptr %v.1333
+  %t.13801 = load i64, ptr %v.1379
+  %t.13802 = icmp eq i64 %t.13800, %t.13801
+  %t.13803 = zext i1 %t.13802 to i64
+  store i64 %t.13803, ptr %v.1380
+  %t.13810 = load i64, ptr %v.1380
+  %t.13811 = icmp eq i64 %t.13810, 0
+  br i1 %t.13811, label %L.174, label %L.fall.1381
+L.fall.1381:
+  %t.13850 = load i64, ptr %v.1314
+  %t.13851 = load i64, ptr %v.1320
+  %t.13852 = load i64, ptr %v.670
+  %t.13859 = call i64 @parser_parse_struct_decl(i64 %t.13850, i64 %t.13851, i64 %t.13852)
+  store i64 %t.13859, ptr %v.1385
+  %t.13860 = load i64, ptr %v.1385
+  store i64 %t.13860, ptr %v.1386
+  %t.13870 = load i64, ptr %v.1386
+  %t.13872 = add i64 %t.13870, 8
+  %t.13876 = inttoptr i64 %t.13872 to ptr
+  %t.13877 = load i64, ptr %t.13876
+  store i64 %t.13877, ptr %v.1387
+  %t.13880 = load i64, ptr %v.1387
+  store i64 %t.13880, ptr %v.1320
+  br label %L.175
+L.174:
+  %t.13919 = call i64 @token_TK_IDENT()
+  store i64 %t.13919, ptr %v.1391
+  %t.13920 = load i64, ptr %v.1333
+  %t.13921 = load i64, ptr %v.1391
+  %t.13922 = icmp eq i64 %t.13920, %t.13921
+  %t.13923 = zext i1 %t.13922 to i64
+  store i64 %t.13923, ptr %v.1392
+  %t.13930 = load i64, ptr %v.1392
+  %t.13931 = icmp eq i64 %t.13930, 0
+  br i1 %t.13931, label %L.176, label %L.fall.1393
+L.fall.1393:
+  %t.13970 = load i64, ptr %v.1314
+  %t.13971 = load i64, ptr %v.1320
+  %t.13972 = load i64, ptr %v.1333
+  %t.13979 = call i64 @lexer_lex_end(i64 %t.13970, i64 %t.13971, i64 %t.13972)
+  store i64 %t.13979, ptr %v.1397
+  %t.13980 = load i64, ptr %v.1397
+  store i64 %t.13980, ptr %v.1398
+  %t.14010 = load i64, ptr %v.1314
+  %t.14011 = load i64, ptr %v.1398
+  %t.14019 = call i64 @lexer_lex_skip(i64 %t.14010, i64 %t.14011)
+  store i64 %t.14019, ptr %v.1401
+  %t.14020 = load i64, ptr %v.1401
+  store i64 %t.14020, ptr %v.1402
+  %t.14050 = load i64, ptr %v.1314
+  %t.14051 = load i64, ptr %v.1402
+  %t.14059 = call i64 @lexer_lex_kind(i64 %t.14050, i64 %t.14051)
+  store i64 %t.14059, ptr %v.1405
+  %t.14069 = call i64 @token_TK_COLONEQUAL()
   store i64 %t.14069, ptr %v.1406
-  %t.14070 = load i64, ptr %v.1294
+  %t.14070 = load i64, ptr %v.1405
   %t.14071 = load i64, ptr %v.1406
   %t.14072 = icmp eq i64 %t.14070, %t.14071
   %t.14073 = zext i1 %t.14072 to i64
   store i64 %t.14073, ptr %v.1407
   %t.14080 = load i64, ptr %v.1407
   %t.14081 = icmp eq i64 %t.14080, 0
-  br i1 %t.14081, label %L.182, label %L.fall.1408
+  br i1 %t.14081, label %L.178, label %L.fall.1408
 L.fall.1408:
-  %t.14120 = load i64, ptr %v.1275
-  %t.14121 = load i64, ptr %v.1281
+  %t.14120 = load i64, ptr %v.1314
+  %t.14121 = load i64, ptr %v.1320
   %t.14122 = load i64, ptr %v.670
-  %t.14129 = call i64 @parser_parse_func_decl(i64 %t.14120, i64 %t.14121, i64 %t.14122)
+  %t.14129 = call i64 @parser_parse_colonequal_stmt(i64 %t.14120, i64 %t.14121, i64 %t.14122)
   store i64 %t.14129, ptr %v.1412
   %t.14130 = load i64, ptr %v.1412
   store i64 %t.14130, ptr %v.1413
@@ -5611,244 +5555,216 @@ L.fall.1408:
   store i64 0, ptr %v.1415
   %t.14160 = load i64, ptr %v.1414
   %t.14161 = load i64, ptr %v.1415
-  %t.14162 = icmp slt i64 %t.14160, %t.14161
+  %t.14162 = icmp sge i64 %t.14160, %t.14161
   %t.14163 = zext i1 %t.14162 to i64
   store i64 %t.14163, ptr %v.1416
   %t.14170 = load i64, ptr %v.1416
   %t.14171 = icmp eq i64 %t.14170, 0
-  br i1 %t.14171, label %L.184, label %L.fall.1417
+  br i1 %t.14171, label %L.180, label %L.fall.1417
 L.fall.1417:
-  %t.14180 = ptrtoint ptr @.str.37 to i64
-  store i64 %t.14180, ptr %v.1418
-  %t.14190 = load i64, ptr %v.1418
+  %t.14180 = load i64, ptr %v.1413
+  %t.14186 = inttoptr i64 %t.14180 to ptr
+  %t.14187 = load i64, ptr %t.14186
+  store i64 %t.14187, ptr %v.1418
+  %t.14190 = load i64, ptr %v.670
   %t.14191 = inttoptr i64 %t.14190 to ptr
-  %t.14192 = load i64, ptr %v.928
-  %t.14193 = inttoptr i64 %t.14192 to ptr
-  %t.14194 = call ptr @ease_str_concat(ptr %t.14191, ptr %t.14193)
-  %t.14195 = ptrtoint ptr %t.14194 to i64
-  store i64 %t.14195, ptr %v.1419
-  %t.14200 = ptrtoint ptr @.str.38 to i64
+  %t.14192 = load i64, ptr %t.14191
+  %t.14193 = load i64, ptr %v.1418
+  %t.14194 = mul i64 %t.14193, 8
+  %t.14195 = add i64 %t.14192, %t.14194
+  %t.14196 = inttoptr i64 %t.14195 to ptr
+  %t.14197 = load i64, ptr %t.14196
+  store i64 %t.14197, ptr %v.1419
+  %t.14200 = load i64, ptr %v.1419
   store i64 %t.14200, ptr %v.1420
-  %t.14210 = load i64, ptr %v.1419
-  %t.14211 = inttoptr i64 %t.14210 to ptr
-  %t.14212 = load i64, ptr %v.1420
-  %t.14213 = inttoptr i64 %t.14212 to ptr
-  %t.14214 = call ptr @ease_str_concat(ptr %t.14211, ptr %t.14213)
-  %t.14215 = ptrtoint ptr %t.14214 to i64
-  store i64 %t.14215, ptr %v.1421
-  %t.14230 = load i64, ptr %v.1281
-  %t.14239 = call i64 @strconv_Itoa(i64 %t.14230)
-  store i64 %t.14239, ptr %v.1423
-  %t.14240 = load i64, ptr %v.1421
-  %t.14241 = inttoptr i64 %t.14240 to ptr
-  %t.14242 = load i64, ptr %v.1423
-  %t.14243 = inttoptr i64 %t.14242 to ptr
-  %t.14244 = call ptr @ease_str_concat(ptr %t.14241, ptr %t.14243)
-  %t.14245 = ptrtoint ptr %t.14244 to i64
-  store i64 %t.14245, ptr %v.1424
-  %t.14250 = ptrtoint ptr @.str.39 to i64
-  store i64 %t.14250, ptr %v.1425
-  %t.14260 = load i64, ptr %v.1424
-  %t.14261 = inttoptr i64 %t.14260 to ptr
-  %t.14262 = load i64, ptr %v.1425
-  %t.14263 = inttoptr i64 %t.14262 to ptr
-  %t.14264 = call ptr @ease_str_concat(ptr %t.14261, ptr %t.14263)
-  %t.14265 = ptrtoint ptr %t.14264 to i64
-  store i64 %t.14265, ptr %v.1426
-  %t.14280 = load i64, ptr %v.1426
-  %t.14289 = call i64 @io_Print(i64 %t.14280)
-  store i64 %t.14289, ptr %v.1428
-  br label %L.163
+  %t.14210 = load i64, ptr %v.1420
+  %t.14212 = add i64 %t.14210, 16
+  %t.14216 = inttoptr i64 %t.14212 to ptr
+  %t.14217 = load i64, ptr %t.14216
+  store i64 %t.14217, ptr %v.1421
+  %t.14220 = load i64, ptr %v.689
+  %t.14221 = inttoptr i64 %t.14220 to ptr
+  %t.14222 = load i64, ptr %v.1421
+  %t.14223 = alloca i64
+  store i64 %t.14222, ptr %t.14223
+  call void @ease_array_push(ptr %t.14221, ptr %t.14223, i64 8)
+  %t.14230 = load i64, ptr %v.1420
+  %t.14232 = add i64 %t.14230, 32
+  %t.14236 = inttoptr i64 %t.14232 to ptr
+  %t.14237 = load i64, ptr %t.14236
+  store i64 %t.14237, ptr %v.1423
+  store i64 0, ptr %v.1424
+  %t.14250 = load i64, ptr %v.1423
+  %t.14251 = load i64, ptr %v.1424
+  %t.14252 = icmp sge i64 %t.14250, %t.14251
+  %t.14253 = zext i1 %t.14252 to i64
+  store i64 %t.14253, ptr %v.1425
+  %t.14260 = load i64, ptr %v.1425
+  %t.14261 = icmp eq i64 %t.14260, 0
+  br i1 %t.14261, label %L.182, label %L.fall.1426
+L.fall.1426:
+  %t.14270 = load i64, ptr %v.1420
+  %t.14272 = add i64 %t.14270, 32
+  %t.14276 = inttoptr i64 %t.14272 to ptr
+  %t.14277 = load i64, ptr %t.14276
+  store i64 %t.14277, ptr %v.1427
+  %t.14280 = load i64, ptr %v.670
+  %t.14281 = inttoptr i64 %t.14280 to ptr
+  %t.14282 = load i64, ptr %t.14281
+  %t.14283 = load i64, ptr %v.1427
+  %t.14284 = mul i64 %t.14283, 8
+  %t.14285 = add i64 %t.14282, %t.14284
+  %t.14286 = inttoptr i64 %t.14285 to ptr
+  %t.14287 = load i64, ptr %t.14286
+  store i64 %t.14287, ptr %v.1428
+  %t.14290 = load i64, ptr %v.1428
+  store i64 %t.14290, ptr %v.1429
+  %t.14300 = load i64, ptr %v.1429
+  %t.14306 = inttoptr i64 %t.14300 to ptr
+  %t.14307 = load i64, ptr %t.14306
+  store i64 %t.14307, ptr %v.1430
+  %t.14319 = call i64 @ast_EXPR_INT()
+  store i64 %t.14319, ptr %v.1431
+  %t.14320 = load i64, ptr %v.1430
+  %t.14321 = load i64, ptr %v.1431
+  %t.14322 = icmp eq i64 %t.14320, %t.14321
+  %t.14323 = zext i1 %t.14322 to i64
+  store i64 %t.14323, ptr %v.1432
+  %t.14330 = load i64, ptr %v.1432
+  %t.14331 = icmp eq i64 %t.14330, 0
+  br i1 %t.14331, label %L.184, label %L.fall.1433
+L.fall.1433:
+  %t.14340 = ptrtoint ptr @g_scalar_globals to i64
+  store i64 %t.14340, ptr %v.1434
+  %t.14350 = load i64, ptr %v.1420
+  %t.14352 = add i64 %t.14350, 16
+  %t.14356 = inttoptr i64 %t.14352 to ptr
+  %t.14357 = load i64, ptr %t.14356
+  store i64 %t.14357, ptr %v.1435
+  %t.14360 = load i64, ptr %v.1434
+  %t.14361 = inttoptr i64 %t.14360 to ptr
+  %t.14362 = load i64, ptr %v.1435
+  %t.14363 = alloca i64
+  store i64 %t.14362, ptr %t.14363
+  call void @ease_array_push(ptr %t.14361, ptr %t.14363, i64 8)
+  br label %L.185
 L.184:
   br label %L.185
 L.185:
-  %t.14330 = load i64, ptr %v.1413
-  %t.14336 = inttoptr i64 %t.14330 to ptr
-  %t.14337 = load i64, ptr %t.14336
-  store i64 %t.14337, ptr %v.1433
-  %t.14340 = load i64, ptr %v.1433
-  store i64 %t.14340, ptr %v.1434
-  %t.14350 = load i64, ptr %v.670
-  %t.14351 = inttoptr i64 %t.14350 to ptr
-  %t.14352 = load i64, ptr %t.14351
-  %t.14353 = load i64, ptr %v.1434
-  %t.14354 = mul i64 %t.14353, 8
-  %t.14355 = add i64 %t.14352, %t.14354
-  %t.14356 = inttoptr i64 %t.14355 to ptr
-  %t.14357 = load i64, ptr %t.14356
-  store i64 %t.14357, ptr %v.1435
-  %t.14360 = load i64, ptr %v.1435
-  %t.14362 = add i64 %t.14360, 16
-  %t.14366 = inttoptr i64 %t.14362 to ptr
-  %t.14367 = load i64, ptr %t.14366
-  store i64 %t.14367, ptr %v.1436
-  %t.14370 = load i64, ptr %v.1436
-  store i64 %t.14370, ptr %v.1437
-  %t.14380 = load i64, ptr %v.933
-  %t.14381 = inttoptr i64 %t.14380 to ptr
-  %t.14382 = load i64, ptr %v.1437
-  %t.14383 = alloca i64
-  store i64 %t.14382, ptr %t.14383
-  call void @ease_array_push(ptr %t.14381, ptr %t.14383, i64 8)
-  %t.14390 = load i64, ptr %v.936
-  %t.14391 = inttoptr i64 %t.14390 to ptr
-  %t.14392 = load i64, ptr %v.1434
-  %t.14393 = alloca i64
-  store i64 %t.14392, ptr %t.14393
-  call void @ease_array_push(ptr %t.14391, ptr %t.14393, i64 8)
-  %t.14400 = load i64, ptr %v.1413
-  %t.14402 = add i64 %t.14400, 8
-  %t.14406 = inttoptr i64 %t.14402 to ptr
+  %t.14400 = load i64, ptr %v.1429
+  %t.14406 = inttoptr i64 %t.14400 to ptr
   %t.14407 = load i64, ptr %t.14406
   store i64 %t.14407, ptr %v.1440
-  %t.14410 = load i64, ptr %v.1440
-  store i64 %t.14410, ptr %v.1281
-  %t.14440 = load i64, ptr %v.1275
-  %t.14441 = load i64, ptr %v.1281
-  %t.14449 = call i64 @lexer_lex_skip(i64 %t.14440, i64 %t.14441)
-  store i64 %t.14449, ptr %v.1444
-  %t.14450 = load i64, ptr %v.1444
-  store i64 %t.14450, ptr %v.1281
+  %t.14419 = call i64 @ast_EXPR_UNARY()
+  store i64 %t.14419, ptr %v.1441
+  %t.14420 = load i64, ptr %v.1440
+  %t.14421 = load i64, ptr %v.1441
+  %t.14422 = icmp eq i64 %t.14420, %t.14421
+  %t.14423 = zext i1 %t.14422 to i64
+  store i64 %t.14423, ptr %v.1442
+  %t.14430 = load i64, ptr %v.1442
+  %t.14431 = icmp eq i64 %t.14430, 0
+  br i1 %t.14431, label %L.186, label %L.fall.1443
+L.fall.1443:
+  %t.14440 = ptrtoint ptr @g_scalar_globals to i64
+  store i64 %t.14440, ptr %v.1444
+  %t.14450 = load i64, ptr %v.1420
+  %t.14452 = add i64 %t.14450, 16
+  %t.14456 = inttoptr i64 %t.14452 to ptr
+  %t.14457 = load i64, ptr %t.14456
+  store i64 %t.14457, ptr %v.1445
+  %t.14460 = load i64, ptr %v.1444
+  %t.14461 = inttoptr i64 %t.14460 to ptr
+  %t.14462 = load i64, ptr %v.1445
+  %t.14463 = alloca i64
+  store i64 %t.14462, ptr %t.14463
+  call void @ease_array_push(ptr %t.14461, ptr %t.14463, i64 8)
+  br label %L.187
+L.186:
+  br label %L.187
+L.187:
   br label %L.183
 L.182:
-  br label %L.163
+  br label %L.183
 L.183:
-  br label %L.173
-L.173:
-  br label %L.171
-L.171:
-  br label %L.169
-L.169:
-  br label %L.167
-L.167:
-  br label %L.162
-L.163:
-  store i64 0, ptr %v.1456
+  br label %L.181
+L.180:
+  br label %L.181
+L.181:
+  %t.14560 = load i64, ptr %v.1413
+  %t.14562 = add i64 %t.14560, 8
+  %t.14566 = inttoptr i64 %t.14562 to ptr
+  %t.14567 = load i64, ptr %t.14566
+  store i64 %t.14567, ptr %v.1456
   %t.14570 = load i64, ptr %v.1456
-  store i64 %t.14570, ptr %v.1457
-  br label %L.186
-L.186:
-  %t.14590 = load i64, ptr %v.933
-  %t.14591 = add i64 %t.14590, 8
-  %t.14592 = inttoptr i64 %t.14591 to ptr
-  %t.14593 = load i64, ptr %t.14592
-  store i64 %t.14593, ptr %v.1459
-  %t.14600 = load i64, ptr %v.1457
-  %t.14601 = load i64, ptr %v.1459
-  %t.14602 = icmp slt i64 %t.14600, %t.14601
-  %t.14603 = zext i1 %t.14602 to i64
-  store i64 %t.14603, ptr %v.1460
-  %t.14610 = load i64, ptr %v.1460
-  %t.14611 = icmp eq i64 %t.14610, 0
-  br i1 %t.14611, label %L.187, label %L.fall.1461
-L.fall.1461:
-  %t.14620 = ptrtoint ptr @.str.40 to i64
-  store i64 %t.14620, ptr %v.1462
-  %t.14630 = load i64, ptr %v.924
-  %t.14631 = inttoptr i64 %t.14630 to ptr
-  %t.14632 = load i64, ptr %v.1462
-  %t.14633 = inttoptr i64 %t.14632 to ptr
-  %t.14634 = call ptr @ease_str_concat(ptr %t.14631, ptr %t.14633)
-  %t.14635 = ptrtoint ptr %t.14634 to i64
-  store i64 %t.14635, ptr %v.1463
-  %t.14640 = load i64, ptr %v.933
-  %t.14641 = inttoptr i64 %t.14640 to ptr
-  %t.14642 = load i64, ptr %t.14641
-  %t.14643 = load i64, ptr %v.1457
-  %t.14644 = mul i64 %t.14643, 8
-  %t.14645 = add i64 %t.14642, %t.14644
-  %t.14646 = inttoptr i64 %t.14645 to ptr
-  %t.14647 = load i64, ptr %t.14646
-  store i64 %t.14647, ptr %v.1464
-  %t.14650 = load i64, ptr %v.1463
-  %t.14651 = inttoptr i64 %t.14650 to ptr
-  %t.14652 = load i64, ptr %v.1464
-  %t.14653 = inttoptr i64 %t.14652 to ptr
-  %t.14654 = call ptr @ease_str_concat(ptr %t.14651, ptr %t.14653)
-  %t.14655 = ptrtoint ptr %t.14654 to i64
-  store i64 %t.14655, ptr %v.1465
+  store i64 %t.14570, ptr %v.1320
+  br label %L.179
+L.178:
+  br label %L.167
+L.179:
+  br label %L.177
+L.176:
+  %t.14649 = call i64 @token_TK_FN()
+  store i64 %t.14649, ptr %v.1464
+  %t.14650 = load i64, ptr %v.1333
+  %t.14651 = load i64, ptr %v.1464
+  %t.14652 = icmp eq i64 %t.14650, %t.14651
+  %t.14653 = zext i1 %t.14652 to i64
+  store i64 %t.14653, ptr %v.1465
   %t.14660 = load i64, ptr %v.1465
-  store i64 %t.14660, ptr %v.1466
-  %t.14670 = load i64, ptr %v.683
-  %t.14671 = inttoptr i64 %t.14670 to ptr
-  %t.14672 = load i64, ptr %v.1466
-  %t.14673 = alloca i64
-  store i64 %t.14672, ptr %t.14673
-  call void @ease_array_push(ptr %t.14671, ptr %t.14673, i64 8)
-  %t.14680 = load i64, ptr %v.936
-  %t.14681 = inttoptr i64 %t.14680 to ptr
-  %t.14682 = load i64, ptr %t.14681
-  %t.14683 = load i64, ptr %v.1457
-  %t.14684 = mul i64 %t.14683, 8
-  %t.14685 = add i64 %t.14682, %t.14684
-  %t.14686 = inttoptr i64 %t.14685 to ptr
-  %t.14687 = load i64, ptr %t.14686
-  store i64 %t.14687, ptr %v.1468
-  %t.14690 = load i64, ptr %v.686
-  %t.14691 = inttoptr i64 %t.14690 to ptr
-  %t.14692 = load i64, ptr %v.1468
-  %t.14693 = alloca i64
-  store i64 %t.14692, ptr %t.14693
-  call void @ease_array_push(ptr %t.14691, ptr %t.14693, i64 8)
-  %t.14700 = ptrtoint ptr @g_rename_from to i64
-  store i64 %t.14700, ptr %v.1470
-  %t.14710 = load i64, ptr %v.933
-  %t.14711 = inttoptr i64 %t.14710 to ptr
-  %t.14712 = load i64, ptr %t.14711
-  %t.14713 = load i64, ptr %v.1457
-  %t.14714 = mul i64 %t.14713, 8
-  %t.14715 = add i64 %t.14712, %t.14714
-  %t.14716 = inttoptr i64 %t.14715 to ptr
-  %t.14717 = load i64, ptr %t.14716
-  store i64 %t.14717, ptr %v.1471
-  %t.14720 = load i64, ptr %v.1470
-  %t.14721 = inttoptr i64 %t.14720 to ptr
-  %t.14722 = load i64, ptr %v.1471
-  %t.14723 = alloca i64
-  store i64 %t.14722, ptr %t.14723
-  call void @ease_array_push(ptr %t.14721, ptr %t.14723, i64 8)
-  %t.14730 = ptrtoint ptr @g_rename_to to i64
-  store i64 %t.14730, ptr %v.1473
-  %t.14740 = load i64, ptr %v.1473
-  %t.14741 = inttoptr i64 %t.14740 to ptr
-  %t.14742 = load i64, ptr %v.1466
-  %t.14743 = alloca i64
-  store i64 %t.14742, ptr %t.14743
-  call void @ease_array_push(ptr %t.14741, ptr %t.14743, i64 8)
-  %t.14750 = ptrtoint ptr @.str.41 to i64
-  store i64 %t.14750, ptr %v.1475
-  %t.14760 = load i64, ptr %v.1475
-  %t.14761 = inttoptr i64 %t.14760 to ptr
-  %t.14762 = load i64, ptr %v.1466
-  %t.14763 = inttoptr i64 %t.14762 to ptr
-  %t.14764 = call ptr @ease_str_concat(ptr %t.14761, ptr %t.14763)
-  %t.14765 = ptrtoint ptr %t.14764 to i64
-  store i64 %t.14765, ptr %v.1476
-  %t.14770 = ptrtoint ptr @.str.42 to i64
-  store i64 %t.14770, ptr %v.1477
-  %t.14780 = load i64, ptr %v.1476
-  %t.14781 = inttoptr i64 %t.14780 to ptr
-  %t.14782 = load i64, ptr %v.1477
-  %t.14783 = inttoptr i64 %t.14782 to ptr
-  %t.14784 = call ptr @ease_str_concat(ptr %t.14781, ptr %t.14783)
-  %t.14785 = ptrtoint ptr %t.14784 to i64
-  store i64 %t.14785, ptr %v.1478
-  %t.14790 = load i64, ptr %v.683
-  %t.14791 = add i64 %t.14790, 8
-  %t.14792 = inttoptr i64 %t.14791 to ptr
-  %t.14793 = load i64, ptr %t.14792
-  store i64 %t.14793, ptr %v.1479
-  %t.14810 = load i64, ptr %v.1479
+  %t.14661 = icmp eq i64 %t.14660, 0
+  br i1 %t.14661, label %L.188, label %L.fall.1466
+L.fall.1466:
+  %t.14700 = load i64, ptr %v.1314
+  %t.14701 = load i64, ptr %v.1320
+  %t.14702 = load i64, ptr %v.670
+  %t.14709 = call i64 @parser_parse_func_decl(i64 %t.14700, i64 %t.14701, i64 %t.14702)
+  store i64 %t.14709, ptr %v.1470
+  %t.14710 = load i64, ptr %v.1470
+  store i64 %t.14710, ptr %v.1471
+  %t.14720 = load i64, ptr %v.1471
+  %t.14726 = inttoptr i64 %t.14720 to ptr
+  %t.14727 = load i64, ptr %t.14726
+  store i64 %t.14727, ptr %v.1472
+  store i64 0, ptr %v.1473
+  %t.14740 = load i64, ptr %v.1472
+  %t.14741 = load i64, ptr %v.1473
+  %t.14742 = icmp slt i64 %t.14740, %t.14741
+  %t.14743 = zext i1 %t.14742 to i64
+  store i64 %t.14743, ptr %v.1474
+  %t.14750 = load i64, ptr %v.1474
+  %t.14751 = icmp eq i64 %t.14750, 0
+  br i1 %t.14751, label %L.190, label %L.fall.1475
+L.fall.1475:
+  %t.14760 = ptrtoint ptr @.str.37 to i64
+  store i64 %t.14760, ptr %v.1476
+  %t.14770 = load i64, ptr %v.1476
+  %t.14771 = inttoptr i64 %t.14770 to ptr
+  %t.14772 = load i64, ptr %v.948
+  %t.14773 = inttoptr i64 %t.14772 to ptr
+  %t.14774 = call ptr @ease_str_concat(ptr %t.14771, ptr %t.14773)
+  %t.14775 = ptrtoint ptr %t.14774 to i64
+  store i64 %t.14775, ptr %v.1477
+  %t.14780 = ptrtoint ptr @.str.38 to i64
+  store i64 %t.14780, ptr %v.1478
+  %t.14790 = load i64, ptr %v.1477
+  %t.14791 = inttoptr i64 %t.14790 to ptr
+  %t.14792 = load i64, ptr %v.1478
+  %t.14793 = inttoptr i64 %t.14792 to ptr
+  %t.14794 = call ptr @ease_str_concat(ptr %t.14791, ptr %t.14793)
+  %t.14795 = ptrtoint ptr %t.14794 to i64
+  store i64 %t.14795, ptr %v.1479
+  %t.14810 = load i64, ptr %v.1320
   %t.14819 = call i64 @strconv_Itoa(i64 %t.14810)
   store i64 %t.14819, ptr %v.1481
-  %t.14820 = load i64, ptr %v.1478
+  %t.14820 = load i64, ptr %v.1479
   %t.14821 = inttoptr i64 %t.14820 to ptr
   %t.14822 = load i64, ptr %v.1481
   %t.14823 = inttoptr i64 %t.14822 to ptr
   %t.14824 = call ptr @ease_str_concat(ptr %t.14821, ptr %t.14823)
   %t.14825 = ptrtoint ptr %t.14824 to i64
   store i64 %t.14825, ptr %v.1482
-  %t.14830 = ptrtoint ptr @.str.43 to i64
+  %t.14830 = ptrtoint ptr @.str.39 to i64
   store i64 %t.14830, ptr %v.1483
   %t.14840 = load i64, ptr %v.1482
   %t.14841 = inttoptr i64 %t.14840 to ptr
@@ -5860,3185 +5776,3376 @@ L.fall.1461:
   %t.14860 = load i64, ptr %v.1484
   %t.14869 = call i64 @io_Print(i64 %t.14860)
   store i64 %t.14869, ptr %v.1486
-  store i64 1, ptr %v.1487
-  %t.14880 = load i64, ptr %v.1457
-  %t.14881 = load i64, ptr %v.1487
-  %t.14882 = add i64 %t.14880, %t.14881
-  store i64 %t.14882, ptr %v.1488
-  %t.14890 = load i64, ptr %v.1488
-  store i64 %t.14890, ptr %v.1457
-  br label %L.186
-L.187:
+  br label %L.167
+L.190:
+  br label %L.191
+L.191:
+  %t.14910 = load i64, ptr %v.1471
+  %t.14916 = inttoptr i64 %t.14910 to ptr
+  %t.14917 = load i64, ptr %t.14916
+  store i64 %t.14917, ptr %v.1491
+  %t.14920 = load i64, ptr %v.1491
+  store i64 %t.14920, ptr %v.1492
+  %t.14930 = load i64, ptr %v.670
+  %t.14931 = inttoptr i64 %t.14930 to ptr
+  %t.14932 = load i64, ptr %t.14931
+  %t.14933 = load i64, ptr %v.1492
+  %t.14934 = mul i64 %t.14933, 8
+  %t.14935 = add i64 %t.14932, %t.14934
+  %t.14936 = inttoptr i64 %t.14935 to ptr
+  %t.14937 = load i64, ptr %t.14936
+  store i64 %t.14937, ptr %v.1493
+  %t.14940 = load i64, ptr %v.1493
+  %t.14942 = add i64 %t.14940, 16
+  %t.14946 = inttoptr i64 %t.14942 to ptr
+  %t.14947 = load i64, ptr %t.14946
+  store i64 %t.14947, ptr %v.1494
+  %t.14950 = load i64, ptr %v.1494
+  store i64 %t.14950, ptr %v.1495
+  %t.14960 = load i64, ptr %v.953
+  %t.14961 = inttoptr i64 %t.14960 to ptr
+  %t.14962 = load i64, ptr %v.1495
+  %t.14963 = alloca i64
+  store i64 %t.14962, ptr %t.14963
+  call void @ease_array_push(ptr %t.14961, ptr %t.14963, i64 8)
+  %t.14970 = load i64, ptr %v.956
+  %t.14971 = inttoptr i64 %t.14970 to ptr
+  %t.14972 = load i64, ptr %v.1492
+  %t.14973 = alloca i64
+  store i64 %t.14972, ptr %t.14973
+  call void @ease_array_push(ptr %t.14971, ptr %t.14973, i64 8)
+  %t.14980 = load i64, ptr %v.1471
+  %t.14982 = add i64 %t.14980, 8
+  %t.14986 = inttoptr i64 %t.14982 to ptr
+  %t.14987 = load i64, ptr %t.14986
+  store i64 %t.14987, ptr %v.1498
+  %t.14990 = load i64, ptr %v.1498
+  store i64 %t.14990, ptr %v.1320
+  %t.15020 = load i64, ptr %v.1314
+  %t.15021 = load i64, ptr %v.1320
+  %t.15029 = call i64 @lexer_lex_skip(i64 %t.15020, i64 %t.15021)
+  store i64 %t.15029, ptr %v.1502
+  %t.15030 = load i64, ptr %v.1502
+  store i64 %t.15030, ptr %v.1320
+  br label %L.189
+L.188:
+  br label %L.167
+L.189:
+  br label %L.177
+L.177:
+  br label %L.175
+L.175:
+  br label %L.173
+L.173:
+  br label %L.171
+L.171:
+  br label %L.166
+L.167:
+  store i64 0, ptr %v.1514
+  %t.15150 = load i64, ptr %v.1514
+  store i64 %t.15150, ptr %v.1515
+  br label %L.192
+L.192:
+  %t.15170 = load i64, ptr %v.953
+  %t.15171 = add i64 %t.15170, 8
+  %t.15172 = inttoptr i64 %t.15171 to ptr
+  %t.15173 = load i64, ptr %t.15172
+  store i64 %t.15173, ptr %v.1517
+  %t.15180 = load i64, ptr %v.1515
+  %t.15181 = load i64, ptr %v.1517
+  %t.15182 = icmp slt i64 %t.15180, %t.15181
+  %t.15183 = zext i1 %t.15182 to i64
+  store i64 %t.15183, ptr %v.1518
+  %t.15190 = load i64, ptr %v.1518
+  %t.15191 = icmp eq i64 %t.15190, 0
+  br i1 %t.15191, label %L.193, label %L.fall.1519
+L.fall.1519:
+  %t.15200 = ptrtoint ptr @.str.40 to i64
+  store i64 %t.15200, ptr %v.1520
+  %t.15210 = load i64, ptr %v.944
+  %t.15211 = inttoptr i64 %t.15210 to ptr
+  %t.15212 = load i64, ptr %v.1520
+  %t.15213 = inttoptr i64 %t.15212 to ptr
+  %t.15214 = call ptr @ease_str_concat(ptr %t.15211, ptr %t.15213)
+  %t.15215 = ptrtoint ptr %t.15214 to i64
+  store i64 %t.15215, ptr %v.1521
+  %t.15220 = load i64, ptr %v.953
+  %t.15221 = inttoptr i64 %t.15220 to ptr
+  %t.15222 = load i64, ptr %t.15221
+  %t.15223 = load i64, ptr %v.1515
+  %t.15224 = mul i64 %t.15223, 8
+  %t.15225 = add i64 %t.15222, %t.15224
+  %t.15226 = inttoptr i64 %t.15225 to ptr
+  %t.15227 = load i64, ptr %t.15226
+  store i64 %t.15227, ptr %v.1522
+  %t.15230 = load i64, ptr %v.1521
+  %t.15231 = inttoptr i64 %t.15230 to ptr
+  %t.15232 = load i64, ptr %v.1522
+  %t.15233 = inttoptr i64 %t.15232 to ptr
+  %t.15234 = call ptr @ease_str_concat(ptr %t.15231, ptr %t.15233)
+  %t.15235 = ptrtoint ptr %t.15234 to i64
+  store i64 %t.15235, ptr %v.1523
+  %t.15240 = load i64, ptr %v.1523
+  store i64 %t.15240, ptr %v.1524
+  %t.15250 = load i64, ptr %v.683
+  %t.15251 = inttoptr i64 %t.15250 to ptr
+  %t.15252 = load i64, ptr %v.1524
+  %t.15253 = alloca i64
+  store i64 %t.15252, ptr %t.15253
+  call void @ease_array_push(ptr %t.15251, ptr %t.15253, i64 8)
+  %t.15260 = load i64, ptr %v.956
+  %t.15261 = inttoptr i64 %t.15260 to ptr
+  %t.15262 = load i64, ptr %t.15261
+  %t.15263 = load i64, ptr %v.1515
+  %t.15264 = mul i64 %t.15263, 8
+  %t.15265 = add i64 %t.15262, %t.15264
+  %t.15266 = inttoptr i64 %t.15265 to ptr
+  %t.15267 = load i64, ptr %t.15266
+  store i64 %t.15267, ptr %v.1526
+  %t.15270 = load i64, ptr %v.686
+  %t.15271 = inttoptr i64 %t.15270 to ptr
+  %t.15272 = load i64, ptr %v.1526
+  %t.15273 = alloca i64
+  store i64 %t.15272, ptr %t.15273
+  call void @ease_array_push(ptr %t.15271, ptr %t.15273, i64 8)
+  %t.15280 = ptrtoint ptr @g_rename_from to i64
+  store i64 %t.15280, ptr %v.1528
+  %t.15290 = load i64, ptr %v.953
+  %t.15291 = inttoptr i64 %t.15290 to ptr
+  %t.15292 = load i64, ptr %t.15291
+  %t.15293 = load i64, ptr %v.1515
+  %t.15294 = mul i64 %t.15293, 8
+  %t.15295 = add i64 %t.15292, %t.15294
+  %t.15296 = inttoptr i64 %t.15295 to ptr
+  %t.15297 = load i64, ptr %t.15296
+  store i64 %t.15297, ptr %v.1529
+  %t.15300 = load i64, ptr %v.1528
+  %t.15301 = inttoptr i64 %t.15300 to ptr
+  %t.15302 = load i64, ptr %v.1529
+  %t.15303 = alloca i64
+  store i64 %t.15302, ptr %t.15303
+  call void @ease_array_push(ptr %t.15301, ptr %t.15303, i64 8)
+  %t.15310 = ptrtoint ptr @g_rename_to to i64
+  store i64 %t.15310, ptr %v.1531
+  %t.15320 = load i64, ptr %v.1531
+  %t.15321 = inttoptr i64 %t.15320 to ptr
+  %t.15322 = load i64, ptr %v.1524
+  %t.15323 = alloca i64
+  store i64 %t.15322, ptr %t.15323
+  call void @ease_array_push(ptr %t.15321, ptr %t.15323, i64 8)
+  %t.15330 = ptrtoint ptr @.str.41 to i64
+  store i64 %t.15330, ptr %v.1533
+  %t.15340 = load i64, ptr %v.1533
+  %t.15341 = inttoptr i64 %t.15340 to ptr
+  %t.15342 = load i64, ptr %v.1524
+  %t.15343 = inttoptr i64 %t.15342 to ptr
+  %t.15344 = call ptr @ease_str_concat(ptr %t.15341, ptr %t.15343)
+  %t.15345 = ptrtoint ptr %t.15344 to i64
+  store i64 %t.15345, ptr %v.1534
+  %t.15350 = ptrtoint ptr @.str.42 to i64
+  store i64 %t.15350, ptr %v.1535
+  %t.15360 = load i64, ptr %v.1534
+  %t.15361 = inttoptr i64 %t.15360 to ptr
+  %t.15362 = load i64, ptr %v.1535
+  %t.15363 = inttoptr i64 %t.15362 to ptr
+  %t.15364 = call ptr @ease_str_concat(ptr %t.15361, ptr %t.15363)
+  %t.15365 = ptrtoint ptr %t.15364 to i64
+  store i64 %t.15365, ptr %v.1536
+  %t.15370 = load i64, ptr %v.683
+  %t.15371 = add i64 %t.15370, 8
+  %t.15372 = inttoptr i64 %t.15371 to ptr
+  %t.15373 = load i64, ptr %t.15372
+  store i64 %t.15373, ptr %v.1537
+  %t.15390 = load i64, ptr %v.1537
+  %t.15399 = call i64 @strconv_Itoa(i64 %t.15390)
+  store i64 %t.15399, ptr %v.1539
+  %t.15400 = load i64, ptr %v.1536
+  %t.15401 = inttoptr i64 %t.15400 to ptr
+  %t.15402 = load i64, ptr %v.1539
+  %t.15403 = inttoptr i64 %t.15402 to ptr
+  %t.15404 = call ptr @ease_str_concat(ptr %t.15401, ptr %t.15403)
+  %t.15405 = ptrtoint ptr %t.15404 to i64
+  store i64 %t.15405, ptr %v.1540
+  %t.15410 = ptrtoint ptr @.str.43 to i64
+  store i64 %t.15410, ptr %v.1541
+  %t.15420 = load i64, ptr %v.1540
+  %t.15421 = inttoptr i64 %t.15420 to ptr
+  %t.15422 = load i64, ptr %v.1541
+  %t.15423 = inttoptr i64 %t.15422 to ptr
+  %t.15424 = call ptr @ease_str_concat(ptr %t.15421, ptr %t.15423)
+  %t.15425 = ptrtoint ptr %t.15424 to i64
+  store i64 %t.15425, ptr %v.1542
+  %t.15440 = load i64, ptr %v.1542
+  %t.15449 = call i64 @io_Print(i64 %t.15440)
+  store i64 %t.15449, ptr %v.1544
+  store i64 1, ptr %v.1545
+  %t.15460 = load i64, ptr %v.1515
+  %t.15461 = load i64, ptr %v.1545
+  %t.15462 = add i64 %t.15460, %t.15461
+  store i64 %t.15462, ptr %v.1546
+  %t.15470 = load i64, ptr %v.1546
+  store i64 %t.15470, ptr %v.1515
+  br label %L.192
+L.193:
+  br label %L.123
+L.123:
+  br label %L.121
+L.120:
   br label %L.121
 L.121:
   br label %L.119
 L.118:
   br label %L.119
 L.119:
-  br label %L.117
-L.116:
-  br label %L.117
-L.117:
-  store i64 1, ptr %v.1499
-  %t.15000 = load i64, ptr %v.894
-  %t.15001 = load i64, ptr %v.1499
-  %t.15002 = add i64 %t.15000, %t.15001
-  store i64 %t.15002, ptr %v.1500
-  %t.15010 = load i64, ptr %v.1500
-  store i64 %t.15010, ptr %v.894
-  br label %L.114
-L.115:
-  %t.15040 = ptrtoint ptr @g_import_names to i64
-  store i64 %t.15040, ptr %v.1504
-  %t.15050 = load i64, ptr %v.1504
-  %t.15051 = add i64 %t.15050, 8
-  %t.15052 = inttoptr i64 %t.15051 to ptr
-  %t.15053 = load i64, ptr %t.15052
-  store i64 %t.15053, ptr %v.1505
-  store i64 0, ptr %v.1506
-  %t.15070 = load i64, ptr %v.1505
-  %t.15071 = load i64, ptr %v.1506
-  %t.15072 = icmp sgt i64 %t.15070, %t.15071
-  %t.15073 = zext i1 %t.15072 to i64
-  store i64 %t.15073, ptr %v.1507
-  %t.15080 = load i64, ptr %v.1507
-  %t.15081 = icmp eq i64 %t.15080, 0
-  br i1 %t.15081, label %L.188, label %L.fall.1508
-L.fall.1508:
-  %t.15090 = ptrtoint ptr @.str.44 to i64
-  store i64 %t.15090, ptr %v.1509
-  %t.15100 = ptrtoint ptr @g_import_names to i64
-  store i64 %t.15100, ptr %v.1510
-  %t.15110 = load i64, ptr %v.1510
-  %t.15111 = add i64 %t.15110, 8
-  %t.15112 = inttoptr i64 %t.15111 to ptr
-  %t.15113 = load i64, ptr %t.15112
-  store i64 %t.15113, ptr %v.1511
-  %t.15130 = load i64, ptr %v.1511
-  %t.15139 = call i64 @strconv_Itoa(i64 %t.15130)
-  store i64 %t.15139, ptr %v.1513
-  %t.15140 = load i64, ptr %v.1509
-  %t.15141 = inttoptr i64 %t.15140 to ptr
-  %t.15142 = load i64, ptr %v.1513
-  %t.15143 = inttoptr i64 %t.15142 to ptr
-  %t.15144 = call ptr @ease_str_concat(ptr %t.15141, ptr %t.15143)
-  %t.15145 = ptrtoint ptr %t.15144 to i64
-  store i64 %t.15145, ptr %v.1514
-  %t.15150 = ptrtoint ptr @.str.45 to i64
-  store i64 %t.15150, ptr %v.1515
-  %t.15160 = load i64, ptr %v.1514
-  %t.15161 = inttoptr i64 %t.15160 to ptr
-  %t.15162 = load i64, ptr %v.1515
-  %t.15163 = inttoptr i64 %t.15162 to ptr
-  %t.15164 = call ptr @ease_str_concat(ptr %t.15161, ptr %t.15163)
-  %t.15165 = ptrtoint ptr %t.15164 to i64
-  store i64 %t.15165, ptr %v.1516
-  %t.15180 = load i64, ptr %v.1516
-  %t.15189 = call i64 @io_Print(i64 %t.15180)
-  store i64 %t.15189, ptr %v.1518
-  br label %L.189
-L.188:
-  br label %L.189
-L.189:
-  %t.15220 = ptrtoint ptr @.str.46 to i64
-  store i64 %t.15220, ptr %v.1522
-  %t.15230 = ptrtoint ptr @.str.47 to i64
-  store i64 %t.15230, ptr %v.1523
-  %t.15240 = ptrtoint ptr @.str.48 to i64
-  store i64 %t.15240, ptr %v.1524
-  %t.15250 = ptrtoint ptr @.str.49 to i64
-  store i64 %t.15250, ptr %v.1525
-  store i64 32, ptr %v.1526
-  %t.15270 = load i64, ptr %v.1526
-  %t.15271 = call ptr @malloc(i64 %t.15270)
-  %t.15272 = call ptr @memset(ptr %t.15271, i32 0, i64 %t.15270)
-  %t.15273 = ptrtoint ptr %t.15271 to i64
-  store i64 %t.15273, ptr %v.1527
-  %t.15280 = load i64, ptr %v.1527
-  store i64 %t.15280, ptr %v.1528
-  %t.15290 = load i64, ptr %v.1528
-  %t.15291 = load i64, ptr %v.1522
-  %t.15292 = inttoptr i64 %t.15290 to ptr
-  store i64 %t.15291, ptr %t.15292
-  %t.15300 = load i64, ptr %v.1527
-  %t.15301 = add i64 %t.15300, 8
-  store i64 %t.15301, ptr %v.1530
-  %t.15310 = load i64, ptr %v.1530
-  %t.15311 = load i64, ptr %v.1523
-  %t.15312 = inttoptr i64 %t.15310 to ptr
-  store i64 %t.15311, ptr %t.15312
-  %t.15320 = load i64, ptr %v.1527
-  %t.15321 = add i64 %t.15320, 16
-  store i64 %t.15321, ptr %v.1532
-  %t.15330 = load i64, ptr %v.1532
-  %t.15331 = load i64, ptr %v.1524
-  %t.15332 = inttoptr i64 %t.15330 to ptr
-  store i64 %t.15331, ptr %t.15332
-  %t.15340 = load i64, ptr %v.1527
-  %t.15341 = add i64 %t.15340, 24
-  store i64 %t.15341, ptr %v.1534
-  %t.15350 = load i64, ptr %v.1534
-  %t.15351 = load i64, ptr %v.1525
-  %t.15352 = inttoptr i64 %t.15350 to ptr
-  store i64 %t.15351, ptr %t.15352
-  store i64 24, ptr %v.1536
-  %t.15370 = load i64, ptr %v.1536
-  %t.15371 = call ptr @malloc(i64 %t.15370)
-  %t.15372 = call ptr @memset(ptr %t.15371, i32 0, i64 %t.15370)
-  %t.15373 = ptrtoint ptr %t.15371 to i64
-  store i64 %t.15373, ptr %v.1537
-  %t.15380 = load i64, ptr %v.1537
-  %t.15381 = load i64, ptr %v.1527
-  %t.15382 = inttoptr i64 %t.15380 to ptr
-  store i64 %t.15381, ptr %t.15382
-  store i64 4, ptr %v.1539
-  %t.15400 = load i64, ptr %v.1537
-  %t.15401 = add i64 %t.15400, 8
-  store i64 %t.15401, ptr %v.1540
-  %t.15410 = load i64, ptr %v.1540
-  %t.15411 = load i64, ptr %v.1539
-  %t.15412 = inttoptr i64 %t.15410 to ptr
-  store i64 %t.15411, ptr %t.15412
-  %t.15420 = load i64, ptr %v.1537
-  %t.15421 = add i64 %t.15420, 16
-  store i64 %t.15421, ptr %v.1542
-  %t.15430 = load i64, ptr %v.1542
-  %t.15431 = load i64, ptr %v.1539
-  %t.15432 = inttoptr i64 %t.15430 to ptr
-  store i64 %t.15431, ptr %t.15432
-  %t.15440 = load i64, ptr %v.1537
-  store i64 %t.15440, ptr %v.1544
-  store i64 0, ptr %v.1545
-  %t.15460 = load i64, ptr %v.1545
-  store i64 %t.15460, ptr %v.1546
-  br label %L.190
-L.190:
-  %t.15480 = load i64, ptr %v.1544
-  %t.15481 = add i64 %t.15480, 8
-  %t.15482 = inttoptr i64 %t.15481 to ptr
-  %t.15483 = load i64, ptr %t.15482
-  store i64 %t.15483, ptr %v.1548
-  %t.15490 = load i64, ptr %v.1546
-  %t.15491 = load i64, ptr %v.1548
-  %t.15492 = icmp slt i64 %t.15490, %t.15491
-  %t.15493 = zext i1 %t.15492 to i64
-  store i64 %t.15493, ptr %v.1549
-  %t.15500 = load i64, ptr %v.1549
-  %t.15501 = icmp eq i64 %t.15500, 0
-  br i1 %t.15501, label %L.191, label %L.fall.1550
-L.fall.1550:
-  %t.15510 = load i64, ptr %v.1544
-  %t.15511 = inttoptr i64 %t.15510 to ptr
-  %t.15512 = load i64, ptr %t.15511
-  %t.15513 = load i64, ptr %v.1546
-  %t.15514 = mul i64 %t.15513, 8
-  %t.15515 = add i64 %t.15512, %t.15514
-  %t.15516 = inttoptr i64 %t.15515 to ptr
-  %t.15517 = load i64, ptr %t.15516
-  store i64 %t.15517, ptr %v.1551
-  %t.15520 = load i64, ptr %v.1551
-  store i64 %t.15520, ptr %v.1552
-  %t.15540 = load i64, ptr %v.1552
-  %t.15549 = call i64 @extract_module_name(i64 %t.15540)
-  store i64 %t.15549, ptr %v.1554
-  %t.15550 = load i64, ptr %v.1554
-  store i64 %t.15550, ptr %v.1555
-  store i64 0, ptr %v.1556
-  %t.15570 = load i64, ptr %v.1556
-  store i64 %t.15570, ptr %v.1557
-  store i64 0, ptr %v.1558
+  store i64 1, ptr %v.1557
+  %t.15580 = load i64, ptr %v.914
+  %t.15581 = load i64, ptr %v.1557
+  %t.15582 = add i64 %t.15580, %t.15581
+  store i64 %t.15582, ptr %v.1558
   %t.15590 = load i64, ptr %v.1558
-  store i64 %t.15590, ptr %v.1559
-  br label %L.192
-L.192:
-  %t.15610 = ptrtoint ptr @g_import_names to i64
-  store i64 %t.15610, ptr %v.1561
-  %t.15620 = load i64, ptr %v.1561
-  %t.15621 = add i64 %t.15620, 8
-  %t.15622 = inttoptr i64 %t.15621 to ptr
-  %t.15623 = load i64, ptr %t.15622
-  store i64 %t.15623, ptr %v.1562
-  %t.15630 = load i64, ptr %v.1559
-  %t.15631 = load i64, ptr %v.1562
-  %t.15632 = icmp slt i64 %t.15630, %t.15631
-  %t.15633 = zext i1 %t.15632 to i64
+  store i64 %t.15590, ptr %v.914
+  br label %L.116
+L.117:
+  %t.15620 = ptrtoint ptr @g_import_names to i64
+  store i64 %t.15620, ptr %v.1562
+  %t.15630 = load i64, ptr %v.1562
+  %t.15631 = add i64 %t.15630, 8
+  %t.15632 = inttoptr i64 %t.15631 to ptr
+  %t.15633 = load i64, ptr %t.15632
   store i64 %t.15633, ptr %v.1563
-  %t.15640 = load i64, ptr %v.1563
-  %t.15641 = icmp eq i64 %t.15640, 0
-  br i1 %t.15641, label %L.193, label %L.fall.1564
-L.fall.1564:
-  %t.15650 = ptrtoint ptr @g_import_names to i64
-  store i64 %t.15650, ptr %v.1565
+  store i64 0, ptr %v.1564
+  %t.15650 = load i64, ptr %v.1563
+  %t.15651 = load i64, ptr %v.1564
+  %t.15652 = icmp sgt i64 %t.15650, %t.15651
+  %t.15653 = zext i1 %t.15652 to i64
+  store i64 %t.15653, ptr %v.1565
   %t.15660 = load i64, ptr %v.1565
-  %t.15661 = inttoptr i64 %t.15660 to ptr
-  %t.15662 = load i64, ptr %t.15661
-  %t.15663 = load i64, ptr %v.1559
-  %t.15664 = mul i64 %t.15663, 8
-  %t.15665 = add i64 %t.15662, %t.15664
-  %t.15666 = inttoptr i64 %t.15665 to ptr
-  %t.15667 = load i64, ptr %t.15666
-  store i64 %t.15667, ptr %v.1566
-  %t.15670 = load i64, ptr %v.1566
-  %t.15671 = inttoptr i64 %t.15670 to ptr
-  %t.15672 = load i64, ptr %v.1555
-  %t.15673 = inttoptr i64 %t.15672 to ptr
-  %t.15674 = call i64 @ease_str_eq(ptr %t.15671, ptr %t.15673)
-  store i64 %t.15674, ptr %v.1567
-  %t.15680 = load i64, ptr %v.1567
-  %t.15681 = icmp eq i64 %t.15680, 0
-  br i1 %t.15681, label %L.194, label %L.fall.1568
-L.fall.1568:
-  store i64 1, ptr %v.1569
-  %t.15700 = load i64, ptr %v.1569
-  store i64 %t.15700, ptr %v.1557
-  br label %L.193
+  %t.15661 = icmp eq i64 %t.15660, 0
+  br i1 %t.15661, label %L.194, label %L.fall.1566
+L.fall.1566:
+  %t.15670 = ptrtoint ptr @.str.44 to i64
+  store i64 %t.15670, ptr %v.1567
+  %t.15680 = ptrtoint ptr @g_import_names to i64
+  store i64 %t.15680, ptr %v.1568
+  %t.15690 = load i64, ptr %v.1568
+  %t.15691 = add i64 %t.15690, 8
+  %t.15692 = inttoptr i64 %t.15691 to ptr
+  %t.15693 = load i64, ptr %t.15692
+  store i64 %t.15693, ptr %v.1569
+  %t.15710 = load i64, ptr %v.1569
+  %t.15719 = call i64 @strconv_Itoa(i64 %t.15710)
+  store i64 %t.15719, ptr %v.1571
+  %t.15720 = load i64, ptr %v.1567
+  %t.15721 = inttoptr i64 %t.15720 to ptr
+  %t.15722 = load i64, ptr %v.1571
+  %t.15723 = inttoptr i64 %t.15722 to ptr
+  %t.15724 = call ptr @ease_str_concat(ptr %t.15721, ptr %t.15723)
+  %t.15725 = ptrtoint ptr %t.15724 to i64
+  store i64 %t.15725, ptr %v.1572
+  %t.15730 = ptrtoint ptr @.str.45 to i64
+  store i64 %t.15730, ptr %v.1573
+  %t.15740 = load i64, ptr %v.1572
+  %t.15741 = inttoptr i64 %t.15740 to ptr
+  %t.15742 = load i64, ptr %v.1573
+  %t.15743 = inttoptr i64 %t.15742 to ptr
+  %t.15744 = call ptr @ease_str_concat(ptr %t.15741, ptr %t.15743)
+  %t.15745 = ptrtoint ptr %t.15744 to i64
+  store i64 %t.15745, ptr %v.1574
+  %t.15760 = load i64, ptr %v.1574
+  %t.15769 = call i64 @io_Print(i64 %t.15760)
+  store i64 %t.15769, ptr %v.1576
+  br label %L.195
 L.194:
   br label %L.195
 L.195:
-  store i64 1, ptr %v.1575
-  %t.15760 = load i64, ptr %v.1559
-  %t.15761 = load i64, ptr %v.1575
-  %t.15762 = add i64 %t.15760, %t.15761
-  store i64 %t.15762, ptr %v.1576
-  %t.15770 = load i64, ptr %v.1576
-  store i64 %t.15770, ptr %v.1559
-  br label %L.192
-L.193:
-  store i64 0, ptr %v.1580
-  %t.15810 = load i64, ptr %v.1557
-  %t.15811 = load i64, ptr %v.1580
-  %t.15812 = icmp eq i64 %t.15810, %t.15811
-  %t.15813 = zext i1 %t.15812 to i64
-  store i64 %t.15813, ptr %v.1581
-  %t.15820 = load i64, ptr %v.1581
-  %t.15821 = icmp eq i64 %t.15820, 0
-  br i1 %t.15821, label %L.196, label %L.fall.1582
-L.fall.1582:
-  %t.15850 = load i64, ptr %v.594
-  %t.15851 = load i64, ptr %v.1552
-  %t.15859 = call i64 @resolve_import_path(i64 %t.15850, i64 %t.15851)
-  store i64 %t.15859, ptr %v.1585
+  %t.15800 = ptrtoint ptr @.str.46 to i64
+  store i64 %t.15800, ptr %v.1580
+  %t.15810 = ptrtoint ptr @.str.47 to i64
+  store i64 %t.15810, ptr %v.1581
+  %t.15820 = ptrtoint ptr @.str.48 to i64
+  store i64 %t.15820, ptr %v.1582
+  %t.15830 = ptrtoint ptr @.str.49 to i64
+  store i64 %t.15830, ptr %v.1583
+  store i64 32, ptr %v.1584
+  %t.15850 = load i64, ptr %v.1584
+  %t.15851 = call ptr @malloc(i64 %t.15850)
+  %t.15852 = call ptr @memset(ptr %t.15851, i32 0, i64 %t.15850)
+  %t.15853 = ptrtoint ptr %t.15851 to i64
+  store i64 %t.15853, ptr %v.1585
   %t.15860 = load i64, ptr %v.1585
   store i64 %t.15860, ptr %v.1586
   %t.15870 = load i64, ptr %v.1586
-  %t.15871 = inttoptr i64 %t.15870 to ptr
-  %t.15872 = call i64 @ease_is_dir(ptr %t.15871)
-  store i64 %t.15872, ptr %v.1587
-  %t.15880 = load i64, ptr %v.1587
-  store i64 %t.15880, ptr %v.1588
-  store i64 0, ptr %v.1589
-  %t.15900 = load i64, ptr %v.1588
-  %t.15901 = load i64, ptr %v.1589
-  %t.15902 = icmp eq i64 %t.15900, %t.15901
-  %t.15903 = zext i1 %t.15902 to i64
-  store i64 %t.15903, ptr %v.1590
+  %t.15871 = load i64, ptr %v.1580
+  %t.15872 = inttoptr i64 %t.15870 to ptr
+  store i64 %t.15871, ptr %t.15872
+  %t.15880 = load i64, ptr %v.1585
+  %t.15881 = add i64 %t.15880, 8
+  store i64 %t.15881, ptr %v.1588
+  %t.15890 = load i64, ptr %v.1588
+  %t.15891 = load i64, ptr %v.1581
+  %t.15892 = inttoptr i64 %t.15890 to ptr
+  store i64 %t.15891, ptr %t.15892
+  %t.15900 = load i64, ptr %v.1585
+  %t.15901 = add i64 %t.15900, 16
+  store i64 %t.15901, ptr %v.1590
   %t.15910 = load i64, ptr %v.1590
-  %t.15911 = icmp eq i64 %t.15910, 0
-  br i1 %t.15911, label %L.198, label %L.fall.1591
-L.fall.1591:
-  %t.15920 = ptrtoint ptr @.str.50 to i64
-  store i64 %t.15920, ptr %v.1592
+  %t.15911 = load i64, ptr %v.1582
+  %t.15912 = inttoptr i64 %t.15910 to ptr
+  store i64 %t.15911, ptr %t.15912
+  %t.15920 = load i64, ptr %v.1585
+  %t.15921 = add i64 %t.15920, 24
+  store i64 %t.15921, ptr %v.1592
   %t.15930 = load i64, ptr %v.1592
-  %t.15931 = inttoptr i64 %t.15930 to ptr
-  %t.15932 = load i64, ptr %v.1555
-  %t.15933 = inttoptr i64 %t.15932 to ptr
-  %t.15934 = call ptr @ease_str_concat(ptr %t.15931, ptr %t.15933)
-  %t.15935 = ptrtoint ptr %t.15934 to i64
-  store i64 %t.15935, ptr %v.1593
-  %t.15940 = load i64, ptr %v.1593
-  store i64 %t.15940, ptr %v.1594
+  %t.15931 = load i64, ptr %v.1583
+  %t.15932 = inttoptr i64 %t.15930 to ptr
+  store i64 %t.15931, ptr %t.15932
+  store i64 24, ptr %v.1594
   %t.15950 = load i64, ptr %v.1594
-  %t.15951 = inttoptr i64 %t.15950 to ptr
-  %t.15952 = call i64 @ease_is_dir(ptr %t.15951)
-  store i64 %t.15952, ptr %v.1595
-  store i64 1, ptr %v.1596
-  %t.15970 = load i64, ptr %v.1595
-  %t.15971 = load i64, ptr %v.1596
-  %t.15972 = icmp eq i64 %t.15970, %t.15971
-  %t.15973 = zext i1 %t.15972 to i64
-  store i64 %t.15973, ptr %v.1597
-  %t.15980 = load i64, ptr %v.1597
-  %t.15981 = icmp eq i64 %t.15980, 0
-  br i1 %t.15981, label %L.200, label %L.fall.1598
-L.fall.1598:
-  %t.15990 = load i64, ptr %v.1594
-  store i64 %t.15990, ptr %v.1586
-  store i64 1, ptr %v.1600
+  %t.15951 = call ptr @malloc(i64 %t.15950)
+  %t.15952 = call ptr @memset(ptr %t.15951, i32 0, i64 %t.15950)
+  %t.15953 = ptrtoint ptr %t.15951 to i64
+  store i64 %t.15953, ptr %v.1595
+  %t.15960 = load i64, ptr %v.1595
+  %t.15961 = load i64, ptr %v.1585
+  %t.15962 = inttoptr i64 %t.15960 to ptr
+  store i64 %t.15961, ptr %t.15962
+  store i64 4, ptr %v.1597
+  %t.15980 = load i64, ptr %v.1595
+  %t.15981 = add i64 %t.15980, 8
+  store i64 %t.15981, ptr %v.1598
+  %t.15990 = load i64, ptr %v.1598
+  %t.15991 = load i64, ptr %v.1597
+  %t.15992 = inttoptr i64 %t.15990 to ptr
+  store i64 %t.15991, ptr %t.15992
+  %t.16000 = load i64, ptr %v.1595
+  %t.16001 = add i64 %t.16000, 16
+  store i64 %t.16001, ptr %v.1600
   %t.16010 = load i64, ptr %v.1600
-  store i64 %t.16010, ptr %v.1588
-  br label %L.201
-L.200:
-  br label %L.201
-L.201:
-  br label %L.199
-L.198:
-  br label %L.199
-L.199:
-  %t.16080 = ptrtoint ptr @.str.51 to i64
-  store i64 %t.16080, ptr %v.1608
-  %t.16090 = load i64, ptr %v.1608
+  %t.16011 = load i64, ptr %v.1597
+  %t.16012 = inttoptr i64 %t.16010 to ptr
+  store i64 %t.16011, ptr %t.16012
+  %t.16020 = load i64, ptr %v.1595
+  store i64 %t.16020, ptr %v.1602
+  store i64 0, ptr %v.1603
+  %t.16040 = load i64, ptr %v.1603
+  store i64 %t.16040, ptr %v.1604
+  br label %L.196
+L.196:
+  %t.16060 = load i64, ptr %v.1602
+  %t.16061 = add i64 %t.16060, 8
+  %t.16062 = inttoptr i64 %t.16061 to ptr
+  %t.16063 = load i64, ptr %t.16062
+  store i64 %t.16063, ptr %v.1606
+  %t.16070 = load i64, ptr %v.1604
+  %t.16071 = load i64, ptr %v.1606
+  %t.16072 = icmp slt i64 %t.16070, %t.16071
+  %t.16073 = zext i1 %t.16072 to i64
+  store i64 %t.16073, ptr %v.1607
+  %t.16080 = load i64, ptr %v.1607
+  %t.16081 = icmp eq i64 %t.16080, 0
+  br i1 %t.16081, label %L.197, label %L.fall.1608
+L.fall.1608:
+  %t.16090 = load i64, ptr %v.1602
   %t.16091 = inttoptr i64 %t.16090 to ptr
-  %t.16092 = load i64, ptr %v.1555
-  %t.16093 = inttoptr i64 %t.16092 to ptr
-  %t.16094 = call ptr @ease_str_concat(ptr %t.16091, ptr %t.16093)
-  %t.16095 = ptrtoint ptr %t.16094 to i64
-  store i64 %t.16095, ptr %v.1609
-  %t.16100 = ptrtoint ptr @.str.52 to i64
+  %t.16092 = load i64, ptr %t.16091
+  %t.16093 = load i64, ptr %v.1604
+  %t.16094 = mul i64 %t.16093, 8
+  %t.16095 = add i64 %t.16092, %t.16094
+  %t.16096 = inttoptr i64 %t.16095 to ptr
+  %t.16097 = load i64, ptr %t.16096
+  store i64 %t.16097, ptr %v.1609
+  %t.16100 = load i64, ptr %v.1609
   store i64 %t.16100, ptr %v.1610
-  %t.16110 = load i64, ptr %v.1609
-  %t.16111 = inttoptr i64 %t.16110 to ptr
-  %t.16112 = load i64, ptr %v.1610
-  %t.16113 = inttoptr i64 %t.16112 to ptr
-  %t.16114 = call ptr @ease_str_concat(ptr %t.16111, ptr %t.16113)
-  %t.16115 = ptrtoint ptr %t.16114 to i64
-  store i64 %t.16115, ptr %v.1611
-  %t.16120 = load i64, ptr %v.1611
-  %t.16121 = inttoptr i64 %t.16120 to ptr
-  %t.16122 = load i64, ptr %v.1586
-  %t.16123 = inttoptr i64 %t.16122 to ptr
-  %t.16124 = call ptr @ease_str_concat(ptr %t.16121, ptr %t.16123)
-  %t.16125 = ptrtoint ptr %t.16124 to i64
-  store i64 %t.16125, ptr %v.1612
-  %t.16130 = ptrtoint ptr @.str.53 to i64
+  %t.16120 = load i64, ptr %v.1610
+  %t.16129 = call i64 @extract_module_name(i64 %t.16120)
+  store i64 %t.16129, ptr %v.1612
+  %t.16130 = load i64, ptr %v.1612
   store i64 %t.16130, ptr %v.1613
-  %t.16140 = load i64, ptr %v.1612
-  %t.16141 = inttoptr i64 %t.16140 to ptr
-  %t.16142 = load i64, ptr %v.1613
-  %t.16143 = inttoptr i64 %t.16142 to ptr
-  %t.16144 = call ptr @ease_str_concat(ptr %t.16141, ptr %t.16143)
-  %t.16145 = ptrtoint ptr %t.16144 to i64
-  store i64 %t.16145, ptr %v.1614
-  %t.16160 = load i64, ptr %v.1614
-  %t.16169 = call i64 @io_Print(i64 %t.16160)
-  store i64 %t.16169, ptr %v.1616
-  %t.16170 = ptrtoint ptr @g_import_paths to i64
+  store i64 0, ptr %v.1614
+  %t.16150 = load i64, ptr %v.1614
+  store i64 %t.16150, ptr %v.1615
+  store i64 0, ptr %v.1616
+  %t.16170 = load i64, ptr %v.1616
   store i64 %t.16170, ptr %v.1617
-  %t.16180 = load i64, ptr %v.1617
-  %t.16181 = inttoptr i64 %t.16180 to ptr
-  %t.16182 = load i64, ptr %v.1586
-  %t.16183 = alloca i64
-  store i64 %t.16182, ptr %t.16183
-  call void @ease_array_push(ptr %t.16181, ptr %t.16183, i64 8)
+  br label %L.198
+L.198:
   %t.16190 = ptrtoint ptr @g_import_names to i64
   store i64 %t.16190, ptr %v.1619
   %t.16200 = load i64, ptr %v.1619
-  %t.16201 = inttoptr i64 %t.16200 to ptr
-  %t.16202 = load i64, ptr %v.1555
-  %t.16203 = alloca i64
-  store i64 %t.16202, ptr %t.16203
-  call void @ease_array_push(ptr %t.16201, ptr %t.16203, i64 8)
-  store i64 24, ptr %v.1621
+  %t.16201 = add i64 %t.16200, 8
+  %t.16202 = inttoptr i64 %t.16201 to ptr
+  %t.16203 = load i64, ptr %t.16202
+  store i64 %t.16203, ptr %v.1620
+  %t.16210 = load i64, ptr %v.1617
+  %t.16211 = load i64, ptr %v.1620
+  %t.16212 = icmp slt i64 %t.16210, %t.16211
+  %t.16213 = zext i1 %t.16212 to i64
+  store i64 %t.16213, ptr %v.1621
   %t.16220 = load i64, ptr %v.1621
-  %t.16221 = call ptr @malloc(i64 %t.16220)
-  %t.16222 = call ptr @memset(ptr %t.16221, i32 0, i64 %t.16220)
-  %t.16223 = ptrtoint ptr %t.16221 to i64
-  store i64 %t.16223, ptr %v.1622
-  %t.16230 = load i64, ptr %v.1622
+  %t.16221 = icmp eq i64 %t.16220, 0
+  br i1 %t.16221, label %L.199, label %L.fall.1622
+L.fall.1622:
+  %t.16230 = ptrtoint ptr @g_import_names to i64
   store i64 %t.16230, ptr %v.1623
-  store i64 1, ptr %v.1624
-  %t.16250 = load i64, ptr %v.1588
-  %t.16251 = load i64, ptr %v.1624
-  %t.16252 = icmp eq i64 %t.16250, %t.16251
-  %t.16253 = zext i1 %t.16252 to i64
-  store i64 %t.16253, ptr %v.1625
+  %t.16240 = load i64, ptr %v.1623
+  %t.16241 = inttoptr i64 %t.16240 to ptr
+  %t.16242 = load i64, ptr %t.16241
+  %t.16243 = load i64, ptr %v.1617
+  %t.16244 = mul i64 %t.16243, 8
+  %t.16245 = add i64 %t.16242, %t.16244
+  %t.16246 = inttoptr i64 %t.16245 to ptr
+  %t.16247 = load i64, ptr %t.16246
+  store i64 %t.16247, ptr %v.1624
+  %t.16250 = load i64, ptr %v.1624
+  %t.16251 = inttoptr i64 %t.16250 to ptr
+  %t.16252 = load i64, ptr %v.1613
+  %t.16253 = inttoptr i64 %t.16252 to ptr
+  %t.16254 = call i64 @ease_str_eq(ptr %t.16251, ptr %t.16253)
+  store i64 %t.16254, ptr %v.1625
   %t.16260 = load i64, ptr %v.1625
   %t.16261 = icmp eq i64 %t.16260, 0
-  br i1 %t.16261, label %L.202, label %L.fall.1626
+  br i1 %t.16261, label %L.200, label %L.fall.1626
 L.fall.1626:
-  %t.16270 = load i64, ptr %v.1586
-  %t.16271 = inttoptr i64 %t.16270 to ptr
-  %t.16272 = call ptr @ease_list_dir(ptr %t.16271)
-  %t.16273 = ptrtoint ptr %t.16272 to i64
-  store i64 %t.16273, ptr %v.1627
+  store i64 1, ptr %v.1627
   %t.16280 = load i64, ptr %v.1627
-  store i64 %t.16280, ptr %v.1628
-  store i64 0, ptr %v.1629
-  %t.16300 = load i64, ptr %v.1629
-  store i64 %t.16300, ptr %v.1630
-  store i64 0, ptr %v.1631
-  %t.16320 = load i64, ptr %v.1631
-  store i64 %t.16320, ptr %v.1632
-  %t.16330 = load i64, ptr %v.1628
-  %t.16331 = inttoptr i64 %t.16330 to ptr
-  %t.16332 = call i64 @ease_str_len(ptr %t.16331)
-  store i64 %t.16332, ptr %v.1633
-  %t.16340 = load i64, ptr %v.1633
-  store i64 %t.16340, ptr %v.1634
-  br label %L.204
-L.204:
-  %t.16360 = load i64, ptr %v.1630
-  %t.16361 = load i64, ptr %v.1634
-  %t.16362 = icmp sle i64 %t.16360, %t.16361
-  %t.16363 = zext i1 %t.16362 to i64
-  store i64 %t.16363, ptr %v.1636
-  %t.16370 = load i64, ptr %v.1636
-  %t.16371 = icmp eq i64 %t.16370, 0
-  br i1 %t.16371, label %L.205, label %L.fall.1637
-L.fall.1637:
-  %t.16380 = load i64, ptr %v.1630
-  %t.16381 = load i64, ptr %v.1634
-  %t.16382 = icmp eq i64 %t.16380, %t.16381
-  %t.16383 = zext i1 %t.16382 to i64
-  store i64 %t.16383, ptr %v.1638
-  %t.16390 = load i64, ptr %v.1628
-  %t.16391 = inttoptr i64 %t.16390 to ptr
-  %t.16392 = load i64, ptr %v.1630
-  %t.16393 = call i64 @ease_str_char_at(ptr %t.16391, i64 %t.16392)
+  store i64 %t.16280, ptr %v.1615
+  br label %L.199
+L.200:
+  br label %L.201
+L.201:
+  store i64 1, ptr %v.1633
+  %t.16340 = load i64, ptr %v.1617
+  %t.16341 = load i64, ptr %v.1633
+  %t.16342 = add i64 %t.16340, %t.16341
+  store i64 %t.16342, ptr %v.1634
+  %t.16350 = load i64, ptr %v.1634
+  store i64 %t.16350, ptr %v.1617
+  br label %L.198
+L.199:
+  store i64 0, ptr %v.1638
+  %t.16390 = load i64, ptr %v.1615
+  %t.16391 = load i64, ptr %v.1638
+  %t.16392 = icmp eq i64 %t.16390, %t.16391
+  %t.16393 = zext i1 %t.16392 to i64
   store i64 %t.16393, ptr %v.1639
-  store i64 10, ptr %v.1640
-  %t.16410 = load i64, ptr %v.1639
-  %t.16411 = load i64, ptr %v.1640
-  %t.16412 = icmp eq i64 %t.16410, %t.16411
-  %t.16413 = zext i1 %t.16412 to i64
-  store i64 %t.16413, ptr %v.1641
-  %t.16420 = load i64, ptr %v.1638
-  %t.16421 = load i64, ptr %v.1641
-  %t.16422 = or i64 %t.16420, %t.16421
-  store i64 %t.16422, ptr %v.1642
-  %t.16430 = load i64, ptr %v.1642
-  %t.16431 = icmp eq i64 %t.16430, 0
-  br i1 %t.16431, label %L.206, label %L.fall.1643
-L.fall.1643:
-  %t.16440 = load i64, ptr %v.1630
-  %t.16441 = load i64, ptr %v.1632
-  %t.16442 = icmp sgt i64 %t.16440, %t.16441
-  %t.16443 = zext i1 %t.16442 to i64
-  store i64 %t.16443, ptr %v.1644
+  %t.16400 = load i64, ptr %v.1639
+  %t.16401 = icmp eq i64 %t.16400, 0
+  br i1 %t.16401, label %L.202, label %L.fall.1640
+L.fall.1640:
+  %t.16430 = load i64, ptr %v.594
+  %t.16431 = load i64, ptr %v.1610
+  %t.16439 = call i64 @resolve_import_path(i64 %t.16430, i64 %t.16431)
+  store i64 %t.16439, ptr %v.1643
+  %t.16440 = load i64, ptr %v.1643
+  store i64 %t.16440, ptr %v.1644
   %t.16450 = load i64, ptr %v.1644
-  %t.16451 = icmp eq i64 %t.16450, 0
-  br i1 %t.16451, label %L.208, label %L.fall.1645
-L.fall.1645:
-  %t.16490 = load i64, ptr %v.1628
-  %t.16491 = load i64, ptr %v.1632
-  %t.16492 = load i64, ptr %v.1630
-  %t.16499 = call i64 @strings_str_substring(i64 %t.16490, i64 %t.16491, i64 %t.16492)
-  store i64 %t.16499, ptr %v.1649
-  %t.16500 = load i64, ptr %v.1649
+  %t.16451 = inttoptr i64 %t.16450 to ptr
+  %t.16452 = call i64 @ease_is_dir(ptr %t.16451)
+  store i64 %t.16452, ptr %v.1645
+  %t.16460 = load i64, ptr %v.1645
+  store i64 %t.16460, ptr %v.1646
+  store i64 0, ptr %v.1647
+  %t.16480 = load i64, ptr %v.1646
+  %t.16481 = load i64, ptr %v.1647
+  %t.16482 = icmp eq i64 %t.16480, %t.16481
+  %t.16483 = zext i1 %t.16482 to i64
+  store i64 %t.16483, ptr %v.1648
+  %t.16490 = load i64, ptr %v.1648
+  %t.16491 = icmp eq i64 %t.16490, 0
+  br i1 %t.16491, label %L.204, label %L.fall.1649
+L.fall.1649:
+  %t.16500 = ptrtoint ptr @.str.50 to i64
   store i64 %t.16500, ptr %v.1650
-  %t.16520 = load i64, ptr %v.1650
-  %t.16529 = call i64 @has_ease_suffix(i64 %t.16520)
-  store i64 %t.16529, ptr %v.1652
-  store i64 1, ptr %v.1653
-  %t.16540 = load i64, ptr %v.1652
-  %t.16541 = load i64, ptr %v.1653
-  %t.16542 = icmp eq i64 %t.16540, %t.16541
-  %t.16543 = zext i1 %t.16542 to i64
-  store i64 %t.16543, ptr %v.1654
-  %t.16550 = load i64, ptr %v.1654
-  %t.16551 = icmp eq i64 %t.16550, 0
-  br i1 %t.16551, label %L.210, label %L.fall.1655
-L.fall.1655:
-  %t.16560 = ptrtoint ptr @.str.54 to i64
-  store i64 %t.16560, ptr %v.1656
-  %t.16570 = load i64, ptr %v.1586
-  %t.16571 = inttoptr i64 %t.16570 to ptr
-  %t.16572 = load i64, ptr %v.1656
-  %t.16573 = inttoptr i64 %t.16572 to ptr
-  %t.16574 = call ptr @ease_str_concat(ptr %t.16571, ptr %t.16573)
-  %t.16575 = ptrtoint ptr %t.16574 to i64
-  store i64 %t.16575, ptr %v.1657
-  %t.16580 = load i64, ptr %v.1657
-  %t.16581 = inttoptr i64 %t.16580 to ptr
-  %t.16582 = load i64, ptr %v.1650
-  %t.16583 = inttoptr i64 %t.16582 to ptr
-  %t.16584 = call ptr @ease_str_concat(ptr %t.16581, ptr %t.16583)
-  %t.16585 = ptrtoint ptr %t.16584 to i64
-  store i64 %t.16585, ptr %v.1658
-  %t.16590 = load i64, ptr %v.1623
-  %t.16591 = inttoptr i64 %t.16590 to ptr
-  %t.16592 = load i64, ptr %v.1658
-  %t.16593 = alloca i64
-  store i64 %t.16592, ptr %t.16593
-  call void @ease_array_push(ptr %t.16591, ptr %t.16593, i64 8)
-  br label %L.211
-L.210:
-  br label %L.211
-L.211:
-  br label %L.209
-L.208:
-  br label %L.209
-L.209:
-  store i64 1, ptr %v.1666
-  %t.16670 = load i64, ptr %v.1630
-  %t.16671 = load i64, ptr %v.1666
-  %t.16672 = add i64 %t.16670, %t.16671
-  store i64 %t.16672, ptr %v.1667
-  %t.16680 = load i64, ptr %v.1667
-  store i64 %t.16680, ptr %v.1632
+  %t.16510 = load i64, ptr %v.1650
+  %t.16511 = inttoptr i64 %t.16510 to ptr
+  %t.16512 = load i64, ptr %v.1613
+  %t.16513 = inttoptr i64 %t.16512 to ptr
+  %t.16514 = call ptr @ease_str_concat(ptr %t.16511, ptr %t.16513)
+  %t.16515 = ptrtoint ptr %t.16514 to i64
+  store i64 %t.16515, ptr %v.1651
+  %t.16520 = load i64, ptr %v.1651
+  store i64 %t.16520, ptr %v.1652
+  %t.16530 = load i64, ptr %v.1652
+  %t.16531 = inttoptr i64 %t.16530 to ptr
+  %t.16532 = call i64 @ease_is_dir(ptr %t.16531)
+  store i64 %t.16532, ptr %v.1653
+  store i64 1, ptr %v.1654
+  %t.16550 = load i64, ptr %v.1653
+  %t.16551 = load i64, ptr %v.1654
+  %t.16552 = icmp eq i64 %t.16550, %t.16551
+  %t.16553 = zext i1 %t.16552 to i64
+  store i64 %t.16553, ptr %v.1655
+  %t.16560 = load i64, ptr %v.1655
+  %t.16561 = icmp eq i64 %t.16560, 0
+  br i1 %t.16561, label %L.206, label %L.fall.1656
+L.fall.1656:
+  %t.16570 = load i64, ptr %v.1652
+  store i64 %t.16570, ptr %v.1644
+  store i64 1, ptr %v.1658
+  %t.16590 = load i64, ptr %v.1658
+  store i64 %t.16590, ptr %v.1646
   br label %L.207
 L.206:
   br label %L.207
 L.207:
-  store i64 1, ptr %v.1672
-  %t.16730 = load i64, ptr %v.1630
-  %t.16731 = load i64, ptr %v.1672
-  %t.16732 = add i64 %t.16730, %t.16731
-  store i64 %t.16732, ptr %v.1673
-  %t.16740 = load i64, ptr %v.1673
-  store i64 %t.16740, ptr %v.1630
-  br label %L.204
+  br label %L.205
+L.204:
+  br label %L.205
 L.205:
-  br label %L.203
-L.202:
-  %t.16790 = load i64, ptr %v.1623
-  %t.16791 = inttoptr i64 %t.16790 to ptr
-  %t.16792 = load i64, ptr %v.1586
-  %t.16793 = alloca i64
-  store i64 %t.16792, ptr %t.16793
-  call void @ease_array_push(ptr %t.16791, ptr %t.16793, i64 8)
-  br label %L.203
-L.203:
-  store i64 0, ptr %v.1681
-  %t.16820 = load i64, ptr %v.1681
-  store i64 %t.16820, ptr %v.1682
-  br label %L.212
-L.212:
-  %t.16840 = load i64, ptr %v.1623
-  %t.16841 = add i64 %t.16840, 8
-  %t.16842 = inttoptr i64 %t.16841 to ptr
-  %t.16843 = load i64, ptr %t.16842
-  store i64 %t.16843, ptr %v.1684
-  %t.16850 = load i64, ptr %v.1682
-  %t.16851 = load i64, ptr %v.1684
-  %t.16852 = icmp slt i64 %t.16850, %t.16851
-  %t.16853 = zext i1 %t.16852 to i64
+  %t.16660 = ptrtoint ptr @.str.51 to i64
+  store i64 %t.16660, ptr %v.1666
+  %t.16670 = load i64, ptr %v.1666
+  %t.16671 = inttoptr i64 %t.16670 to ptr
+  %t.16672 = load i64, ptr %v.1613
+  %t.16673 = inttoptr i64 %t.16672 to ptr
+  %t.16674 = call ptr @ease_str_concat(ptr %t.16671, ptr %t.16673)
+  %t.16675 = ptrtoint ptr %t.16674 to i64
+  store i64 %t.16675, ptr %v.1667
+  %t.16680 = ptrtoint ptr @.str.52 to i64
+  store i64 %t.16680, ptr %v.1668
+  %t.16690 = load i64, ptr %v.1667
+  %t.16691 = inttoptr i64 %t.16690 to ptr
+  %t.16692 = load i64, ptr %v.1668
+  %t.16693 = inttoptr i64 %t.16692 to ptr
+  %t.16694 = call ptr @ease_str_concat(ptr %t.16691, ptr %t.16693)
+  %t.16695 = ptrtoint ptr %t.16694 to i64
+  store i64 %t.16695, ptr %v.1669
+  %t.16700 = load i64, ptr %v.1669
+  %t.16701 = inttoptr i64 %t.16700 to ptr
+  %t.16702 = load i64, ptr %v.1644
+  %t.16703 = inttoptr i64 %t.16702 to ptr
+  %t.16704 = call ptr @ease_str_concat(ptr %t.16701, ptr %t.16703)
+  %t.16705 = ptrtoint ptr %t.16704 to i64
+  store i64 %t.16705, ptr %v.1670
+  %t.16710 = ptrtoint ptr @.str.53 to i64
+  store i64 %t.16710, ptr %v.1671
+  %t.16720 = load i64, ptr %v.1670
+  %t.16721 = inttoptr i64 %t.16720 to ptr
+  %t.16722 = load i64, ptr %v.1671
+  %t.16723 = inttoptr i64 %t.16722 to ptr
+  %t.16724 = call ptr @ease_str_concat(ptr %t.16721, ptr %t.16723)
+  %t.16725 = ptrtoint ptr %t.16724 to i64
+  store i64 %t.16725, ptr %v.1672
+  %t.16740 = load i64, ptr %v.1672
+  %t.16749 = call i64 @io_Print(i64 %t.16740)
+  store i64 %t.16749, ptr %v.1674
+  %t.16750 = ptrtoint ptr @g_import_paths to i64
+  store i64 %t.16750, ptr %v.1675
+  %t.16760 = load i64, ptr %v.1675
+  %t.16761 = inttoptr i64 %t.16760 to ptr
+  %t.16762 = load i64, ptr %v.1644
+  %t.16763 = alloca i64
+  store i64 %t.16762, ptr %t.16763
+  call void @ease_array_push(ptr %t.16761, ptr %t.16763, i64 8)
+  %t.16770 = ptrtoint ptr @g_import_names to i64
+  store i64 %t.16770, ptr %v.1677
+  %t.16780 = load i64, ptr %v.1677
+  %t.16781 = inttoptr i64 %t.16780 to ptr
+  %t.16782 = load i64, ptr %v.1613
+  %t.16783 = alloca i64
+  store i64 %t.16782, ptr %t.16783
+  call void @ease_array_push(ptr %t.16781, ptr %t.16783, i64 8)
+  store i64 24, ptr %v.1679
+  %t.16800 = load i64, ptr %v.1679
+  %t.16801 = call ptr @malloc(i64 %t.16800)
+  %t.16802 = call ptr @memset(ptr %t.16801, i32 0, i64 %t.16800)
+  %t.16803 = ptrtoint ptr %t.16801 to i64
+  store i64 %t.16803, ptr %v.1680
+  %t.16810 = load i64, ptr %v.1680
+  store i64 %t.16810, ptr %v.1681
+  store i64 1, ptr %v.1682
+  %t.16830 = load i64, ptr %v.1646
+  %t.16831 = load i64, ptr %v.1682
+  %t.16832 = icmp eq i64 %t.16830, %t.16831
+  %t.16833 = zext i1 %t.16832 to i64
+  store i64 %t.16833, ptr %v.1683
+  %t.16840 = load i64, ptr %v.1683
+  %t.16841 = icmp eq i64 %t.16840, 0
+  br i1 %t.16841, label %L.208, label %L.fall.1684
+L.fall.1684:
+  %t.16850 = load i64, ptr %v.1644
+  %t.16851 = inttoptr i64 %t.16850 to ptr
+  %t.16852 = call ptr @ease_list_dir(ptr %t.16851)
+  %t.16853 = ptrtoint ptr %t.16852 to i64
   store i64 %t.16853, ptr %v.1685
   %t.16860 = load i64, ptr %v.1685
-  %t.16861 = icmp eq i64 %t.16860, 0
-  br i1 %t.16861, label %L.213, label %L.fall.1686
-L.fall.1686:
-  %t.16870 = load i64, ptr %v.1623
-  %t.16871 = inttoptr i64 %t.16870 to ptr
-  %t.16872 = load i64, ptr %t.16871
-  %t.16873 = load i64, ptr %v.1682
-  %t.16874 = mul i64 %t.16873, 8
-  %t.16875 = add i64 %t.16872, %t.16874
-  %t.16876 = inttoptr i64 %t.16875 to ptr
-  %t.16877 = load i64, ptr %t.16876
-  store i64 %t.16877, ptr %v.1687
+  store i64 %t.16860, ptr %v.1686
+  store i64 0, ptr %v.1687
   %t.16880 = load i64, ptr %v.1687
   store i64 %t.16880, ptr %v.1688
-  %t.16900 = load i64, ptr %v.1688
-  %t.16909 = call i64 @os_ReadFile(i64 %t.16900)
-  store i64 %t.16909, ptr %v.1690
-  %t.16910 = load i64, ptr %v.1690
-  store i64 %t.16910, ptr %v.1691
-  store i64 0, ptr %v.1692
-  %t.16930 = load i64, ptr %v.1692
-  store i64 %t.16930, ptr %v.1693
-  %t.16960 = load i64, ptr %v.1691
-  %t.16961 = load i64, ptr %v.1693
-  %t.16969 = call i64 @lexer_lex_skip(i64 %t.16960, i64 %t.16961)
-  store i64 %t.16969, ptr %v.1696
-  %t.16970 = load i64, ptr %v.1696
-  store i64 %t.16970, ptr %v.1693
-  br label %L.214
-L.214:
-  %t.17010 = load i64, ptr %v.1691
-  %t.17011 = load i64, ptr %v.1693
-  %t.17019 = call i64 @lexer_lex_skip(i64 %t.17010, i64 %t.17011)
-  store i64 %t.17019, ptr %v.1701
-  %t.17020 = load i64, ptr %v.1701
-  store i64 %t.17020, ptr %v.1693
-  %t.17050 = load i64, ptr %v.1691
-  %t.17051 = load i64, ptr %v.1693
-  %t.17059 = call i64 @lexer_lex_kind(i64 %t.17050, i64 %t.17051)
-  store i64 %t.17059, ptr %v.1705
-  %t.17060 = load i64, ptr %v.1705
-  store i64 %t.17060, ptr %v.1706
-  %t.17079 = call i64 @token_TK_EOF()
+  store i64 0, ptr %v.1689
+  %t.16900 = load i64, ptr %v.1689
+  store i64 %t.16900, ptr %v.1690
+  %t.16910 = load i64, ptr %v.1686
+  %t.16911 = inttoptr i64 %t.16910 to ptr
+  %t.16912 = call i64 @ease_str_len(ptr %t.16911)
+  store i64 %t.16912, ptr %v.1691
+  %t.16920 = load i64, ptr %v.1691
+  store i64 %t.16920, ptr %v.1692
+  br label %L.210
+L.210:
+  %t.16940 = load i64, ptr %v.1688
+  %t.16941 = load i64, ptr %v.1692
+  %t.16942 = icmp sle i64 %t.16940, %t.16941
+  %t.16943 = zext i1 %t.16942 to i64
+  store i64 %t.16943, ptr %v.1694
+  %t.16950 = load i64, ptr %v.1694
+  %t.16951 = icmp eq i64 %t.16950, 0
+  br i1 %t.16951, label %L.211, label %L.fall.1695
+L.fall.1695:
+  %t.16960 = load i64, ptr %v.1688
+  %t.16961 = load i64, ptr %v.1692
+  %t.16962 = icmp eq i64 %t.16960, %t.16961
+  %t.16963 = zext i1 %t.16962 to i64
+  store i64 %t.16963, ptr %v.1696
+  %t.16970 = load i64, ptr %v.1686
+  %t.16971 = inttoptr i64 %t.16970 to ptr
+  %t.16972 = load i64, ptr %v.1688
+  %t.16973 = call i64 @ease_str_char_at(ptr %t.16971, i64 %t.16972)
+  store i64 %t.16973, ptr %v.1697
+  store i64 10, ptr %v.1698
+  %t.16990 = load i64, ptr %v.1697
+  %t.16991 = load i64, ptr %v.1698
+  %t.16992 = icmp eq i64 %t.16990, %t.16991
+  %t.16993 = zext i1 %t.16992 to i64
+  store i64 %t.16993, ptr %v.1699
+  %t.17000 = load i64, ptr %v.1696
+  %t.17001 = load i64, ptr %v.1699
+  %t.17002 = or i64 %t.17000, %t.17001
+  store i64 %t.17002, ptr %v.1700
+  %t.17010 = load i64, ptr %v.1700
+  %t.17011 = icmp eq i64 %t.17010, 0
+  br i1 %t.17011, label %L.212, label %L.fall.1701
+L.fall.1701:
+  %t.17020 = load i64, ptr %v.1688
+  %t.17021 = load i64, ptr %v.1690
+  %t.17022 = icmp sgt i64 %t.17020, %t.17021
+  %t.17023 = zext i1 %t.17022 to i64
+  store i64 %t.17023, ptr %v.1702
+  %t.17030 = load i64, ptr %v.1702
+  %t.17031 = icmp eq i64 %t.17030, 0
+  br i1 %t.17031, label %L.214, label %L.fall.1703
+L.fall.1703:
+  %t.17070 = load i64, ptr %v.1686
+  %t.17071 = load i64, ptr %v.1690
+  %t.17072 = load i64, ptr %v.1688
+  %t.17079 = call i64 @strings_str_substring(i64 %t.17070, i64 %t.17071, i64 %t.17072)
   store i64 %t.17079, ptr %v.1707
-  %t.17080 = load i64, ptr %v.1706
-  %t.17081 = load i64, ptr %v.1707
-  %t.17082 = icmp eq i64 %t.17080, %t.17081
-  %t.17083 = zext i1 %t.17082 to i64
-  store i64 %t.17083, ptr %v.1708
-  %t.17090 = load i64, ptr %v.1708
-  %t.17091 = icmp eq i64 %t.17090, 0
-  br i1 %t.17091, label %L.216, label %L.fall.1709
-L.fall.1709:
-  br label %L.215
+  %t.17080 = load i64, ptr %v.1707
+  store i64 %t.17080, ptr %v.1708
+  %t.17100 = load i64, ptr %v.1708
+  %t.17109 = call i64 @has_ease_suffix(i64 %t.17100)
+  store i64 %t.17109, ptr %v.1710
+  store i64 1, ptr %v.1711
+  %t.17120 = load i64, ptr %v.1710
+  %t.17121 = load i64, ptr %v.1711
+  %t.17122 = icmp eq i64 %t.17120, %t.17121
+  %t.17123 = zext i1 %t.17122 to i64
+  store i64 %t.17123, ptr %v.1712
+  %t.17130 = load i64, ptr %v.1712
+  %t.17131 = icmp eq i64 %t.17130, 0
+  br i1 %t.17131, label %L.216, label %L.fall.1713
+L.fall.1713:
+  %t.17140 = ptrtoint ptr @.str.54 to i64
+  store i64 %t.17140, ptr %v.1714
+  %t.17150 = load i64, ptr %v.1644
+  %t.17151 = inttoptr i64 %t.17150 to ptr
+  %t.17152 = load i64, ptr %v.1714
+  %t.17153 = inttoptr i64 %t.17152 to ptr
+  %t.17154 = call ptr @ease_str_concat(ptr %t.17151, ptr %t.17153)
+  %t.17155 = ptrtoint ptr %t.17154 to i64
+  store i64 %t.17155, ptr %v.1715
+  %t.17160 = load i64, ptr %v.1715
+  %t.17161 = inttoptr i64 %t.17160 to ptr
+  %t.17162 = load i64, ptr %v.1708
+  %t.17163 = inttoptr i64 %t.17162 to ptr
+  %t.17164 = call ptr @ease_str_concat(ptr %t.17161, ptr %t.17163)
+  %t.17165 = ptrtoint ptr %t.17164 to i64
+  store i64 %t.17165, ptr %v.1716
+  %t.17170 = load i64, ptr %v.1681
+  %t.17171 = inttoptr i64 %t.17170 to ptr
+  %t.17172 = load i64, ptr %v.1716
+  %t.17173 = alloca i64
+  store i64 %t.17172, ptr %t.17173
+  call void @ease_array_push(ptr %t.17171, ptr %t.17173, i64 8)
+  br label %L.217
 L.216:
   br label %L.217
 L.217:
-  %t.17149 = call i64 @token_TK_PACKAGE()
-  store i64 %t.17149, ptr %v.1714
-  %t.17150 = load i64, ptr %v.1706
-  %t.17151 = load i64, ptr %v.1714
-  %t.17152 = icmp eq i64 %t.17150, %t.17151
-  %t.17153 = zext i1 %t.17152 to i64
-  store i64 %t.17153, ptr %v.1715
-  %t.17160 = load i64, ptr %v.1715
-  %t.17161 = icmp eq i64 %t.17160, 0
-  br i1 %t.17161, label %L.218, label %L.fall.1716
-L.fall.1716:
-  %t.17200 = load i64, ptr %v.1691
-  %t.17201 = load i64, ptr %v.1693
-  %t.17202 = load i64, ptr %v.1706
-  %t.17209 = call i64 @lexer_lex_end(i64 %t.17200, i64 %t.17201, i64 %t.17202)
-  store i64 %t.17209, ptr %v.1720
-  %t.17210 = load i64, ptr %v.1720
-  store i64 %t.17210, ptr %v.1693
-  %t.17240 = load i64, ptr %v.1691
-  %t.17241 = load i64, ptr %v.1693
-  %t.17249 = call i64 @lexer_lex_skip(i64 %t.17240, i64 %t.17241)
-  store i64 %t.17249, ptr %v.1724
-  %t.17250 = load i64, ptr %v.1724
-  store i64 %t.17250, ptr %v.1693
-  %t.17280 = load i64, ptr %v.1691
-  %t.17281 = load i64, ptr %v.1693
-  %t.17289 = call i64 @lexer_lex_kind(i64 %t.17280, i64 %t.17281)
-  store i64 %t.17289, ptr %v.1728
-  %t.17320 = load i64, ptr %v.1691
-  %t.17321 = load i64, ptr %v.1693
-  %t.17322 = load i64, ptr %v.1728
-  %t.17329 = call i64 @lexer_lex_end(i64 %t.17320, i64 %t.17321, i64 %t.17322)
-  store i64 %t.17329, ptr %v.1732
-  %t.17330 = load i64, ptr %v.1732
-  store i64 %t.17330, ptr %v.1693
-  %t.17360 = load i64, ptr %v.1691
-  %t.17361 = load i64, ptr %v.1693
-  %t.17369 = call i64 @lexer_lex_skip(i64 %t.17360, i64 %t.17361)
-  store i64 %t.17369, ptr %v.1736
-  %t.17370 = load i64, ptr %v.1736
-  store i64 %t.17370, ptr %v.1693
-  br label %L.219
-L.218:
-  %t.17409 = call i64 @token_TK_FN()
-  store i64 %t.17409, ptr %v.1740
-  %t.17410 = load i64, ptr %v.1706
-  %t.17411 = load i64, ptr %v.1740
-  %t.17412 = icmp eq i64 %t.17410, %t.17411
-  %t.17413 = zext i1 %t.17412 to i64
-  store i64 %t.17413, ptr %v.1741
-  %t.17420 = load i64, ptr %v.1741
-  %t.17421 = icmp eq i64 %t.17420, 0
-  br i1 %t.17421, label %L.220, label %L.fall.1742
-L.fall.1742:
-  %t.17460 = load i64, ptr %v.1691
-  %t.17461 = load i64, ptr %v.1693
-  %t.17462 = load i64, ptr %v.670
-  %t.17469 = call i64 @parser_parse_func_decl(i64 %t.17460, i64 %t.17461, i64 %t.17462)
-  store i64 %t.17469, ptr %v.1746
-  %t.17470 = load i64, ptr %v.1746
-  store i64 %t.17470, ptr %v.1747
-  %t.17480 = load i64, ptr %v.1747
-  %t.17486 = inttoptr i64 %t.17480 to ptr
-  %t.17487 = load i64, ptr %t.17486
-  store i64 %t.17487, ptr %v.1748
-  store i64 0, ptr %v.1749
-  %t.17500 = load i64, ptr %v.1748
-  %t.17501 = load i64, ptr %v.1749
-  %t.17502 = icmp slt i64 %t.17500, %t.17501
-  %t.17503 = zext i1 %t.17502 to i64
-  store i64 %t.17503, ptr %v.1750
-  %t.17510 = load i64, ptr %v.1750
-  %t.17511 = icmp eq i64 %t.17510, 0
-  br i1 %t.17511, label %L.222, label %L.fall.1751
-L.fall.1751:
   br label %L.215
+L.214:
+  br label %L.215
+L.215:
+  store i64 1, ptr %v.1724
+  %t.17250 = load i64, ptr %v.1688
+  %t.17251 = load i64, ptr %v.1724
+  %t.17252 = add i64 %t.17250, %t.17251
+  store i64 %t.17252, ptr %v.1725
+  %t.17260 = load i64, ptr %v.1725
+  store i64 %t.17260, ptr %v.1690
+  br label %L.213
+L.212:
+  br label %L.213
+L.213:
+  store i64 1, ptr %v.1730
+  %t.17310 = load i64, ptr %v.1688
+  %t.17311 = load i64, ptr %v.1730
+  %t.17312 = add i64 %t.17310, %t.17311
+  store i64 %t.17312, ptr %v.1731
+  %t.17320 = load i64, ptr %v.1731
+  store i64 %t.17320, ptr %v.1688
+  br label %L.210
+L.211:
+  br label %L.209
+L.208:
+  %t.17370 = load i64, ptr %v.1681
+  %t.17371 = inttoptr i64 %t.17370 to ptr
+  %t.17372 = load i64, ptr %v.1644
+  %t.17373 = alloca i64
+  store i64 %t.17372, ptr %t.17373
+  call void @ease_array_push(ptr %t.17371, ptr %t.17373, i64 8)
+  br label %L.209
+L.209:
+  store i64 0, ptr %v.1739
+  %t.17400 = load i64, ptr %v.1739
+  store i64 %t.17400, ptr %v.1740
+  br label %L.218
+L.218:
+  %t.17420 = load i64, ptr %v.1681
+  %t.17421 = add i64 %t.17420, 8
+  %t.17422 = inttoptr i64 %t.17421 to ptr
+  %t.17423 = load i64, ptr %t.17422
+  store i64 %t.17423, ptr %v.1742
+  %t.17430 = load i64, ptr %v.1740
+  %t.17431 = load i64, ptr %v.1742
+  %t.17432 = icmp slt i64 %t.17430, %t.17431
+  %t.17433 = zext i1 %t.17432 to i64
+  store i64 %t.17433, ptr %v.1743
+  %t.17440 = load i64, ptr %v.1743
+  %t.17441 = icmp eq i64 %t.17440, 0
+  br i1 %t.17441, label %L.219, label %L.fall.1744
+L.fall.1744:
+  %t.17450 = load i64, ptr %v.1681
+  %t.17451 = inttoptr i64 %t.17450 to ptr
+  %t.17452 = load i64, ptr %t.17451
+  %t.17453 = load i64, ptr %v.1740
+  %t.17454 = mul i64 %t.17453, 8
+  %t.17455 = add i64 %t.17452, %t.17454
+  %t.17456 = inttoptr i64 %t.17455 to ptr
+  %t.17457 = load i64, ptr %t.17456
+  store i64 %t.17457, ptr %v.1745
+  %t.17460 = load i64, ptr %v.1745
+  store i64 %t.17460, ptr %v.1746
+  %t.17480 = load i64, ptr %v.1746
+  %t.17489 = call i64 @os_ReadFile(i64 %t.17480)
+  store i64 %t.17489, ptr %v.1748
+  %t.17490 = load i64, ptr %v.1748
+  store i64 %t.17490, ptr %v.1749
+  store i64 0, ptr %v.1750
+  %t.17510 = load i64, ptr %v.1750
+  store i64 %t.17510, ptr %v.1751
+  %t.17540 = load i64, ptr %v.1749
+  %t.17541 = load i64, ptr %v.1751
+  %t.17549 = call i64 @lexer_lex_skip(i64 %t.17540, i64 %t.17541)
+  store i64 %t.17549, ptr %v.1754
+  %t.17550 = load i64, ptr %v.1754
+  store i64 %t.17550, ptr %v.1751
+  br label %L.220
+L.220:
+  %t.17590 = load i64, ptr %v.1749
+  %t.17591 = load i64, ptr %v.1751
+  %t.17599 = call i64 @lexer_lex_skip(i64 %t.17590, i64 %t.17591)
+  store i64 %t.17599, ptr %v.1759
+  %t.17600 = load i64, ptr %v.1759
+  store i64 %t.17600, ptr %v.1751
+  %t.17630 = load i64, ptr %v.1749
+  %t.17631 = load i64, ptr %v.1751
+  %t.17639 = call i64 @lexer_lex_kind(i64 %t.17630, i64 %t.17631)
+  store i64 %t.17639, ptr %v.1763
+  %t.17640 = load i64, ptr %v.1763
+  store i64 %t.17640, ptr %v.1764
+  %t.17659 = call i64 @token_TK_EOF()
+  store i64 %t.17659, ptr %v.1765
+  %t.17660 = load i64, ptr %v.1764
+  %t.17661 = load i64, ptr %v.1765
+  %t.17662 = icmp eq i64 %t.17660, %t.17661
+  %t.17663 = zext i1 %t.17662 to i64
+  store i64 %t.17663, ptr %v.1766
+  %t.17670 = load i64, ptr %v.1766
+  %t.17671 = icmp eq i64 %t.17670, 0
+  br i1 %t.17671, label %L.222, label %L.fall.1767
+L.fall.1767:
+  br label %L.221
 L.222:
   br label %L.223
 L.223:
-  %t.17560 = load i64, ptr %v.1747
-  %t.17566 = inttoptr i64 %t.17560 to ptr
-  %t.17567 = load i64, ptr %t.17566
-  store i64 %t.17567, ptr %v.1756
-  %t.17570 = load i64, ptr %v.1756
-  store i64 %t.17570, ptr %v.1757
-  %t.17580 = load i64, ptr %v.670
-  %t.17581 = inttoptr i64 %t.17580 to ptr
-  %t.17582 = load i64, ptr %t.17581
-  %t.17583 = load i64, ptr %v.1757
-  %t.17584 = mul i64 %t.17583, 8
-  %t.17585 = add i64 %t.17582, %t.17584
-  %t.17586 = inttoptr i64 %t.17585 to ptr
-  %t.17587 = load i64, ptr %t.17586
-  store i64 %t.17587, ptr %v.1758
-  %t.17590 = load i64, ptr %v.1758
-  %t.17592 = add i64 %t.17590, 16
-  %t.17596 = inttoptr i64 %t.17592 to ptr
-  %t.17597 = load i64, ptr %t.17596
-  store i64 %t.17597, ptr %v.1759
-  %t.17600 = load i64, ptr %v.1759
-  store i64 %t.17600, ptr %v.1760
-  %t.17610 = ptrtoint ptr @.str.55 to i64
-  store i64 %t.17610, ptr %v.1761
-  %t.17620 = load i64, ptr %v.1555
-  %t.17621 = inttoptr i64 %t.17620 to ptr
-  %t.17622 = load i64, ptr %v.1761
-  %t.17623 = inttoptr i64 %t.17622 to ptr
-  %t.17624 = call ptr @ease_str_concat(ptr %t.17621, ptr %t.17623)
-  %t.17625 = ptrtoint ptr %t.17624 to i64
-  store i64 %t.17625, ptr %v.1762
-  %t.17630 = load i64, ptr %v.1762
-  %t.17631 = inttoptr i64 %t.17630 to ptr
-  %t.17632 = load i64, ptr %v.1760
-  %t.17633 = inttoptr i64 %t.17632 to ptr
-  %t.17634 = call ptr @ease_str_concat(ptr %t.17631, ptr %t.17633)
-  %t.17635 = ptrtoint ptr %t.17634 to i64
-  store i64 %t.17635, ptr %v.1763
-  %t.17640 = load i64, ptr %v.1763
-  store i64 %t.17640, ptr %v.1764
-  %t.17650 = load i64, ptr %v.683
-  %t.17651 = inttoptr i64 %t.17650 to ptr
-  %t.17652 = load i64, ptr %v.1764
-  %t.17653 = alloca i64
-  store i64 %t.17652, ptr %t.17653
-  call void @ease_array_push(ptr %t.17651, ptr %t.17653, i64 8)
-  %t.17660 = load i64, ptr %v.686
-  %t.17661 = inttoptr i64 %t.17660 to ptr
-  %t.17662 = load i64, ptr %v.1757
-  %t.17663 = alloca i64
-  store i64 %t.17662, ptr %t.17663
-  call void @ease_array_push(ptr %t.17661, ptr %t.17663, i64 8)
-  %t.17670 = ptrtoint ptr @g_rename_from to i64
-  store i64 %t.17670, ptr %v.1767
-  %t.17680 = load i64, ptr %v.1767
-  %t.17681 = inttoptr i64 %t.17680 to ptr
-  %t.17682 = load i64, ptr %v.1760
-  %t.17683 = alloca i64
-  store i64 %t.17682, ptr %t.17683
-  call void @ease_array_push(ptr %t.17681, ptr %t.17683, i64 8)
-  %t.17690 = ptrtoint ptr @g_rename_to to i64
-  store i64 %t.17690, ptr %v.1769
-  %t.17700 = load i64, ptr %v.1769
-  %t.17701 = inttoptr i64 %t.17700 to ptr
-  %t.17702 = load i64, ptr %v.1764
-  %t.17703 = alloca i64
-  store i64 %t.17702, ptr %t.17703
-  call void @ease_array_push(ptr %t.17701, ptr %t.17703, i64 8)
-  %t.17710 = ptrtoint ptr @.str.56 to i64
-  store i64 %t.17710, ptr %v.1771
-  %t.17720 = load i64, ptr %v.1771
-  %t.17721 = inttoptr i64 %t.17720 to ptr
-  %t.17722 = load i64, ptr %v.1764
-  %t.17723 = inttoptr i64 %t.17722 to ptr
-  %t.17724 = call ptr @ease_str_concat(ptr %t.17721, ptr %t.17723)
-  %t.17725 = ptrtoint ptr %t.17724 to i64
-  store i64 %t.17725, ptr %v.1772
-  %t.17730 = ptrtoint ptr @.str.57 to i64
-  store i64 %t.17730, ptr %v.1773
-  %t.17740 = load i64, ptr %v.1772
-  %t.17741 = inttoptr i64 %t.17740 to ptr
-  %t.17742 = load i64, ptr %v.1773
-  %t.17743 = inttoptr i64 %t.17742 to ptr
-  %t.17744 = call ptr @ease_str_concat(ptr %t.17741, ptr %t.17743)
-  %t.17745 = ptrtoint ptr %t.17744 to i64
-  store i64 %t.17745, ptr %v.1774
-  %t.17750 = load i64, ptr %v.683
-  %t.17751 = add i64 %t.17750, 8
-  %t.17752 = inttoptr i64 %t.17751 to ptr
-  %t.17753 = load i64, ptr %t.17752
-  store i64 %t.17753, ptr %v.1775
-  %t.17770 = load i64, ptr %v.1775
-  %t.17779 = call i64 @strconv_Itoa(i64 %t.17770)
-  store i64 %t.17779, ptr %v.1777
-  %t.17780 = load i64, ptr %v.1774
-  %t.17781 = inttoptr i64 %t.17780 to ptr
-  %t.17782 = load i64, ptr %v.1777
-  %t.17783 = inttoptr i64 %t.17782 to ptr
-  %t.17784 = call ptr @ease_str_concat(ptr %t.17781, ptr %t.17783)
-  %t.17785 = ptrtoint ptr %t.17784 to i64
-  store i64 %t.17785, ptr %v.1778
-  %t.17790 = ptrtoint ptr @.str.58 to i64
-  store i64 %t.17790, ptr %v.1779
-  %t.17800 = load i64, ptr %v.1778
-  %t.17801 = inttoptr i64 %t.17800 to ptr
-  %t.17802 = load i64, ptr %v.1779
-  %t.17803 = inttoptr i64 %t.17802 to ptr
-  %t.17804 = call ptr @ease_str_concat(ptr %t.17801, ptr %t.17803)
-  %t.17805 = ptrtoint ptr %t.17804 to i64
-  store i64 %t.17805, ptr %v.1780
-  %t.17820 = load i64, ptr %v.1780
-  %t.17829 = call i64 @io_Print(i64 %t.17820)
+  %t.17729 = call i64 @token_TK_PACKAGE()
+  store i64 %t.17729, ptr %v.1772
+  %t.17730 = load i64, ptr %v.1764
+  %t.17731 = load i64, ptr %v.1772
+  %t.17732 = icmp eq i64 %t.17730, %t.17731
+  %t.17733 = zext i1 %t.17732 to i64
+  store i64 %t.17733, ptr %v.1773
+  %t.17740 = load i64, ptr %v.1773
+  %t.17741 = icmp eq i64 %t.17740, 0
+  br i1 %t.17741, label %L.224, label %L.fall.1774
+L.fall.1774:
+  %t.17780 = load i64, ptr %v.1749
+  %t.17781 = load i64, ptr %v.1751
+  %t.17782 = load i64, ptr %v.1764
+  %t.17789 = call i64 @lexer_lex_end(i64 %t.17780, i64 %t.17781, i64 %t.17782)
+  store i64 %t.17789, ptr %v.1778
+  %t.17790 = load i64, ptr %v.1778
+  store i64 %t.17790, ptr %v.1751
+  %t.17820 = load i64, ptr %v.1749
+  %t.17821 = load i64, ptr %v.1751
+  %t.17829 = call i64 @lexer_lex_skip(i64 %t.17820, i64 %t.17821)
   store i64 %t.17829, ptr %v.1782
-  %t.17830 = load i64, ptr %v.1747
-  %t.17832 = add i64 %t.17830, 8
-  %t.17836 = inttoptr i64 %t.17832 to ptr
-  %t.17837 = load i64, ptr %t.17836
-  store i64 %t.17837, ptr %v.1783
-  %t.17840 = load i64, ptr %v.1783
-  store i64 %t.17840, ptr %v.1693
-  %t.17870 = load i64, ptr %v.1691
-  %t.17871 = load i64, ptr %v.1693
-  %t.17879 = call i64 @lexer_lex_skip(i64 %t.17870, i64 %t.17871)
-  store i64 %t.17879, ptr %v.1787
-  %t.17880 = load i64, ptr %v.1787
-  store i64 %t.17880, ptr %v.1693
-  br label %L.221
-L.220:
-  %t.17940 = load i64, ptr %v.1691
-  %t.17941 = load i64, ptr %v.1693
-  %t.17942 = load i64, ptr %v.1706
-  %t.17949 = call i64 @lexer_lex_end(i64 %t.17940, i64 %t.17941, i64 %t.17942)
+  %t.17830 = load i64, ptr %v.1782
+  store i64 %t.17830, ptr %v.1751
+  %t.17860 = load i64, ptr %v.1749
+  %t.17861 = load i64, ptr %v.1751
+  %t.17869 = call i64 @lexer_lex_kind(i64 %t.17860, i64 %t.17861)
+  store i64 %t.17869, ptr %v.1786
+  %t.17900 = load i64, ptr %v.1749
+  %t.17901 = load i64, ptr %v.1751
+  %t.17902 = load i64, ptr %v.1786
+  %t.17909 = call i64 @lexer_lex_end(i64 %t.17900, i64 %t.17901, i64 %t.17902)
+  store i64 %t.17909, ptr %v.1790
+  %t.17910 = load i64, ptr %v.1790
+  store i64 %t.17910, ptr %v.1751
+  %t.17940 = load i64, ptr %v.1749
+  %t.17941 = load i64, ptr %v.1751
+  %t.17949 = call i64 @lexer_lex_skip(i64 %t.17940, i64 %t.17941)
   store i64 %t.17949, ptr %v.1794
   %t.17950 = load i64, ptr %v.1794
-  store i64 %t.17950, ptr %v.1693
-  %t.17980 = load i64, ptr %v.1691
-  %t.17981 = load i64, ptr %v.1693
-  %t.17989 = call i64 @lexer_lex_skip(i64 %t.17980, i64 %t.17981)
-  store i64 %t.17989, ptr %v.1798
-  %t.17990 = load i64, ptr %v.1798
-  store i64 %t.17990, ptr %v.1693
-  br label %L.221
-L.221:
-  br label %L.219
-L.219:
-  br label %L.214
-L.215:
-  store i64 1, ptr %v.1804
-  %t.18050 = load i64, ptr %v.1682
-  %t.18051 = load i64, ptr %v.1804
-  %t.18052 = add i64 %t.18050, %t.18051
-  store i64 %t.18052, ptr %v.1805
-  %t.18060 = load i64, ptr %v.1805
-  store i64 %t.18060, ptr %v.1682
-  br label %L.212
-L.213:
-  br label %L.197
-L.196:
-  br label %L.197
-L.197:
-  store i64 1, ptr %v.1812
-  %t.18130 = load i64, ptr %v.1546
-  %t.18131 = load i64, ptr %v.1812
-  %t.18132 = add i64 %t.18130, %t.18131
-  store i64 %t.18132, ptr %v.1813
-  %t.18140 = load i64, ptr %v.1813
-  store i64 %t.18140, ptr %v.1546
-  br label %L.190
-L.191:
-  %t.18170 = ptrtoint ptr @g_rename_from to i64
-  store i64 %t.18170, ptr %v.1817
-  %t.18180 = ptrtoint ptr @.str.59 to i64
-  store i64 %t.18180, ptr %v.1818
-  %t.18190 = load i64, ptr %v.1817
-  %t.18191 = inttoptr i64 %t.18190 to ptr
-  %t.18192 = load i64, ptr %v.1818
-  %t.18193 = alloca i64
-  store i64 %t.18192, ptr %t.18193
-  call void @ease_array_push(ptr %t.18191, ptr %t.18193, i64 8)
-  %t.18200 = ptrtoint ptr @g_rename_to to i64
-  store i64 %t.18200, ptr %v.1820
-  %t.18210 = ptrtoint ptr @.str.60 to i64
-  store i64 %t.18210, ptr %v.1821
-  %t.18220 = load i64, ptr %v.1820
-  %t.18221 = inttoptr i64 %t.18220 to ptr
-  %t.18222 = load i64, ptr %v.1821
-  %t.18223 = alloca i64
-  store i64 %t.18222, ptr %t.18223
-  call void @ease_array_push(ptr %t.18221, ptr %t.18223, i64 8)
-  store i64 0, ptr %v.1823
-  %t.18240 = load i64, ptr %v.1823
-  store i64 %t.18240, ptr %v.1824
-  %t.18250 = load i64, ptr %v.670
-  %t.18251 = add i64 %t.18250, 8
-  %t.18252 = inttoptr i64 %t.18251 to ptr
-  %t.18253 = load i64, ptr %t.18252
-  store i64 %t.18253, ptr %v.1825
-  %t.18260 = load i64, ptr %v.1825
-  store i64 %t.18260, ptr %v.1826
-  br label %L.224
+  store i64 %t.17950, ptr %v.1751
+  br label %L.225
 L.224:
-  %t.18280 = load i64, ptr %v.1824
-  %t.18281 = load i64, ptr %v.1826
-  %t.18282 = icmp slt i64 %t.18280, %t.18281
-  %t.18283 = zext i1 %t.18282 to i64
-  store i64 %t.18283, ptr %v.1828
-  %t.18290 = load i64, ptr %v.1828
-  %t.18291 = icmp eq i64 %t.18290, 0
-  br i1 %t.18291, label %L.225, label %L.fall.1829
-L.fall.1829:
-  %t.18300 = load i64, ptr %v.670
+  %t.17989 = call i64 @token_TK_FN()
+  store i64 %t.17989, ptr %v.1798
+  %t.17990 = load i64, ptr %v.1764
+  %t.17991 = load i64, ptr %v.1798
+  %t.17992 = icmp eq i64 %t.17990, %t.17991
+  %t.17993 = zext i1 %t.17992 to i64
+  store i64 %t.17993, ptr %v.1799
+  %t.18000 = load i64, ptr %v.1799
+  %t.18001 = icmp eq i64 %t.18000, 0
+  br i1 %t.18001, label %L.226, label %L.fall.1800
+L.fall.1800:
+  %t.18040 = load i64, ptr %v.1749
+  %t.18041 = load i64, ptr %v.1751
+  %t.18042 = load i64, ptr %v.670
+  %t.18049 = call i64 @parser_parse_func_decl(i64 %t.18040, i64 %t.18041, i64 %t.18042)
+  store i64 %t.18049, ptr %v.1804
+  %t.18050 = load i64, ptr %v.1804
+  store i64 %t.18050, ptr %v.1805
+  %t.18060 = load i64, ptr %v.1805
+  %t.18066 = inttoptr i64 %t.18060 to ptr
+  %t.18067 = load i64, ptr %t.18066
+  store i64 %t.18067, ptr %v.1806
+  store i64 0, ptr %v.1807
+  %t.18080 = load i64, ptr %v.1806
+  %t.18081 = load i64, ptr %v.1807
+  %t.18082 = icmp slt i64 %t.18080, %t.18081
+  %t.18083 = zext i1 %t.18082 to i64
+  store i64 %t.18083, ptr %v.1808
+  %t.18090 = load i64, ptr %v.1808
+  %t.18091 = icmp eq i64 %t.18090, 0
+  br i1 %t.18091, label %L.228, label %L.fall.1809
+L.fall.1809:
+  br label %L.221
+L.228:
+  br label %L.229
+L.229:
+  %t.18140 = load i64, ptr %v.1805
+  %t.18146 = inttoptr i64 %t.18140 to ptr
+  %t.18147 = load i64, ptr %t.18146
+  store i64 %t.18147, ptr %v.1814
+  %t.18150 = load i64, ptr %v.1814
+  store i64 %t.18150, ptr %v.1815
+  %t.18160 = load i64, ptr %v.670
+  %t.18161 = inttoptr i64 %t.18160 to ptr
+  %t.18162 = load i64, ptr %t.18161
+  %t.18163 = load i64, ptr %v.1815
+  %t.18164 = mul i64 %t.18163, 8
+  %t.18165 = add i64 %t.18162, %t.18164
+  %t.18166 = inttoptr i64 %t.18165 to ptr
+  %t.18167 = load i64, ptr %t.18166
+  store i64 %t.18167, ptr %v.1816
+  %t.18170 = load i64, ptr %v.1816
+  %t.18172 = add i64 %t.18170, 16
+  %t.18176 = inttoptr i64 %t.18172 to ptr
+  %t.18177 = load i64, ptr %t.18176
+  store i64 %t.18177, ptr %v.1817
+  %t.18180 = load i64, ptr %v.1817
+  store i64 %t.18180, ptr %v.1818
+  %t.18190 = ptrtoint ptr @.str.55 to i64
+  store i64 %t.18190, ptr %v.1819
+  %t.18200 = load i64, ptr %v.1613
+  %t.18201 = inttoptr i64 %t.18200 to ptr
+  %t.18202 = load i64, ptr %v.1819
+  %t.18203 = inttoptr i64 %t.18202 to ptr
+  %t.18204 = call ptr @ease_str_concat(ptr %t.18201, ptr %t.18203)
+  %t.18205 = ptrtoint ptr %t.18204 to i64
+  store i64 %t.18205, ptr %v.1820
+  %t.18210 = load i64, ptr %v.1820
+  %t.18211 = inttoptr i64 %t.18210 to ptr
+  %t.18212 = load i64, ptr %v.1818
+  %t.18213 = inttoptr i64 %t.18212 to ptr
+  %t.18214 = call ptr @ease_str_concat(ptr %t.18211, ptr %t.18213)
+  %t.18215 = ptrtoint ptr %t.18214 to i64
+  store i64 %t.18215, ptr %v.1821
+  %t.18220 = load i64, ptr %v.1821
+  store i64 %t.18220, ptr %v.1822
+  %t.18230 = load i64, ptr %v.683
+  %t.18231 = inttoptr i64 %t.18230 to ptr
+  %t.18232 = load i64, ptr %v.1822
+  %t.18233 = alloca i64
+  store i64 %t.18232, ptr %t.18233
+  call void @ease_array_push(ptr %t.18231, ptr %t.18233, i64 8)
+  %t.18240 = load i64, ptr %v.686
+  %t.18241 = inttoptr i64 %t.18240 to ptr
+  %t.18242 = load i64, ptr %v.1815
+  %t.18243 = alloca i64
+  store i64 %t.18242, ptr %t.18243
+  call void @ease_array_push(ptr %t.18241, ptr %t.18243, i64 8)
+  %t.18250 = ptrtoint ptr @g_rename_from to i64
+  store i64 %t.18250, ptr %v.1825
+  %t.18260 = load i64, ptr %v.1825
+  %t.18261 = inttoptr i64 %t.18260 to ptr
+  %t.18262 = load i64, ptr %v.1818
+  %t.18263 = alloca i64
+  store i64 %t.18262, ptr %t.18263
+  call void @ease_array_push(ptr %t.18261, ptr %t.18263, i64 8)
+  %t.18270 = ptrtoint ptr @g_rename_to to i64
+  store i64 %t.18270, ptr %v.1827
+  %t.18280 = load i64, ptr %v.1827
+  %t.18281 = inttoptr i64 %t.18280 to ptr
+  %t.18282 = load i64, ptr %v.1822
+  %t.18283 = alloca i64
+  store i64 %t.18282, ptr %t.18283
+  call void @ease_array_push(ptr %t.18281, ptr %t.18283, i64 8)
+  %t.18290 = ptrtoint ptr @.str.56 to i64
+  store i64 %t.18290, ptr %v.1829
+  %t.18300 = load i64, ptr %v.1829
   %t.18301 = inttoptr i64 %t.18300 to ptr
-  %t.18302 = load i64, ptr %t.18301
-  %t.18303 = load i64, ptr %v.1824
-  %t.18304 = mul i64 %t.18303, 8
-  %t.18305 = add i64 %t.18302, %t.18304
-  %t.18306 = inttoptr i64 %t.18305 to ptr
-  %t.18307 = load i64, ptr %t.18306
-  store i64 %t.18307, ptr %v.1830
-  %t.18310 = load i64, ptr %v.1830
-  %t.18316 = inttoptr i64 %t.18310 to ptr
-  %t.18317 = load i64, ptr %t.18316
-  store i64 %t.18317, ptr %v.1831
-  %t.18329 = call i64 @ast_DECL_STRUCT()
-  store i64 %t.18329, ptr %v.1832
-  %t.18330 = load i64, ptr %v.1831
-  %t.18331 = load i64, ptr %v.1832
-  %t.18332 = icmp eq i64 %t.18330, %t.18331
-  %t.18333 = zext i1 %t.18332 to i64
+  %t.18302 = load i64, ptr %v.1822
+  %t.18303 = inttoptr i64 %t.18302 to ptr
+  %t.18304 = call ptr @ease_str_concat(ptr %t.18301, ptr %t.18303)
+  %t.18305 = ptrtoint ptr %t.18304 to i64
+  store i64 %t.18305, ptr %v.1830
+  %t.18310 = ptrtoint ptr @.str.57 to i64
+  store i64 %t.18310, ptr %v.1831
+  %t.18320 = load i64, ptr %v.1830
+  %t.18321 = inttoptr i64 %t.18320 to ptr
+  %t.18322 = load i64, ptr %v.1831
+  %t.18323 = inttoptr i64 %t.18322 to ptr
+  %t.18324 = call ptr @ease_str_concat(ptr %t.18321, ptr %t.18323)
+  %t.18325 = ptrtoint ptr %t.18324 to i64
+  store i64 %t.18325, ptr %v.1832
+  %t.18330 = load i64, ptr %v.683
+  %t.18331 = add i64 %t.18330, 8
+  %t.18332 = inttoptr i64 %t.18331 to ptr
+  %t.18333 = load i64, ptr %t.18332
   store i64 %t.18333, ptr %v.1833
-  %t.18340 = load i64, ptr %v.1833
-  %t.18341 = icmp eq i64 %t.18340, 0
-  br i1 %t.18341, label %L.226, label %L.fall.1834
-L.fall.1834:
-  %t.18350 = load i64, ptr %v.670
-  %t.18351 = inttoptr i64 %t.18350 to ptr
-  %t.18352 = load i64, ptr %t.18351
-  %t.18353 = load i64, ptr %v.1824
-  %t.18354 = mul i64 %t.18353, 8
-  %t.18355 = add i64 %t.18352, %t.18354
-  %t.18356 = inttoptr i64 %t.18355 to ptr
-  %t.18357 = load i64, ptr %t.18356
-  store i64 %t.18357, ptr %v.1835
-  %t.18360 = load i64, ptr %v.1835
-  %t.18362 = add i64 %t.18360, 16
-  %t.18366 = inttoptr i64 %t.18362 to ptr
-  %t.18367 = load i64, ptr %t.18366
-  store i64 %t.18367, ptr %v.1836
-  %t.18370 = load i64, ptr %v.1836
+  %t.18350 = load i64, ptr %v.1833
+  %t.18359 = call i64 @strconv_Itoa(i64 %t.18350)
+  store i64 %t.18359, ptr %v.1835
+  %t.18360 = load i64, ptr %v.1832
+  %t.18361 = inttoptr i64 %t.18360 to ptr
+  %t.18362 = load i64, ptr %v.1835
+  %t.18363 = inttoptr i64 %t.18362 to ptr
+  %t.18364 = call ptr @ease_str_concat(ptr %t.18361, ptr %t.18363)
+  %t.18365 = ptrtoint ptr %t.18364 to i64
+  store i64 %t.18365, ptr %v.1836
+  %t.18370 = ptrtoint ptr @.str.58 to i64
   store i64 %t.18370, ptr %v.1837
-  store i64 24, ptr %v.1838
-  %t.18390 = load i64, ptr %v.1838
-  %t.18391 = call ptr @malloc(i64 %t.18390)
-  %t.18392 = call ptr @memset(ptr %t.18391, i32 0, i64 %t.18390)
-  %t.18393 = ptrtoint ptr %t.18391 to i64
-  store i64 %t.18393, ptr %v.1839
-  %t.18400 = load i64, ptr %v.1839
-  store i64 %t.18400, ptr %v.1840
-  %t.18410 = load i64, ptr %v.670
-  %t.18411 = inttoptr i64 %t.18410 to ptr
-  %t.18412 = load i64, ptr %t.18411
-  %t.18413 = load i64, ptr %v.1824
-  %t.18414 = mul i64 %t.18413, 8
-  %t.18415 = add i64 %t.18412, %t.18414
-  %t.18416 = inttoptr i64 %t.18415 to ptr
+  %t.18380 = load i64, ptr %v.1836
+  %t.18381 = inttoptr i64 %t.18380 to ptr
+  %t.18382 = load i64, ptr %v.1837
+  %t.18383 = inttoptr i64 %t.18382 to ptr
+  %t.18384 = call ptr @ease_str_concat(ptr %t.18381, ptr %t.18383)
+  %t.18385 = ptrtoint ptr %t.18384 to i64
+  store i64 %t.18385, ptr %v.1838
+  %t.18400 = load i64, ptr %v.1838
+  %t.18409 = call i64 @io_Print(i64 %t.18400)
+  store i64 %t.18409, ptr %v.1840
+  %t.18410 = load i64, ptr %v.1805
+  %t.18412 = add i64 %t.18410, 8
+  %t.18416 = inttoptr i64 %t.18412 to ptr
   %t.18417 = load i64, ptr %t.18416
   store i64 %t.18417, ptr %v.1841
   %t.18420 = load i64, ptr %v.1841
-  %t.18422 = add i64 %t.18420, 24
-  %t.18426 = inttoptr i64 %t.18422 to ptr
-  %t.18427 = load i64, ptr %t.18426
-  store i64 %t.18427, ptr %v.1842
-  %t.18430 = load i64, ptr %v.1842
-  store i64 %t.18430, ptr %v.1843
-  store i64 0, ptr %v.1844
-  %t.18450 = load i64, ptr %v.1843
-  %t.18451 = load i64, ptr %v.1844
-  %t.18452 = icmp sge i64 %t.18450, %t.18451
-  %t.18453 = zext i1 %t.18452 to i64
-  store i64 %t.18453, ptr %v.1845
+  store i64 %t.18420, ptr %v.1751
+  %t.18450 = load i64, ptr %v.1749
+  %t.18451 = load i64, ptr %v.1751
+  %t.18459 = call i64 @lexer_lex_skip(i64 %t.18450, i64 %t.18451)
+  store i64 %t.18459, ptr %v.1845
   %t.18460 = load i64, ptr %v.1845
-  %t.18461 = icmp eq i64 %t.18460, 0
-  br i1 %t.18461, label %L.228, label %L.fall.1846
-L.fall.1846:
-  store i64 0, ptr %v.1847
-  %t.18480 = load i64, ptr %v.1847
-  store i64 %t.18480, ptr %v.1848
+  store i64 %t.18460, ptr %v.1751
+  br label %L.227
+L.226:
+  %t.18520 = load i64, ptr %v.1749
+  %t.18521 = load i64, ptr %v.1751
+  %t.18522 = load i64, ptr %v.1764
+  %t.18529 = call i64 @lexer_lex_end(i64 %t.18520, i64 %t.18521, i64 %t.18522)
+  store i64 %t.18529, ptr %v.1852
+  %t.18530 = load i64, ptr %v.1852
+  store i64 %t.18530, ptr %v.1751
+  %t.18560 = load i64, ptr %v.1749
+  %t.18561 = load i64, ptr %v.1751
+  %t.18569 = call i64 @lexer_lex_skip(i64 %t.18560, i64 %t.18561)
+  store i64 %t.18569, ptr %v.1856
+  %t.18570 = load i64, ptr %v.1856
+  store i64 %t.18570, ptr %v.1751
+  br label %L.227
+L.227:
+  br label %L.225
+L.225:
+  br label %L.220
+L.221:
+  store i64 1, ptr %v.1862
+  %t.18630 = load i64, ptr %v.1740
+  %t.18631 = load i64, ptr %v.1862
+  %t.18632 = add i64 %t.18630, %t.18631
+  store i64 %t.18632, ptr %v.1863
+  %t.18640 = load i64, ptr %v.1863
+  store i64 %t.18640, ptr %v.1740
+  br label %L.218
+L.219:
+  br label %L.203
+L.202:
+  br label %L.203
+L.203:
+  store i64 1, ptr %v.1870
+  %t.18710 = load i64, ptr %v.1604
+  %t.18711 = load i64, ptr %v.1870
+  %t.18712 = add i64 %t.18710, %t.18711
+  store i64 %t.18712, ptr %v.1871
+  %t.18720 = load i64, ptr %v.1871
+  store i64 %t.18720, ptr %v.1604
+  br label %L.196
+L.197:
+  %t.18750 = ptrtoint ptr @g_rename_from to i64
+  store i64 %t.18750, ptr %v.1875
+  %t.18760 = ptrtoint ptr @.str.59 to i64
+  store i64 %t.18760, ptr %v.1876
+  %t.18770 = load i64, ptr %v.1875
+  %t.18771 = inttoptr i64 %t.18770 to ptr
+  %t.18772 = load i64, ptr %v.1876
+  %t.18773 = alloca i64
+  store i64 %t.18772, ptr %t.18773
+  call void @ease_array_push(ptr %t.18771, ptr %t.18773, i64 8)
+  %t.18780 = ptrtoint ptr @g_rename_to to i64
+  store i64 %t.18780, ptr %v.1878
+  %t.18790 = ptrtoint ptr @.str.60 to i64
+  store i64 %t.18790, ptr %v.1879
+  %t.18800 = load i64, ptr %v.1878
+  %t.18801 = inttoptr i64 %t.18800 to ptr
+  %t.18802 = load i64, ptr %v.1879
+  %t.18803 = alloca i64
+  store i64 %t.18802, ptr %t.18803
+  call void @ease_array_push(ptr %t.18801, ptr %t.18803, i64 8)
+  store i64 0, ptr %v.1881
+  %t.18820 = load i64, ptr %v.1881
+  store i64 %t.18820, ptr %v.1882
+  %t.18830 = load i64, ptr %v.670
+  %t.18831 = add i64 %t.18830, 8
+  %t.18832 = inttoptr i64 %t.18831 to ptr
+  %t.18833 = load i64, ptr %t.18832
+  store i64 %t.18833, ptr %v.1883
+  %t.18840 = load i64, ptr %v.1883
+  store i64 %t.18840, ptr %v.1884
   br label %L.230
 L.230:
-  %t.18500 = load i64, ptr %v.1843
-  %t.18501 = load i64, ptr %v.1826
-  %t.18502 = icmp slt i64 %t.18500, %t.18501
-  %t.18503 = zext i1 %t.18502 to i64
-  store i64 %t.18503, ptr %v.1850
-  %t.18510 = load i64, ptr %v.1850
-  %t.18511 = icmp eq i64 %t.18510, 0
-  br i1 %t.18511, label %L.231, label %L.fall.1851
-L.fall.1851:
-  %t.18520 = load i64, ptr %v.670
-  %t.18521 = inttoptr i64 %t.18520 to ptr
-  %t.18522 = load i64, ptr %t.18521
-  %t.18523 = load i64, ptr %v.1843
-  %t.18524 = mul i64 %t.18523, 8
-  %t.18525 = add i64 %t.18522, %t.18524
-  %t.18526 = inttoptr i64 %t.18525 to ptr
-  %t.18527 = load i64, ptr %t.18526
-  store i64 %t.18527, ptr %v.1852
-  %t.18530 = load i64, ptr %v.1852
-  %t.18536 = inttoptr i64 %t.18530 to ptr
-  %t.18537 = load i64, ptr %t.18536
-  store i64 %t.18537, ptr %v.1853
-  %t.18549 = call i64 @ast_DECL_FIELD()
-  store i64 %t.18549, ptr %v.1854
-  %t.18550 = load i64, ptr %v.1853
-  %t.18551 = load i64, ptr %v.1854
-  %t.18552 = icmp ne i64 %t.18550, %t.18551
-  %t.18553 = zext i1 %t.18552 to i64
-  store i64 %t.18553, ptr %v.1855
-  %t.18560 = load i64, ptr %v.1855
-  %t.18561 = icmp eq i64 %t.18560, 0
-  br i1 %t.18561, label %L.232, label %L.fall.1856
-L.fall.1856:
-  br label %L.231
-L.232:
-  br label %L.233
-L.233:
-  %t.18610 = load i64, ptr %v.670
-  %t.18611 = inttoptr i64 %t.18610 to ptr
-  %t.18612 = load i64, ptr %t.18611
-  %t.18613 = load i64, ptr %v.1843
-  %t.18614 = mul i64 %t.18613, 8
-  %t.18615 = add i64 %t.18612, %t.18614
-  %t.18616 = inttoptr i64 %t.18615 to ptr
-  %t.18617 = load i64, ptr %t.18616
-  store i64 %t.18617, ptr %v.1861
-  %t.18620 = load i64, ptr %v.1861
-  %t.18622 = add i64 %t.18620, 16
-  %t.18626 = inttoptr i64 %t.18622 to ptr
-  %t.18627 = load i64, ptr %t.18626
-  store i64 %t.18627, ptr %v.1862
-  %t.18630 = load i64, ptr %v.1840
-  %t.18631 = inttoptr i64 %t.18630 to ptr
-  %t.18632 = load i64, ptr %v.1862
-  %t.18633 = alloca i64
-  store i64 %t.18632, ptr %t.18633
-  call void @ease_array_push(ptr %t.18631, ptr %t.18633, i64 8)
-  %t.18640 = load i64, ptr %v.670
-  %t.18641 = inttoptr i64 %t.18640 to ptr
-  %t.18642 = load i64, ptr %t.18641
-  %t.18643 = load i64, ptr %v.1843
-  %t.18644 = mul i64 %t.18643, 8
-  %t.18645 = add i64 %t.18642, %t.18644
-  %t.18646 = inttoptr i64 %t.18645 to ptr
-  %t.18647 = load i64, ptr %t.18646
-  store i64 %t.18647, ptr %v.1864
-  %t.18650 = load i64, ptr %v.1864
-  %t.18652 = add i64 %t.18650, 48
-  %t.18656 = inttoptr i64 %t.18652 to ptr
-  %t.18657 = load i64, ptr %t.18656
-  store i64 %t.18657, ptr %v.1865
-  %t.18669 = call i64 @ast_TYPE_UNKNOWN()
-  store i64 %t.18669, ptr %v.1866
-  %t.18670 = load i64, ptr %v.1865
-  %t.18671 = load i64, ptr %v.1866
-  %t.18672 = icmp ne i64 %t.18670, %t.18671
-  %t.18673 = zext i1 %t.18672 to i64
-  store i64 %t.18673, ptr %v.1867
-  %t.18680 = load i64, ptr %v.1867
-  %t.18681 = icmp eq i64 %t.18680, 0
-  br i1 %t.18681, label %L.234, label %L.fall.1868
-L.fall.1868:
-  %t.18690 = load i64, ptr %v.670
-  %t.18691 = inttoptr i64 %t.18690 to ptr
-  %t.18692 = load i64, ptr %t.18691
-  %t.18693 = load i64, ptr %v.1843
-  %t.18694 = mul i64 %t.18693, 8
-  %t.18695 = add i64 %t.18692, %t.18694
-  %t.18696 = inttoptr i64 %t.18695 to ptr
-  %t.18697 = load i64, ptr %t.18696
-  store i64 %t.18697, ptr %v.1869
-  %t.18700 = load i64, ptr %v.1869
-  %t.18702 = add i64 %t.18700, 16
-  %t.18706 = inttoptr i64 %t.18702 to ptr
-  %t.18707 = load i64, ptr %t.18706
-  store i64 %t.18707, ptr %v.1870
-  %t.18710 = load i64, ptr %v.670
-  %t.18711 = inttoptr i64 %t.18710 to ptr
-  %t.18712 = load i64, ptr %t.18711
-  %t.18713 = load i64, ptr %v.1843
-  %t.18714 = mul i64 %t.18713, 8
-  %t.18715 = add i64 %t.18712, %t.18714
-  %t.18716 = inttoptr i64 %t.18715 to ptr
-  %t.18717 = load i64, ptr %t.18716
-  store i64 %t.18717, ptr %v.1871
-  %t.18720 = load i64, ptr %v.1871
-  %t.18722 = add i64 %t.18720, 48
-  %t.18726 = inttoptr i64 %t.18722 to ptr
-  %t.18727 = load i64, ptr %t.18726
-  store i64 %t.18727, ptr %v.1872
-  %t.18730 = load i64, ptr %v.670
-  %t.18731 = inttoptr i64 %t.18730 to ptr
-  %t.18732 = load i64, ptr %t.18731
-  %t.18733 = load i64, ptr %v.1843
-  %t.18734 = mul i64 %t.18733, 8
-  %t.18735 = add i64 %t.18732, %t.18734
-  %t.18736 = inttoptr i64 %t.18735 to ptr
-  %t.18737 = load i64, ptr %t.18736
-  store i64 %t.18737, ptr %v.1873
-  %t.18740 = load i64, ptr %v.1873
-  %t.18742 = add i64 %t.18740, 8
-  %t.18746 = inttoptr i64 %t.18742 to ptr
-  %t.18747 = load i64, ptr %t.18746
-  store i64 %t.18747, ptr %v.1874
-  %t.18780 = load i64, ptr %v.1870
-  %t.18781 = load i64, ptr %v.1872
-  %t.18782 = load i64, ptr %v.1874
-  %t.18789 = call i64 @register_field_type(i64 %t.18780, i64 %t.18781, i64 %t.18782)
-  store i64 %t.18789, ptr %v.1878
+  %t.18860 = load i64, ptr %v.1882
+  %t.18861 = load i64, ptr %v.1884
+  %t.18862 = icmp slt i64 %t.18860, %t.18861
+  %t.18863 = zext i1 %t.18862 to i64
+  store i64 %t.18863, ptr %v.1886
+  %t.18870 = load i64, ptr %v.1886
+  %t.18871 = icmp eq i64 %t.18870, 0
+  br i1 %t.18871, label %L.231, label %L.fall.1887
+L.fall.1887:
+  %t.18880 = load i64, ptr %v.670
+  %t.18881 = inttoptr i64 %t.18880 to ptr
+  %t.18882 = load i64, ptr %t.18881
+  %t.18883 = load i64, ptr %v.1882
+  %t.18884 = mul i64 %t.18883, 8
+  %t.18885 = add i64 %t.18882, %t.18884
+  %t.18886 = inttoptr i64 %t.18885 to ptr
+  %t.18887 = load i64, ptr %t.18886
+  store i64 %t.18887, ptr %v.1888
+  %t.18890 = load i64, ptr %v.1888
+  %t.18896 = inttoptr i64 %t.18890 to ptr
+  %t.18897 = load i64, ptr %t.18896
+  store i64 %t.18897, ptr %v.1889
+  %t.18909 = call i64 @ast_DECL_STRUCT()
+  store i64 %t.18909, ptr %v.1890
+  %t.18910 = load i64, ptr %v.1889
+  %t.18911 = load i64, ptr %v.1890
+  %t.18912 = icmp eq i64 %t.18910, %t.18911
+  %t.18913 = zext i1 %t.18912 to i64
+  store i64 %t.18913, ptr %v.1891
+  %t.18920 = load i64, ptr %v.1891
+  %t.18921 = icmp eq i64 %t.18920, 0
+  br i1 %t.18921, label %L.232, label %L.fall.1892
+L.fall.1892:
+  %t.18930 = load i64, ptr %v.670
+  %t.18931 = inttoptr i64 %t.18930 to ptr
+  %t.18932 = load i64, ptr %t.18931
+  %t.18933 = load i64, ptr %v.1882
+  %t.18934 = mul i64 %t.18933, 8
+  %t.18935 = add i64 %t.18932, %t.18934
+  %t.18936 = inttoptr i64 %t.18935 to ptr
+  %t.18937 = load i64, ptr %t.18936
+  store i64 %t.18937, ptr %v.1893
+  %t.18940 = load i64, ptr %v.1893
+  %t.18942 = add i64 %t.18940, 16
+  %t.18946 = inttoptr i64 %t.18942 to ptr
+  %t.18947 = load i64, ptr %t.18946
+  store i64 %t.18947, ptr %v.1894
+  %t.18950 = load i64, ptr %v.1894
+  store i64 %t.18950, ptr %v.1895
+  store i64 24, ptr %v.1896
+  %t.18970 = load i64, ptr %v.1896
+  %t.18971 = call ptr @malloc(i64 %t.18970)
+  %t.18972 = call ptr @memset(ptr %t.18971, i32 0, i64 %t.18970)
+  %t.18973 = ptrtoint ptr %t.18971 to i64
+  store i64 %t.18973, ptr %v.1897
+  %t.18980 = load i64, ptr %v.1897
+  store i64 %t.18980, ptr %v.1898
+  %t.18990 = load i64, ptr %v.670
+  %t.18991 = inttoptr i64 %t.18990 to ptr
+  %t.18992 = load i64, ptr %t.18991
+  %t.18993 = load i64, ptr %v.1882
+  %t.18994 = mul i64 %t.18993, 8
+  %t.18995 = add i64 %t.18992, %t.18994
+  %t.18996 = inttoptr i64 %t.18995 to ptr
+  %t.18997 = load i64, ptr %t.18996
+  store i64 %t.18997, ptr %v.1899
+  %t.19000 = load i64, ptr %v.1899
+  %t.19002 = add i64 %t.19000, 24
+  %t.19006 = inttoptr i64 %t.19002 to ptr
+  %t.19007 = load i64, ptr %t.19006
+  store i64 %t.19007, ptr %v.1900
+  %t.19010 = load i64, ptr %v.1900
+  store i64 %t.19010, ptr %v.1901
+  store i64 0, ptr %v.1902
+  %t.19030 = load i64, ptr %v.1901
+  %t.19031 = load i64, ptr %v.1902
+  %t.19032 = icmp sge i64 %t.19030, %t.19031
+  %t.19033 = zext i1 %t.19032 to i64
+  store i64 %t.19033, ptr %v.1903
+  %t.19040 = load i64, ptr %v.1903
+  %t.19041 = icmp eq i64 %t.19040, 0
+  br i1 %t.19041, label %L.234, label %L.fall.1904
+L.fall.1904:
+  store i64 0, ptr %v.1905
+  %t.19060 = load i64, ptr %v.1905
+  store i64 %t.19060, ptr %v.1906
+  br label %L.236
+L.236:
+  %t.19080 = load i64, ptr %v.1901
+  %t.19081 = load i64, ptr %v.1884
+  %t.19082 = icmp slt i64 %t.19080, %t.19081
+  %t.19083 = zext i1 %t.19082 to i64
+  store i64 %t.19083, ptr %v.1908
+  %t.19090 = load i64, ptr %v.1908
+  %t.19091 = icmp eq i64 %t.19090, 0
+  br i1 %t.19091, label %L.237, label %L.fall.1909
+L.fall.1909:
+  %t.19100 = load i64, ptr %v.670
+  %t.19101 = inttoptr i64 %t.19100 to ptr
+  %t.19102 = load i64, ptr %t.19101
+  %t.19103 = load i64, ptr %v.1901
+  %t.19104 = mul i64 %t.19103, 8
+  %t.19105 = add i64 %t.19102, %t.19104
+  %t.19106 = inttoptr i64 %t.19105 to ptr
+  %t.19107 = load i64, ptr %t.19106
+  store i64 %t.19107, ptr %v.1910
+  %t.19110 = load i64, ptr %v.1910
+  %t.19116 = inttoptr i64 %t.19110 to ptr
+  %t.19117 = load i64, ptr %t.19116
+  store i64 %t.19117, ptr %v.1911
+  %t.19129 = call i64 @ast_DECL_FIELD()
+  store i64 %t.19129, ptr %v.1912
+  %t.19130 = load i64, ptr %v.1911
+  %t.19131 = load i64, ptr %v.1912
+  %t.19132 = icmp ne i64 %t.19130, %t.19131
+  %t.19133 = zext i1 %t.19132 to i64
+  store i64 %t.19133, ptr %v.1913
+  %t.19140 = load i64, ptr %v.1913
+  %t.19141 = icmp eq i64 %t.19140, 0
+  br i1 %t.19141, label %L.238, label %L.fall.1914
+L.fall.1914:
+  br label %L.237
+L.238:
+  br label %L.239
+L.239:
+  %t.19190 = load i64, ptr %v.670
+  %t.19191 = inttoptr i64 %t.19190 to ptr
+  %t.19192 = load i64, ptr %t.19191
+  %t.19193 = load i64, ptr %v.1901
+  %t.19194 = mul i64 %t.19193, 8
+  %t.19195 = add i64 %t.19192, %t.19194
+  %t.19196 = inttoptr i64 %t.19195 to ptr
+  %t.19197 = load i64, ptr %t.19196
+  store i64 %t.19197, ptr %v.1919
+  %t.19200 = load i64, ptr %v.1919
+  %t.19202 = add i64 %t.19200, 16
+  %t.19206 = inttoptr i64 %t.19202 to ptr
+  %t.19207 = load i64, ptr %t.19206
+  store i64 %t.19207, ptr %v.1920
+  %t.19210 = load i64, ptr %v.1898
+  %t.19211 = inttoptr i64 %t.19210 to ptr
+  %t.19212 = load i64, ptr %v.1920
+  %t.19213 = alloca i64
+  store i64 %t.19212, ptr %t.19213
+  call void @ease_array_push(ptr %t.19211, ptr %t.19213, i64 8)
+  %t.19220 = load i64, ptr %v.670
+  %t.19221 = inttoptr i64 %t.19220 to ptr
+  %t.19222 = load i64, ptr %t.19221
+  %t.19223 = load i64, ptr %v.1901
+  %t.19224 = mul i64 %t.19223, 8
+  %t.19225 = add i64 %t.19222, %t.19224
+  %t.19226 = inttoptr i64 %t.19225 to ptr
+  %t.19227 = load i64, ptr %t.19226
+  store i64 %t.19227, ptr %v.1922
+  %t.19230 = load i64, ptr %v.1922
+  %t.19232 = add i64 %t.19230, 48
+  %t.19236 = inttoptr i64 %t.19232 to ptr
+  %t.19237 = load i64, ptr %t.19236
+  store i64 %t.19237, ptr %v.1923
+  %t.19249 = call i64 @ast_TYPE_UNKNOWN()
+  store i64 %t.19249, ptr %v.1924
+  %t.19250 = load i64, ptr %v.1923
+  %t.19251 = load i64, ptr %v.1924
+  %t.19252 = icmp ne i64 %t.19250, %t.19251
+  %t.19253 = zext i1 %t.19252 to i64
+  store i64 %t.19253, ptr %v.1925
+  %t.19260 = load i64, ptr %v.1925
+  %t.19261 = icmp eq i64 %t.19260, 0
+  br i1 %t.19261, label %L.240, label %L.fall.1926
+L.fall.1926:
+  %t.19270 = load i64, ptr %v.670
+  %t.19271 = inttoptr i64 %t.19270 to ptr
+  %t.19272 = load i64, ptr %t.19271
+  %t.19273 = load i64, ptr %v.1901
+  %t.19274 = mul i64 %t.19273, 8
+  %t.19275 = add i64 %t.19272, %t.19274
+  %t.19276 = inttoptr i64 %t.19275 to ptr
+  %t.19277 = load i64, ptr %t.19276
+  store i64 %t.19277, ptr %v.1927
+  %t.19280 = load i64, ptr %v.1927
+  %t.19282 = add i64 %t.19280, 16
+  %t.19286 = inttoptr i64 %t.19282 to ptr
+  %t.19287 = load i64, ptr %t.19286
+  store i64 %t.19287, ptr %v.1928
+  %t.19290 = load i64, ptr %v.670
+  %t.19291 = inttoptr i64 %t.19290 to ptr
+  %t.19292 = load i64, ptr %t.19291
+  %t.19293 = load i64, ptr %v.1901
+  %t.19294 = mul i64 %t.19293, 8
+  %t.19295 = add i64 %t.19292, %t.19294
+  %t.19296 = inttoptr i64 %t.19295 to ptr
+  %t.19297 = load i64, ptr %t.19296
+  store i64 %t.19297, ptr %v.1929
+  %t.19300 = load i64, ptr %v.1929
+  %t.19302 = add i64 %t.19300, 48
+  %t.19306 = inttoptr i64 %t.19302 to ptr
+  %t.19307 = load i64, ptr %t.19306
+  store i64 %t.19307, ptr %v.1930
+  %t.19310 = load i64, ptr %v.670
+  %t.19311 = inttoptr i64 %t.19310 to ptr
+  %t.19312 = load i64, ptr %t.19311
+  %t.19313 = load i64, ptr %v.1901
+  %t.19314 = mul i64 %t.19313, 8
+  %t.19315 = add i64 %t.19312, %t.19314
+  %t.19316 = inttoptr i64 %t.19315 to ptr
+  %t.19317 = load i64, ptr %t.19316
+  store i64 %t.19317, ptr %v.1931
+  %t.19320 = load i64, ptr %v.1931
+  %t.19322 = add i64 %t.19320, 8
+  %t.19326 = inttoptr i64 %t.19322 to ptr
+  %t.19327 = load i64, ptr %t.19326
+  store i64 %t.19327, ptr %v.1932
+  %t.19360 = load i64, ptr %v.1928
+  %t.19361 = load i64, ptr %v.1930
+  %t.19362 = load i64, ptr %v.1932
+  %t.19369 = call i64 @register_field_type(i64 %t.19360, i64 %t.19361, i64 %t.19362)
+  store i64 %t.19369, ptr %v.1936
+  br label %L.241
+L.240:
+  br label %L.241
+L.241:
+  %t.19400 = load i64, ptr %v.670
+  %t.19401 = inttoptr i64 %t.19400 to ptr
+  %t.19402 = load i64, ptr %t.19401
+  %t.19403 = load i64, ptr %v.1901
+  %t.19404 = mul i64 %t.19403, 8
+  %t.19405 = add i64 %t.19402, %t.19404
+  %t.19406 = inttoptr i64 %t.19405 to ptr
+  %t.19407 = load i64, ptr %t.19406
+  store i64 %t.19407, ptr %v.1940
+  %t.19410 = load i64, ptr %v.1940
+  %t.19412 = add i64 %t.19410, 16
+  %t.19416 = inttoptr i64 %t.19412 to ptr
+  %t.19417 = load i64, ptr %t.19416
+  store i64 %t.19417, ptr %v.1941
+  store i64 8, ptr %v.1942
+  %t.19430 = load i64, ptr %v.1906
+  %t.19431 = load i64, ptr %v.1942
+  %t.19432 = mul i64 %t.19430, %t.19431
+  store i64 %t.19432, ptr %v.1943
+  %t.19460 = load i64, ptr %v.1941
+  %t.19461 = load i64, ptr %v.1943
+  %t.19469 = call i64 @irgen_RegisterFieldOffset(i64 %t.19460, i64 %t.19461)
+  store i64 %t.19469, ptr %v.1946
+  store i64 1, ptr %v.1947
+  %t.19480 = load i64, ptr %v.1906
+  %t.19481 = load i64, ptr %v.1947
+  %t.19482 = add i64 %t.19480, %t.19481
+  store i64 %t.19482, ptr %v.1948
+  %t.19490 = load i64, ptr %v.1948
+  store i64 %t.19490, ptr %v.1906
+  store i64 1, ptr %v.1950
+  %t.19510 = load i64, ptr %v.1901
+  %t.19511 = load i64, ptr %v.1950
+  %t.19512 = add i64 %t.19510, %t.19511
+  store i64 %t.19512, ptr %v.1951
+  %t.19520 = load i64, ptr %v.1951
+  store i64 %t.19520, ptr %v.1901
+  br label %L.236
+L.237:
   br label %L.235
 L.234:
   br label %L.235
 L.235:
-  %t.18820 = load i64, ptr %v.670
-  %t.18821 = inttoptr i64 %t.18820 to ptr
-  %t.18822 = load i64, ptr %t.18821
-  %t.18823 = load i64, ptr %v.1843
-  %t.18824 = mul i64 %t.18823, 8
-  %t.18825 = add i64 %t.18822, %t.18824
-  %t.18826 = inttoptr i64 %t.18825 to ptr
-  %t.18827 = load i64, ptr %t.18826
-  store i64 %t.18827, ptr %v.1882
-  %t.18830 = load i64, ptr %v.1882
-  %t.18832 = add i64 %t.18830, 16
-  %t.18836 = inttoptr i64 %t.18832 to ptr
-  %t.18837 = load i64, ptr %t.18836
-  store i64 %t.18837, ptr %v.1883
-  store i64 8, ptr %v.1884
-  %t.18850 = load i64, ptr %v.1848
-  %t.18851 = load i64, ptr %v.1884
-  %t.18852 = mul i64 %t.18850, %t.18851
-  store i64 %t.18852, ptr %v.1885
-  %t.18880 = load i64, ptr %v.1883
-  %t.18881 = load i64, ptr %v.1885
-  %t.18889 = call i64 @irgen_RegisterFieldOffset(i64 %t.18880, i64 %t.18881)
-  store i64 %t.18889, ptr %v.1888
-  store i64 1, ptr %v.1889
-  %t.18900 = load i64, ptr %v.1848
-  %t.18901 = load i64, ptr %v.1889
-  %t.18902 = add i64 %t.18900, %t.18901
-  store i64 %t.18902, ptr %v.1890
-  %t.18910 = load i64, ptr %v.1890
-  store i64 %t.18910, ptr %v.1848
-  store i64 1, ptr %v.1892
-  %t.18930 = load i64, ptr %v.1843
-  %t.18931 = load i64, ptr %v.1892
-  %t.18932 = add i64 %t.18930, %t.18931
-  store i64 %t.18932, ptr %v.1893
-  %t.18940 = load i64, ptr %v.1893
-  store i64 %t.18940, ptr %v.1843
+  %t.19600 = load i64, ptr %v.1895
+  %t.19601 = load i64, ptr %v.1898
+  %t.19609 = call i64 @ir_RegisterStruct(i64 %t.19600, i64 %t.19601)
+  store i64 %t.19609, ptr %v.1960
+  br label %L.233
+L.232:
+  br label %L.233
+L.233:
+  store i64 1, ptr %v.1964
+  %t.19650 = load i64, ptr %v.1882
+  %t.19651 = load i64, ptr %v.1964
+  %t.19652 = add i64 %t.19650, %t.19651
+  store i64 %t.19652, ptr %v.1965
+  %t.19660 = load i64, ptr %v.1965
+  store i64 %t.19660, ptr %v.1882
   br label %L.230
 L.231:
-  br label %L.229
-L.228:
-  br label %L.229
-L.229:
-  %t.19020 = load i64, ptr %v.1837
-  %t.19021 = load i64, ptr %v.1840
-  %t.19029 = call i64 @ir_RegisterStruct(i64 %t.19020, i64 %t.19021)
-  store i64 %t.19029, ptr %v.1902
-  br label %L.227
-L.226:
-  br label %L.227
-L.227:
-  store i64 1, ptr %v.1906
-  %t.19070 = load i64, ptr %v.1824
-  %t.19071 = load i64, ptr %v.1906
-  %t.19072 = add i64 %t.19070, %t.19071
-  store i64 %t.19072, ptr %v.1907
-  %t.19080 = load i64, ptr %v.1907
-  store i64 %t.19080, ptr %v.1824
-  br label %L.224
-L.225:
-  %t.19110 = ptrtoint ptr @.str.61 to i64
-  store i64 %t.19110, ptr %v.1911
-  %t.19129 = call i64 @ast_TYPE_STRING()
-  store i64 %t.19129, ptr %v.1912
-  store i64 0, ptr %v.1913
-  %t.19170 = load i64, ptr %v.1911
-  %t.19171 = load i64, ptr %v.1912
-  %t.19172 = load i64, ptr %v.1913
-  %t.19179 = call i64 @register_func_return_type(i64 %t.19170, i64 %t.19171, i64 %t.19172)
-  store i64 %t.19179, ptr %v.1917
-  %t.19180 = ptrtoint ptr @.str.62 to i64
-  store i64 %t.19180, ptr %v.1918
-  %t.19199 = call i64 @ast_TYPE_INT()
-  store i64 %t.19199, ptr %v.1919
-  store i64 0, ptr %v.1920
-  %t.19240 = load i64, ptr %v.1918
-  %t.19241 = load i64, ptr %v.1919
-  %t.19242 = load i64, ptr %v.1920
-  %t.19249 = call i64 @register_func_return_type(i64 %t.19240, i64 %t.19241, i64 %t.19242)
-  store i64 %t.19249, ptr %v.1924
-  %t.19250 = ptrtoint ptr @.str.63 to i64
-  store i64 %t.19250, ptr %v.1925
-  %t.19269 = call i64 @ast_TYPE_STRING()
-  store i64 %t.19269, ptr %v.1926
-  store i64 0, ptr %v.1927
-  %t.19310 = load i64, ptr %v.1925
-  %t.19311 = load i64, ptr %v.1926
-  %t.19312 = load i64, ptr %v.1927
-  %t.19319 = call i64 @register_func_return_type(i64 %t.19310, i64 %t.19311, i64 %t.19312)
-  store i64 %t.19319, ptr %v.1931
-  store i64 0, ptr %v.1932
-  %t.19330 = load i64, ptr %v.1932
-  store i64 %t.19330, ptr %v.1933
-  br label %L.236
-L.236:
-  %t.19350 = load i64, ptr %v.686
-  %t.19351 = add i64 %t.19350, 8
-  %t.19352 = inttoptr i64 %t.19351 to ptr
-  %t.19353 = load i64, ptr %t.19352
-  store i64 %t.19353, ptr %v.1935
-  %t.19360 = load i64, ptr %v.1933
-  %t.19361 = load i64, ptr %v.1935
-  %t.19362 = icmp slt i64 %t.19360, %t.19361
-  %t.19363 = zext i1 %t.19362 to i64
-  store i64 %t.19363, ptr %v.1936
-  %t.19370 = load i64, ptr %v.1936
-  %t.19371 = icmp eq i64 %t.19370, 0
-  br i1 %t.19371, label %L.237, label %L.fall.1937
-L.fall.1937:
-  %t.19380 = load i64, ptr %v.686
-  %t.19381 = inttoptr i64 %t.19380 to ptr
-  %t.19382 = load i64, ptr %t.19381
-  %t.19383 = load i64, ptr %v.1933
-  %t.19384 = mul i64 %t.19383, 8
-  %t.19385 = add i64 %t.19382, %t.19384
-  %t.19386 = inttoptr i64 %t.19385 to ptr
-  %t.19387 = load i64, ptr %t.19386
-  store i64 %t.19387, ptr %v.1938
-  %t.19390 = load i64, ptr %v.670
-  %t.19391 = inttoptr i64 %t.19390 to ptr
-  %t.19392 = load i64, ptr %t.19391
-  %t.19393 = load i64, ptr %v.1938
-  %t.19394 = mul i64 %t.19393, 8
-  %t.19395 = add i64 %t.19392, %t.19394
-  %t.19396 = inttoptr i64 %t.19395 to ptr
-  %t.19397 = load i64, ptr %t.19396
-  store i64 %t.19397, ptr %v.1939
-  %t.19400 = load i64, ptr %v.1939
-  store i64 %t.19400, ptr %v.1940
-  %t.19410 = load i64, ptr %v.683
-  %t.19411 = inttoptr i64 %t.19410 to ptr
-  %t.19412 = load i64, ptr %t.19411
-  %t.19413 = load i64, ptr %v.1933
-  %t.19414 = mul i64 %t.19413, 8
-  %t.19415 = add i64 %t.19412, %t.19414
-  %t.19416 = inttoptr i64 %t.19415 to ptr
-  %t.19417 = load i64, ptr %t.19416
-  store i64 %t.19417, ptr %v.1941
-  %t.19420 = load i64, ptr %v.1940
-  %t.19422 = add i64 %t.19420, 48
-  %t.19426 = inttoptr i64 %t.19422 to ptr
-  %t.19427 = load i64, ptr %t.19426
-  store i64 %t.19427, ptr %v.1942
-  %t.19430 = load i64, ptr %v.1940
-  %t.19432 = add i64 %t.19430, 8
-  %t.19436 = inttoptr i64 %t.19432 to ptr
-  %t.19437 = load i64, ptr %t.19436
-  store i64 %t.19437, ptr %v.1943
-  %t.19470 = load i64, ptr %v.1941
-  %t.19471 = load i64, ptr %v.1942
-  %t.19472 = load i64, ptr %v.1943
-  %t.19479 = call i64 @register_func_return_type(i64 %t.19470, i64 %t.19471, i64 %t.19472)
-  store i64 %t.19479, ptr %v.1947
-  store i64 1, ptr %v.1948
-  %t.19490 = load i64, ptr %v.1933
-  %t.19491 = load i64, ptr %v.1948
-  %t.19492 = add i64 %t.19490, %t.19491
-  store i64 %t.19492, ptr %v.1949
-  %t.19500 = load i64, ptr %v.1949
-  store i64 %t.19500, ptr %v.1933
-  br label %L.236
-L.237:
-  %t.19530 = ptrtoint ptr @.str.64 to i64
-  store i64 %t.19530, ptr %v.1953
-  %t.19550 = load i64, ptr %v.1953
-  %t.19559 = call i64 @io_Print(i64 %t.19550)
-  store i64 %t.19559, ptr %v.1955
-  store i64 24, ptr %v.1956
-  %t.19570 = load i64, ptr %v.1956
-  %t.19571 = call ptr @malloc(i64 %t.19570)
-  %t.19572 = call ptr @memset(ptr %t.19571, i32 0, i64 %t.19570)
-  %t.19573 = ptrtoint ptr %t.19571 to i64
-  store i64 %t.19573, ptr %v.1957
-  %t.19580 = load i64, ptr %v.1957
-  store i64 %t.19580, ptr %v.1958
-  %t.19590 = load i64, ptr %v.683
-  %t.19591 = add i64 %t.19590, 8
-  %t.19592 = inttoptr i64 %t.19591 to ptr
-  %t.19593 = load i64, ptr %t.19592
-  store i64 %t.19593, ptr %v.1959
-  %t.19600 = load i64, ptr %v.1959
-  store i64 %t.19600, ptr %v.1960
-  store i64 0, ptr %v.1961
-  %t.19620 = load i64, ptr %v.1961
-  store i64 %t.19620, ptr %v.1962
-  br label %L.238
-L.238:
-  %t.19640 = load i64, ptr %v.1962
-  %t.19641 = load i64, ptr %v.1960
-  %t.19642 = icmp slt i64 %t.19640, %t.19641
-  %t.19643 = zext i1 %t.19642 to i64
-  store i64 %t.19643, ptr %v.1964
-  %t.19650 = load i64, ptr %v.1964
-  %t.19651 = icmp eq i64 %t.19650, 0
-  br i1 %t.19651, label %L.239, label %L.fall.1965
-L.fall.1965:
-  %t.19660 = ptrtoint ptr @g_string_vars to i64
-  store i64 %t.19660, ptr %v.1966
-  %t.19670 = load i64, ptr %v.1966
-  %t.19671 = add i64 %t.19670, 8
-  %t.19672 = inttoptr i64 %t.19671 to ptr
-  %t.19673 = load i64, ptr %t.19672
-  store i64 %t.19673, ptr %v.1967
-  %t.19680 = ptrtoint ptr @g_string_vars_start to i64
-  store i64 %t.19680, ptr %v.1968
-  %t.19690 = load i64, ptr %v.1968
-  %t.19691 = load i64, ptr %v.1967
-  %t.19692 = inttoptr i64 %t.19690 to ptr
-  store i64 %t.19691, ptr %t.19692
-  %t.19700 = ptrtoint ptr @g_string_array_vars to i64
-  store i64 %t.19700, ptr %v.1970
-  %t.19710 = load i64, ptr %v.1970
-  %t.19711 = add i64 %t.19710, 8
-  %t.19712 = inttoptr i64 %t.19711 to ptr
-  %t.19713 = load i64, ptr %t.19712
-  store i64 %t.19713, ptr %v.1971
-  %t.19720 = ptrtoint ptr @g_string_array_vars_start to i64
-  store i64 %t.19720, ptr %v.1972
-  %t.19730 = load i64, ptr %v.1972
-  %t.19731 = load i64, ptr %v.1971
-  %t.19732 = inttoptr i64 %t.19730 to ptr
-  store i64 %t.19731, ptr %t.19732
-  %t.19740 = load i64, ptr %v.686
-  %t.19741 = inttoptr i64 %t.19740 to ptr
-  %t.19742 = load i64, ptr %t.19741
-  %t.19743 = load i64, ptr %v.1962
-  %t.19744 = mul i64 %t.19743, 8
-  %t.19745 = add i64 %t.19742, %t.19744
-  %t.19746 = inttoptr i64 %t.19745 to ptr
-  %t.19747 = load i64, ptr %t.19746
-  store i64 %t.19747, ptr %v.1974
-  %t.19750 = load i64, ptr %v.1974
-  store i64 %t.19750, ptr %v.1975
-  %t.19760 = load i64, ptr %v.683
-  %t.19761 = inttoptr i64 %t.19760 to ptr
-  %t.19762 = load i64, ptr %t.19761
-  %t.19763 = load i64, ptr %v.1962
-  %t.19764 = mul i64 %t.19763, 8
-  %t.19765 = add i64 %t.19762, %t.19764
-  %t.19766 = inttoptr i64 %t.19765 to ptr
-  %t.19767 = load i64, ptr %t.19766
-  store i64 %t.19767, ptr %v.1976
-  %t.19770 = load i64, ptr %v.1976
-  store i64 %t.19770, ptr %v.1977
-  %t.19800 = load i64, ptr %v.670
-  %t.19801 = load i64, ptr %v.1975
-  %t.19809 = call i64 @count_func_params(i64 %t.19800, i64 %t.19801)
-  store i64 %t.19809, ptr %v.1980
-  %t.19810 = load i64, ptr %v.1980
-  store i64 %t.19810, ptr %v.1981
-  store i64 5000, ptr %v.1982
-  %t.19830 = load i64, ptr %v.1982
-  %t.19831 = load i64, ptr %v.1962
-  %t.19832 = add i64 %t.19830, %t.19831
-  store i64 %t.19832, ptr %v.1983
-  %t.19840 = load i64, ptr %v.1983
-  store i64 %t.19840, ptr %v.1984
-  %t.19850 = call ptr @malloc(i64 48)
-  %t.19851 = call ptr @memset(ptr %t.19850, i32 0, i64 48)
-  %t.19852 = ptrtoint ptr %t.19850 to i64
-  store i64 %t.19852, ptr %v.1985
-  %t.19869 = call i64 @ir_OP_LABEL()
-  store i64 %t.19869, ptr %v.1986
-  %t.19870 = load i64, ptr %v.1985
-  store i64 %t.19870, ptr %v.1987
-  %t.19880 = load i64, ptr %v.1987
-  %t.19881 = load i64, ptr %v.1986
-  %t.19882 = inttoptr i64 %t.19880 to ptr
-  store i64 %t.19881, ptr %t.19882
-  %t.19890 = load i64, ptr %v.1985
-  %t.19891 = add i64 %t.19890, 8
-  store i64 %t.19891, ptr %v.1989
-  %t.19900 = load i64, ptr %v.1989
-  %t.19901 = load i64, ptr %v.1984
-  %t.19902 = inttoptr i64 %t.19900 to ptr
-  store i64 %t.19901, ptr %t.19902
-  %t.19910 = load i64, ptr %v.1985
-  %t.19911 = add i64 %t.19910, 16
-  store i64 %t.19911, ptr %v.1991
-  %t.19920 = load i64, ptr %v.1991
-  %t.19921 = load i64, ptr %v.1981
-  %t.19922 = inttoptr i64 %t.19920 to ptr
-  store i64 %t.19921, ptr %t.19922
-  store i64 0, ptr %v.1993
-  %t.19940 = load i64, ptr %v.1985
-  %t.19941 = add i64 %t.19940, 24
-  store i64 %t.19941, ptr %v.1994
-  %t.19950 = load i64, ptr %v.1994
-  %t.19951 = load i64, ptr %v.1993
-  %t.19952 = inttoptr i64 %t.19950 to ptr
-  store i64 %t.19951, ptr %t.19952
-  store i64 0, ptr %v.1996
-  %t.19970 = load i64, ptr %v.1985
-  %t.19971 = add i64 %t.19970, 32
-  store i64 %t.19971, ptr %v.1997
-  %t.19980 = load i64, ptr %v.1997
-  %t.19981 = load i64, ptr %v.1996
-  %t.19982 = inttoptr i64 %t.19980 to ptr
-  store i64 %t.19981, ptr %t.19982
-  %t.19990 = load i64, ptr %v.1985
-  %t.19991 = add i64 %t.19990, 40
-  store i64 %t.19991, ptr %v.1999
-  %t.20000 = load i64, ptr %v.1999
-  %t.20001 = load i64, ptr %v.1977
-  %t.20002 = inttoptr i64 %t.20000 to ptr
-  store i64 %t.20001, ptr %t.20002
-  %t.20010 = load i64, ptr %v.1985
-  store i64 %t.20010, ptr %v.2001
-  %t.20020 = load i64, ptr %v.1958
-  %t.20021 = inttoptr i64 %t.20020 to ptr
-  %t.20022 = load i64, ptr %v.2001
-  %t.20023 = alloca i64
-  store i64 %t.20022, ptr %t.20023
-  call void @ease_array_push(ptr %t.20021, ptr %t.20023, i64 8)
-  store i64 24, ptr %v.2003
-  %t.20040 = load i64, ptr %v.2003
-  %t.20041 = call ptr @malloc(i64 %t.20040)
-  %t.20042 = call ptr @memset(ptr %t.20041, i32 0, i64 %t.20040)
-  %t.20043 = ptrtoint ptr %t.20041 to i64
-  store i64 %t.20043, ptr %v.2004
-  %t.20050 = load i64, ptr %v.2004
-  store i64 %t.20050, ptr %v.2005
-  store i64 24, ptr %v.2006
-  %t.20070 = load i64, ptr %v.2006
-  %t.20071 = call ptr @malloc(i64 %t.20070)
-  %t.20072 = call ptr @memset(ptr %t.20071, i32 0, i64 %t.20070)
-  %t.20073 = ptrtoint ptr %t.20071 to i64
-  store i64 %t.20073, ptr %v.2007
-  %t.20080 = load i64, ptr %v.2007
-  store i64 %t.20080, ptr %v.2008
-  store i64 0, ptr %v.2009
-  %t.20100 = load i64, ptr %v.2009
-  store i64 %t.20100, ptr %v.2010
-  br label %L.240
-L.240:
-  %t.20120 = load i64, ptr %v.689
-  %t.20121 = add i64 %t.20120, 8
-  %t.20122 = inttoptr i64 %t.20121 to ptr
-  %t.20123 = load i64, ptr %t.20122
-  store i64 %t.20123, ptr %v.2012
-  %t.20130 = load i64, ptr %v.2010
-  %t.20131 = load i64, ptr %v.2012
-  %t.20132 = icmp slt i64 %t.20130, %t.20131
-  %t.20133 = zext i1 %t.20132 to i64
-  store i64 %t.20133, ptr %v.2013
-  %t.20140 = load i64, ptr %v.2013
-  %t.20141 = icmp eq i64 %t.20140, 0
-  br i1 %t.20141, label %L.241, label %L.fall.2014
-L.fall.2014:
-  %t.20150 = load i64, ptr %v.689
-  %t.20151 = inttoptr i64 %t.20150 to ptr
-  %t.20152 = load i64, ptr %t.20151
-  %t.20153 = load i64, ptr %v.2010
-  %t.20154 = mul i64 %t.20153, 8
-  %t.20155 = add i64 %t.20152, %t.20154
-  %t.20156 = inttoptr i64 %t.20155 to ptr
-  %t.20157 = load i64, ptr %t.20156
-  store i64 %t.20157, ptr %v.2015
-  %t.20160 = load i64, ptr %v.2005
-  %t.20161 = inttoptr i64 %t.20160 to ptr
-  %t.20162 = load i64, ptr %v.2015
-  %t.20163 = alloca i64
-  store i64 %t.20162, ptr %t.20163
-  call void @ease_array_push(ptr %t.20161, ptr %t.20163, i64 8)
-  store i64 1000, ptr %v.2017
-  store i64 0, ptr %v.2018
-  %t.20190 = load i64, ptr %v.2018
-  %t.20191 = load i64, ptr %v.2017
-  %t.20192 = sub i64 %t.20190, %t.20191
-  store i64 %t.20192, ptr %v.2019
-  %t.20200 = load i64, ptr %v.2019
-  %t.20201 = load i64, ptr %v.2010
-  %t.20202 = sub i64 %t.20200, %t.20201
-  store i64 %t.20202, ptr %v.2020
-  %t.20210 = load i64, ptr %v.2008
-  %t.20211 = inttoptr i64 %t.20210 to ptr
-  %t.20212 = load i64, ptr %v.2020
-  %t.20213 = alloca i64
-  store i64 %t.20212, ptr %t.20213
-  call void @ease_array_push(ptr %t.20211, ptr %t.20213, i64 8)
-  store i64 1, ptr %v.2022
-  %t.20230 = load i64, ptr %v.2010
-  %t.20231 = load i64, ptr %v.2022
-  %t.20232 = add i64 %t.20230, %t.20231
-  store i64 %t.20232, ptr %v.2023
-  %t.20240 = load i64, ptr %v.2023
-  store i64 %t.20240, ptr %v.2010
-  br label %L.240
-L.241:
-  %t.20320 = load i64, ptr %v.1975
-  %t.20321 = load i64, ptr %v.670
-  %t.20322 = load i64, ptr %v.1958
-  %t.20323 = load i64, ptr %v.2005
-  %t.20324 = load i64, ptr %v.2008
-  %t.20329 = call i64 @irgen_gen_ir_from_ast_with_symtab(i64 %t.20320, i64 %t.20321, i64 %t.20322, i64 %t.20323, i64 %t.20324)
-  store i64 %t.20329, ptr %v.2032
-  store i64 1, ptr %v.2033
-  %t.20340 = load i64, ptr %v.1962
-  %t.20341 = load i64, ptr %v.2033
-  %t.20342 = add i64 %t.20340, %t.20341
-  store i64 %t.20342, ptr %v.2034
-  %t.20350 = load i64, ptr %v.2034
-  store i64 %t.20350, ptr %v.1962
-  br label %L.238
-L.239:
-  %t.20380 = ptrtoint ptr @.str.65 to i64
-  store i64 %t.20380, ptr %v.2038
-  %t.20390 = load i64, ptr %v.1958
-  %t.20391 = add i64 %t.20390, 8
-  %t.20392 = inttoptr i64 %t.20391 to ptr
-  %t.20393 = load i64, ptr %t.20392
-  store i64 %t.20393, ptr %v.2039
-  %t.20410 = load i64, ptr %v.2039
-  %t.20419 = call i64 @strconv_Itoa(i64 %t.20410)
-  store i64 %t.20419, ptr %v.2041
-  %t.20420 = load i64, ptr %v.2038
-  %t.20421 = inttoptr i64 %t.20420 to ptr
-  %t.20422 = load i64, ptr %v.2041
-  %t.20423 = inttoptr i64 %t.20422 to ptr
-  %t.20424 = call ptr @ease_str_concat(ptr %t.20421, ptr %t.20423)
-  %t.20425 = ptrtoint ptr %t.20424 to i64
-  store i64 %t.20425, ptr %v.2042
-  %t.20430 = ptrtoint ptr @.str.66 to i64
-  store i64 %t.20430, ptr %v.2043
-  %t.20440 = load i64, ptr %v.2042
-  %t.20441 = inttoptr i64 %t.20440 to ptr
-  %t.20442 = load i64, ptr %v.2043
-  %t.20443 = inttoptr i64 %t.20442 to ptr
-  %t.20444 = call ptr @ease_str_concat(ptr %t.20441, ptr %t.20443)
-  %t.20445 = ptrtoint ptr %t.20444 to i64
-  store i64 %t.20445, ptr %v.2044
-  %t.20460 = load i64, ptr %v.2044
-  %t.20469 = call i64 @io_Print(i64 %t.20460)
-  store i64 %t.20469, ptr %v.2046
-  %t.20470 = ptrtoint ptr @.str.67 to i64
-  store i64 %t.20470, ptr %v.2047
-  %t.20490 = load i64, ptr %v.2047
-  %t.20499 = call i64 @io_Print(i64 %t.20490)
-  store i64 %t.20499, ptr %v.2049
-  %t.20500 = ptrtoint ptr @.str.68 to i64
-  store i64 %t.20500, ptr %v.2050
-  %t.20510 = load i64, ptr %v.2050
-  store i64 %t.20510, ptr %v.2051
-  %t.20540 = load i64, ptr %v.1958
-  %t.20541 = load i64, ptr %v.2051
-  %t.20549 = call i64 @llvm_emit_llvm_ir(i64 %t.20540, i64 %t.20541)
-  store i64 %t.20549, ptr %v.2054
-  %t.20550 = load i64, ptr %v.2054
-  store i64 %t.20550, ptr %v.2055
-  store i64 0, ptr %v.2056
-  %t.20570 = load i64, ptr %v.2055
-  %t.20571 = load i64, ptr %v.2056
-  %t.20572 = icmp ne i64 %t.20570, %t.20571
-  %t.20573 = zext i1 %t.20572 to i64
-  store i64 %t.20573, ptr %v.2057
-  %t.20580 = load i64, ptr %v.2057
-  %t.20581 = icmp eq i64 %t.20580, 0
-  br i1 %t.20581, label %L.242, label %L.fall.2058
-L.fall.2058:
-  store i64 1, ptr %v.2059
-  %t.20600 = load i64, ptr %v.2059
-  ret i64 %t.20600
+  %t.19690 = ptrtoint ptr @.str.61 to i64
+  store i64 %t.19690, ptr %v.1969
+  %t.19709 = call i64 @ast_TYPE_STRING()
+  store i64 %t.19709, ptr %v.1970
+  store i64 0, ptr %v.1971
+  %t.19750 = load i64, ptr %v.1969
+  %t.19751 = load i64, ptr %v.1970
+  %t.19752 = load i64, ptr %v.1971
+  %t.19759 = call i64 @register_func_return_type(i64 %t.19750, i64 %t.19751, i64 %t.19752)
+  store i64 %t.19759, ptr %v.1975
+  %t.19760 = ptrtoint ptr @.str.62 to i64
+  store i64 %t.19760, ptr %v.1976
+  %t.19779 = call i64 @ast_TYPE_INT()
+  store i64 %t.19779, ptr %v.1977
+  store i64 0, ptr %v.1978
+  %t.19820 = load i64, ptr %v.1976
+  %t.19821 = load i64, ptr %v.1977
+  %t.19822 = load i64, ptr %v.1978
+  %t.19829 = call i64 @register_func_return_type(i64 %t.19820, i64 %t.19821, i64 %t.19822)
+  store i64 %t.19829, ptr %v.1982
+  %t.19830 = ptrtoint ptr @.str.63 to i64
+  store i64 %t.19830, ptr %v.1983
+  %t.19849 = call i64 @ast_TYPE_STRING()
+  store i64 %t.19849, ptr %v.1984
+  store i64 0, ptr %v.1985
+  %t.19890 = load i64, ptr %v.1983
+  %t.19891 = load i64, ptr %v.1984
+  %t.19892 = load i64, ptr %v.1985
+  %t.19899 = call i64 @register_func_return_type(i64 %t.19890, i64 %t.19891, i64 %t.19892)
+  store i64 %t.19899, ptr %v.1989
+  store i64 0, ptr %v.1990
+  %t.19910 = load i64, ptr %v.1990
+  store i64 %t.19910, ptr %v.1991
+  br label %L.242
 L.242:
-  br label %L.243
+  %t.19930 = load i64, ptr %v.686
+  %t.19931 = add i64 %t.19930, 8
+  %t.19932 = inttoptr i64 %t.19931 to ptr
+  %t.19933 = load i64, ptr %t.19932
+  store i64 %t.19933, ptr %v.1993
+  %t.19940 = load i64, ptr %v.1991
+  %t.19941 = load i64, ptr %v.1993
+  %t.19942 = icmp slt i64 %t.19940, %t.19941
+  %t.19943 = zext i1 %t.19942 to i64
+  store i64 %t.19943, ptr %v.1994
+  %t.19950 = load i64, ptr %v.1994
+  %t.19951 = icmp eq i64 %t.19950, 0
+  br i1 %t.19951, label %L.243, label %L.fall.1995
+L.fall.1995:
+  %t.19960 = load i64, ptr %v.686
+  %t.19961 = inttoptr i64 %t.19960 to ptr
+  %t.19962 = load i64, ptr %t.19961
+  %t.19963 = load i64, ptr %v.1991
+  %t.19964 = mul i64 %t.19963, 8
+  %t.19965 = add i64 %t.19962, %t.19964
+  %t.19966 = inttoptr i64 %t.19965 to ptr
+  %t.19967 = load i64, ptr %t.19966
+  store i64 %t.19967, ptr %v.1996
+  %t.19970 = load i64, ptr %v.670
+  %t.19971 = inttoptr i64 %t.19970 to ptr
+  %t.19972 = load i64, ptr %t.19971
+  %t.19973 = load i64, ptr %v.1996
+  %t.19974 = mul i64 %t.19973, 8
+  %t.19975 = add i64 %t.19972, %t.19974
+  %t.19976 = inttoptr i64 %t.19975 to ptr
+  %t.19977 = load i64, ptr %t.19976
+  store i64 %t.19977, ptr %v.1997
+  %t.19980 = load i64, ptr %v.1997
+  store i64 %t.19980, ptr %v.1998
+  %t.19990 = load i64, ptr %v.683
+  %t.19991 = inttoptr i64 %t.19990 to ptr
+  %t.19992 = load i64, ptr %t.19991
+  %t.19993 = load i64, ptr %v.1991
+  %t.19994 = mul i64 %t.19993, 8
+  %t.19995 = add i64 %t.19992, %t.19994
+  %t.19996 = inttoptr i64 %t.19995 to ptr
+  %t.19997 = load i64, ptr %t.19996
+  store i64 %t.19997, ptr %v.1999
+  %t.20000 = load i64, ptr %v.1998
+  %t.20002 = add i64 %t.20000, 48
+  %t.20006 = inttoptr i64 %t.20002 to ptr
+  %t.20007 = load i64, ptr %t.20006
+  store i64 %t.20007, ptr %v.2000
+  %t.20010 = load i64, ptr %v.1998
+  %t.20012 = add i64 %t.20010, 8
+  %t.20016 = inttoptr i64 %t.20012 to ptr
+  %t.20017 = load i64, ptr %t.20016
+  store i64 %t.20017, ptr %v.2001
+  %t.20050 = load i64, ptr %v.1999
+  %t.20051 = load i64, ptr %v.2000
+  %t.20052 = load i64, ptr %v.2001
+  %t.20059 = call i64 @register_func_return_type(i64 %t.20050, i64 %t.20051, i64 %t.20052)
+  store i64 %t.20059, ptr %v.2005
+  store i64 1, ptr %v.2006
+  %t.20070 = load i64, ptr %v.1991
+  %t.20071 = load i64, ptr %v.2006
+  %t.20072 = add i64 %t.20070, %t.20071
+  store i64 %t.20072, ptr %v.2007
+  %t.20080 = load i64, ptr %v.2007
+  store i64 %t.20080, ptr %v.1991
+  br label %L.242
 L.243:
-  %t.20640 = ptrtoint ptr @.str.69 to i64
-  store i64 %t.20640, ptr %v.2064
-  %t.20660 = load i64, ptr %v.2064
-  %t.20669 = call i64 @io_Print(i64 %t.20660)
-  store i64 %t.20669, ptr %v.2066
-  %t.20670 = ptrtoint ptr @.str.70 to i64
-  store i64 %t.20670, ptr %v.2067
-  %t.20690 = load i64, ptr %v.2067
-  %t.20699 = call i64 @io_Print(i64 %t.20690)
-  store i64 %t.20699, ptr %v.2069
-  %t.20700 = ptrtoint ptr @.str.71 to i64
-  store i64 %t.20700, ptr %v.2070
-  %t.20710 = load i64, ptr %v.2070
-  %t.20711 = inttoptr i64 %t.20710 to ptr
-  %t.20712 = load i64, ptr %v.2051
-  %t.20713 = inttoptr i64 %t.20712 to ptr
-  %t.20714 = call ptr @ease_str_concat(ptr %t.20711, ptr %t.20713)
-  %t.20715 = ptrtoint ptr %t.20714 to i64
-  store i64 %t.20715, ptr %v.2071
-  %t.20720 = ptrtoint ptr @.str.72 to i64
-  store i64 %t.20720, ptr %v.2072
-  %t.20730 = load i64, ptr %v.2071
+  %t.20110 = ptrtoint ptr @.str.64 to i64
+  store i64 %t.20110, ptr %v.2011
+  %t.20130 = load i64, ptr %v.2011
+  %t.20139 = call i64 @io_Print(i64 %t.20130)
+  store i64 %t.20139, ptr %v.2013
+  store i64 24, ptr %v.2014
+  %t.20150 = load i64, ptr %v.2014
+  %t.20151 = call ptr @malloc(i64 %t.20150)
+  %t.20152 = call ptr @memset(ptr %t.20151, i32 0, i64 %t.20150)
+  %t.20153 = ptrtoint ptr %t.20151 to i64
+  store i64 %t.20153, ptr %v.2015
+  %t.20160 = load i64, ptr %v.2015
+  store i64 %t.20160, ptr %v.2016
+  %t.20170 = load i64, ptr %v.683
+  %t.20171 = add i64 %t.20170, 8
+  %t.20172 = inttoptr i64 %t.20171 to ptr
+  %t.20173 = load i64, ptr %t.20172
+  store i64 %t.20173, ptr %v.2017
+  %t.20180 = load i64, ptr %v.2017
+  store i64 %t.20180, ptr %v.2018
+  store i64 0, ptr %v.2019
+  %t.20200 = load i64, ptr %v.2019
+  store i64 %t.20200, ptr %v.2020
+  br label %L.244
+L.244:
+  %t.20220 = load i64, ptr %v.2020
+  %t.20221 = load i64, ptr %v.2018
+  %t.20222 = icmp slt i64 %t.20220, %t.20221
+  %t.20223 = zext i1 %t.20222 to i64
+  store i64 %t.20223, ptr %v.2022
+  %t.20230 = load i64, ptr %v.2022
+  %t.20231 = icmp eq i64 %t.20230, 0
+  br i1 %t.20231, label %L.245, label %L.fall.2023
+L.fall.2023:
+  %t.20240 = ptrtoint ptr @g_string_vars to i64
+  store i64 %t.20240, ptr %v.2024
+  %t.20250 = load i64, ptr %v.2024
+  %t.20251 = add i64 %t.20250, 8
+  %t.20252 = inttoptr i64 %t.20251 to ptr
+  %t.20253 = load i64, ptr %t.20252
+  store i64 %t.20253, ptr %v.2025
+  %t.20260 = ptrtoint ptr @g_string_vars_start to i64
+  store i64 %t.20260, ptr %v.2026
+  %t.20270 = load i64, ptr %v.2026
+  %t.20271 = load i64, ptr %v.2025
+  %t.20272 = inttoptr i64 %t.20270 to ptr
+  store i64 %t.20271, ptr %t.20272
+  %t.20280 = ptrtoint ptr @g_string_array_vars to i64
+  store i64 %t.20280, ptr %v.2028
+  %t.20290 = load i64, ptr %v.2028
+  %t.20291 = add i64 %t.20290, 8
+  %t.20292 = inttoptr i64 %t.20291 to ptr
+  %t.20293 = load i64, ptr %t.20292
+  store i64 %t.20293, ptr %v.2029
+  %t.20300 = ptrtoint ptr @g_string_array_vars_start to i64
+  store i64 %t.20300, ptr %v.2030
+  %t.20310 = load i64, ptr %v.2030
+  %t.20311 = load i64, ptr %v.2029
+  %t.20312 = inttoptr i64 %t.20310 to ptr
+  store i64 %t.20311, ptr %t.20312
+  %t.20320 = load i64, ptr %v.686
+  %t.20321 = inttoptr i64 %t.20320 to ptr
+  %t.20322 = load i64, ptr %t.20321
+  %t.20323 = load i64, ptr %v.2020
+  %t.20324 = mul i64 %t.20323, 8
+  %t.20325 = add i64 %t.20322, %t.20324
+  %t.20326 = inttoptr i64 %t.20325 to ptr
+  %t.20327 = load i64, ptr %t.20326
+  store i64 %t.20327, ptr %v.2032
+  %t.20330 = load i64, ptr %v.2032
+  store i64 %t.20330, ptr %v.2033
+  %t.20340 = load i64, ptr %v.683
+  %t.20341 = inttoptr i64 %t.20340 to ptr
+  %t.20342 = load i64, ptr %t.20341
+  %t.20343 = load i64, ptr %v.2020
+  %t.20344 = mul i64 %t.20343, 8
+  %t.20345 = add i64 %t.20342, %t.20344
+  %t.20346 = inttoptr i64 %t.20345 to ptr
+  %t.20347 = load i64, ptr %t.20346
+  store i64 %t.20347, ptr %v.2034
+  %t.20350 = load i64, ptr %v.2034
+  store i64 %t.20350, ptr %v.2035
+  %t.20380 = load i64, ptr %v.670
+  %t.20381 = load i64, ptr %v.2033
+  %t.20389 = call i64 @count_func_params(i64 %t.20380, i64 %t.20381)
+  store i64 %t.20389, ptr %v.2038
+  %t.20390 = load i64, ptr %v.2038
+  store i64 %t.20390, ptr %v.2039
+  store i64 5000, ptr %v.2040
+  %t.20410 = load i64, ptr %v.2040
+  %t.20411 = load i64, ptr %v.2020
+  %t.20412 = add i64 %t.20410, %t.20411
+  store i64 %t.20412, ptr %v.2041
+  %t.20420 = load i64, ptr %v.2041
+  store i64 %t.20420, ptr %v.2042
+  %t.20430 = call ptr @malloc(i64 48)
+  %t.20431 = call ptr @memset(ptr %t.20430, i32 0, i64 48)
+  %t.20432 = ptrtoint ptr %t.20430 to i64
+  store i64 %t.20432, ptr %v.2043
+  %t.20449 = call i64 @ir_OP_LABEL()
+  store i64 %t.20449, ptr %v.2044
+  %t.20450 = load i64, ptr %v.2043
+  store i64 %t.20450, ptr %v.2045
+  %t.20460 = load i64, ptr %v.2045
+  %t.20461 = load i64, ptr %v.2044
+  %t.20462 = inttoptr i64 %t.20460 to ptr
+  store i64 %t.20461, ptr %t.20462
+  %t.20470 = load i64, ptr %v.2043
+  %t.20471 = add i64 %t.20470, 8
+  store i64 %t.20471, ptr %v.2047
+  %t.20480 = load i64, ptr %v.2047
+  %t.20481 = load i64, ptr %v.2042
+  %t.20482 = inttoptr i64 %t.20480 to ptr
+  store i64 %t.20481, ptr %t.20482
+  %t.20490 = load i64, ptr %v.2043
+  %t.20491 = add i64 %t.20490, 16
+  store i64 %t.20491, ptr %v.2049
+  %t.20500 = load i64, ptr %v.2049
+  %t.20501 = load i64, ptr %v.2039
+  %t.20502 = inttoptr i64 %t.20500 to ptr
+  store i64 %t.20501, ptr %t.20502
+  store i64 0, ptr %v.2051
+  %t.20520 = load i64, ptr %v.2043
+  %t.20521 = add i64 %t.20520, 24
+  store i64 %t.20521, ptr %v.2052
+  %t.20530 = load i64, ptr %v.2052
+  %t.20531 = load i64, ptr %v.2051
+  %t.20532 = inttoptr i64 %t.20530 to ptr
+  store i64 %t.20531, ptr %t.20532
+  store i64 0, ptr %v.2054
+  %t.20550 = load i64, ptr %v.2043
+  %t.20551 = add i64 %t.20550, 32
+  store i64 %t.20551, ptr %v.2055
+  %t.20560 = load i64, ptr %v.2055
+  %t.20561 = load i64, ptr %v.2054
+  %t.20562 = inttoptr i64 %t.20560 to ptr
+  store i64 %t.20561, ptr %t.20562
+  %t.20570 = load i64, ptr %v.2043
+  %t.20571 = add i64 %t.20570, 40
+  store i64 %t.20571, ptr %v.2057
+  %t.20580 = load i64, ptr %v.2057
+  %t.20581 = load i64, ptr %v.2035
+  %t.20582 = inttoptr i64 %t.20580 to ptr
+  store i64 %t.20581, ptr %t.20582
+  %t.20590 = load i64, ptr %v.2043
+  store i64 %t.20590, ptr %v.2059
+  %t.20600 = load i64, ptr %v.2016
+  %t.20601 = inttoptr i64 %t.20600 to ptr
+  %t.20602 = load i64, ptr %v.2059
+  %t.20603 = alloca i64
+  store i64 %t.20602, ptr %t.20603
+  call void @ease_array_push(ptr %t.20601, ptr %t.20603, i64 8)
+  store i64 24, ptr %v.2061
+  %t.20620 = load i64, ptr %v.2061
+  %t.20621 = call ptr @malloc(i64 %t.20620)
+  %t.20622 = call ptr @memset(ptr %t.20621, i32 0, i64 %t.20620)
+  %t.20623 = ptrtoint ptr %t.20621 to i64
+  store i64 %t.20623, ptr %v.2062
+  %t.20630 = load i64, ptr %v.2062
+  store i64 %t.20630, ptr %v.2063
+  store i64 24, ptr %v.2064
+  %t.20650 = load i64, ptr %v.2064
+  %t.20651 = call ptr @malloc(i64 %t.20650)
+  %t.20652 = call ptr @memset(ptr %t.20651, i32 0, i64 %t.20650)
+  %t.20653 = ptrtoint ptr %t.20651 to i64
+  store i64 %t.20653, ptr %v.2065
+  %t.20660 = load i64, ptr %v.2065
+  store i64 %t.20660, ptr %v.2066
+  store i64 0, ptr %v.2067
+  %t.20680 = load i64, ptr %v.2067
+  store i64 %t.20680, ptr %v.2068
+  br label %L.246
+L.246:
+  %t.20700 = load i64, ptr %v.689
+  %t.20701 = add i64 %t.20700, 8
+  %t.20702 = inttoptr i64 %t.20701 to ptr
+  %t.20703 = load i64, ptr %t.20702
+  store i64 %t.20703, ptr %v.2070
+  %t.20710 = load i64, ptr %v.2068
+  %t.20711 = load i64, ptr %v.2070
+  %t.20712 = icmp slt i64 %t.20710, %t.20711
+  %t.20713 = zext i1 %t.20712 to i64
+  store i64 %t.20713, ptr %v.2071
+  %t.20720 = load i64, ptr %v.2071
+  %t.20721 = icmp eq i64 %t.20720, 0
+  br i1 %t.20721, label %L.247, label %L.fall.2072
+L.fall.2072:
+  %t.20730 = load i64, ptr %v.689
   %t.20731 = inttoptr i64 %t.20730 to ptr
-  %t.20732 = load i64, ptr %v.2072
-  %t.20733 = inttoptr i64 %t.20732 to ptr
-  %t.20734 = call ptr @ease_str_concat(ptr %t.20731, ptr %t.20733)
-  %t.20735 = ptrtoint ptr %t.20734 to i64
-  store i64 %t.20735, ptr %v.2073
-  %t.20750 = load i64, ptr %v.2073
-  %t.20759 = call i64 @io_Print(i64 %t.20750)
-  store i64 %t.20759, ptr %v.2075
-  %t.20760 = ptrtoint ptr @.str.73 to i64
-  store i64 %t.20760, ptr %v.2076
-  %t.20780 = load i64, ptr %v.2076
-  %t.20789 = call i64 @io_Print(i64 %t.20780)
-  store i64 %t.20789, ptr %v.2078
-  store i64 0, ptr %v.2079
-  %t.20800 = load i64, ptr %v.2079
-  ret i64 %t.20800
+  %t.20732 = load i64, ptr %t.20731
+  %t.20733 = load i64, ptr %v.2068
+  %t.20734 = mul i64 %t.20733, 8
+  %t.20735 = add i64 %t.20732, %t.20734
+  %t.20736 = inttoptr i64 %t.20735 to ptr
+  %t.20737 = load i64, ptr %t.20736
+  store i64 %t.20737, ptr %v.2073
+  %t.20740 = load i64, ptr %v.2063
+  %t.20741 = inttoptr i64 %t.20740 to ptr
+  %t.20742 = load i64, ptr %v.2073
+  %t.20743 = alloca i64
+  store i64 %t.20742, ptr %t.20743
+  call void @ease_array_push(ptr %t.20741, ptr %t.20743, i64 8)
+  store i64 1000, ptr %v.2075
+  store i64 0, ptr %v.2076
+  %t.20770 = load i64, ptr %v.2076
+  %t.20771 = load i64, ptr %v.2075
+  %t.20772 = sub i64 %t.20770, %t.20771
+  store i64 %t.20772, ptr %v.2077
+  %t.20780 = load i64, ptr %v.2077
+  %t.20781 = load i64, ptr %v.2068
+  %t.20782 = sub i64 %t.20780, %t.20781
+  store i64 %t.20782, ptr %v.2078
+  %t.20790 = load i64, ptr %v.2066
+  %t.20791 = inttoptr i64 %t.20790 to ptr
+  %t.20792 = load i64, ptr %v.2078
+  %t.20793 = alloca i64
+  store i64 %t.20792, ptr %t.20793
+  call void @ease_array_push(ptr %t.20791, ptr %t.20793, i64 8)
+  store i64 1, ptr %v.2080
+  %t.20810 = load i64, ptr %v.2068
+  %t.20811 = load i64, ptr %v.2080
+  %t.20812 = add i64 %t.20810, %t.20811
+  store i64 %t.20812, ptr %v.2081
+  %t.20820 = load i64, ptr %v.2081
+  store i64 %t.20820, ptr %v.2068
+  br label %L.246
+L.247:
+  %t.20900 = load i64, ptr %v.2033
+  %t.20901 = load i64, ptr %v.670
+  %t.20902 = load i64, ptr %v.2016
+  %t.20903 = load i64, ptr %v.2063
+  %t.20904 = load i64, ptr %v.2066
+  %t.20909 = call i64 @irgen_gen_ir_from_ast_with_symtab(i64 %t.20900, i64 %t.20901, i64 %t.20902, i64 %t.20903, i64 %t.20904)
+  store i64 %t.20909, ptr %v.2090
+  store i64 1, ptr %v.2091
+  %t.20920 = load i64, ptr %v.2020
+  %t.20921 = load i64, ptr %v.2091
+  %t.20922 = add i64 %t.20920, %t.20921
+  store i64 %t.20922, ptr %v.2092
+  %t.20930 = load i64, ptr %v.2092
+  store i64 %t.20930, ptr %v.2020
+  br label %L.244
+L.245:
+  %t.20960 = ptrtoint ptr @.str.65 to i64
+  store i64 %t.20960, ptr %v.2096
+  %t.20970 = load i64, ptr %v.2016
+  %t.20971 = add i64 %t.20970, 8
+  %t.20972 = inttoptr i64 %t.20971 to ptr
+  %t.20973 = load i64, ptr %t.20972
+  store i64 %t.20973, ptr %v.2097
+  %t.20990 = load i64, ptr %v.2097
+  %t.20999 = call i64 @strconv_Itoa(i64 %t.20990)
+  store i64 %t.20999, ptr %v.2099
+  %t.21000 = load i64, ptr %v.2096
+  %t.21001 = inttoptr i64 %t.21000 to ptr
+  %t.21002 = load i64, ptr %v.2099
+  %t.21003 = inttoptr i64 %t.21002 to ptr
+  %t.21004 = call ptr @ease_str_concat(ptr %t.21001, ptr %t.21003)
+  %t.21005 = ptrtoint ptr %t.21004 to i64
+  store i64 %t.21005, ptr %v.2100
+  %t.21010 = ptrtoint ptr @.str.66 to i64
+  store i64 %t.21010, ptr %v.2101
+  %t.21020 = load i64, ptr %v.2100
+  %t.21021 = inttoptr i64 %t.21020 to ptr
+  %t.21022 = load i64, ptr %v.2101
+  %t.21023 = inttoptr i64 %t.21022 to ptr
+  %t.21024 = call ptr @ease_str_concat(ptr %t.21021, ptr %t.21023)
+  %t.21025 = ptrtoint ptr %t.21024 to i64
+  store i64 %t.21025, ptr %v.2102
+  %t.21040 = load i64, ptr %v.2102
+  %t.21049 = call i64 @io_Print(i64 %t.21040)
+  store i64 %t.21049, ptr %v.2104
+  %t.21050 = ptrtoint ptr @.str.67 to i64
+  store i64 %t.21050, ptr %v.2105
+  %t.21070 = load i64, ptr %v.2105
+  %t.21079 = call i64 @io_Print(i64 %t.21070)
+  store i64 %t.21079, ptr %v.2107
+  %t.21080 = ptrtoint ptr @.str.68 to i64
+  store i64 %t.21080, ptr %v.2108
+  %t.21090 = load i64, ptr %v.2108
+  store i64 %t.21090, ptr %v.2109
+  %t.21120 = load i64, ptr %v.2016
+  %t.21121 = load i64, ptr %v.2109
+  %t.21129 = call i64 @llvm_emit_llvm_ir(i64 %t.21120, i64 %t.21121)
+  store i64 %t.21129, ptr %v.2112
+  %t.21130 = load i64, ptr %v.2112
+  store i64 %t.21130, ptr %v.2113
+  store i64 0, ptr %v.2114
+  %t.21150 = load i64, ptr %v.2113
+  %t.21151 = load i64, ptr %v.2114
+  %t.21152 = icmp ne i64 %t.21150, %t.21151
+  %t.21153 = zext i1 %t.21152 to i64
+  store i64 %t.21153, ptr %v.2115
+  %t.21160 = load i64, ptr %v.2115
+  %t.21161 = icmp eq i64 %t.21160, 0
+  br i1 %t.21161, label %L.248, label %L.fall.2116
+L.fall.2116:
+  store i64 1, ptr %v.2117
+  %t.21180 = load i64, ptr %v.2117
+  ret i64 %t.21180
+L.248:
+  br label %L.249
+L.249:
+  %t.21220 = ptrtoint ptr @.str.69 to i64
+  store i64 %t.21220, ptr %v.2122
+  %t.21240 = load i64, ptr %v.2122
+  %t.21249 = call i64 @io_Print(i64 %t.21240)
+  store i64 %t.21249, ptr %v.2124
+  %t.21250 = ptrtoint ptr @.str.70 to i64
+  store i64 %t.21250, ptr %v.2125
+  %t.21270 = load i64, ptr %v.2125
+  %t.21279 = call i64 @io_Print(i64 %t.21270)
+  store i64 %t.21279, ptr %v.2127
+  %t.21280 = ptrtoint ptr @.str.71 to i64
+  store i64 %t.21280, ptr %v.2128
+  %t.21290 = load i64, ptr %v.2128
+  %t.21291 = inttoptr i64 %t.21290 to ptr
+  %t.21292 = load i64, ptr %v.2109
+  %t.21293 = inttoptr i64 %t.21292 to ptr
+  %t.21294 = call ptr @ease_str_concat(ptr %t.21291, ptr %t.21293)
+  %t.21295 = ptrtoint ptr %t.21294 to i64
+  store i64 %t.21295, ptr %v.2129
+  %t.21300 = ptrtoint ptr @.str.72 to i64
+  store i64 %t.21300, ptr %v.2130
+  %t.21310 = load i64, ptr %v.2129
+  %t.21311 = inttoptr i64 %t.21310 to ptr
+  %t.21312 = load i64, ptr %v.2130
+  %t.21313 = inttoptr i64 %t.21312 to ptr
+  %t.21314 = call ptr @ease_str_concat(ptr %t.21311, ptr %t.21313)
+  %t.21315 = ptrtoint ptr %t.21314 to i64
+  store i64 %t.21315, ptr %v.2131
+  %t.21330 = load i64, ptr %v.2131
+  %t.21339 = call i64 @io_Print(i64 %t.21330)
+  store i64 %t.21339, ptr %v.2133
+  %t.21340 = ptrtoint ptr @.str.73 to i64
+  store i64 %t.21340, ptr %v.2134
+  %t.21360 = load i64, ptr %v.2134
+  %t.21369 = call i64 @io_Print(i64 %t.21360)
+  store i64 %t.21369, ptr %v.2136
+  store i64 0, ptr %v.2137
+  %t.21380 = load i64, ptr %v.2137
+  ret i64 %t.21380
 }
 
 define i64 @strconv_Itoa(i64 %param.0) {
   %v.90000 = alloca i64
-  %v.2082 = alloca i64
-  %v.2083 = alloca i64
-  %v.2085 = alloca i64
-  %v.0 = alloca i64
-  %v.2090 = alloca i64
-  %v.2091 = alloca i64
-  %v.2092 = alloca i64
-  %v.2093 = alloca i64
-  %v.2094 = alloca i64
-  %v.2096 = alloca i64
-  %v.2098 = alloca i64
-  %v.2099 = alloca i64
-  %v.2104 = alloca i64
-  %v.2105 = alloca i64
-  %v.2107 = alloca i64
-  %v.2108 = alloca i64
-  %v.2110 = alloca i64
-  %v.2111 = alloca i64
-  %v.2112 = alloca i64
-  %v.2113 = alloca i64
-  %v.2114 = alloca i64
-  %v.2115 = alloca i64
-  %v.2116 = alloca i64
-  %v.2117 = alloca i64
-  %v.2119 = alloca i64
-  %v.2120 = alloca i64
-  %v.2121 = alloca i64
-  %v.2122 = alloca i64
-  %v.2124 = alloca i64
-  %v.2129 = alloca i64
-  %v.2130 = alloca i64
-  %v.2132 = alloca i64
-  %v.2137 = alloca i64
-  %v.2138 = alloca i64
   %v.2140 = alloca i64
-  %v.2145 = alloca i64
-  %v.2146 = alloca i64
+  %v.2141 = alloca i64
+  %v.2143 = alloca i64
+  %v.0 = alloca i64
   %v.2148 = alloca i64
-  %v.2153 = alloca i64
+  %v.2149 = alloca i64
+  %v.2150 = alloca i64
+  %v.2151 = alloca i64
+  %v.2152 = alloca i64
   %v.2154 = alloca i64
   %v.2156 = alloca i64
-  %v.2161 = alloca i64
+  %v.2157 = alloca i64
   %v.2162 = alloca i64
-  %v.2164 = alloca i64
+  %v.2163 = alloca i64
+  %v.2165 = alloca i64
+  %v.2166 = alloca i64
+  %v.2168 = alloca i64
   %v.2169 = alloca i64
   %v.2170 = alloca i64
+  %v.2171 = alloca i64
   %v.2172 = alloca i64
+  %v.2173 = alloca i64
+  %v.2174 = alloca i64
+  %v.2175 = alloca i64
   %v.2177 = alloca i64
   %v.2178 = alloca i64
+  %v.2179 = alloca i64
   %v.2180 = alloca i64
-  %v.2185 = alloca i64
-  %v.2186 = alloca i64
+  %v.2182 = alloca i64
+  %v.2187 = alloca i64
   %v.2188 = alloca i64
-  %v.2193 = alloca i64
+  %v.2190 = alloca i64
+  %v.2195 = alloca i64
+  %v.2196 = alloca i64
   %v.2198 = alloca i64
-  %v.2199 = alloca i64
+  %v.2203 = alloca i64
+  %v.2204 = alloca i64
+  %v.2206 = alloca i64
+  %v.2211 = alloca i64
+  %v.2212 = alloca i64
+  %v.2214 = alloca i64
+  %v.2219 = alloca i64
+  %v.2220 = alloca i64
+  %v.2222 = alloca i64
+  %v.2227 = alloca i64
+  %v.2228 = alloca i64
+  %v.2230 = alloca i64
+  %v.2235 = alloca i64
+  %v.2236 = alloca i64
+  %v.2238 = alloca i64
+  %v.2243 = alloca i64
+  %v.2244 = alloca i64
+  %v.2246 = alloca i64
+  %v.2251 = alloca i64
+  %v.2256 = alloca i64
+  %v.2257 = alloca i64
   store i64 %param.0, ptr %v.90000
   br label %B.body
 B.body:
-  store i64 0, ptr %v.2082
-  %t.20830 = load i64, ptr %v.90000
-  %t.20831 = load i64, ptr %v.2082
-  %t.20832 = icmp eq i64 %t.20830, %t.20831
-  %t.20833 = zext i1 %t.20832 to i64
-  store i64 %t.20833, ptr %v.2083
-  %t.20840 = load i64, ptr %v.2083
-  %t.20841 = icmp eq i64 %t.20840, 0
-  br i1 %t.20841, label %L.244, label %L.fall.2084
-L.fall.2084:
-  %t.20850 = ptrtoint ptr @.str.74 to i64
-  store i64 %t.20850, ptr %v.2085
-  %t.20860 = load i64, ptr %v.2085
-  ret i64 %t.20860
-L.244:
-  br label %L.245
-L.245:
-  %t.20900 = load i64, ptr %v.90000
-  store i64 %t.20900, ptr %v.2090
-  store i64 0, ptr %v.2091
-  %t.20920 = load i64, ptr %v.2091
-  store i64 %t.20920, ptr %v.2092
-  store i64 0, ptr %v.2093
-  %t.20940 = load i64, ptr %v.2090
-  %t.20941 = load i64, ptr %v.2093
-  %t.20942 = icmp slt i64 %t.20940, %t.20941
-  %t.20943 = zext i1 %t.20942 to i64
-  store i64 %t.20943, ptr %v.2094
-  %t.20950 = load i64, ptr %v.2094
-  %t.20951 = icmp eq i64 %t.20950, 0
-  br i1 %t.20951, label %L.246, label %L.fall.2095
-L.fall.2095:
-  store i64 1, ptr %v.2096
-  %t.20970 = load i64, ptr %v.2096
-  store i64 %t.20970, ptr %v.2092
-  store i64 0, ptr %v.2098
-  %t.20990 = load i64, ptr %v.2098
-  %t.20991 = load i64, ptr %v.2090
-  %t.20992 = sub i64 %t.20990, %t.20991
-  store i64 %t.20992, ptr %v.2099
-  %t.21000 = load i64, ptr %v.2099
-  store i64 %t.21000, ptr %v.2090
-  br label %L.247
-L.246:
-  br label %L.247
-L.247:
-  store i64 0, ptr %v.2104
-  %t.21050 = load i64, ptr %v.2104
-  store i64 %t.21050, ptr %v.2105
-  br label %L.248
-L.248:
-  store i64 0, ptr %v.2107
-  %t.21080 = load i64, ptr %v.2090
-  %t.21081 = load i64, ptr %v.2107
-  %t.21082 = icmp sgt i64 %t.21080, %t.21081
-  %t.21083 = zext i1 %t.21082 to i64
-  store i64 %t.21083, ptr %v.2108
-  %t.21090 = load i64, ptr %v.2108
-  %t.21091 = icmp eq i64 %t.21090, 0
-  br i1 %t.21091, label %L.249, label %L.fall.2109
-L.fall.2109:
-  store i64 10, ptr %v.2110
-  %t.21110 = load i64, ptr %v.2090
-  %t.21111 = load i64, ptr %v.2110
-  %t.21112 = sdiv i64 %t.21110, %t.21111
-  store i64 %t.21112, ptr %v.2111
-  store i64 10, ptr %v.2112
-  %t.21130 = load i64, ptr %v.2111
-  %t.21131 = load i64, ptr %v.2112
-  %t.21132 = mul i64 %t.21130, %t.21131
-  store i64 %t.21132, ptr %v.2113
-  %t.21140 = load i64, ptr %v.2090
-  %t.21141 = load i64, ptr %v.2113
-  %t.21142 = sub i64 %t.21140, %t.21141
-  store i64 %t.21142, ptr %v.2114
-  %t.21150 = load i64, ptr %v.2114
-  store i64 %t.21150, ptr %v.2115
-  store i64 10, ptr %v.2116
-  %t.21170 = load i64, ptr %v.2090
-  %t.21171 = load i64, ptr %v.2116
-  %t.21172 = sdiv i64 %t.21170, %t.21171
-  store i64 %t.21172, ptr %v.2117
-  %t.21180 = load i64, ptr %v.2117
-  store i64 %t.21180, ptr %v.2090
-  %t.21190 = ptrtoint ptr @.str.75 to i64
-  store i64 %t.21190, ptr %v.2119
-  %t.21200 = load i64, ptr %v.2119
-  store i64 %t.21200, ptr %v.2120
-  store i64 1, ptr %v.2121
-  %t.21220 = load i64, ptr %v.2115
-  %t.21221 = load i64, ptr %v.2121
-  %t.21222 = icmp eq i64 %t.21220, %t.21221
-  %t.21223 = zext i1 %t.21222 to i64
-  store i64 %t.21223, ptr %v.2122
-  %t.21230 = load i64, ptr %v.2122
-  %t.21231 = icmp eq i64 %t.21230, 0
-  br i1 %t.21231, label %L.250, label %L.fall.2123
-L.fall.2123:
-  %t.21240 = ptrtoint ptr @.str.76 to i64
-  store i64 %t.21240, ptr %v.2124
-  %t.21250 = load i64, ptr %v.2124
-  store i64 %t.21250, ptr %v.2120
-  br label %L.251
+  store i64 0, ptr %v.2140
+  %t.21410 = load i64, ptr %v.90000
+  %t.21411 = load i64, ptr %v.2140
+  %t.21412 = icmp eq i64 %t.21410, %t.21411
+  %t.21413 = zext i1 %t.21412 to i64
+  store i64 %t.21413, ptr %v.2141
+  %t.21420 = load i64, ptr %v.2141
+  %t.21421 = icmp eq i64 %t.21420, 0
+  br i1 %t.21421, label %L.250, label %L.fall.2142
+L.fall.2142:
+  %t.21430 = ptrtoint ptr @.str.74 to i64
+  store i64 %t.21430, ptr %v.2143
+  %t.21440 = load i64, ptr %v.2143
+  ret i64 %t.21440
 L.250:
   br label %L.251
 L.251:
-  store i64 2, ptr %v.2129
-  %t.21300 = load i64, ptr %v.2115
-  %t.21301 = load i64, ptr %v.2129
-  %t.21302 = icmp eq i64 %t.21300, %t.21301
-  %t.21303 = zext i1 %t.21302 to i64
-  store i64 %t.21303, ptr %v.2130
-  %t.21310 = load i64, ptr %v.2130
-  %t.21311 = icmp eq i64 %t.21310, 0
-  br i1 %t.21311, label %L.252, label %L.fall.2131
-L.fall.2131:
-  %t.21320 = ptrtoint ptr @.str.77 to i64
-  store i64 %t.21320, ptr %v.2132
-  %t.21330 = load i64, ptr %v.2132
-  store i64 %t.21330, ptr %v.2120
+  %t.21480 = load i64, ptr %v.90000
+  store i64 %t.21480, ptr %v.2148
+  store i64 0, ptr %v.2149
+  %t.21500 = load i64, ptr %v.2149
+  store i64 %t.21500, ptr %v.2150
+  store i64 0, ptr %v.2151
+  %t.21520 = load i64, ptr %v.2148
+  %t.21521 = load i64, ptr %v.2151
+  %t.21522 = icmp slt i64 %t.21520, %t.21521
+  %t.21523 = zext i1 %t.21522 to i64
+  store i64 %t.21523, ptr %v.2152
+  %t.21530 = load i64, ptr %v.2152
+  %t.21531 = icmp eq i64 %t.21530, 0
+  br i1 %t.21531, label %L.252, label %L.fall.2153
+L.fall.2153:
+  store i64 1, ptr %v.2154
+  %t.21550 = load i64, ptr %v.2154
+  store i64 %t.21550, ptr %v.2150
+  store i64 0, ptr %v.2156
+  %t.21570 = load i64, ptr %v.2156
+  %t.21571 = load i64, ptr %v.2148
+  %t.21572 = sub i64 %t.21570, %t.21571
+  store i64 %t.21572, ptr %v.2157
+  %t.21580 = load i64, ptr %v.2157
+  store i64 %t.21580, ptr %v.2148
   br label %L.253
 L.252:
   br label %L.253
 L.253:
-  store i64 3, ptr %v.2137
-  %t.21380 = load i64, ptr %v.2115
-  %t.21381 = load i64, ptr %v.2137
-  %t.21382 = icmp eq i64 %t.21380, %t.21381
-  %t.21383 = zext i1 %t.21382 to i64
-  store i64 %t.21383, ptr %v.2138
-  %t.21390 = load i64, ptr %v.2138
-  %t.21391 = icmp eq i64 %t.21390, 0
-  br i1 %t.21391, label %L.254, label %L.fall.2139
-L.fall.2139:
-  %t.21400 = ptrtoint ptr @.str.78 to i64
-  store i64 %t.21400, ptr %v.2140
-  %t.21410 = load i64, ptr %v.2140
-  store i64 %t.21410, ptr %v.2120
-  br label %L.255
+  store i64 0, ptr %v.2162
+  %t.21630 = load i64, ptr %v.2162
+  store i64 %t.21630, ptr %v.2163
+  br label %L.254
 L.254:
-  br label %L.255
-L.255:
-  store i64 4, ptr %v.2145
-  %t.21460 = load i64, ptr %v.2115
-  %t.21461 = load i64, ptr %v.2145
-  %t.21462 = icmp eq i64 %t.21460, %t.21461
-  %t.21463 = zext i1 %t.21462 to i64
-  store i64 %t.21463, ptr %v.2146
-  %t.21470 = load i64, ptr %v.2146
-  %t.21471 = icmp eq i64 %t.21470, 0
-  br i1 %t.21471, label %L.256, label %L.fall.2147
-L.fall.2147:
-  %t.21480 = ptrtoint ptr @.str.79 to i64
-  store i64 %t.21480, ptr %v.2148
-  %t.21490 = load i64, ptr %v.2148
-  store i64 %t.21490, ptr %v.2120
+  store i64 0, ptr %v.2165
+  %t.21660 = load i64, ptr %v.2148
+  %t.21661 = load i64, ptr %v.2165
+  %t.21662 = icmp sgt i64 %t.21660, %t.21661
+  %t.21663 = zext i1 %t.21662 to i64
+  store i64 %t.21663, ptr %v.2166
+  %t.21670 = load i64, ptr %v.2166
+  %t.21671 = icmp eq i64 %t.21670, 0
+  br i1 %t.21671, label %L.255, label %L.fall.2167
+L.fall.2167:
+  store i64 10, ptr %v.2168
+  %t.21690 = load i64, ptr %v.2148
+  %t.21691 = load i64, ptr %v.2168
+  %t.21692 = sdiv i64 %t.21690, %t.21691
+  store i64 %t.21692, ptr %v.2169
+  store i64 10, ptr %v.2170
+  %t.21710 = load i64, ptr %v.2169
+  %t.21711 = load i64, ptr %v.2170
+  %t.21712 = mul i64 %t.21710, %t.21711
+  store i64 %t.21712, ptr %v.2171
+  %t.21720 = load i64, ptr %v.2148
+  %t.21721 = load i64, ptr %v.2171
+  %t.21722 = sub i64 %t.21720, %t.21721
+  store i64 %t.21722, ptr %v.2172
+  %t.21730 = load i64, ptr %v.2172
+  store i64 %t.21730, ptr %v.2173
+  store i64 10, ptr %v.2174
+  %t.21750 = load i64, ptr %v.2148
+  %t.21751 = load i64, ptr %v.2174
+  %t.21752 = sdiv i64 %t.21750, %t.21751
+  store i64 %t.21752, ptr %v.2175
+  %t.21760 = load i64, ptr %v.2175
+  store i64 %t.21760, ptr %v.2148
+  %t.21770 = ptrtoint ptr @.str.75 to i64
+  store i64 %t.21770, ptr %v.2177
+  %t.21780 = load i64, ptr %v.2177
+  store i64 %t.21780, ptr %v.2178
+  store i64 1, ptr %v.2179
+  %t.21800 = load i64, ptr %v.2173
+  %t.21801 = load i64, ptr %v.2179
+  %t.21802 = icmp eq i64 %t.21800, %t.21801
+  %t.21803 = zext i1 %t.21802 to i64
+  store i64 %t.21803, ptr %v.2180
+  %t.21810 = load i64, ptr %v.2180
+  %t.21811 = icmp eq i64 %t.21810, 0
+  br i1 %t.21811, label %L.256, label %L.fall.2181
+L.fall.2181:
+  %t.21820 = ptrtoint ptr @.str.76 to i64
+  store i64 %t.21820, ptr %v.2182
+  %t.21830 = load i64, ptr %v.2182
+  store i64 %t.21830, ptr %v.2178
   br label %L.257
 L.256:
   br label %L.257
 L.257:
-  store i64 5, ptr %v.2153
-  %t.21540 = load i64, ptr %v.2115
-  %t.21541 = load i64, ptr %v.2153
-  %t.21542 = icmp eq i64 %t.21540, %t.21541
-  %t.21543 = zext i1 %t.21542 to i64
-  store i64 %t.21543, ptr %v.2154
-  %t.21550 = load i64, ptr %v.2154
-  %t.21551 = icmp eq i64 %t.21550, 0
-  br i1 %t.21551, label %L.258, label %L.fall.2155
-L.fall.2155:
-  %t.21560 = ptrtoint ptr @.str.80 to i64
-  store i64 %t.21560, ptr %v.2156
-  %t.21570 = load i64, ptr %v.2156
-  store i64 %t.21570, ptr %v.2120
+  store i64 2, ptr %v.2187
+  %t.21880 = load i64, ptr %v.2173
+  %t.21881 = load i64, ptr %v.2187
+  %t.21882 = icmp eq i64 %t.21880, %t.21881
+  %t.21883 = zext i1 %t.21882 to i64
+  store i64 %t.21883, ptr %v.2188
+  %t.21890 = load i64, ptr %v.2188
+  %t.21891 = icmp eq i64 %t.21890, 0
+  br i1 %t.21891, label %L.258, label %L.fall.2189
+L.fall.2189:
+  %t.21900 = ptrtoint ptr @.str.77 to i64
+  store i64 %t.21900, ptr %v.2190
+  %t.21910 = load i64, ptr %v.2190
+  store i64 %t.21910, ptr %v.2178
   br label %L.259
 L.258:
   br label %L.259
 L.259:
-  store i64 6, ptr %v.2161
-  %t.21620 = load i64, ptr %v.2115
-  %t.21621 = load i64, ptr %v.2161
-  %t.21622 = icmp eq i64 %t.21620, %t.21621
-  %t.21623 = zext i1 %t.21622 to i64
-  store i64 %t.21623, ptr %v.2162
-  %t.21630 = load i64, ptr %v.2162
-  %t.21631 = icmp eq i64 %t.21630, 0
-  br i1 %t.21631, label %L.260, label %L.fall.2163
-L.fall.2163:
-  %t.21640 = ptrtoint ptr @.str.81 to i64
-  store i64 %t.21640, ptr %v.2164
-  %t.21650 = load i64, ptr %v.2164
-  store i64 %t.21650, ptr %v.2120
+  store i64 3, ptr %v.2195
+  %t.21960 = load i64, ptr %v.2173
+  %t.21961 = load i64, ptr %v.2195
+  %t.21962 = icmp eq i64 %t.21960, %t.21961
+  %t.21963 = zext i1 %t.21962 to i64
+  store i64 %t.21963, ptr %v.2196
+  %t.21970 = load i64, ptr %v.2196
+  %t.21971 = icmp eq i64 %t.21970, 0
+  br i1 %t.21971, label %L.260, label %L.fall.2197
+L.fall.2197:
+  %t.21980 = ptrtoint ptr @.str.78 to i64
+  store i64 %t.21980, ptr %v.2198
+  %t.21990 = load i64, ptr %v.2198
+  store i64 %t.21990, ptr %v.2178
   br label %L.261
 L.260:
   br label %L.261
 L.261:
-  store i64 7, ptr %v.2169
-  %t.21700 = load i64, ptr %v.2115
-  %t.21701 = load i64, ptr %v.2169
-  %t.21702 = icmp eq i64 %t.21700, %t.21701
-  %t.21703 = zext i1 %t.21702 to i64
-  store i64 %t.21703, ptr %v.2170
-  %t.21710 = load i64, ptr %v.2170
-  %t.21711 = icmp eq i64 %t.21710, 0
-  br i1 %t.21711, label %L.262, label %L.fall.2171
-L.fall.2171:
-  %t.21720 = ptrtoint ptr @.str.82 to i64
-  store i64 %t.21720, ptr %v.2172
-  %t.21730 = load i64, ptr %v.2172
-  store i64 %t.21730, ptr %v.2120
+  store i64 4, ptr %v.2203
+  %t.22040 = load i64, ptr %v.2173
+  %t.22041 = load i64, ptr %v.2203
+  %t.22042 = icmp eq i64 %t.22040, %t.22041
+  %t.22043 = zext i1 %t.22042 to i64
+  store i64 %t.22043, ptr %v.2204
+  %t.22050 = load i64, ptr %v.2204
+  %t.22051 = icmp eq i64 %t.22050, 0
+  br i1 %t.22051, label %L.262, label %L.fall.2205
+L.fall.2205:
+  %t.22060 = ptrtoint ptr @.str.79 to i64
+  store i64 %t.22060, ptr %v.2206
+  %t.22070 = load i64, ptr %v.2206
+  store i64 %t.22070, ptr %v.2178
   br label %L.263
 L.262:
   br label %L.263
 L.263:
-  store i64 8, ptr %v.2177
-  %t.21780 = load i64, ptr %v.2115
-  %t.21781 = load i64, ptr %v.2177
-  %t.21782 = icmp eq i64 %t.21780, %t.21781
-  %t.21783 = zext i1 %t.21782 to i64
-  store i64 %t.21783, ptr %v.2178
-  %t.21790 = load i64, ptr %v.2178
-  %t.21791 = icmp eq i64 %t.21790, 0
-  br i1 %t.21791, label %L.264, label %L.fall.2179
-L.fall.2179:
-  %t.21800 = ptrtoint ptr @.str.83 to i64
-  store i64 %t.21800, ptr %v.2180
-  %t.21810 = load i64, ptr %v.2180
-  store i64 %t.21810, ptr %v.2120
+  store i64 5, ptr %v.2211
+  %t.22120 = load i64, ptr %v.2173
+  %t.22121 = load i64, ptr %v.2211
+  %t.22122 = icmp eq i64 %t.22120, %t.22121
+  %t.22123 = zext i1 %t.22122 to i64
+  store i64 %t.22123, ptr %v.2212
+  %t.22130 = load i64, ptr %v.2212
+  %t.22131 = icmp eq i64 %t.22130, 0
+  br i1 %t.22131, label %L.264, label %L.fall.2213
+L.fall.2213:
+  %t.22140 = ptrtoint ptr @.str.80 to i64
+  store i64 %t.22140, ptr %v.2214
+  %t.22150 = load i64, ptr %v.2214
+  store i64 %t.22150, ptr %v.2178
   br label %L.265
 L.264:
   br label %L.265
 L.265:
-  store i64 9, ptr %v.2185
-  %t.21860 = load i64, ptr %v.2115
-  %t.21861 = load i64, ptr %v.2185
-  %t.21862 = icmp eq i64 %t.21860, %t.21861
-  %t.21863 = zext i1 %t.21862 to i64
-  store i64 %t.21863, ptr %v.2186
-  %t.21870 = load i64, ptr %v.2186
-  %t.21871 = icmp eq i64 %t.21870, 0
-  br i1 %t.21871, label %L.266, label %L.fall.2187
-L.fall.2187:
-  %t.21880 = ptrtoint ptr @.str.84 to i64
-  store i64 %t.21880, ptr %v.2188
-  %t.21890 = load i64, ptr %v.2188
-  store i64 %t.21890, ptr %v.2120
+  store i64 6, ptr %v.2219
+  %t.22200 = load i64, ptr %v.2173
+  %t.22201 = load i64, ptr %v.2219
+  %t.22202 = icmp eq i64 %t.22200, %t.22201
+  %t.22203 = zext i1 %t.22202 to i64
+  store i64 %t.22203, ptr %v.2220
+  %t.22210 = load i64, ptr %v.2220
+  %t.22211 = icmp eq i64 %t.22210, 0
+  br i1 %t.22211, label %L.266, label %L.fall.2221
+L.fall.2221:
+  %t.22220 = ptrtoint ptr @.str.81 to i64
+  store i64 %t.22220, ptr %v.2222
+  %t.22230 = load i64, ptr %v.2222
+  store i64 %t.22230, ptr %v.2178
   br label %L.267
 L.266:
   br label %L.267
 L.267:
-  %t.21930 = load i64, ptr %v.2120
-  %t.21931 = inttoptr i64 %t.21930 to ptr
-  %t.21932 = load i64, ptr %v.2105
-  %t.21933 = inttoptr i64 %t.21932 to ptr
-  %t.21934 = call ptr @ease_str_concat(ptr %t.21931, ptr %t.21933)
-  %t.21935 = ptrtoint ptr %t.21934 to i64
-  store i64 %t.21935, ptr %v.2193
-  %t.21940 = load i64, ptr %v.2193
-  store i64 %t.21940, ptr %v.2105
-  br label %L.248
-L.249:
-  %t.21970 = load i64, ptr %v.2092
-  %t.21971 = icmp eq i64 %t.21970, 0
-  br i1 %t.21971, label %L.268, label %L.fall.2197
-L.fall.2197:
-  %t.21980 = ptrtoint ptr @.str.85 to i64
-  store i64 %t.21980, ptr %v.2198
-  %t.21990 = load i64, ptr %v.2198
-  %t.21991 = inttoptr i64 %t.21990 to ptr
-  %t.21992 = load i64, ptr %v.2105
-  %t.21993 = inttoptr i64 %t.21992 to ptr
-  %t.21994 = call ptr @ease_str_concat(ptr %t.21991, ptr %t.21993)
-  %t.21995 = ptrtoint ptr %t.21994 to i64
-  store i64 %t.21995, ptr %v.2199
-  %t.22000 = load i64, ptr %v.2199
-  store i64 %t.22000, ptr %v.2105
+  store i64 7, ptr %v.2227
+  %t.22280 = load i64, ptr %v.2173
+  %t.22281 = load i64, ptr %v.2227
+  %t.22282 = icmp eq i64 %t.22280, %t.22281
+  %t.22283 = zext i1 %t.22282 to i64
+  store i64 %t.22283, ptr %v.2228
+  %t.22290 = load i64, ptr %v.2228
+  %t.22291 = icmp eq i64 %t.22290, 0
+  br i1 %t.22291, label %L.268, label %L.fall.2229
+L.fall.2229:
+  %t.22300 = ptrtoint ptr @.str.82 to i64
+  store i64 %t.22300, ptr %v.2230
+  %t.22310 = load i64, ptr %v.2230
+  store i64 %t.22310, ptr %v.2178
   br label %L.269
 L.268:
   br label %L.269
 L.269:
-  %t.22040 = load i64, ptr %v.2105
-  ret i64 %t.22040
-}
-
-define i64 @strconv_Atoi(i64 %param.0) {
-  %v.90000 = alloca i64
-  %v.2206 = alloca i64
-  %v.2207 = alloca i64
-  %v.2208 = alloca i64
-  %v.2209 = alloca i64
-  %v.2210 = alloca i64
-  %v.2211 = alloca i64
-  %v.2212 = alloca i64
-  %v.2213 = alloca i64
-  %v.2214 = alloca i64
-  %v.2215 = alloca i64
-  %v.2216 = alloca i64
-  %v.2217 = alloca i64
-  %v.2218 = alloca i64
-  %v.2219 = alloca i64
-  %v.2220 = alloca i64
-  %v.2222 = alloca i64
-  %v.2224 = alloca i64
-  %v.2230 = alloca i64
-  %v.2232 = alloca i64
-  %v.2233 = alloca i64
-  %v.2234 = alloca i64
-  %v.2235 = alloca i64
-  %v.2236 = alloca i64
-  %v.2237 = alloca i64
-  %v.2238 = alloca i64
-  %v.2240 = alloca i64
-  %v.2241 = alloca i64
-  %v.2242 = alloca i64
-  %v.2243 = alloca i64
-  %v.2244 = alloca i64
-  %v.2250 = alloca i64
-  %v.2251 = alloca i64
-  %v.2255 = alloca i64
-  %v.2256 = alloca i64
-  %v.2258 = alloca i64
-  %v.2259 = alloca i64
-  %v.0 = alloca i64
-  store i64 %param.0, ptr %v.90000
-  br label %B.body
-B.body:
-  store i64 0, ptr %v.2206
-  %t.22070 = load i64, ptr %v.2206
-  store i64 %t.22070, ptr %v.2207
-  store i64 0, ptr %v.2208
-  %t.22090 = load i64, ptr %v.2208
-  store i64 %t.22090, ptr %v.2209
-  %t.22100 = load i64, ptr %v.90000
-  %t.22101 = inttoptr i64 %t.22100 to ptr
-  %t.22102 = call i64 @ease_str_len(ptr %t.22101)
-  store i64 %t.22102, ptr %v.2210
-  %t.22110 = load i64, ptr %v.2210
-  store i64 %t.22110, ptr %v.2211
-  store i64 0, ptr %v.2212
-  %t.22130 = load i64, ptr %v.2212
-  store i64 %t.22130, ptr %v.2213
-  store i64 0, ptr %v.2214
-  %t.22150 = load i64, ptr %v.2211
-  %t.22151 = load i64, ptr %v.2214
-  %t.22152 = icmp sgt i64 %t.22150, %t.22151
-  %t.22153 = zext i1 %t.22152 to i64
-  store i64 %t.22153, ptr %v.2215
-  store i64 0, ptr %v.2216
-  %t.22170 = load i64, ptr %v.90000
-  %t.22171 = inttoptr i64 %t.22170 to ptr
-  %t.22172 = load i64, ptr %v.2216
-  %t.22173 = call i64 @ease_str_char_at(ptr %t.22171, i64 %t.22172)
-  store i64 %t.22173, ptr %v.2217
-  store i64 45, ptr %v.2218
-  %t.22190 = load i64, ptr %v.2217
-  %t.22191 = load i64, ptr %v.2218
-  %t.22192 = icmp eq i64 %t.22190, %t.22191
-  %t.22193 = zext i1 %t.22192 to i64
-  store i64 %t.22193, ptr %v.2219
-  %t.22200 = load i64, ptr %v.2215
-  %t.22201 = load i64, ptr %v.2219
-  %t.22202 = and i64 %t.22200, %t.22201
-  store i64 %t.22202, ptr %v.2220
-  %t.22210 = load i64, ptr %v.2220
-  %t.22211 = icmp eq i64 %t.22210, 0
-  br i1 %t.22211, label %L.270, label %L.fall.2221
-L.fall.2221:
-  store i64 1, ptr %v.2222
-  %t.22230 = load i64, ptr %v.2222
-  store i64 %t.22230, ptr %v.2209
-  store i64 1, ptr %v.2224
-  %t.22250 = load i64, ptr %v.2224
-  store i64 %t.22250, ptr %v.2213
+  store i64 8, ptr %v.2235
+  %t.22360 = load i64, ptr %v.2173
+  %t.22361 = load i64, ptr %v.2235
+  %t.22362 = icmp eq i64 %t.22360, %t.22361
+  %t.22363 = zext i1 %t.22362 to i64
+  store i64 %t.22363, ptr %v.2236
+  %t.22370 = load i64, ptr %v.2236
+  %t.22371 = icmp eq i64 %t.22370, 0
+  br i1 %t.22371, label %L.270, label %L.fall.2237
+L.fall.2237:
+  %t.22380 = ptrtoint ptr @.str.83 to i64
+  store i64 %t.22380, ptr %v.2238
+  %t.22390 = load i64, ptr %v.2238
+  store i64 %t.22390, ptr %v.2178
   br label %L.271
 L.270:
   br label %L.271
 L.271:
-  br label %L.272
-L.272:
-  %t.22300 = load i64, ptr %v.2213
-  %t.22301 = load i64, ptr %v.2211
-  %t.22302 = icmp slt i64 %t.22300, %t.22301
-  %t.22303 = zext i1 %t.22302 to i64
-  store i64 %t.22303, ptr %v.2230
-  %t.22310 = load i64, ptr %v.2230
-  %t.22311 = icmp eq i64 %t.22310, 0
-  br i1 %t.22311, label %L.273, label %L.fall.2231
-L.fall.2231:
-  %t.22320 = load i64, ptr %v.90000
-  %t.22321 = inttoptr i64 %t.22320 to ptr
-  %t.22322 = load i64, ptr %v.2213
-  %t.22323 = call i64 @ease_str_char_at(ptr %t.22321, i64 %t.22322)
-  store i64 %t.22323, ptr %v.2232
-  %t.22330 = load i64, ptr %v.2232
-  store i64 %t.22330, ptr %v.2233
-  store i64 48, ptr %v.2234
-  %t.22350 = load i64, ptr %v.2233
-  %t.22351 = load i64, ptr %v.2234
-  %t.22352 = icmp sge i64 %t.22350, %t.22351
-  %t.22353 = zext i1 %t.22352 to i64
-  store i64 %t.22353, ptr %v.2235
-  store i64 57, ptr %v.2236
-  %t.22370 = load i64, ptr %v.2233
-  %t.22371 = load i64, ptr %v.2236
-  %t.22372 = icmp sle i64 %t.22370, %t.22371
-  %t.22373 = zext i1 %t.22372 to i64
-  store i64 %t.22373, ptr %v.2237
-  %t.22380 = load i64, ptr %v.2235
-  %t.22381 = load i64, ptr %v.2237
-  %t.22382 = and i64 %t.22380, %t.22381
-  store i64 %t.22382, ptr %v.2238
-  %t.22390 = load i64, ptr %v.2238
-  %t.22391 = icmp eq i64 %t.22390, 0
-  br i1 %t.22391, label %L.274, label %L.fall.2239
-L.fall.2239:
-  store i64 10, ptr %v.2240
-  %t.22410 = load i64, ptr %v.2207
-  %t.22411 = load i64, ptr %v.2240
-  %t.22412 = mul i64 %t.22410, %t.22411
-  store i64 %t.22412, ptr %v.2241
-  store i64 48, ptr %v.2242
-  %t.22430 = load i64, ptr %v.2233
-  %t.22431 = load i64, ptr %v.2242
-  %t.22432 = sub i64 %t.22430, %t.22431
-  store i64 %t.22432, ptr %v.2243
-  %t.22440 = load i64, ptr %v.2241
+  store i64 9, ptr %v.2243
+  %t.22440 = load i64, ptr %v.2173
   %t.22441 = load i64, ptr %v.2243
-  %t.22442 = add i64 %t.22440, %t.22441
-  store i64 %t.22442, ptr %v.2244
+  %t.22442 = icmp eq i64 %t.22440, %t.22441
+  %t.22443 = zext i1 %t.22442 to i64
+  store i64 %t.22443, ptr %v.2244
   %t.22450 = load i64, ptr %v.2244
-  store i64 %t.22450, ptr %v.2207
+  %t.22451 = icmp eq i64 %t.22450, 0
+  br i1 %t.22451, label %L.272, label %L.fall.2245
+L.fall.2245:
+  %t.22460 = ptrtoint ptr @.str.84 to i64
+  store i64 %t.22460, ptr %v.2246
+  %t.22470 = load i64, ptr %v.2246
+  store i64 %t.22470, ptr %v.2178
+  br label %L.273
+L.272:
+  br label %L.273
+L.273:
+  %t.22510 = load i64, ptr %v.2178
+  %t.22511 = inttoptr i64 %t.22510 to ptr
+  %t.22512 = load i64, ptr %v.2163
+  %t.22513 = inttoptr i64 %t.22512 to ptr
+  %t.22514 = call ptr @ease_str_concat(ptr %t.22511, ptr %t.22513)
+  %t.22515 = ptrtoint ptr %t.22514 to i64
+  store i64 %t.22515, ptr %v.2251
+  %t.22520 = load i64, ptr %v.2251
+  store i64 %t.22520, ptr %v.2163
+  br label %L.254
+L.255:
+  %t.22550 = load i64, ptr %v.2150
+  %t.22551 = icmp eq i64 %t.22550, 0
+  br i1 %t.22551, label %L.274, label %L.fall.2255
+L.fall.2255:
+  %t.22560 = ptrtoint ptr @.str.85 to i64
+  store i64 %t.22560, ptr %v.2256
+  %t.22570 = load i64, ptr %v.2256
+  %t.22571 = inttoptr i64 %t.22570 to ptr
+  %t.22572 = load i64, ptr %v.2163
+  %t.22573 = inttoptr i64 %t.22572 to ptr
+  %t.22574 = call ptr @ease_str_concat(ptr %t.22571, ptr %t.22573)
+  %t.22575 = ptrtoint ptr %t.22574 to i64
+  store i64 %t.22575, ptr %v.2257
+  %t.22580 = load i64, ptr %v.2257
+  store i64 %t.22580, ptr %v.2163
   br label %L.275
 L.274:
-  br label %L.273
+  br label %L.275
 L.275:
-  store i64 1, ptr %v.2250
-  %t.22510 = load i64, ptr %v.2213
-  %t.22511 = load i64, ptr %v.2250
-  %t.22512 = add i64 %t.22510, %t.22511
-  store i64 %t.22512, ptr %v.2251
-  %t.22520 = load i64, ptr %v.2251
-  store i64 %t.22520, ptr %v.2213
-  br label %L.272
-L.273:
-  store i64 1, ptr %v.2255
-  %t.22560 = load i64, ptr %v.2209
-  %t.22561 = load i64, ptr %v.2255
-  %t.22562 = icmp eq i64 %t.22560, %t.22561
-  %t.22563 = zext i1 %t.22562 to i64
-  store i64 %t.22563, ptr %v.2256
-  %t.22570 = load i64, ptr %v.2256
-  %t.22571 = icmp eq i64 %t.22570, 0
-  br i1 %t.22571, label %L.276, label %L.fall.2257
-L.fall.2257:
-  store i64 0, ptr %v.2258
-  %t.22590 = load i64, ptr %v.2258
-  %t.22591 = load i64, ptr %v.2207
-  %t.22592 = sub i64 %t.22590, %t.22591
-  store i64 %t.22592, ptr %v.2259
-  %t.22600 = load i64, ptr %v.2259
-  store i64 %t.22600, ptr %v.2207
+  %t.22620 = load i64, ptr %v.2163
+  ret i64 %t.22620
+}
+
+define i64 @strconv_Atoi(i64 %param.0) {
+  %v.90000 = alloca i64
+  %v.2264 = alloca i64
+  %v.2265 = alloca i64
+  %v.2266 = alloca i64
+  %v.2267 = alloca i64
+  %v.2268 = alloca i64
+  %v.2269 = alloca i64
+  %v.2270 = alloca i64
+  %v.2271 = alloca i64
+  %v.2272 = alloca i64
+  %v.2273 = alloca i64
+  %v.2274 = alloca i64
+  %v.2275 = alloca i64
+  %v.2276 = alloca i64
+  %v.2277 = alloca i64
+  %v.2278 = alloca i64
+  %v.2280 = alloca i64
+  %v.2282 = alloca i64
+  %v.2288 = alloca i64
+  %v.2290 = alloca i64
+  %v.2291 = alloca i64
+  %v.2292 = alloca i64
+  %v.2293 = alloca i64
+  %v.2294 = alloca i64
+  %v.2295 = alloca i64
+  %v.2296 = alloca i64
+  %v.2298 = alloca i64
+  %v.2299 = alloca i64
+  %v.2300 = alloca i64
+  %v.2301 = alloca i64
+  %v.2302 = alloca i64
+  %v.2308 = alloca i64
+  %v.2309 = alloca i64
+  %v.2313 = alloca i64
+  %v.2314 = alloca i64
+  %v.2316 = alloca i64
+  %v.2317 = alloca i64
+  %v.0 = alloca i64
+  store i64 %param.0, ptr %v.90000
+  br label %B.body
+B.body:
+  store i64 0, ptr %v.2264
+  %t.22650 = load i64, ptr %v.2264
+  store i64 %t.22650, ptr %v.2265
+  store i64 0, ptr %v.2266
+  %t.22670 = load i64, ptr %v.2266
+  store i64 %t.22670, ptr %v.2267
+  %t.22680 = load i64, ptr %v.90000
+  %t.22681 = inttoptr i64 %t.22680 to ptr
+  %t.22682 = call i64 @ease_str_len(ptr %t.22681)
+  store i64 %t.22682, ptr %v.2268
+  %t.22690 = load i64, ptr %v.2268
+  store i64 %t.22690, ptr %v.2269
+  store i64 0, ptr %v.2270
+  %t.22710 = load i64, ptr %v.2270
+  store i64 %t.22710, ptr %v.2271
+  store i64 0, ptr %v.2272
+  %t.22730 = load i64, ptr %v.2269
+  %t.22731 = load i64, ptr %v.2272
+  %t.22732 = icmp sgt i64 %t.22730, %t.22731
+  %t.22733 = zext i1 %t.22732 to i64
+  store i64 %t.22733, ptr %v.2273
+  store i64 0, ptr %v.2274
+  %t.22750 = load i64, ptr %v.90000
+  %t.22751 = inttoptr i64 %t.22750 to ptr
+  %t.22752 = load i64, ptr %v.2274
+  %t.22753 = call i64 @ease_str_char_at(ptr %t.22751, i64 %t.22752)
+  store i64 %t.22753, ptr %v.2275
+  store i64 45, ptr %v.2276
+  %t.22770 = load i64, ptr %v.2275
+  %t.22771 = load i64, ptr %v.2276
+  %t.22772 = icmp eq i64 %t.22770, %t.22771
+  %t.22773 = zext i1 %t.22772 to i64
+  store i64 %t.22773, ptr %v.2277
+  %t.22780 = load i64, ptr %v.2273
+  %t.22781 = load i64, ptr %v.2277
+  %t.22782 = and i64 %t.22780, %t.22781
+  store i64 %t.22782, ptr %v.2278
+  %t.22790 = load i64, ptr %v.2278
+  %t.22791 = icmp eq i64 %t.22790, 0
+  br i1 %t.22791, label %L.276, label %L.fall.2279
+L.fall.2279:
+  store i64 1, ptr %v.2280
+  %t.22810 = load i64, ptr %v.2280
+  store i64 %t.22810, ptr %v.2267
+  store i64 1, ptr %v.2282
+  %t.22830 = load i64, ptr %v.2282
+  store i64 %t.22830, ptr %v.2271
   br label %L.277
 L.276:
   br label %L.277
 L.277:
-  %t.22640 = load i64, ptr %v.2207
-  ret i64 %t.22640
+  br label %L.278
+L.278:
+  %t.22880 = load i64, ptr %v.2271
+  %t.22881 = load i64, ptr %v.2269
+  %t.22882 = icmp slt i64 %t.22880, %t.22881
+  %t.22883 = zext i1 %t.22882 to i64
+  store i64 %t.22883, ptr %v.2288
+  %t.22890 = load i64, ptr %v.2288
+  %t.22891 = icmp eq i64 %t.22890, 0
+  br i1 %t.22891, label %L.279, label %L.fall.2289
+L.fall.2289:
+  %t.22900 = load i64, ptr %v.90000
+  %t.22901 = inttoptr i64 %t.22900 to ptr
+  %t.22902 = load i64, ptr %v.2271
+  %t.22903 = call i64 @ease_str_char_at(ptr %t.22901, i64 %t.22902)
+  store i64 %t.22903, ptr %v.2290
+  %t.22910 = load i64, ptr %v.2290
+  store i64 %t.22910, ptr %v.2291
+  store i64 48, ptr %v.2292
+  %t.22930 = load i64, ptr %v.2291
+  %t.22931 = load i64, ptr %v.2292
+  %t.22932 = icmp sge i64 %t.22930, %t.22931
+  %t.22933 = zext i1 %t.22932 to i64
+  store i64 %t.22933, ptr %v.2293
+  store i64 57, ptr %v.2294
+  %t.22950 = load i64, ptr %v.2291
+  %t.22951 = load i64, ptr %v.2294
+  %t.22952 = icmp sle i64 %t.22950, %t.22951
+  %t.22953 = zext i1 %t.22952 to i64
+  store i64 %t.22953, ptr %v.2295
+  %t.22960 = load i64, ptr %v.2293
+  %t.22961 = load i64, ptr %v.2295
+  %t.22962 = and i64 %t.22960, %t.22961
+  store i64 %t.22962, ptr %v.2296
+  %t.22970 = load i64, ptr %v.2296
+  %t.22971 = icmp eq i64 %t.22970, 0
+  br i1 %t.22971, label %L.280, label %L.fall.2297
+L.fall.2297:
+  store i64 10, ptr %v.2298
+  %t.22990 = load i64, ptr %v.2265
+  %t.22991 = load i64, ptr %v.2298
+  %t.22992 = mul i64 %t.22990, %t.22991
+  store i64 %t.22992, ptr %v.2299
+  store i64 48, ptr %v.2300
+  %t.23010 = load i64, ptr %v.2291
+  %t.23011 = load i64, ptr %v.2300
+  %t.23012 = sub i64 %t.23010, %t.23011
+  store i64 %t.23012, ptr %v.2301
+  %t.23020 = load i64, ptr %v.2299
+  %t.23021 = load i64, ptr %v.2301
+  %t.23022 = add i64 %t.23020, %t.23021
+  store i64 %t.23022, ptr %v.2302
+  %t.23030 = load i64, ptr %v.2302
+  store i64 %t.23030, ptr %v.2265
+  br label %L.281
+L.280:
+  br label %L.279
+L.281:
+  store i64 1, ptr %v.2308
+  %t.23090 = load i64, ptr %v.2271
+  %t.23091 = load i64, ptr %v.2308
+  %t.23092 = add i64 %t.23090, %t.23091
+  store i64 %t.23092, ptr %v.2309
+  %t.23100 = load i64, ptr %v.2309
+  store i64 %t.23100, ptr %v.2271
+  br label %L.278
+L.279:
+  store i64 1, ptr %v.2313
+  %t.23140 = load i64, ptr %v.2267
+  %t.23141 = load i64, ptr %v.2313
+  %t.23142 = icmp eq i64 %t.23140, %t.23141
+  %t.23143 = zext i1 %t.23142 to i64
+  store i64 %t.23143, ptr %v.2314
+  %t.23150 = load i64, ptr %v.2314
+  %t.23151 = icmp eq i64 %t.23150, 0
+  br i1 %t.23151, label %L.282, label %L.fall.2315
+L.fall.2315:
+  store i64 0, ptr %v.2316
+  %t.23170 = load i64, ptr %v.2316
+  %t.23171 = load i64, ptr %v.2265
+  %t.23172 = sub i64 %t.23170, %t.23171
+  store i64 %t.23172, ptr %v.2317
+  %t.23180 = load i64, ptr %v.2317
+  store i64 %t.23180, ptr %v.2265
+  br label %L.283
+L.282:
+  br label %L.283
+L.283:
+  %t.23220 = load i64, ptr %v.2265
+  ret i64 %t.23220
 }
 
 define i64 @token_TK_IDENT() {
-  %v.2266 = alloca i64
+  %v.2324 = alloca i64
   %v.0 = alloca i64
   br label %B.body
 B.body:
-  store i64 1, ptr %v.2266
-  %t.22670 = load i64, ptr %v.2266
-  ret i64 %t.22670
+  store i64 1, ptr %v.2324
+  %t.23250 = load i64, ptr %v.2324
+  ret i64 %t.23250
 }
 
 define i64 @token_TK_INT() {
-  %v.2269 = alloca i64
+  %v.2327 = alloca i64
   %v.0 = alloca i64
   br label %B.body
 B.body:
-  store i64 2, ptr %v.2269
-  %t.22700 = load i64, ptr %v.2269
-  ret i64 %t.22700
+  store i64 2, ptr %v.2327
+  %t.23280 = load i64, ptr %v.2327
+  ret i64 %t.23280
 }
 
 define i64 @token_TK_STRING() {
-  %v.2272 = alloca i64
+  %v.2330 = alloca i64
   %v.0 = alloca i64
   br label %B.body
 B.body:
-  store i64 3, ptr %v.2272
-  %t.22730 = load i64, ptr %v.2272
-  ret i64 %t.22730
+  store i64 3, ptr %v.2330
+  %t.23310 = load i64, ptr %v.2330
+  ret i64 %t.23310
 }
 
 define i64 @token_TK_FN() {
-  %v.2275 = alloca i64
+  %v.2333 = alloca i64
   %v.0 = alloca i64
   br label %B.body
 B.body:
-  store i64 10, ptr %v.2275
-  %t.22760 = load i64, ptr %v.2275
-  ret i64 %t.22760
+  store i64 10, ptr %v.2333
+  %t.23340 = load i64, ptr %v.2333
+  ret i64 %t.23340
 }
 
 define i64 @token_TK_LET() {
-  %v.2278 = alloca i64
+  %v.2336 = alloca i64
   %v.0 = alloca i64
   br label %B.body
 B.body:
-  store i64 11, ptr %v.2278
-  %t.22790 = load i64, ptr %v.2278
-  ret i64 %t.22790
+  store i64 11, ptr %v.2336
+  %t.23370 = load i64, ptr %v.2336
+  ret i64 %t.23370
 }
 
 define i64 @token_TK_MUT() {
-  %v.2281 = alloca i64
+  %v.2339 = alloca i64
   %v.0 = alloca i64
   br label %B.body
 B.body:
-  store i64 12, ptr %v.2281
-  %t.22820 = load i64, ptr %v.2281
-  ret i64 %t.22820
+  store i64 12, ptr %v.2339
+  %t.23400 = load i64, ptr %v.2339
+  ret i64 %t.23400
 }
 
 define i64 @token_TK_IF() {
-  %v.2284 = alloca i64
+  %v.2342 = alloca i64
   %v.0 = alloca i64
   br label %B.body
 B.body:
-  store i64 13, ptr %v.2284
-  %t.22850 = load i64, ptr %v.2284
-  ret i64 %t.22850
+  store i64 13, ptr %v.2342
+  %t.23430 = load i64, ptr %v.2342
+  ret i64 %t.23430
 }
 
 define i64 @token_TK_ELSE() {
-  %v.2287 = alloca i64
+  %v.2345 = alloca i64
   %v.0 = alloca i64
   br label %B.body
 B.body:
-  store i64 14, ptr %v.2287
-  %t.22880 = load i64, ptr %v.2287
-  ret i64 %t.22880
+  store i64 14, ptr %v.2345
+  %t.23460 = load i64, ptr %v.2345
+  ret i64 %t.23460
 }
 
 define i64 @token_TK_FOR() {
-  %v.2290 = alloca i64
+  %v.2348 = alloca i64
   %v.0 = alloca i64
   br label %B.body
 B.body:
-  store i64 15, ptr %v.2290
-  %t.22910 = load i64, ptr %v.2290
-  ret i64 %t.22910
+  store i64 15, ptr %v.2348
+  %t.23490 = load i64, ptr %v.2348
+  ret i64 %t.23490
 }
 
 define i64 @token_TK_IN() {
-  %v.2293 = alloca i64
+  %v.2351 = alloca i64
   %v.0 = alloca i64
   br label %B.body
 B.body:
-  store i64 16, ptr %v.2293
-  %t.22940 = load i64, ptr %v.2293
-  ret i64 %t.22940
+  store i64 16, ptr %v.2351
+  %t.23520 = load i64, ptr %v.2351
+  ret i64 %t.23520
 }
 
 define i64 @token_TK_RETURN() {
-  %v.2296 = alloca i64
+  %v.2354 = alloca i64
   %v.0 = alloca i64
   br label %B.body
 B.body:
-  store i64 17, ptr %v.2296
-  %t.22970 = load i64, ptr %v.2296
-  ret i64 %t.22970
+  store i64 17, ptr %v.2354
+  %t.23550 = load i64, ptr %v.2354
+  ret i64 %t.23550
 }
 
 define i64 @token_TK_BREAK() {
-  %v.2299 = alloca i64
+  %v.2357 = alloca i64
   %v.0 = alloca i64
   br label %B.body
 B.body:
-  store i64 18, ptr %v.2299
-  %t.23000 = load i64, ptr %v.2299
-  ret i64 %t.23000
+  store i64 18, ptr %v.2357
+  %t.23580 = load i64, ptr %v.2357
+  ret i64 %t.23580
 }
 
 define i64 @token_TK_STRUCT() {
-  %v.2302 = alloca i64
+  %v.2360 = alloca i64
   %v.0 = alloca i64
   br label %B.body
 B.body:
-  store i64 19, ptr %v.2302
-  %t.23030 = load i64, ptr %v.2302
-  ret i64 %t.23030
+  store i64 19, ptr %v.2360
+  %t.23610 = load i64, ptr %v.2360
+  ret i64 %t.23610
 }
 
 define i64 @token_TK_TRUE() {
-  %v.2305 = alloca i64
+  %v.2363 = alloca i64
   %v.0 = alloca i64
   br label %B.body
 B.body:
-  store i64 20, ptr %v.2305
-  %t.23060 = load i64, ptr %v.2305
-  ret i64 %t.23060
+  store i64 20, ptr %v.2363
+  %t.23640 = load i64, ptr %v.2363
+  ret i64 %t.23640
 }
 
 define i64 @token_TK_FALSE() {
-  %v.2308 = alloca i64
+  %v.2366 = alloca i64
   %v.0 = alloca i64
   br label %B.body
 B.body:
-  store i64 21, ptr %v.2308
-  %t.23090 = load i64, ptr %v.2308
-  ret i64 %t.23090
+  store i64 21, ptr %v.2366
+  %t.23670 = load i64, ptr %v.2366
+  ret i64 %t.23670
 }
 
 define i64 @token_TK_IMPORT() {
-  %v.2311 = alloca i64
+  %v.2369 = alloca i64
   %v.0 = alloca i64
   br label %B.body
 B.body:
-  store i64 22, ptr %v.2311
-  %t.23120 = load i64, ptr %v.2311
-  ret i64 %t.23120
+  store i64 22, ptr %v.2369
+  %t.23700 = load i64, ptr %v.2369
+  ret i64 %t.23700
 }
 
 define i64 @token_TK_PACKAGE() {
-  %v.2314 = alloca i64
+  %v.2372 = alloca i64
   %v.0 = alloca i64
   br label %B.body
 B.body:
-  store i64 23, ptr %v.2314
-  %t.23150 = load i64, ptr %v.2314
-  ret i64 %t.23150
+  store i64 23, ptr %v.2372
+  %t.23730 = load i64, ptr %v.2372
+  ret i64 %t.23730
 }
 
 define i64 @token_TK_PLUS() {
-  %v.2317 = alloca i64
+  %v.2375 = alloca i64
   %v.0 = alloca i64
   br label %B.body
 B.body:
-  store i64 30, ptr %v.2317
-  %t.23180 = load i64, ptr %v.2317
-  ret i64 %t.23180
+  store i64 30, ptr %v.2375
+  %t.23760 = load i64, ptr %v.2375
+  ret i64 %t.23760
 }
 
 define i64 @token_TK_MINUS() {
-  %v.2320 = alloca i64
+  %v.2378 = alloca i64
   %v.0 = alloca i64
   br label %B.body
 B.body:
-  store i64 31, ptr %v.2320
-  %t.23210 = load i64, ptr %v.2320
-  ret i64 %t.23210
+  store i64 31, ptr %v.2378
+  %t.23790 = load i64, ptr %v.2378
+  ret i64 %t.23790
 }
 
 define i64 @token_TK_STAR() {
-  %v.2323 = alloca i64
+  %v.2381 = alloca i64
   %v.0 = alloca i64
   br label %B.body
 B.body:
-  store i64 32, ptr %v.2323
-  %t.23240 = load i64, ptr %v.2323
-  ret i64 %t.23240
+  store i64 32, ptr %v.2381
+  %t.23820 = load i64, ptr %v.2381
+  ret i64 %t.23820
 }
 
 define i64 @token_TK_SLASH() {
-  %v.2326 = alloca i64
+  %v.2384 = alloca i64
   %v.0 = alloca i64
   br label %B.body
 B.body:
-  store i64 33, ptr %v.2326
-  %t.23270 = load i64, ptr %v.2326
-  ret i64 %t.23270
+  store i64 33, ptr %v.2384
+  %t.23850 = load i64, ptr %v.2384
+  ret i64 %t.23850
 }
 
 define i64 @token_TK_PERCENT() {
-  %v.2329 = alloca i64
+  %v.2387 = alloca i64
   %v.0 = alloca i64
   br label %B.body
 B.body:
-  store i64 34, ptr %v.2329
-  %t.23300 = load i64, ptr %v.2329
-  ret i64 %t.23300
+  store i64 34, ptr %v.2387
+  %t.23880 = load i64, ptr %v.2387
+  ret i64 %t.23880
 }
 
 define i64 @token_TK_LT() {
-  %v.2332 = alloca i64
+  %v.2390 = alloca i64
   %v.0 = alloca i64
   br label %B.body
 B.body:
-  store i64 35, ptr %v.2332
-  %t.23330 = load i64, ptr %v.2332
-  ret i64 %t.23330
+  store i64 35, ptr %v.2390
+  %t.23910 = load i64, ptr %v.2390
+  ret i64 %t.23910
 }
 
 define i64 @token_TK_GT() {
-  %v.2335 = alloca i64
+  %v.2393 = alloca i64
   %v.0 = alloca i64
   br label %B.body
 B.body:
-  store i64 36, ptr %v.2335
-  %t.23360 = load i64, ptr %v.2335
-  ret i64 %t.23360
+  store i64 36, ptr %v.2393
+  %t.23940 = load i64, ptr %v.2393
+  ret i64 %t.23940
 }
 
 define i64 @token_TK_LE() {
-  %v.2338 = alloca i64
+  %v.2396 = alloca i64
   %v.0 = alloca i64
   br label %B.body
 B.body:
-  store i64 37, ptr %v.2338
-  %t.23390 = load i64, ptr %v.2338
-  ret i64 %t.23390
+  store i64 37, ptr %v.2396
+  %t.23970 = load i64, ptr %v.2396
+  ret i64 %t.23970
 }
 
 define i64 @token_TK_GE() {
-  %v.2341 = alloca i64
+  %v.2399 = alloca i64
   %v.0 = alloca i64
   br label %B.body
 B.body:
-  store i64 38, ptr %v.2341
-  %t.23420 = load i64, ptr %v.2341
-  ret i64 %t.23420
+  store i64 38, ptr %v.2399
+  %t.24000 = load i64, ptr %v.2399
+  ret i64 %t.24000
 }
 
 define i64 @token_TK_EQ() {
-  %v.2344 = alloca i64
+  %v.2402 = alloca i64
   %v.0 = alloca i64
   br label %B.body
 B.body:
-  store i64 39, ptr %v.2344
-  %t.23450 = load i64, ptr %v.2344
-  ret i64 %t.23450
+  store i64 39, ptr %v.2402
+  %t.24030 = load i64, ptr %v.2402
+  ret i64 %t.24030
 }
 
 define i64 @token_TK_NE() {
-  %v.2347 = alloca i64
+  %v.2405 = alloca i64
   %v.0 = alloca i64
   br label %B.body
 B.body:
-  store i64 40, ptr %v.2347
-  %t.23480 = load i64, ptr %v.2347
-  ret i64 %t.23480
+  store i64 40, ptr %v.2405
+  %t.24060 = load i64, ptr %v.2405
+  ret i64 %t.24060
 }
 
 define i64 @token_TK_AND() {
-  %v.2350 = alloca i64
+  %v.2408 = alloca i64
   %v.0 = alloca i64
   br label %B.body
 B.body:
-  store i64 41, ptr %v.2350
-  %t.23510 = load i64, ptr %v.2350
-  ret i64 %t.23510
+  store i64 41, ptr %v.2408
+  %t.24090 = load i64, ptr %v.2408
+  ret i64 %t.24090
 }
 
 define i64 @token_TK_OR() {
-  %v.2353 = alloca i64
+  %v.2411 = alloca i64
   %v.0 = alloca i64
   br label %B.body
 B.body:
-  store i64 42, ptr %v.2353
-  %t.23540 = load i64, ptr %v.2353
-  ret i64 %t.23540
+  store i64 42, ptr %v.2411
+  %t.24120 = load i64, ptr %v.2411
+  ret i64 %t.24120
 }
 
 define i64 @token_TK_NOT() {
-  %v.2356 = alloca i64
-  %v.0 = alloca i64
-  br label %B.body
-B.body:
-  store i64 43, ptr %v.2356
-  %t.23570 = load i64, ptr %v.2356
-  ret i64 %t.23570
-}
-
-define i64 @token_TK_CARET() {
-  %v.2359 = alloca i64
-  %v.0 = alloca i64
-  br label %B.body
-B.body:
-  store i64 44, ptr %v.2359
-  %t.23600 = load i64, ptr %v.2359
-  ret i64 %t.23600
-}
-
-define i64 @token_TK_AMPERSAND() {
-  %v.2362 = alloca i64
-  %v.0 = alloca i64
-  br label %B.body
-B.body:
-  store i64 46, ptr %v.2362
-  %t.23630 = load i64, ptr %v.2362
-  ret i64 %t.23630
-}
-
-define i64 @token_TK_PIPE() {
-  %v.2365 = alloca i64
-  %v.0 = alloca i64
-  br label %B.body
-B.body:
-  store i64 50, ptr %v.2365
-  %t.23660 = load i64, ptr %v.2365
-  ret i64 %t.23660
-}
-
-define i64 @token_TK_ASSIGN() {
-  %v.2368 = alloca i64
-  %v.0 = alloca i64
-  br label %B.body
-B.body:
-  store i64 45, ptr %v.2368
-  %t.23690 = load i64, ptr %v.2368
-  ret i64 %t.23690
-}
-
-define i64 @token_TK_ARROW() {
-  %v.2371 = alloca i64
-  %v.0 = alloca i64
-  br label %B.body
-B.body:
-  store i64 47, ptr %v.2371
-  %t.23720 = load i64, ptr %v.2371
-  ret i64 %t.23720
-}
-
-define i64 @token_TK_DOT() {
-  %v.2374 = alloca i64
-  %v.0 = alloca i64
-  br label %B.body
-B.body:
-  store i64 48, ptr %v.2374
-  %t.23750 = load i64, ptr %v.2374
-  ret i64 %t.23750
-}
-
-define i64 @token_TK_DOTDOT() {
-  %v.2377 = alloca i64
-  %v.0 = alloca i64
-  br label %B.body
-B.body:
-  store i64 49, ptr %v.2377
-  %t.23780 = load i64, ptr %v.2377
-  ret i64 %t.23780
-}
-
-define i64 @token_TK_LPAREN() {
-  %v.2380 = alloca i64
-  %v.0 = alloca i64
-  br label %B.body
-B.body:
-  store i64 51, ptr %v.2380
-  %t.23810 = load i64, ptr %v.2380
-  ret i64 %t.23810
-}
-
-define i64 @token_TK_RPAREN() {
-  %v.2383 = alloca i64
-  %v.0 = alloca i64
-  br label %B.body
-B.body:
-  store i64 52, ptr %v.2383
-  %t.23840 = load i64, ptr %v.2383
-  ret i64 %t.23840
-}
-
-define i64 @token_TK_LBRACE() {
-  %v.2386 = alloca i64
-  %v.0 = alloca i64
-  br label %B.body
-B.body:
-  store i64 53, ptr %v.2386
-  %t.23870 = load i64, ptr %v.2386
-  ret i64 %t.23870
-}
-
-define i64 @token_TK_RBRACE() {
-  %v.2389 = alloca i64
-  %v.0 = alloca i64
-  br label %B.body
-B.body:
-  store i64 54, ptr %v.2389
-  %t.23900 = load i64, ptr %v.2389
-  ret i64 %t.23900
-}
-
-define i64 @token_TK_LBRACKET() {
-  %v.2392 = alloca i64
-  %v.0 = alloca i64
-  br label %B.body
-B.body:
-  store i64 55, ptr %v.2392
-  %t.23930 = load i64, ptr %v.2392
-  ret i64 %t.23930
-}
-
-define i64 @token_TK_RBRACKET() {
-  %v.2395 = alloca i64
-  %v.0 = alloca i64
-  br label %B.body
-B.body:
-  store i64 56, ptr %v.2395
-  %t.23960 = load i64, ptr %v.2395
-  ret i64 %t.23960
-}
-
-define i64 @token_TK_COMMA() {
-  %v.2398 = alloca i64
-  %v.0 = alloca i64
-  br label %B.body
-B.body:
-  store i64 57, ptr %v.2398
-  %t.23990 = load i64, ptr %v.2398
-  ret i64 %t.23990
-}
-
-define i64 @token_TK_COLON() {
-  %v.2401 = alloca i64
-  %v.0 = alloca i64
-  br label %B.body
-B.body:
-  store i64 58, ptr %v.2401
-  %t.24020 = load i64, ptr %v.2401
-  ret i64 %t.24020
-}
-
-define i64 @token_TK_SEMI() {
-  %v.2404 = alloca i64
-  %v.0 = alloca i64
-  br label %B.body
-B.body:
-  store i64 59, ptr %v.2404
-  %t.24050 = load i64, ptr %v.2404
-  ret i64 %t.24050
-}
-
-define i64 @token_TK_EOF() {
-  %v.2407 = alloca i64
-  %v.0 = alloca i64
-  br label %B.body
-B.body:
-  store i64 100, ptr %v.2407
-  %t.24080 = load i64, ptr %v.2407
-  ret i64 %t.24080
-}
-
-define i64 @lexer_is_digit(i64 %param.0) {
-  %v.90000 = alloca i64
-  %v.2410 = alloca i64
-  %v.2411 = alloca i64
-  %v.2412 = alloca i64
-  %v.2413 = alloca i64
   %v.2414 = alloca i64
   %v.0 = alloca i64
-  store i64 %param.0, ptr %v.90000
   br label %B.body
 B.body:
-  store i64 48, ptr %v.2410
-  %t.24110 = load i64, ptr %v.90000
-  %t.24111 = load i64, ptr %v.2410
-  %t.24112 = icmp sge i64 %t.24110, %t.24111
-  %t.24113 = zext i1 %t.24112 to i64
-  store i64 %t.24113, ptr %v.2411
-  store i64 57, ptr %v.2412
-  %t.24130 = load i64, ptr %v.90000
-  %t.24131 = load i64, ptr %v.2412
-  %t.24132 = icmp sle i64 %t.24130, %t.24131
-  %t.24133 = zext i1 %t.24132 to i64
-  store i64 %t.24133, ptr %v.2413
-  %t.24140 = load i64, ptr %v.2411
-  %t.24141 = load i64, ptr %v.2413
-  %t.24142 = and i64 %t.24140, %t.24141
-  store i64 %t.24142, ptr %v.2414
+  store i64 43, ptr %v.2414
   %t.24150 = load i64, ptr %v.2414
   ret i64 %t.24150
 }
 
-define i64 @lexer_is_alpha(i64 %param.0) {
-  %v.90000 = alloca i64
+define i64 @token_TK_CARET() {
   %v.2417 = alloca i64
-  %v.2418 = alloca i64
-  %v.2419 = alloca i64
+  %v.0 = alloca i64
+  br label %B.body
+B.body:
+  store i64 44, ptr %v.2417
+  %t.24180 = load i64, ptr %v.2417
+  ret i64 %t.24180
+}
+
+define i64 @token_TK_AMPERSAND() {
   %v.2420 = alloca i64
-  %v.2421 = alloca i64
-  %v.2422 = alloca i64
+  %v.0 = alloca i64
+  br label %B.body
+B.body:
+  store i64 46, ptr %v.2420
+  %t.24210 = load i64, ptr %v.2420
+  ret i64 %t.24210
+}
+
+define i64 @token_TK_PIPE() {
   %v.2423 = alloca i64
-  %v.2424 = alloca i64
-  %v.2425 = alloca i64
+  %v.0 = alloca i64
+  br label %B.body
+B.body:
+  store i64 50, ptr %v.2423
+  %t.24240 = load i64, ptr %v.2423
+  ret i64 %t.24240
+}
+
+define i64 @token_TK_ASSIGN() {
   %v.2426 = alloca i64
-  %v.2427 = alloca i64
-  %v.2428 = alloca i64
+  %v.0 = alloca i64
+  br label %B.body
+B.body:
+  store i64 45, ptr %v.2426
+  %t.24270 = load i64, ptr %v.2426
+  ret i64 %t.24270
+}
+
+define i64 @token_TK_ARROW() {
   %v.2429 = alloca i64
-  %v.2430 = alloca i64
   %v.0 = alloca i64
-  store i64 %param.0, ptr %v.90000
   br label %B.body
 B.body:
-  store i64 65, ptr %v.2417
-  %t.24180 = load i64, ptr %v.90000
-  %t.24181 = load i64, ptr %v.2417
-  %t.24182 = icmp sge i64 %t.24180, %t.24181
-  %t.24183 = zext i1 %t.24182 to i64
-  store i64 %t.24183, ptr %v.2418
-  store i64 90, ptr %v.2419
-  %t.24200 = load i64, ptr %v.90000
-  %t.24201 = load i64, ptr %v.2419
-  %t.24202 = icmp sle i64 %t.24200, %t.24201
-  %t.24203 = zext i1 %t.24202 to i64
-  store i64 %t.24203, ptr %v.2420
-  %t.24210 = load i64, ptr %v.2418
-  %t.24211 = load i64, ptr %v.2420
-  %t.24212 = and i64 %t.24210, %t.24211
-  store i64 %t.24212, ptr %v.2421
-  store i64 97, ptr %v.2422
-  %t.24230 = load i64, ptr %v.90000
-  %t.24231 = load i64, ptr %v.2422
-  %t.24232 = icmp sge i64 %t.24230, %t.24231
-  %t.24233 = zext i1 %t.24232 to i64
-  store i64 %t.24233, ptr %v.2423
-  store i64 122, ptr %v.2424
-  %t.24250 = load i64, ptr %v.90000
-  %t.24251 = load i64, ptr %v.2424
-  %t.24252 = icmp sle i64 %t.24250, %t.24251
-  %t.24253 = zext i1 %t.24252 to i64
-  store i64 %t.24253, ptr %v.2425
-  %t.24260 = load i64, ptr %v.2423
-  %t.24261 = load i64, ptr %v.2425
-  %t.24262 = and i64 %t.24260, %t.24261
-  store i64 %t.24262, ptr %v.2426
-  %t.24270 = load i64, ptr %v.2421
-  %t.24271 = load i64, ptr %v.2426
-  %t.24272 = or i64 %t.24270, %t.24271
-  store i64 %t.24272, ptr %v.2427
-  store i64 95, ptr %v.2428
-  %t.24290 = load i64, ptr %v.90000
-  %t.24291 = load i64, ptr %v.2428
-  %t.24292 = icmp eq i64 %t.24290, %t.24291
-  %t.24293 = zext i1 %t.24292 to i64
-  store i64 %t.24293, ptr %v.2429
-  %t.24300 = load i64, ptr %v.2427
-  %t.24301 = load i64, ptr %v.2429
-  %t.24302 = or i64 %t.24300, %t.24301
-  store i64 %t.24302, ptr %v.2430
-  %t.24310 = load i64, ptr %v.2430
-  ret i64 %t.24310
+  store i64 47, ptr %v.2429
+  %t.24300 = load i64, ptr %v.2429
+  ret i64 %t.24300
 }
 
-define i64 @lexer_is_hex_digit(i64 %param.0) {
-  %v.90000 = alloca i64
-  %v.2434 = alloca i64
+define i64 @token_TK_DOT() {
+  %v.2432 = alloca i64
+  %v.0 = alloca i64
+  br label %B.body
+B.body:
+  store i64 48, ptr %v.2432
+  %t.24330 = load i64, ptr %v.2432
+  ret i64 %t.24330
+}
+
+define i64 @token_TK_DOTDOT() {
   %v.2435 = alloca i64
-  %v.2436 = alloca i64
-  %v.2437 = alloca i64
+  %v.0 = alloca i64
+  br label %B.body
+B.body:
+  store i64 49, ptr %v.2435
+  %t.24360 = load i64, ptr %v.2435
+  ret i64 %t.24360
+}
+
+define i64 @token_TK_LPAREN() {
   %v.2438 = alloca i64
-  %v.2439 = alloca i64
-  %v.2440 = alloca i64
+  %v.0 = alloca i64
+  br label %B.body
+B.body:
+  store i64 51, ptr %v.2438
+  %t.24390 = load i64, ptr %v.2438
+  ret i64 %t.24390
+}
+
+define i64 @token_TK_RPAREN() {
   %v.2441 = alloca i64
-  %v.2442 = alloca i64
-  %v.2443 = alloca i64
+  %v.0 = alloca i64
+  br label %B.body
+B.body:
+  store i64 52, ptr %v.2441
+  %t.24420 = load i64, ptr %v.2441
+  ret i64 %t.24420
+}
+
+define i64 @token_TK_LBRACE() {
   %v.2444 = alloca i64
-  %v.2445 = alloca i64
-  %v.2446 = alloca i64
   %v.0 = alloca i64
-  store i64 %param.0, ptr %v.90000
   br label %B.body
 B.body:
-  %t.24340 = load i64, ptr %v.90000
-  %t.24349 = call i64 @lexer_is_digit(i64 %t.24340)
-  store i64 %t.24349, ptr %v.2434
-  store i64 97, ptr %v.2435
-  %t.24360 = load i64, ptr %v.90000
-  %t.24361 = load i64, ptr %v.2435
-  %t.24362 = icmp sge i64 %t.24360, %t.24361
-  %t.24363 = zext i1 %t.24362 to i64
-  store i64 %t.24363, ptr %v.2436
-  store i64 102, ptr %v.2437
-  %t.24380 = load i64, ptr %v.90000
-  %t.24381 = load i64, ptr %v.2437
-  %t.24382 = icmp sle i64 %t.24380, %t.24381
-  %t.24383 = zext i1 %t.24382 to i64
-  store i64 %t.24383, ptr %v.2438
-  %t.24390 = load i64, ptr %v.2436
-  %t.24391 = load i64, ptr %v.2438
-  %t.24392 = and i64 %t.24390, %t.24391
-  store i64 %t.24392, ptr %v.2439
-  %t.24400 = load i64, ptr %v.2434
-  %t.24401 = load i64, ptr %v.2439
-  %t.24402 = or i64 %t.24400, %t.24401
-  store i64 %t.24402, ptr %v.2440
-  store i64 65, ptr %v.2441
-  %t.24420 = load i64, ptr %v.90000
-  %t.24421 = load i64, ptr %v.2441
-  %t.24422 = icmp sge i64 %t.24420, %t.24421
-  %t.24423 = zext i1 %t.24422 to i64
-  store i64 %t.24423, ptr %v.2442
-  store i64 70, ptr %v.2443
-  %t.24440 = load i64, ptr %v.90000
-  %t.24441 = load i64, ptr %v.2443
-  %t.24442 = icmp sle i64 %t.24440, %t.24441
-  %t.24443 = zext i1 %t.24442 to i64
-  store i64 %t.24443, ptr %v.2444
-  %t.24450 = load i64, ptr %v.2442
-  %t.24451 = load i64, ptr %v.2444
-  %t.24452 = and i64 %t.24450, %t.24451
-  store i64 %t.24452, ptr %v.2445
-  %t.24460 = load i64, ptr %v.2440
-  %t.24461 = load i64, ptr %v.2445
-  %t.24462 = or i64 %t.24460, %t.24461
-  store i64 %t.24462, ptr %v.2446
-  %t.24470 = load i64, ptr %v.2446
-  ret i64 %t.24470
+  store i64 53, ptr %v.2444
+  %t.24450 = load i64, ptr %v.2444
+  ret i64 %t.24450
 }
 
-define i64 @lexer_lex_peek(i64 %param.0, i64 %param.1) {
-  %v.90000 = alloca i64
-  %v.90001 = alloca i64
-  %v.2449 = alloca i64
+define i64 @token_TK_RBRACE() {
+  %v.2447 = alloca i64
+  %v.0 = alloca i64
+  br label %B.body
+B.body:
+  store i64 54, ptr %v.2447
+  %t.24480 = load i64, ptr %v.2447
+  ret i64 %t.24480
+}
+
+define i64 @token_TK_LBRACKET() {
   %v.2450 = alloca i64
-  %v.2452 = alloca i64
   %v.0 = alloca i64
-  %v.2457 = alloca i64
-  store i64 %param.0, ptr %v.90000
-  store i64 %param.1, ptr %v.90001
   br label %B.body
 B.body:
-  %t.24490 = load i64, ptr %v.90000
-  %t.24491 = inttoptr i64 %t.24490 to ptr
-  %t.24492 = call i64 @ease_str_len(ptr %t.24491)
-  store i64 %t.24492, ptr %v.2449
-  %t.24500 = load i64, ptr %v.90001
-  %t.24501 = load i64, ptr %v.2449
-  %t.24502 = icmp sge i64 %t.24500, %t.24501
-  %t.24503 = zext i1 %t.24502 to i64
-  store i64 %t.24503, ptr %v.2450
+  store i64 55, ptr %v.2450
   %t.24510 = load i64, ptr %v.2450
-  %t.24511 = icmp eq i64 %t.24510, 0
-  br i1 %t.24511, label %L.278, label %L.fall.2451
-L.fall.2451:
-  store i64 0, ptr %v.2452
-  %t.24530 = load i64, ptr %v.2452
-  ret i64 %t.24530
-L.278:
-  br label %L.279
-L.279:
-  %t.24570 = load i64, ptr %v.90000
-  %t.24571 = inttoptr i64 %t.24570 to ptr
-  %t.24572 = load i64, ptr %v.90001
-  %t.24573 = call i64 @ease_str_char_at(ptr %t.24571, i64 %t.24572)
-  store i64 %t.24573, ptr %v.2457
-  %t.24580 = load i64, ptr %v.2457
-  ret i64 %t.24580
+  ret i64 %t.24510
 }
 
-define i64 @lexer_lex_skip(i64 %param.0, i64 %param.1) {
-  %v.90000 = alloca i64
-  %v.90001 = alloca i64
-  %v.2460 = alloca i64
-  %v.2461 = alloca i64
+define i64 @token_TK_RBRACKET() {
+  %v.2453 = alloca i64
+  %v.0 = alloca i64
+  br label %B.body
+B.body:
+  store i64 56, ptr %v.2453
+  %t.24540 = load i64, ptr %v.2453
+  ret i64 %t.24540
+}
+
+define i64 @token_TK_COMMA() {
+  %v.2456 = alloca i64
+  %v.0 = alloca i64
+  br label %B.body
+B.body:
+  store i64 57, ptr %v.2456
+  %t.24570 = load i64, ptr %v.2456
+  ret i64 %t.24570
+}
+
+define i64 @token_TK_COLON() {
+  %v.2459 = alloca i64
+  %v.0 = alloca i64
+  br label %B.body
+B.body:
+  store i64 58, ptr %v.2459
+  %t.24600 = load i64, ptr %v.2459
+  ret i64 %t.24600
+}
+
+define i64 @token_TK_SEMI() {
   %v.2462 = alloca i64
-  %v.2464 = alloca i64
+  %v.0 = alloca i64
+  br label %B.body
+B.body:
+  store i64 59, ptr %v.2462
+  %t.24630 = load i64, ptr %v.2462
+  ret i64 %t.24630
+}
+
+define i64 @token_TK_COLONEQUAL() {
+  %v.2465 = alloca i64
+  %v.0 = alloca i64
+  br label %B.body
+B.body:
+  store i64 60, ptr %v.2465
+  %t.24660 = load i64, ptr %v.2465
+  ret i64 %t.24660
+}
+
+define i64 @token_TK_EOF() {
   %v.2468 = alloca i64
-  %v.2469 = alloca i64
-  %v.2470 = alloca i64
+  %v.0 = alloca i64
+  br label %B.body
+B.body:
+  store i64 100, ptr %v.2468
+  %t.24690 = load i64, ptr %v.2468
+  ret i64 %t.24690
+}
+
+define i64 @lexer_is_digit(i64 %param.0) {
+  %v.90000 = alloca i64
   %v.2471 = alloca i64
   %v.2472 = alloca i64
   %v.2473 = alloca i64
   %v.2474 = alloca i64
   %v.2475 = alloca i64
-  %v.2476 = alloca i64
-  %v.2477 = alloca i64
+  %v.0 = alloca i64
+  store i64 %param.0, ptr %v.90000
+  br label %B.body
+B.body:
+  store i64 48, ptr %v.2471
+  %t.24720 = load i64, ptr %v.90000
+  %t.24721 = load i64, ptr %v.2471
+  %t.24722 = icmp sge i64 %t.24720, %t.24721
+  %t.24723 = zext i1 %t.24722 to i64
+  store i64 %t.24723, ptr %v.2472
+  store i64 57, ptr %v.2473
+  %t.24740 = load i64, ptr %v.90000
+  %t.24741 = load i64, ptr %v.2473
+  %t.24742 = icmp sle i64 %t.24740, %t.24741
+  %t.24743 = zext i1 %t.24742 to i64
+  store i64 %t.24743, ptr %v.2474
+  %t.24750 = load i64, ptr %v.2472
+  %t.24751 = load i64, ptr %v.2474
+  %t.24752 = and i64 %t.24750, %t.24751
+  store i64 %t.24752, ptr %v.2475
+  %t.24760 = load i64, ptr %v.2475
+  ret i64 %t.24760
+}
+
+define i64 @lexer_is_alpha(i64 %param.0) {
+  %v.90000 = alloca i64
   %v.2478 = alloca i64
   %v.2479 = alloca i64
   %v.2480 = alloca i64
+  %v.2481 = alloca i64
   %v.2482 = alloca i64
   %v.2483 = alloca i64
+  %v.2484 = alloca i64
+  %v.2485 = alloca i64
+  %v.2486 = alloca i64
   %v.2487 = alloca i64
   %v.2488 = alloca i64
   %v.2489 = alloca i64
   %v.2490 = alloca i64
   %v.2491 = alloca i64
-  %v.2492 = alloca i64
-  %v.2494 = alloca i64
+  %v.0 = alloca i64
+  store i64 %param.0, ptr %v.90000
+  br label %B.body
+B.body:
+  store i64 65, ptr %v.2478
+  %t.24790 = load i64, ptr %v.90000
+  %t.24791 = load i64, ptr %v.2478
+  %t.24792 = icmp sge i64 %t.24790, %t.24791
+  %t.24793 = zext i1 %t.24792 to i64
+  store i64 %t.24793, ptr %v.2479
+  store i64 90, ptr %v.2480
+  %t.24810 = load i64, ptr %v.90000
+  %t.24811 = load i64, ptr %v.2480
+  %t.24812 = icmp sle i64 %t.24810, %t.24811
+  %t.24813 = zext i1 %t.24812 to i64
+  store i64 %t.24813, ptr %v.2481
+  %t.24820 = load i64, ptr %v.2479
+  %t.24821 = load i64, ptr %v.2481
+  %t.24822 = and i64 %t.24820, %t.24821
+  store i64 %t.24822, ptr %v.2482
+  store i64 97, ptr %v.2483
+  %t.24840 = load i64, ptr %v.90000
+  %t.24841 = load i64, ptr %v.2483
+  %t.24842 = icmp sge i64 %t.24840, %t.24841
+  %t.24843 = zext i1 %t.24842 to i64
+  store i64 %t.24843, ptr %v.2484
+  store i64 122, ptr %v.2485
+  %t.24860 = load i64, ptr %v.90000
+  %t.24861 = load i64, ptr %v.2485
+  %t.24862 = icmp sle i64 %t.24860, %t.24861
+  %t.24863 = zext i1 %t.24862 to i64
+  store i64 %t.24863, ptr %v.2486
+  %t.24870 = load i64, ptr %v.2484
+  %t.24871 = load i64, ptr %v.2486
+  %t.24872 = and i64 %t.24870, %t.24871
+  store i64 %t.24872, ptr %v.2487
+  %t.24880 = load i64, ptr %v.2482
+  %t.24881 = load i64, ptr %v.2487
+  %t.24882 = or i64 %t.24880, %t.24881
+  store i64 %t.24882, ptr %v.2488
+  store i64 95, ptr %v.2489
+  %t.24900 = load i64, ptr %v.90000
+  %t.24901 = load i64, ptr %v.2489
+  %t.24902 = icmp eq i64 %t.24900, %t.24901
+  %t.24903 = zext i1 %t.24902 to i64
+  store i64 %t.24903, ptr %v.2490
+  %t.24910 = load i64, ptr %v.2488
+  %t.24911 = load i64, ptr %v.2490
+  %t.24912 = or i64 %t.24910, %t.24911
+  store i64 %t.24912, ptr %v.2491
+  %t.24920 = load i64, ptr %v.2491
+  ret i64 %t.24920
+}
+
+define i64 @lexer_is_hex_digit(i64 %param.0) {
+  %v.90000 = alloca i64
   %v.2495 = alloca i64
+  %v.2496 = alloca i64
+  %v.2497 = alloca i64
   %v.2498 = alloca i64
   %v.2499 = alloca i64
   %v.2500 = alloca i64
   %v.2501 = alloca i64
+  %v.2502 = alloca i64
   %v.2503 = alloca i64
   %v.2504 = alloca i64
+  %v.2505 = alloca i64
+  %v.2506 = alloca i64
   %v.2507 = alloca i64
+  %v.0 = alloca i64
+  store i64 %param.0, ptr %v.90000
+  br label %B.body
+B.body:
+  %t.24950 = load i64, ptr %v.90000
+  %t.24959 = call i64 @lexer_is_digit(i64 %t.24950)
+  store i64 %t.24959, ptr %v.2495
+  store i64 97, ptr %v.2496
+  %t.24970 = load i64, ptr %v.90000
+  %t.24971 = load i64, ptr %v.2496
+  %t.24972 = icmp sge i64 %t.24970, %t.24971
+  %t.24973 = zext i1 %t.24972 to i64
+  store i64 %t.24973, ptr %v.2497
+  store i64 102, ptr %v.2498
+  %t.24990 = load i64, ptr %v.90000
+  %t.24991 = load i64, ptr %v.2498
+  %t.24992 = icmp sle i64 %t.24990, %t.24991
+  %t.24993 = zext i1 %t.24992 to i64
+  store i64 %t.24993, ptr %v.2499
+  %t.25000 = load i64, ptr %v.2497
+  %t.25001 = load i64, ptr %v.2499
+  %t.25002 = and i64 %t.25000, %t.25001
+  store i64 %t.25002, ptr %v.2500
+  %t.25010 = load i64, ptr %v.2495
+  %t.25011 = load i64, ptr %v.2500
+  %t.25012 = or i64 %t.25010, %t.25011
+  store i64 %t.25012, ptr %v.2501
+  store i64 65, ptr %v.2502
+  %t.25030 = load i64, ptr %v.90000
+  %t.25031 = load i64, ptr %v.2502
+  %t.25032 = icmp sge i64 %t.25030, %t.25031
+  %t.25033 = zext i1 %t.25032 to i64
+  store i64 %t.25033, ptr %v.2503
+  store i64 70, ptr %v.2504
+  %t.25050 = load i64, ptr %v.90000
+  %t.25051 = load i64, ptr %v.2504
+  %t.25052 = icmp sle i64 %t.25050, %t.25051
+  %t.25053 = zext i1 %t.25052 to i64
+  store i64 %t.25053, ptr %v.2505
+  %t.25060 = load i64, ptr %v.2503
+  %t.25061 = load i64, ptr %v.2505
+  %t.25062 = and i64 %t.25060, %t.25061
+  store i64 %t.25062, ptr %v.2506
+  %t.25070 = load i64, ptr %v.2501
+  %t.25071 = load i64, ptr %v.2506
+  %t.25072 = or i64 %t.25070, %t.25071
+  store i64 %t.25072, ptr %v.2507
+  %t.25080 = load i64, ptr %v.2507
+  ret i64 %t.25080
+}
+
+define i64 @lexer_lex_peek(i64 %param.0, i64 %param.1) {
+  %v.90000 = alloca i64
+  %v.90001 = alloca i64
+  %v.2510 = alloca i64
   %v.2511 = alloca i64
-  %v.2512 = alloca i64
   %v.2513 = alloca i64
-  %v.2514 = alloca i64
-  %v.2515 = alloca i64
-  %v.2516 = alloca i64
-  %v.2517 = alloca i64
+  %v.0 = alloca i64
+  %v.2518 = alloca i64
+  store i64 %param.0, ptr %v.90000
+  store i64 %param.1, ptr %v.90001
+  br label %B.body
+B.body:
+  %t.25100 = load i64, ptr %v.90000
+  %t.25101 = inttoptr i64 %t.25100 to ptr
+  %t.25102 = call i64 @ease_str_len(ptr %t.25101)
+  store i64 %t.25102, ptr %v.2510
+  %t.25110 = load i64, ptr %v.90001
+  %t.25111 = load i64, ptr %v.2510
+  %t.25112 = icmp sge i64 %t.25110, %t.25111
+  %t.25113 = zext i1 %t.25112 to i64
+  store i64 %t.25113, ptr %v.2511
+  %t.25120 = load i64, ptr %v.2511
+  %t.25121 = icmp eq i64 %t.25120, 0
+  br i1 %t.25121, label %L.284, label %L.fall.2512
+L.fall.2512:
+  store i64 0, ptr %v.2513
+  %t.25140 = load i64, ptr %v.2513
+  ret i64 %t.25140
+L.284:
+  br label %L.285
+L.285:
+  %t.25180 = load i64, ptr %v.90000
+  %t.25181 = inttoptr i64 %t.25180 to ptr
+  %t.25182 = load i64, ptr %v.90001
+  %t.25183 = call i64 @ease_str_char_at(ptr %t.25181, i64 %t.25182)
+  store i64 %t.25183, ptr %v.2518
+  %t.25190 = load i64, ptr %v.2518
+  ret i64 %t.25190
+}
+
+define i64 @lexer_lex_skip(i64 %param.0, i64 %param.1) {
+  %v.90000 = alloca i64
+  %v.90001 = alloca i64
+  %v.2521 = alloca i64
+  %v.2522 = alloca i64
   %v.2523 = alloca i64
-  %v.2524 = alloca i64
+  %v.2525 = alloca i64
+  %v.2529 = alloca i64
+  %v.2530 = alloca i64
+  %v.2531 = alloca i64
+  %v.2532 = alloca i64
+  %v.2533 = alloca i64
+  %v.2534 = alloca i64
+  %v.2535 = alloca i64
+  %v.2536 = alloca i64
+  %v.2537 = alloca i64
+  %v.2538 = alloca i64
+  %v.2539 = alloca i64
+  %v.2540 = alloca i64
+  %v.2541 = alloca i64
+  %v.2543 = alloca i64
+  %v.2544 = alloca i64
+  %v.2548 = alloca i64
+  %v.2549 = alloca i64
+  %v.2550 = alloca i64
+  %v.2551 = alloca i64
+  %v.2552 = alloca i64
+  %v.2553 = alloca i64
+  %v.2555 = alloca i64
+  %v.2556 = alloca i64
+  %v.2559 = alloca i64
+  %v.2560 = alloca i64
+  %v.2561 = alloca i64
+  %v.2562 = alloca i64
+  %v.2564 = alloca i64
+  %v.2565 = alloca i64
+  %v.2568 = alloca i64
+  %v.2572 = alloca i64
+  %v.2573 = alloca i64
+  %v.2574 = alloca i64
+  %v.2575 = alloca i64
+  %v.2576 = alloca i64
+  %v.2577 = alloca i64
+  %v.2578 = alloca i64
+  %v.2584 = alloca i64
+  %v.2585 = alloca i64
   %v.0 = alloca i64
   store i64 %param.0, ptr %v.90000
   store i64 %param.1, ptr %v.90001
   br label %B.body
 B.body:
-  %t.24600 = load i64, ptr %v.90000
-  %t.24601 = inttoptr i64 %t.24600 to ptr
-  %t.24602 = call i64 @ease_str_len(ptr %t.24601)
-  store i64 %t.24602, ptr %v.2460
-  %t.24610 = load i64, ptr %v.2460
-  store i64 %t.24610, ptr %v.2461
-  %t.24620 = load i64, ptr %v.90001
-  store i64 %t.24620, ptr %v.2462
-  br label %L.280
-L.280:
-  %t.24640 = load i64, ptr %v.2462
-  %t.24641 = load i64, ptr %v.2461
-  %t.24642 = icmp slt i64 %t.24640, %t.24641
-  %t.24643 = zext i1 %t.24642 to i64
-  store i64 %t.24643, ptr %v.2464
-  %t.24650 = load i64, ptr %v.2464
-  %t.24651 = icmp eq i64 %t.24650, 0
-  br i1 %t.24651, label %L.281, label %L.fall.2465
-L.fall.2465:
-  %t.24680 = load i64, ptr %v.90000
-  %t.24681 = load i64, ptr %v.2462
-  %t.24689 = call i64 @lexer_lex_peek(i64 %t.24680, i64 %t.24681)
-  store i64 %t.24689, ptr %v.2468
-  %t.24690 = load i64, ptr %v.2468
-  store i64 %t.24690, ptr %v.2469
-  store i64 32, ptr %v.2470
-  %t.24710 = load i64, ptr %v.2469
-  %t.24711 = load i64, ptr %v.2470
-  %t.24712 = icmp eq i64 %t.24710, %t.24711
-  %t.24713 = zext i1 %t.24712 to i64
-  store i64 %t.24713, ptr %v.2471
-  store i64 9, ptr %v.2472
-  %t.24730 = load i64, ptr %v.2469
-  %t.24731 = load i64, ptr %v.2472
-  %t.24732 = icmp eq i64 %t.24730, %t.24731
-  %t.24733 = zext i1 %t.24732 to i64
-  store i64 %t.24733, ptr %v.2473
-  %t.24740 = load i64, ptr %v.2471
-  %t.24741 = load i64, ptr %v.2473
-  %t.24742 = or i64 %t.24740, %t.24741
-  store i64 %t.24742, ptr %v.2474
-  store i64 10, ptr %v.2475
-  %t.24760 = load i64, ptr %v.2469
-  %t.24761 = load i64, ptr %v.2475
-  %t.24762 = icmp eq i64 %t.24760, %t.24761
-  %t.24763 = zext i1 %t.24762 to i64
-  store i64 %t.24763, ptr %v.2476
-  %t.24770 = load i64, ptr %v.2474
-  %t.24771 = load i64, ptr %v.2476
-  %t.24772 = or i64 %t.24770, %t.24771
-  store i64 %t.24772, ptr %v.2477
-  store i64 13, ptr %v.2478
-  %t.24790 = load i64, ptr %v.2469
-  %t.24791 = load i64, ptr %v.2478
-  %t.24792 = icmp eq i64 %t.24790, %t.24791
-  %t.24793 = zext i1 %t.24792 to i64
-  store i64 %t.24793, ptr %v.2479
-  %t.24800 = load i64, ptr %v.2477
-  %t.24801 = load i64, ptr %v.2479
-  %t.24802 = or i64 %t.24800, %t.24801
-  store i64 %t.24802, ptr %v.2480
-  %t.24810 = load i64, ptr %v.2480
-  %t.24811 = icmp eq i64 %t.24810, 0
-  br i1 %t.24811, label %L.282, label %L.fall.2481
-L.fall.2481:
-  store i64 1, ptr %v.2482
-  %t.24830 = load i64, ptr %v.2462
-  %t.24831 = load i64, ptr %v.2482
-  %t.24832 = add i64 %t.24830, %t.24831
-  store i64 %t.24832, ptr %v.2483
-  %t.24840 = load i64, ptr %v.2483
-  store i64 %t.24840, ptr %v.2462
-  br label %L.283
-L.282:
-  store i64 47, ptr %v.2487
-  %t.24880 = load i64, ptr %v.2469
-  %t.24881 = load i64, ptr %v.2487
-  %t.24882 = icmp eq i64 %t.24880, %t.24881
-  %t.24883 = zext i1 %t.24882 to i64
-  store i64 %t.24883, ptr %v.2488
-  store i64 1, ptr %v.2489
-  %t.24900 = load i64, ptr %v.2462
-  %t.24901 = load i64, ptr %v.2489
-  %t.24902 = add i64 %t.24900, %t.24901
-  store i64 %t.24902, ptr %v.2490
-  %t.24910 = load i64, ptr %v.2490
-  %t.24911 = load i64, ptr %v.2461
-  %t.24912 = icmp slt i64 %t.24910, %t.24911
-  %t.24913 = zext i1 %t.24912 to i64
-  store i64 %t.24913, ptr %v.2491
-  %t.24920 = load i64, ptr %v.2488
-  %t.24921 = load i64, ptr %v.2491
-  %t.24922 = and i64 %t.24920, %t.24921
-  store i64 %t.24922, ptr %v.2492
-  %t.24930 = load i64, ptr %v.2492
-  %t.24931 = icmp eq i64 %t.24930, 0
-  br i1 %t.24931, label %L.284, label %L.fall.2493
-L.fall.2493:
-  store i64 1, ptr %v.2494
-  %t.24950 = load i64, ptr %v.2462
-  %t.24951 = load i64, ptr %v.2494
-  %t.24952 = add i64 %t.24950, %t.24951
-  store i64 %t.24952, ptr %v.2495
-  %t.24980 = load i64, ptr %v.90000
-  %t.24981 = load i64, ptr %v.2495
-  %t.24989 = call i64 @lexer_lex_peek(i64 %t.24980, i64 %t.24981)
-  store i64 %t.24989, ptr %v.2498
-  %t.24990 = load i64, ptr %v.2498
-  store i64 %t.24990, ptr %v.2499
-  store i64 47, ptr %v.2500
-  %t.25010 = load i64, ptr %v.2499
-  %t.25011 = load i64, ptr %v.2500
-  %t.25012 = icmp eq i64 %t.25010, %t.25011
-  %t.25013 = zext i1 %t.25012 to i64
-  store i64 %t.25013, ptr %v.2501
-  %t.25020 = load i64, ptr %v.2501
-  %t.25021 = icmp eq i64 %t.25020, 0
-  br i1 %t.25021, label %L.286, label %L.fall.2502
-L.fall.2502:
-  store i64 2, ptr %v.2503
-  %t.25040 = load i64, ptr %v.2462
-  %t.25041 = load i64, ptr %v.2503
-  %t.25042 = add i64 %t.25040, %t.25041
-  store i64 %t.25042, ptr %v.2504
-  %t.25050 = load i64, ptr %v.2504
-  store i64 %t.25050, ptr %v.2462
-  br label %L.288
-L.288:
-  %t.25070 = load i64, ptr %v.2462
-  %t.25071 = load i64, ptr %v.2461
-  %t.25072 = icmp slt i64 %t.25070, %t.25071
-  %t.25073 = zext i1 %t.25072 to i64
-  store i64 %t.25073, ptr %v.2507
-  %t.25080 = load i64, ptr %v.2507
-  %t.25081 = icmp eq i64 %t.25080, 0
-  br i1 %t.25081, label %L.289, label %L.fall.2508
-L.fall.2508:
-  %t.25110 = load i64, ptr %v.90000
-  %t.25111 = load i64, ptr %v.2462
-  %t.25119 = call i64 @lexer_lex_peek(i64 %t.25110, i64 %t.25111)
-  store i64 %t.25119, ptr %v.2511
-  %t.25120 = load i64, ptr %v.2511
-  store i64 %t.25120, ptr %v.2512
-  store i64 10, ptr %v.2513
-  %t.25140 = load i64, ptr %v.2512
-  %t.25141 = load i64, ptr %v.2513
-  %t.25142 = icmp eq i64 %t.25140, %t.25141
-  %t.25143 = zext i1 %t.25142 to i64
-  store i64 %t.25143, ptr %v.2514
-  store i64 13, ptr %v.2515
-  %t.25160 = load i64, ptr %v.2512
-  %t.25161 = load i64, ptr %v.2515
-  %t.25162 = icmp eq i64 %t.25160, %t.25161
-  %t.25163 = zext i1 %t.25162 to i64
-  store i64 %t.25163, ptr %v.2516
-  %t.25170 = load i64, ptr %v.2514
-  %t.25171 = load i64, ptr %v.2516
-  %t.25172 = or i64 %t.25170, %t.25171
-  store i64 %t.25172, ptr %v.2517
-  %t.25180 = load i64, ptr %v.2517
-  %t.25181 = icmp eq i64 %t.25180, 0
-  br i1 %t.25181, label %L.290, label %L.fall.2518
-L.fall.2518:
-  br label %L.289
-L.290:
-  br label %L.291
-L.291:
-  store i64 1, ptr %v.2523
-  %t.25240 = load i64, ptr %v.2462
-  %t.25241 = load i64, ptr %v.2523
-  %t.25242 = add i64 %t.25240, %t.25241
-  store i64 %t.25242, ptr %v.2524
-  %t.25250 = load i64, ptr %v.2524
-  store i64 %t.25250, ptr %v.2462
-  br label %L.288
-L.289:
-  br label %L.287
+  %t.25210 = load i64, ptr %v.90000
+  %t.25211 = inttoptr i64 %t.25210 to ptr
+  %t.25212 = call i64 @ease_str_len(ptr %t.25211)
+  store i64 %t.25212, ptr %v.2521
+  %t.25220 = load i64, ptr %v.2521
+  store i64 %t.25220, ptr %v.2522
+  %t.25230 = load i64, ptr %v.90001
+  store i64 %t.25230, ptr %v.2523
+  br label %L.286
 L.286:
-  br label %L.281
+  %t.25250 = load i64, ptr %v.2523
+  %t.25251 = load i64, ptr %v.2522
+  %t.25252 = icmp slt i64 %t.25250, %t.25251
+  %t.25253 = zext i1 %t.25252 to i64
+  store i64 %t.25253, ptr %v.2525
+  %t.25260 = load i64, ptr %v.2525
+  %t.25261 = icmp eq i64 %t.25260, 0
+  br i1 %t.25261, label %L.287, label %L.fall.2526
+L.fall.2526:
+  %t.25290 = load i64, ptr %v.90000
+  %t.25291 = load i64, ptr %v.2523
+  %t.25299 = call i64 @lexer_lex_peek(i64 %t.25290, i64 %t.25291)
+  store i64 %t.25299, ptr %v.2529
+  %t.25300 = load i64, ptr %v.2529
+  store i64 %t.25300, ptr %v.2530
+  store i64 32, ptr %v.2531
+  %t.25320 = load i64, ptr %v.2530
+  %t.25321 = load i64, ptr %v.2531
+  %t.25322 = icmp eq i64 %t.25320, %t.25321
+  %t.25323 = zext i1 %t.25322 to i64
+  store i64 %t.25323, ptr %v.2532
+  store i64 9, ptr %v.2533
+  %t.25340 = load i64, ptr %v.2530
+  %t.25341 = load i64, ptr %v.2533
+  %t.25342 = icmp eq i64 %t.25340, %t.25341
+  %t.25343 = zext i1 %t.25342 to i64
+  store i64 %t.25343, ptr %v.2534
+  %t.25350 = load i64, ptr %v.2532
+  %t.25351 = load i64, ptr %v.2534
+  %t.25352 = or i64 %t.25350, %t.25351
+  store i64 %t.25352, ptr %v.2535
+  store i64 10, ptr %v.2536
+  %t.25370 = load i64, ptr %v.2530
+  %t.25371 = load i64, ptr %v.2536
+  %t.25372 = icmp eq i64 %t.25370, %t.25371
+  %t.25373 = zext i1 %t.25372 to i64
+  store i64 %t.25373, ptr %v.2537
+  %t.25380 = load i64, ptr %v.2535
+  %t.25381 = load i64, ptr %v.2537
+  %t.25382 = or i64 %t.25380, %t.25381
+  store i64 %t.25382, ptr %v.2538
+  store i64 13, ptr %v.2539
+  %t.25400 = load i64, ptr %v.2530
+  %t.25401 = load i64, ptr %v.2539
+  %t.25402 = icmp eq i64 %t.25400, %t.25401
+  %t.25403 = zext i1 %t.25402 to i64
+  store i64 %t.25403, ptr %v.2540
+  %t.25410 = load i64, ptr %v.2538
+  %t.25411 = load i64, ptr %v.2540
+  %t.25412 = or i64 %t.25410, %t.25411
+  store i64 %t.25412, ptr %v.2541
+  %t.25420 = load i64, ptr %v.2541
+  %t.25421 = icmp eq i64 %t.25420, 0
+  br i1 %t.25421, label %L.288, label %L.fall.2542
+L.fall.2542:
+  store i64 1, ptr %v.2543
+  %t.25440 = load i64, ptr %v.2523
+  %t.25441 = load i64, ptr %v.2543
+  %t.25442 = add i64 %t.25440, %t.25441
+  store i64 %t.25442, ptr %v.2544
+  %t.25450 = load i64, ptr %v.2544
+  store i64 %t.25450, ptr %v.2523
+  br label %L.289
+L.288:
+  store i64 47, ptr %v.2548
+  %t.25490 = load i64, ptr %v.2530
+  %t.25491 = load i64, ptr %v.2548
+  %t.25492 = icmp eq i64 %t.25490, %t.25491
+  %t.25493 = zext i1 %t.25492 to i64
+  store i64 %t.25493, ptr %v.2549
+  store i64 1, ptr %v.2550
+  %t.25510 = load i64, ptr %v.2523
+  %t.25511 = load i64, ptr %v.2550
+  %t.25512 = add i64 %t.25510, %t.25511
+  store i64 %t.25512, ptr %v.2551
+  %t.25520 = load i64, ptr %v.2551
+  %t.25521 = load i64, ptr %v.2522
+  %t.25522 = icmp slt i64 %t.25520, %t.25521
+  %t.25523 = zext i1 %t.25522 to i64
+  store i64 %t.25523, ptr %v.2552
+  %t.25530 = load i64, ptr %v.2549
+  %t.25531 = load i64, ptr %v.2552
+  %t.25532 = and i64 %t.25530, %t.25531
+  store i64 %t.25532, ptr %v.2553
+  %t.25540 = load i64, ptr %v.2553
+  %t.25541 = icmp eq i64 %t.25540, 0
+  br i1 %t.25541, label %L.290, label %L.fall.2554
+L.fall.2554:
+  store i64 1, ptr %v.2555
+  %t.25560 = load i64, ptr %v.2523
+  %t.25561 = load i64, ptr %v.2555
+  %t.25562 = add i64 %t.25560, %t.25561
+  store i64 %t.25562, ptr %v.2556
+  %t.25590 = load i64, ptr %v.90000
+  %t.25591 = load i64, ptr %v.2556
+  %t.25599 = call i64 @lexer_lex_peek(i64 %t.25590, i64 %t.25591)
+  store i64 %t.25599, ptr %v.2559
+  %t.25600 = load i64, ptr %v.2559
+  store i64 %t.25600, ptr %v.2560
+  store i64 47, ptr %v.2561
+  %t.25620 = load i64, ptr %v.2560
+  %t.25621 = load i64, ptr %v.2561
+  %t.25622 = icmp eq i64 %t.25620, %t.25621
+  %t.25623 = zext i1 %t.25622 to i64
+  store i64 %t.25623, ptr %v.2562
+  %t.25630 = load i64, ptr %v.2562
+  %t.25631 = icmp eq i64 %t.25630, 0
+  br i1 %t.25631, label %L.292, label %L.fall.2563
+L.fall.2563:
+  store i64 2, ptr %v.2564
+  %t.25650 = load i64, ptr %v.2523
+  %t.25651 = load i64, ptr %v.2564
+  %t.25652 = add i64 %t.25650, %t.25651
+  store i64 %t.25652, ptr %v.2565
+  %t.25660 = load i64, ptr %v.2565
+  store i64 %t.25660, ptr %v.2523
+  br label %L.294
+L.294:
+  %t.25680 = load i64, ptr %v.2523
+  %t.25681 = load i64, ptr %v.2522
+  %t.25682 = icmp slt i64 %t.25680, %t.25681
+  %t.25683 = zext i1 %t.25682 to i64
+  store i64 %t.25683, ptr %v.2568
+  %t.25690 = load i64, ptr %v.2568
+  %t.25691 = icmp eq i64 %t.25690, 0
+  br i1 %t.25691, label %L.295, label %L.fall.2569
+L.fall.2569:
+  %t.25720 = load i64, ptr %v.90000
+  %t.25721 = load i64, ptr %v.2523
+  %t.25729 = call i64 @lexer_lex_peek(i64 %t.25720, i64 %t.25721)
+  store i64 %t.25729, ptr %v.2572
+  %t.25730 = load i64, ptr %v.2572
+  store i64 %t.25730, ptr %v.2573
+  store i64 10, ptr %v.2574
+  %t.25750 = load i64, ptr %v.2573
+  %t.25751 = load i64, ptr %v.2574
+  %t.25752 = icmp eq i64 %t.25750, %t.25751
+  %t.25753 = zext i1 %t.25752 to i64
+  store i64 %t.25753, ptr %v.2575
+  store i64 13, ptr %v.2576
+  %t.25770 = load i64, ptr %v.2573
+  %t.25771 = load i64, ptr %v.2576
+  %t.25772 = icmp eq i64 %t.25770, %t.25771
+  %t.25773 = zext i1 %t.25772 to i64
+  store i64 %t.25773, ptr %v.2577
+  %t.25780 = load i64, ptr %v.2575
+  %t.25781 = load i64, ptr %v.2577
+  %t.25782 = or i64 %t.25780, %t.25781
+  store i64 %t.25782, ptr %v.2578
+  %t.25790 = load i64, ptr %v.2578
+  %t.25791 = icmp eq i64 %t.25790, 0
+  br i1 %t.25791, label %L.296, label %L.fall.2579
+L.fall.2579:
+  br label %L.295
+L.296:
+  br label %L.297
+L.297:
+  store i64 1, ptr %v.2584
+  %t.25850 = load i64, ptr %v.2523
+  %t.25851 = load i64, ptr %v.2584
+  %t.25852 = add i64 %t.25850, %t.25851
+  store i64 %t.25852, ptr %v.2585
+  %t.25860 = load i64, ptr %v.2585
+  store i64 %t.25860, ptr %v.2523
+  br label %L.294
+L.295:
+  br label %L.293
+L.292:
+  br label %L.287
+L.293:
+  br label %L.291
+L.290:
+  br label %L.287
+L.291:
+  br label %L.289
+L.289:
+  br label %L.286
 L.287:
-  br label %L.285
-L.284:
-  br label %L.281
-L.285:
-  br label %L.283
-L.283:
-  br label %L.280
-L.281:
-  %t.25390 = load i64, ptr %v.2462
-  ret i64 %t.25390
+  %t.26000 = load i64, ptr %v.2523
+  ret i64 %t.26000
 }
 
 define i64 @lexer_lex_kind(i64 %param.0, i64 %param.1) {
   %v.90000 = alloca i64
   %v.90001 = alloca i64
-  %v.2541 = alloca i64
-  %v.2542 = alloca i64
-  %v.2543 = alloca i64
-  %v.2545 = alloca i64
-  %v.0 = alloca i64
-  %v.2552 = alloca i64
-  %v.2553 = alloca i64
-  %v.2554 = alloca i64
-  %v.2555 = alloca i64
-  %v.2556 = alloca i64
-  %v.2557 = alloca i64
-  %v.2558 = alloca i64
-  %v.2560 = alloca i64
-  %v.2561 = alloca i64
-  %v.2564 = alloca i64
-  %v.2569 = alloca i64
-  %v.2570 = alloca i64
-  %v.2571 = alloca i64
-  %v.2572 = alloca i64
-  %v.2573 = alloca i64
-  %v.2575 = alloca i64
-  %v.2580 = alloca i64
-  %v.2581 = alloca i64
-  %v.2582 = alloca i64
-  %v.2583 = alloca i64
-  %v.2584 = alloca i64
-  %v.2586 = alloca i64
-  %v.2591 = alloca i64
-  %v.2592 = alloca i64
-  %v.2593 = alloca i64
-  %v.2594 = alloca i64
-  %v.2595 = alloca i64
-  %v.2597 = alloca i64
   %v.2602 = alloca i64
   %v.2603 = alloca i64
   %v.2604 = alloca i64
-  %v.2605 = alloca i64
   %v.2606 = alloca i64
-  %v.2608 = alloca i64
+  %v.0 = alloca i64
   %v.2613 = alloca i64
   %v.2614 = alloca i64
   %v.2615 = alloca i64
   %v.2616 = alloca i64
   %v.2617 = alloca i64
+  %v.2618 = alloca i64
   %v.2619 = alloca i64
-  %v.2624 = alloca i64
+  %v.2621 = alloca i64
+  %v.2622 = alloca i64
   %v.2625 = alloca i64
-  %v.2626 = alloca i64
-  %v.2627 = alloca i64
-  %v.2628 = alloca i64
   %v.2630 = alloca i64
-  %v.2635 = alloca i64
+  %v.2631 = alloca i64
+  %v.2632 = alloca i64
+  %v.2633 = alloca i64
+  %v.2634 = alloca i64
   %v.2636 = alloca i64
-  %v.2637 = alloca i64
-  %v.2638 = alloca i64
-  %v.2639 = alloca i64
   %v.2641 = alloca i64
-  %v.2646 = alloca i64
+  %v.2642 = alloca i64
+  %v.2643 = alloca i64
+  %v.2644 = alloca i64
+  %v.2645 = alloca i64
   %v.2647 = alloca i64
-  %v.2648 = alloca i64
-  %v.2649 = alloca i64
-  %v.2650 = alloca i64
   %v.2652 = alloca i64
-  %v.2657 = alloca i64
+  %v.2653 = alloca i64
+  %v.2654 = alloca i64
+  %v.2655 = alloca i64
+  %v.2656 = alloca i64
   %v.2658 = alloca i64
-  %v.2660 = alloca i64
+  %v.2663 = alloca i64
+  %v.2664 = alloca i64
   %v.2665 = alloca i64
   %v.2666 = alloca i64
-  %v.2668 = alloca i64
-  %v.2673 = alloca i64
+  %v.2667 = alloca i64
+  %v.2669 = alloca i64
   %v.2674 = alloca i64
+  %v.2675 = alloca i64
   %v.2676 = alloca i64
-  %v.2681 = alloca i64
-  %v.2682 = alloca i64
-  %v.2684 = alloca i64
+  %v.2677 = alloca i64
+  %v.2678 = alloca i64
+  %v.2680 = alloca i64
+  %v.2685 = alloca i64
+  %v.2686 = alloca i64
+  %v.2687 = alloca i64
+  %v.2688 = alloca i64
   %v.2689 = alloca i64
-  %v.2690 = alloca i64
-  %v.2692 = alloca i64
+  %v.2691 = alloca i64
+  %v.2696 = alloca i64
   %v.2697 = alloca i64
   %v.2698 = alloca i64
+  %v.2699 = alloca i64
   %v.2700 = alloca i64
-  %v.2705 = alloca i64
-  %v.2706 = alloca i64
+  %v.2702 = alloca i64
+  %v.2707 = alloca i64
   %v.2708 = alloca i64
+  %v.2709 = alloca i64
+  %v.2710 = alloca i64
+  %v.2711 = alloca i64
   %v.2713 = alloca i64
-  %v.2714 = alloca i64
-  %v.2716 = alloca i64
+  %v.2718 = alloca i64
+  %v.2719 = alloca i64
   %v.2721 = alloca i64
-  %v.2722 = alloca i64
-  %v.2724 = alloca i64
+  %v.2726 = alloca i64
+  %v.2727 = alloca i64
   %v.2729 = alloca i64
-  %v.2730 = alloca i64
-  %v.2732 = alloca i64
+  %v.2734 = alloca i64
+  %v.2735 = alloca i64
   %v.2737 = alloca i64
-  %v.2738 = alloca i64
-  %v.2740 = alloca i64
+  %v.2742 = alloca i64
+  %v.2743 = alloca i64
   %v.2745 = alloca i64
-  %v.2746 = alloca i64
-  %v.2748 = alloca i64
+  %v.2750 = alloca i64
+  %v.2751 = alloca i64
   %v.2753 = alloca i64
-  %v.2754 = alloca i64
-  %v.2756 = alloca i64
+  %v.2758 = alloca i64
+  %v.2759 = alloca i64
   %v.2761 = alloca i64
-  %v.2762 = alloca i64
-  %v.2764 = alloca i64
+  %v.2766 = alloca i64
+  %v.2767 = alloca i64
   %v.2769 = alloca i64
-  %v.2770 = alloca i64
-  %v.2772 = alloca i64
+  %v.2774 = alloca i64
+  %v.2775 = alloca i64
+  %v.2776 = alloca i64
   %v.2777 = alloca i64
   %v.2778 = alloca i64
   %v.2780 = alloca i64
@@ -9060,51 +9167,51 @@ define i64 @lexer_lex_kind(i64 %param.0, i64 %param.1) {
   %v.2825 = alloca i64
   %v.2826 = alloca i64
   %v.2828 = alloca i64
+  %v.2833 = alloca i64
   %v.2834 = alloca i64
   %v.2836 = alloca i64
   %v.2841 = alloca i64
   %v.2842 = alloca i64
   %v.2844 = alloca i64
+  %v.2849 = alloca i64
   %v.2850 = alloca i64
   %v.2852 = alloca i64
-  %v.2854 = alloca i64
   %v.2857 = alloca i64
-  %v.2859 = alloca i64
-  %v.2862 = alloca i64
-  %v.2864 = alloca i64
+  %v.2858 = alloca i64
+  %v.2860 = alloca i64
   %v.2865 = alloca i64
   %v.2866 = alloca i64
   %v.2868 = alloca i64
-  %v.2869 = alloca i64
+  %v.2873 = alloca i64
+  %v.2874 = alloca i64
   %v.2876 = alloca i64
-  %v.2877 = alloca i64
-  %v.2878 = alloca i64
-  %v.2879 = alloca i64
   %v.2881 = alloca i64
-  %v.2886 = alloca i64
-  %v.2887 = alloca i64
+  %v.2882 = alloca i64
+  %v.2884 = alloca i64
   %v.2889 = alloca i64
-  %v.2894 = alloca i64
-  %v.2895 = alloca i64
+  %v.2890 = alloca i64
+  %v.2892 = alloca i64
   %v.2897 = alloca i64
-  %v.2902 = alloca i64
-  %v.2903 = alloca i64
-  %v.2905 = alloca i64
-  %v.2910 = alloca i64
-  %v.2911 = alloca i64
+  %v.2898 = alloca i64
+  %v.2900 = alloca i64
+  %v.2906 = alloca i64
+  %v.2908 = alloca i64
   %v.2913 = alloca i64
-  %v.2918 = alloca i64
-  %v.2919 = alloca i64
-  %v.2921 = alloca i64
+  %v.2914 = alloca i64
+  %v.2916 = alloca i64
+  %v.2922 = alloca i64
+  %v.2924 = alloca i64
   %v.2926 = alloca i64
-  %v.2927 = alloca i64
   %v.2929 = alloca i64
+  %v.2931 = alloca i64
   %v.2934 = alloca i64
-  %v.2935 = alloca i64
+  %v.2936 = alloca i64
   %v.2937 = alloca i64
-  %v.2942 = alloca i64
-  %v.2943 = alloca i64
-  %v.2945 = alloca i64
+  %v.2938 = alloca i64
+  %v.2940 = alloca i64
+  %v.2941 = alloca i64
+  %v.2948 = alloca i64
+  %v.2949 = alloca i64
   %v.2950 = alloca i64
   %v.2951 = alloca i64
   %v.2953 = alloca i64
@@ -9121,924 +9228,801 @@ define i64 @lexer_lex_kind(i64 %param.0, i64 %param.1) {
   %v.2983 = alloca i64
   %v.2985 = alloca i64
   %v.2990 = alloca i64
-  %v.2995 = alloca i64
+  %v.2991 = alloca i64
+  %v.2993 = alloca i64
+  %v.2998 = alloca i64
+  %v.2999 = alloca i64
+  %v.3001 = alloca i64
+  %v.3006 = alloca i64
+  %v.3007 = alloca i64
+  %v.3009 = alloca i64
+  %v.3014 = alloca i64
+  %v.3015 = alloca i64
+  %v.3017 = alloca i64
+  %v.3022 = alloca i64
+  %v.3023 = alloca i64
+  %v.3025 = alloca i64
+  %v.3030 = alloca i64
+  %v.3031 = alloca i64
+  %v.3033 = alloca i64
+  %v.3038 = alloca i64
+  %v.3039 = alloca i64
+  %v.3041 = alloca i64
+  %v.3046 = alloca i64
+  %v.3051 = alloca i64
   store i64 %param.0, ptr %v.90000
   store i64 %param.1, ptr %v.90001
   br label %B.body
 B.body:
-  %t.25410 = load i64, ptr %v.90000
-  %t.25411 = inttoptr i64 %t.25410 to ptr
-  %t.25412 = call i64 @ease_str_len(ptr %t.25411)
-  store i64 %t.25412, ptr %v.2541
-  %t.25420 = load i64, ptr %v.2541
-  store i64 %t.25420, ptr %v.2542
-  %t.25430 = load i64, ptr %v.90001
-  %t.25431 = load i64, ptr %v.2542
-  %t.25432 = icmp sge i64 %t.25430, %t.25431
-  %t.25433 = zext i1 %t.25432 to i64
-  store i64 %t.25433, ptr %v.2543
-  %t.25440 = load i64, ptr %v.2543
-  %t.25441 = icmp eq i64 %t.25440, 0
-  br i1 %t.25441, label %L.292, label %L.fall.2544
-L.fall.2544:
-  %t.25459 = call i64 @token_TK_EOF()
-  store i64 %t.25459, ptr %v.2545
-  %t.25460 = load i64, ptr %v.2545
-  ret i64 %t.25460
-L.292:
-  br label %L.293
-L.293:
-  %t.25520 = load i64, ptr %v.90000
-  %t.25521 = load i64, ptr %v.90001
-  %t.25529 = call i64 @lexer_lex_peek(i64 %t.25520, i64 %t.25521)
-  store i64 %t.25529, ptr %v.2552
-  %t.25530 = load i64, ptr %v.2552
-  store i64 %t.25530, ptr %v.2553
-  store i64 0, ptr %v.2554
-  %t.25550 = load i64, ptr %v.2554
-  store i64 %t.25550, ptr %v.2555
-  store i64 1, ptr %v.2556
-  %t.25570 = load i64, ptr %v.90001
-  %t.25571 = load i64, ptr %v.2556
-  %t.25572 = add i64 %t.25570, %t.25571
-  store i64 %t.25572, ptr %v.2557
-  %t.25580 = load i64, ptr %v.2557
-  %t.25581 = load i64, ptr %v.2542
-  %t.25582 = icmp slt i64 %t.25580, %t.25581
-  %t.25583 = zext i1 %t.25582 to i64
-  store i64 %t.25583, ptr %v.2558
-  %t.25590 = load i64, ptr %v.2558
-  %t.25591 = icmp eq i64 %t.25590, 0
-  br i1 %t.25591, label %L.294, label %L.fall.2559
-L.fall.2559:
-  store i64 1, ptr %v.2560
-  %t.25610 = load i64, ptr %v.90001
-  %t.25611 = load i64, ptr %v.2560
-  %t.25612 = add i64 %t.25610, %t.25611
-  store i64 %t.25612, ptr %v.2561
-  %t.25640 = load i64, ptr %v.90000
-  %t.25641 = load i64, ptr %v.2561
-  %t.25649 = call i64 @lexer_lex_peek(i64 %t.25640, i64 %t.25641)
-  store i64 %t.25649, ptr %v.2564
-  %t.25650 = load i64, ptr %v.2564
-  store i64 %t.25650, ptr %v.2555
-  br label %L.295
-L.294:
-  br label %L.295
-L.295:
-  store i64 45, ptr %v.2569
-  %t.25700 = load i64, ptr %v.2553
-  %t.25701 = load i64, ptr %v.2569
-  %t.25702 = icmp eq i64 %t.25700, %t.25701
-  %t.25703 = zext i1 %t.25702 to i64
-  store i64 %t.25703, ptr %v.2570
-  store i64 62, ptr %v.2571
-  %t.25720 = load i64, ptr %v.2555
-  %t.25721 = load i64, ptr %v.2571
-  %t.25722 = icmp eq i64 %t.25720, %t.25721
-  %t.25723 = zext i1 %t.25722 to i64
-  store i64 %t.25723, ptr %v.2572
-  %t.25730 = load i64, ptr %v.2570
-  %t.25731 = load i64, ptr %v.2572
-  %t.25732 = and i64 %t.25730, %t.25731
-  store i64 %t.25732, ptr %v.2573
-  %t.25740 = load i64, ptr %v.2573
-  %t.25741 = icmp eq i64 %t.25740, 0
-  br i1 %t.25741, label %L.296, label %L.fall.2574
-L.fall.2574:
-  %t.25759 = call i64 @token_TK_ARROW()
-  store i64 %t.25759, ptr %v.2575
-  %t.25760 = load i64, ptr %v.2575
-  ret i64 %t.25760
-L.296:
-  br label %L.297
-L.297:
-  store i64 60, ptr %v.2580
-  %t.25810 = load i64, ptr %v.2553
-  %t.25811 = load i64, ptr %v.2580
-  %t.25812 = icmp eq i64 %t.25810, %t.25811
-  %t.25813 = zext i1 %t.25812 to i64
-  store i64 %t.25813, ptr %v.2581
-  store i64 61, ptr %v.2582
-  %t.25830 = load i64, ptr %v.2555
-  %t.25831 = load i64, ptr %v.2582
-  %t.25832 = icmp eq i64 %t.25830, %t.25831
-  %t.25833 = zext i1 %t.25832 to i64
-  store i64 %t.25833, ptr %v.2583
-  %t.25840 = load i64, ptr %v.2581
-  %t.25841 = load i64, ptr %v.2583
-  %t.25842 = and i64 %t.25840, %t.25841
-  store i64 %t.25842, ptr %v.2584
-  %t.25850 = load i64, ptr %v.2584
-  %t.25851 = icmp eq i64 %t.25850, 0
-  br i1 %t.25851, label %L.298, label %L.fall.2585
-L.fall.2585:
-  %t.25869 = call i64 @token_TK_LE()
-  store i64 %t.25869, ptr %v.2586
-  %t.25870 = load i64, ptr %v.2586
-  ret i64 %t.25870
+  %t.26020 = load i64, ptr %v.90000
+  %t.26021 = inttoptr i64 %t.26020 to ptr
+  %t.26022 = call i64 @ease_str_len(ptr %t.26021)
+  store i64 %t.26022, ptr %v.2602
+  %t.26030 = load i64, ptr %v.2602
+  store i64 %t.26030, ptr %v.2603
+  %t.26040 = load i64, ptr %v.90001
+  %t.26041 = load i64, ptr %v.2603
+  %t.26042 = icmp sge i64 %t.26040, %t.26041
+  %t.26043 = zext i1 %t.26042 to i64
+  store i64 %t.26043, ptr %v.2604
+  %t.26050 = load i64, ptr %v.2604
+  %t.26051 = icmp eq i64 %t.26050, 0
+  br i1 %t.26051, label %L.298, label %L.fall.2605
+L.fall.2605:
+  %t.26069 = call i64 @token_TK_EOF()
+  store i64 %t.26069, ptr %v.2606
+  %t.26070 = load i64, ptr %v.2606
+  ret i64 %t.26070
 L.298:
   br label %L.299
 L.299:
-  store i64 62, ptr %v.2591
-  %t.25920 = load i64, ptr %v.2553
-  %t.25921 = load i64, ptr %v.2591
-  %t.25922 = icmp eq i64 %t.25920, %t.25921
-  %t.25923 = zext i1 %t.25922 to i64
-  store i64 %t.25923, ptr %v.2592
-  store i64 61, ptr %v.2593
-  %t.25940 = load i64, ptr %v.2555
-  %t.25941 = load i64, ptr %v.2593
-  %t.25942 = icmp eq i64 %t.25940, %t.25941
-  %t.25943 = zext i1 %t.25942 to i64
-  store i64 %t.25943, ptr %v.2594
-  %t.25950 = load i64, ptr %v.2592
-  %t.25951 = load i64, ptr %v.2594
-  %t.25952 = and i64 %t.25950, %t.25951
-  store i64 %t.25952, ptr %v.2595
-  %t.25960 = load i64, ptr %v.2595
-  %t.25961 = icmp eq i64 %t.25960, 0
-  br i1 %t.25961, label %L.300, label %L.fall.2596
-L.fall.2596:
-  %t.25979 = call i64 @token_TK_GE()
-  store i64 %t.25979, ptr %v.2597
-  %t.25980 = load i64, ptr %v.2597
-  ret i64 %t.25980
+  %t.26130 = load i64, ptr %v.90000
+  %t.26131 = load i64, ptr %v.90001
+  %t.26139 = call i64 @lexer_lex_peek(i64 %t.26130, i64 %t.26131)
+  store i64 %t.26139, ptr %v.2613
+  %t.26140 = load i64, ptr %v.2613
+  store i64 %t.26140, ptr %v.2614
+  store i64 0, ptr %v.2615
+  %t.26160 = load i64, ptr %v.2615
+  store i64 %t.26160, ptr %v.2616
+  store i64 1, ptr %v.2617
+  %t.26180 = load i64, ptr %v.90001
+  %t.26181 = load i64, ptr %v.2617
+  %t.26182 = add i64 %t.26180, %t.26181
+  store i64 %t.26182, ptr %v.2618
+  %t.26190 = load i64, ptr %v.2618
+  %t.26191 = load i64, ptr %v.2603
+  %t.26192 = icmp slt i64 %t.26190, %t.26191
+  %t.26193 = zext i1 %t.26192 to i64
+  store i64 %t.26193, ptr %v.2619
+  %t.26200 = load i64, ptr %v.2619
+  %t.26201 = icmp eq i64 %t.26200, 0
+  br i1 %t.26201, label %L.300, label %L.fall.2620
+L.fall.2620:
+  store i64 1, ptr %v.2621
+  %t.26220 = load i64, ptr %v.90001
+  %t.26221 = load i64, ptr %v.2621
+  %t.26222 = add i64 %t.26220, %t.26221
+  store i64 %t.26222, ptr %v.2622
+  %t.26250 = load i64, ptr %v.90000
+  %t.26251 = load i64, ptr %v.2622
+  %t.26259 = call i64 @lexer_lex_peek(i64 %t.26250, i64 %t.26251)
+  store i64 %t.26259, ptr %v.2625
+  %t.26260 = load i64, ptr %v.2625
+  store i64 %t.26260, ptr %v.2616
+  br label %L.301
 L.300:
   br label %L.301
 L.301:
-  store i64 61, ptr %v.2602
-  %t.26030 = load i64, ptr %v.2553
-  %t.26031 = load i64, ptr %v.2602
-  %t.26032 = icmp eq i64 %t.26030, %t.26031
-  %t.26033 = zext i1 %t.26032 to i64
-  store i64 %t.26033, ptr %v.2603
-  store i64 61, ptr %v.2604
-  %t.26050 = load i64, ptr %v.2555
-  %t.26051 = load i64, ptr %v.2604
-  %t.26052 = icmp eq i64 %t.26050, %t.26051
-  %t.26053 = zext i1 %t.26052 to i64
-  store i64 %t.26053, ptr %v.2605
-  %t.26060 = load i64, ptr %v.2603
-  %t.26061 = load i64, ptr %v.2605
-  %t.26062 = and i64 %t.26060, %t.26061
-  store i64 %t.26062, ptr %v.2606
-  %t.26070 = load i64, ptr %v.2606
-  %t.26071 = icmp eq i64 %t.26070, 0
-  br i1 %t.26071, label %L.302, label %L.fall.2607
-L.fall.2607:
-  %t.26089 = call i64 @token_TK_EQ()
-  store i64 %t.26089, ptr %v.2608
-  %t.26090 = load i64, ptr %v.2608
-  ret i64 %t.26090
+  store i64 45, ptr %v.2630
+  %t.26310 = load i64, ptr %v.2614
+  %t.26311 = load i64, ptr %v.2630
+  %t.26312 = icmp eq i64 %t.26310, %t.26311
+  %t.26313 = zext i1 %t.26312 to i64
+  store i64 %t.26313, ptr %v.2631
+  store i64 62, ptr %v.2632
+  %t.26330 = load i64, ptr %v.2616
+  %t.26331 = load i64, ptr %v.2632
+  %t.26332 = icmp eq i64 %t.26330, %t.26331
+  %t.26333 = zext i1 %t.26332 to i64
+  store i64 %t.26333, ptr %v.2633
+  %t.26340 = load i64, ptr %v.2631
+  %t.26341 = load i64, ptr %v.2633
+  %t.26342 = and i64 %t.26340, %t.26341
+  store i64 %t.26342, ptr %v.2634
+  %t.26350 = load i64, ptr %v.2634
+  %t.26351 = icmp eq i64 %t.26350, 0
+  br i1 %t.26351, label %L.302, label %L.fall.2635
+L.fall.2635:
+  %t.26369 = call i64 @token_TK_ARROW()
+  store i64 %t.26369, ptr %v.2636
+  %t.26370 = load i64, ptr %v.2636
+  ret i64 %t.26370
 L.302:
   br label %L.303
 L.303:
-  store i64 33, ptr %v.2613
-  %t.26140 = load i64, ptr %v.2553
-  %t.26141 = load i64, ptr %v.2613
-  %t.26142 = icmp eq i64 %t.26140, %t.26141
-  %t.26143 = zext i1 %t.26142 to i64
-  store i64 %t.26143, ptr %v.2614
-  store i64 61, ptr %v.2615
-  %t.26160 = load i64, ptr %v.2555
-  %t.26161 = load i64, ptr %v.2615
-  %t.26162 = icmp eq i64 %t.26160, %t.26161
-  %t.26163 = zext i1 %t.26162 to i64
-  store i64 %t.26163, ptr %v.2616
-  %t.26170 = load i64, ptr %v.2614
-  %t.26171 = load i64, ptr %v.2616
-  %t.26172 = and i64 %t.26170, %t.26171
-  store i64 %t.26172, ptr %v.2617
-  %t.26180 = load i64, ptr %v.2617
-  %t.26181 = icmp eq i64 %t.26180, 0
-  br i1 %t.26181, label %L.304, label %L.fall.2618
-L.fall.2618:
-  %t.26199 = call i64 @token_TK_NE()
-  store i64 %t.26199, ptr %v.2619
-  %t.26200 = load i64, ptr %v.2619
-  ret i64 %t.26200
+  store i64 60, ptr %v.2641
+  %t.26420 = load i64, ptr %v.2614
+  %t.26421 = load i64, ptr %v.2641
+  %t.26422 = icmp eq i64 %t.26420, %t.26421
+  %t.26423 = zext i1 %t.26422 to i64
+  store i64 %t.26423, ptr %v.2642
+  store i64 61, ptr %v.2643
+  %t.26440 = load i64, ptr %v.2616
+  %t.26441 = load i64, ptr %v.2643
+  %t.26442 = icmp eq i64 %t.26440, %t.26441
+  %t.26443 = zext i1 %t.26442 to i64
+  store i64 %t.26443, ptr %v.2644
+  %t.26450 = load i64, ptr %v.2642
+  %t.26451 = load i64, ptr %v.2644
+  %t.26452 = and i64 %t.26450, %t.26451
+  store i64 %t.26452, ptr %v.2645
+  %t.26460 = load i64, ptr %v.2645
+  %t.26461 = icmp eq i64 %t.26460, 0
+  br i1 %t.26461, label %L.304, label %L.fall.2646
+L.fall.2646:
+  %t.26479 = call i64 @token_TK_LE()
+  store i64 %t.26479, ptr %v.2647
+  %t.26480 = load i64, ptr %v.2647
+  ret i64 %t.26480
 L.304:
   br label %L.305
 L.305:
-  store i64 38, ptr %v.2624
-  %t.26250 = load i64, ptr %v.2553
-  %t.26251 = load i64, ptr %v.2624
-  %t.26252 = icmp eq i64 %t.26250, %t.26251
-  %t.26253 = zext i1 %t.26252 to i64
-  store i64 %t.26253, ptr %v.2625
-  store i64 38, ptr %v.2626
-  %t.26270 = load i64, ptr %v.2555
-  %t.26271 = load i64, ptr %v.2626
-  %t.26272 = icmp eq i64 %t.26270, %t.26271
-  %t.26273 = zext i1 %t.26272 to i64
-  store i64 %t.26273, ptr %v.2627
-  %t.26280 = load i64, ptr %v.2625
-  %t.26281 = load i64, ptr %v.2627
-  %t.26282 = and i64 %t.26280, %t.26281
-  store i64 %t.26282, ptr %v.2628
-  %t.26290 = load i64, ptr %v.2628
-  %t.26291 = icmp eq i64 %t.26290, 0
-  br i1 %t.26291, label %L.306, label %L.fall.2629
-L.fall.2629:
-  %t.26309 = call i64 @token_TK_AND()
-  store i64 %t.26309, ptr %v.2630
-  %t.26310 = load i64, ptr %v.2630
-  ret i64 %t.26310
+  store i64 62, ptr %v.2652
+  %t.26530 = load i64, ptr %v.2614
+  %t.26531 = load i64, ptr %v.2652
+  %t.26532 = icmp eq i64 %t.26530, %t.26531
+  %t.26533 = zext i1 %t.26532 to i64
+  store i64 %t.26533, ptr %v.2653
+  store i64 61, ptr %v.2654
+  %t.26550 = load i64, ptr %v.2616
+  %t.26551 = load i64, ptr %v.2654
+  %t.26552 = icmp eq i64 %t.26550, %t.26551
+  %t.26553 = zext i1 %t.26552 to i64
+  store i64 %t.26553, ptr %v.2655
+  %t.26560 = load i64, ptr %v.2653
+  %t.26561 = load i64, ptr %v.2655
+  %t.26562 = and i64 %t.26560, %t.26561
+  store i64 %t.26562, ptr %v.2656
+  %t.26570 = load i64, ptr %v.2656
+  %t.26571 = icmp eq i64 %t.26570, 0
+  br i1 %t.26571, label %L.306, label %L.fall.2657
+L.fall.2657:
+  %t.26589 = call i64 @token_TK_GE()
+  store i64 %t.26589, ptr %v.2658
+  %t.26590 = load i64, ptr %v.2658
+  ret i64 %t.26590
 L.306:
   br label %L.307
 L.307:
-  store i64 124, ptr %v.2635
-  %t.26360 = load i64, ptr %v.2553
-  %t.26361 = load i64, ptr %v.2635
-  %t.26362 = icmp eq i64 %t.26360, %t.26361
-  %t.26363 = zext i1 %t.26362 to i64
-  store i64 %t.26363, ptr %v.2636
-  store i64 124, ptr %v.2637
-  %t.26380 = load i64, ptr %v.2555
-  %t.26381 = load i64, ptr %v.2637
-  %t.26382 = icmp eq i64 %t.26380, %t.26381
-  %t.26383 = zext i1 %t.26382 to i64
-  store i64 %t.26383, ptr %v.2638
-  %t.26390 = load i64, ptr %v.2636
-  %t.26391 = load i64, ptr %v.2638
-  %t.26392 = and i64 %t.26390, %t.26391
-  store i64 %t.26392, ptr %v.2639
-  %t.26400 = load i64, ptr %v.2639
-  %t.26401 = icmp eq i64 %t.26400, 0
-  br i1 %t.26401, label %L.308, label %L.fall.2640
-L.fall.2640:
-  %t.26419 = call i64 @token_TK_OR()
-  store i64 %t.26419, ptr %v.2641
-  %t.26420 = load i64, ptr %v.2641
-  ret i64 %t.26420
-L.308:
-  br label %L.309
-L.309:
-  store i64 46, ptr %v.2646
-  %t.26470 = load i64, ptr %v.2553
-  %t.26471 = load i64, ptr %v.2646
-  %t.26472 = icmp eq i64 %t.26470, %t.26471
-  %t.26473 = zext i1 %t.26472 to i64
-  store i64 %t.26473, ptr %v.2647
-  store i64 46, ptr %v.2648
-  %t.26490 = load i64, ptr %v.2555
-  %t.26491 = load i64, ptr %v.2648
-  %t.26492 = icmp eq i64 %t.26490, %t.26491
-  %t.26493 = zext i1 %t.26492 to i64
-  store i64 %t.26493, ptr %v.2649
-  %t.26500 = load i64, ptr %v.2647
-  %t.26501 = load i64, ptr %v.2649
-  %t.26502 = and i64 %t.26500, %t.26501
-  store i64 %t.26502, ptr %v.2650
-  %t.26510 = load i64, ptr %v.2650
-  %t.26511 = icmp eq i64 %t.26510, 0
-  br i1 %t.26511, label %L.310, label %L.fall.2651
-L.fall.2651:
-  %t.26529 = call i64 @token_TK_DOTDOT()
-  store i64 %t.26529, ptr %v.2652
-  %t.26530 = load i64, ptr %v.2652
-  ret i64 %t.26530
-L.310:
-  br label %L.311
-L.311:
-  store i64 40, ptr %v.2657
-  %t.26580 = load i64, ptr %v.2553
-  %t.26581 = load i64, ptr %v.2657
-  %t.26582 = icmp eq i64 %t.26580, %t.26581
-  %t.26583 = zext i1 %t.26582 to i64
-  store i64 %t.26583, ptr %v.2658
-  %t.26590 = load i64, ptr %v.2658
-  %t.26591 = icmp eq i64 %t.26590, 0
-  br i1 %t.26591, label %L.312, label %L.fall.2659
-L.fall.2659:
-  %t.26609 = call i64 @token_TK_LPAREN()
-  store i64 %t.26609, ptr %v.2660
-  %t.26610 = load i64, ptr %v.2660
-  ret i64 %t.26610
-L.312:
-  br label %L.313
-L.313:
-  store i64 41, ptr %v.2665
-  %t.26660 = load i64, ptr %v.2553
+  store i64 61, ptr %v.2663
+  %t.26640 = load i64, ptr %v.2614
+  %t.26641 = load i64, ptr %v.2663
+  %t.26642 = icmp eq i64 %t.26640, %t.26641
+  %t.26643 = zext i1 %t.26642 to i64
+  store i64 %t.26643, ptr %v.2664
+  store i64 61, ptr %v.2665
+  %t.26660 = load i64, ptr %v.2616
   %t.26661 = load i64, ptr %v.2665
   %t.26662 = icmp eq i64 %t.26660, %t.26661
   %t.26663 = zext i1 %t.26662 to i64
   store i64 %t.26663, ptr %v.2666
-  %t.26670 = load i64, ptr %v.2666
-  %t.26671 = icmp eq i64 %t.26670, 0
-  br i1 %t.26671, label %L.314, label %L.fall.2667
-L.fall.2667:
-  %t.26689 = call i64 @token_TK_RPAREN()
-  store i64 %t.26689, ptr %v.2668
-  %t.26690 = load i64, ptr %v.2668
-  ret i64 %t.26690
+  %t.26670 = load i64, ptr %v.2664
+  %t.26671 = load i64, ptr %v.2666
+  %t.26672 = and i64 %t.26670, %t.26671
+  store i64 %t.26672, ptr %v.2667
+  %t.26680 = load i64, ptr %v.2667
+  %t.26681 = icmp eq i64 %t.26680, 0
+  br i1 %t.26681, label %L.308, label %L.fall.2668
+L.fall.2668:
+  %t.26699 = call i64 @token_TK_EQ()
+  store i64 %t.26699, ptr %v.2669
+  %t.26700 = load i64, ptr %v.2669
+  ret i64 %t.26700
+L.308:
+  br label %L.309
+L.309:
+  store i64 33, ptr %v.2674
+  %t.26750 = load i64, ptr %v.2614
+  %t.26751 = load i64, ptr %v.2674
+  %t.26752 = icmp eq i64 %t.26750, %t.26751
+  %t.26753 = zext i1 %t.26752 to i64
+  store i64 %t.26753, ptr %v.2675
+  store i64 61, ptr %v.2676
+  %t.26770 = load i64, ptr %v.2616
+  %t.26771 = load i64, ptr %v.2676
+  %t.26772 = icmp eq i64 %t.26770, %t.26771
+  %t.26773 = zext i1 %t.26772 to i64
+  store i64 %t.26773, ptr %v.2677
+  %t.26780 = load i64, ptr %v.2675
+  %t.26781 = load i64, ptr %v.2677
+  %t.26782 = and i64 %t.26780, %t.26781
+  store i64 %t.26782, ptr %v.2678
+  %t.26790 = load i64, ptr %v.2678
+  %t.26791 = icmp eq i64 %t.26790, 0
+  br i1 %t.26791, label %L.310, label %L.fall.2679
+L.fall.2679:
+  %t.26809 = call i64 @token_TK_NE()
+  store i64 %t.26809, ptr %v.2680
+  %t.26810 = load i64, ptr %v.2680
+  ret i64 %t.26810
+L.310:
+  br label %L.311
+L.311:
+  store i64 38, ptr %v.2685
+  %t.26860 = load i64, ptr %v.2614
+  %t.26861 = load i64, ptr %v.2685
+  %t.26862 = icmp eq i64 %t.26860, %t.26861
+  %t.26863 = zext i1 %t.26862 to i64
+  store i64 %t.26863, ptr %v.2686
+  store i64 38, ptr %v.2687
+  %t.26880 = load i64, ptr %v.2616
+  %t.26881 = load i64, ptr %v.2687
+  %t.26882 = icmp eq i64 %t.26880, %t.26881
+  %t.26883 = zext i1 %t.26882 to i64
+  store i64 %t.26883, ptr %v.2688
+  %t.26890 = load i64, ptr %v.2686
+  %t.26891 = load i64, ptr %v.2688
+  %t.26892 = and i64 %t.26890, %t.26891
+  store i64 %t.26892, ptr %v.2689
+  %t.26900 = load i64, ptr %v.2689
+  %t.26901 = icmp eq i64 %t.26900, 0
+  br i1 %t.26901, label %L.312, label %L.fall.2690
+L.fall.2690:
+  %t.26919 = call i64 @token_TK_AND()
+  store i64 %t.26919, ptr %v.2691
+  %t.26920 = load i64, ptr %v.2691
+  ret i64 %t.26920
+L.312:
+  br label %L.313
+L.313:
+  store i64 124, ptr %v.2696
+  %t.26970 = load i64, ptr %v.2614
+  %t.26971 = load i64, ptr %v.2696
+  %t.26972 = icmp eq i64 %t.26970, %t.26971
+  %t.26973 = zext i1 %t.26972 to i64
+  store i64 %t.26973, ptr %v.2697
+  store i64 124, ptr %v.2698
+  %t.26990 = load i64, ptr %v.2616
+  %t.26991 = load i64, ptr %v.2698
+  %t.26992 = icmp eq i64 %t.26990, %t.26991
+  %t.26993 = zext i1 %t.26992 to i64
+  store i64 %t.26993, ptr %v.2699
+  %t.27000 = load i64, ptr %v.2697
+  %t.27001 = load i64, ptr %v.2699
+  %t.27002 = and i64 %t.27000, %t.27001
+  store i64 %t.27002, ptr %v.2700
+  %t.27010 = load i64, ptr %v.2700
+  %t.27011 = icmp eq i64 %t.27010, 0
+  br i1 %t.27011, label %L.314, label %L.fall.2701
+L.fall.2701:
+  %t.27029 = call i64 @token_TK_OR()
+  store i64 %t.27029, ptr %v.2702
+  %t.27030 = load i64, ptr %v.2702
+  ret i64 %t.27030
 L.314:
   br label %L.315
 L.315:
-  store i64 123, ptr %v.2673
-  %t.26740 = load i64, ptr %v.2553
-  %t.26741 = load i64, ptr %v.2673
-  %t.26742 = icmp eq i64 %t.26740, %t.26741
-  %t.26743 = zext i1 %t.26742 to i64
-  store i64 %t.26743, ptr %v.2674
-  %t.26750 = load i64, ptr %v.2674
-  %t.26751 = icmp eq i64 %t.26750, 0
-  br i1 %t.26751, label %L.316, label %L.fall.2675
-L.fall.2675:
-  %t.26769 = call i64 @token_TK_LBRACE()
-  store i64 %t.26769, ptr %v.2676
-  %t.26770 = load i64, ptr %v.2676
-  ret i64 %t.26770
+  store i64 46, ptr %v.2707
+  %t.27080 = load i64, ptr %v.2614
+  %t.27081 = load i64, ptr %v.2707
+  %t.27082 = icmp eq i64 %t.27080, %t.27081
+  %t.27083 = zext i1 %t.27082 to i64
+  store i64 %t.27083, ptr %v.2708
+  store i64 46, ptr %v.2709
+  %t.27100 = load i64, ptr %v.2616
+  %t.27101 = load i64, ptr %v.2709
+  %t.27102 = icmp eq i64 %t.27100, %t.27101
+  %t.27103 = zext i1 %t.27102 to i64
+  store i64 %t.27103, ptr %v.2710
+  %t.27110 = load i64, ptr %v.2708
+  %t.27111 = load i64, ptr %v.2710
+  %t.27112 = and i64 %t.27110, %t.27111
+  store i64 %t.27112, ptr %v.2711
+  %t.27120 = load i64, ptr %v.2711
+  %t.27121 = icmp eq i64 %t.27120, 0
+  br i1 %t.27121, label %L.316, label %L.fall.2712
+L.fall.2712:
+  %t.27139 = call i64 @token_TK_DOTDOT()
+  store i64 %t.27139, ptr %v.2713
+  %t.27140 = load i64, ptr %v.2713
+  ret i64 %t.27140
 L.316:
   br label %L.317
 L.317:
-  store i64 125, ptr %v.2681
-  %t.26820 = load i64, ptr %v.2553
-  %t.26821 = load i64, ptr %v.2681
-  %t.26822 = icmp eq i64 %t.26820, %t.26821
-  %t.26823 = zext i1 %t.26822 to i64
-  store i64 %t.26823, ptr %v.2682
-  %t.26830 = load i64, ptr %v.2682
-  %t.26831 = icmp eq i64 %t.26830, 0
-  br i1 %t.26831, label %L.318, label %L.fall.2683
-L.fall.2683:
-  %t.26849 = call i64 @token_TK_RBRACE()
-  store i64 %t.26849, ptr %v.2684
-  %t.26850 = load i64, ptr %v.2684
-  ret i64 %t.26850
+  store i64 40, ptr %v.2718
+  %t.27190 = load i64, ptr %v.2614
+  %t.27191 = load i64, ptr %v.2718
+  %t.27192 = icmp eq i64 %t.27190, %t.27191
+  %t.27193 = zext i1 %t.27192 to i64
+  store i64 %t.27193, ptr %v.2719
+  %t.27200 = load i64, ptr %v.2719
+  %t.27201 = icmp eq i64 %t.27200, 0
+  br i1 %t.27201, label %L.318, label %L.fall.2720
+L.fall.2720:
+  %t.27219 = call i64 @token_TK_LPAREN()
+  store i64 %t.27219, ptr %v.2721
+  %t.27220 = load i64, ptr %v.2721
+  ret i64 %t.27220
 L.318:
   br label %L.319
 L.319:
-  store i64 91, ptr %v.2689
-  %t.26900 = load i64, ptr %v.2553
-  %t.26901 = load i64, ptr %v.2689
-  %t.26902 = icmp eq i64 %t.26900, %t.26901
-  %t.26903 = zext i1 %t.26902 to i64
-  store i64 %t.26903, ptr %v.2690
-  %t.26910 = load i64, ptr %v.2690
-  %t.26911 = icmp eq i64 %t.26910, 0
-  br i1 %t.26911, label %L.320, label %L.fall.2691
-L.fall.2691:
-  %t.26929 = call i64 @token_TK_LBRACKET()
-  store i64 %t.26929, ptr %v.2692
-  %t.26930 = load i64, ptr %v.2692
-  ret i64 %t.26930
+  store i64 41, ptr %v.2726
+  %t.27270 = load i64, ptr %v.2614
+  %t.27271 = load i64, ptr %v.2726
+  %t.27272 = icmp eq i64 %t.27270, %t.27271
+  %t.27273 = zext i1 %t.27272 to i64
+  store i64 %t.27273, ptr %v.2727
+  %t.27280 = load i64, ptr %v.2727
+  %t.27281 = icmp eq i64 %t.27280, 0
+  br i1 %t.27281, label %L.320, label %L.fall.2728
+L.fall.2728:
+  %t.27299 = call i64 @token_TK_RPAREN()
+  store i64 %t.27299, ptr %v.2729
+  %t.27300 = load i64, ptr %v.2729
+  ret i64 %t.27300
 L.320:
   br label %L.321
 L.321:
-  store i64 93, ptr %v.2697
-  %t.26980 = load i64, ptr %v.2553
-  %t.26981 = load i64, ptr %v.2697
-  %t.26982 = icmp eq i64 %t.26980, %t.26981
-  %t.26983 = zext i1 %t.26982 to i64
-  store i64 %t.26983, ptr %v.2698
-  %t.26990 = load i64, ptr %v.2698
-  %t.26991 = icmp eq i64 %t.26990, 0
-  br i1 %t.26991, label %L.322, label %L.fall.2699
-L.fall.2699:
-  %t.27009 = call i64 @token_TK_RBRACKET()
-  store i64 %t.27009, ptr %v.2700
-  %t.27010 = load i64, ptr %v.2700
-  ret i64 %t.27010
+  store i64 123, ptr %v.2734
+  %t.27350 = load i64, ptr %v.2614
+  %t.27351 = load i64, ptr %v.2734
+  %t.27352 = icmp eq i64 %t.27350, %t.27351
+  %t.27353 = zext i1 %t.27352 to i64
+  store i64 %t.27353, ptr %v.2735
+  %t.27360 = load i64, ptr %v.2735
+  %t.27361 = icmp eq i64 %t.27360, 0
+  br i1 %t.27361, label %L.322, label %L.fall.2736
+L.fall.2736:
+  %t.27379 = call i64 @token_TK_LBRACE()
+  store i64 %t.27379, ptr %v.2737
+  %t.27380 = load i64, ptr %v.2737
+  ret i64 %t.27380
 L.322:
   br label %L.323
 L.323:
-  store i64 44, ptr %v.2705
-  %t.27060 = load i64, ptr %v.2553
-  %t.27061 = load i64, ptr %v.2705
-  %t.27062 = icmp eq i64 %t.27060, %t.27061
-  %t.27063 = zext i1 %t.27062 to i64
-  store i64 %t.27063, ptr %v.2706
-  %t.27070 = load i64, ptr %v.2706
-  %t.27071 = icmp eq i64 %t.27070, 0
-  br i1 %t.27071, label %L.324, label %L.fall.2707
-L.fall.2707:
-  %t.27089 = call i64 @token_TK_COMMA()
-  store i64 %t.27089, ptr %v.2708
-  %t.27090 = load i64, ptr %v.2708
-  ret i64 %t.27090
+  store i64 125, ptr %v.2742
+  %t.27430 = load i64, ptr %v.2614
+  %t.27431 = load i64, ptr %v.2742
+  %t.27432 = icmp eq i64 %t.27430, %t.27431
+  %t.27433 = zext i1 %t.27432 to i64
+  store i64 %t.27433, ptr %v.2743
+  %t.27440 = load i64, ptr %v.2743
+  %t.27441 = icmp eq i64 %t.27440, 0
+  br i1 %t.27441, label %L.324, label %L.fall.2744
+L.fall.2744:
+  %t.27459 = call i64 @token_TK_RBRACE()
+  store i64 %t.27459, ptr %v.2745
+  %t.27460 = load i64, ptr %v.2745
+  ret i64 %t.27460
 L.324:
   br label %L.325
 L.325:
-  store i64 58, ptr %v.2713
-  %t.27140 = load i64, ptr %v.2553
-  %t.27141 = load i64, ptr %v.2713
-  %t.27142 = icmp eq i64 %t.27140, %t.27141
-  %t.27143 = zext i1 %t.27142 to i64
-  store i64 %t.27143, ptr %v.2714
-  %t.27150 = load i64, ptr %v.2714
-  %t.27151 = icmp eq i64 %t.27150, 0
-  br i1 %t.27151, label %L.326, label %L.fall.2715
-L.fall.2715:
-  %t.27169 = call i64 @token_TK_COLON()
-  store i64 %t.27169, ptr %v.2716
-  %t.27170 = load i64, ptr %v.2716
-  ret i64 %t.27170
+  store i64 91, ptr %v.2750
+  %t.27510 = load i64, ptr %v.2614
+  %t.27511 = load i64, ptr %v.2750
+  %t.27512 = icmp eq i64 %t.27510, %t.27511
+  %t.27513 = zext i1 %t.27512 to i64
+  store i64 %t.27513, ptr %v.2751
+  %t.27520 = load i64, ptr %v.2751
+  %t.27521 = icmp eq i64 %t.27520, 0
+  br i1 %t.27521, label %L.326, label %L.fall.2752
+L.fall.2752:
+  %t.27539 = call i64 @token_TK_LBRACKET()
+  store i64 %t.27539, ptr %v.2753
+  %t.27540 = load i64, ptr %v.2753
+  ret i64 %t.27540
 L.326:
   br label %L.327
 L.327:
-  store i64 59, ptr %v.2721
-  %t.27220 = load i64, ptr %v.2553
-  %t.27221 = load i64, ptr %v.2721
-  %t.27222 = icmp eq i64 %t.27220, %t.27221
-  %t.27223 = zext i1 %t.27222 to i64
-  store i64 %t.27223, ptr %v.2722
-  %t.27230 = load i64, ptr %v.2722
-  %t.27231 = icmp eq i64 %t.27230, 0
-  br i1 %t.27231, label %L.328, label %L.fall.2723
-L.fall.2723:
-  %t.27249 = call i64 @token_TK_SEMI()
-  store i64 %t.27249, ptr %v.2724
-  %t.27250 = load i64, ptr %v.2724
-  ret i64 %t.27250
+  store i64 93, ptr %v.2758
+  %t.27590 = load i64, ptr %v.2614
+  %t.27591 = load i64, ptr %v.2758
+  %t.27592 = icmp eq i64 %t.27590, %t.27591
+  %t.27593 = zext i1 %t.27592 to i64
+  store i64 %t.27593, ptr %v.2759
+  %t.27600 = load i64, ptr %v.2759
+  %t.27601 = icmp eq i64 %t.27600, 0
+  br i1 %t.27601, label %L.328, label %L.fall.2760
+L.fall.2760:
+  %t.27619 = call i64 @token_TK_RBRACKET()
+  store i64 %t.27619, ptr %v.2761
+  %t.27620 = load i64, ptr %v.2761
+  ret i64 %t.27620
 L.328:
   br label %L.329
 L.329:
-  store i64 46, ptr %v.2729
-  %t.27300 = load i64, ptr %v.2553
-  %t.27301 = load i64, ptr %v.2729
-  %t.27302 = icmp eq i64 %t.27300, %t.27301
-  %t.27303 = zext i1 %t.27302 to i64
-  store i64 %t.27303, ptr %v.2730
-  %t.27310 = load i64, ptr %v.2730
-  %t.27311 = icmp eq i64 %t.27310, 0
-  br i1 %t.27311, label %L.330, label %L.fall.2731
-L.fall.2731:
-  %t.27329 = call i64 @token_TK_DOT()
-  store i64 %t.27329, ptr %v.2732
-  %t.27330 = load i64, ptr %v.2732
-  ret i64 %t.27330
+  store i64 44, ptr %v.2766
+  %t.27670 = load i64, ptr %v.2614
+  %t.27671 = load i64, ptr %v.2766
+  %t.27672 = icmp eq i64 %t.27670, %t.27671
+  %t.27673 = zext i1 %t.27672 to i64
+  store i64 %t.27673, ptr %v.2767
+  %t.27680 = load i64, ptr %v.2767
+  %t.27681 = icmp eq i64 %t.27680, 0
+  br i1 %t.27681, label %L.330, label %L.fall.2768
+L.fall.2768:
+  %t.27699 = call i64 @token_TK_COMMA()
+  store i64 %t.27699, ptr %v.2769
+  %t.27700 = load i64, ptr %v.2769
+  ret i64 %t.27700
 L.330:
   br label %L.331
 L.331:
-  store i64 43, ptr %v.2737
-  %t.27380 = load i64, ptr %v.2553
-  %t.27381 = load i64, ptr %v.2737
-  %t.27382 = icmp eq i64 %t.27380, %t.27381
-  %t.27383 = zext i1 %t.27382 to i64
-  store i64 %t.27383, ptr %v.2738
-  %t.27390 = load i64, ptr %v.2738
-  %t.27391 = icmp eq i64 %t.27390, 0
-  br i1 %t.27391, label %L.332, label %L.fall.2739
-L.fall.2739:
-  %t.27409 = call i64 @token_TK_PLUS()
-  store i64 %t.27409, ptr %v.2740
-  %t.27410 = load i64, ptr %v.2740
-  ret i64 %t.27410
-L.332:
-  br label %L.333
-L.333:
-  store i64 45, ptr %v.2745
-  %t.27460 = load i64, ptr %v.2553
-  %t.27461 = load i64, ptr %v.2745
-  %t.27462 = icmp eq i64 %t.27460, %t.27461
-  %t.27463 = zext i1 %t.27462 to i64
-  store i64 %t.27463, ptr %v.2746
-  %t.27470 = load i64, ptr %v.2746
-  %t.27471 = icmp eq i64 %t.27470, 0
-  br i1 %t.27471, label %L.334, label %L.fall.2747
-L.fall.2747:
-  %t.27489 = call i64 @token_TK_MINUS()
-  store i64 %t.27489, ptr %v.2748
-  %t.27490 = load i64, ptr %v.2748
-  ret i64 %t.27490
-L.334:
-  br label %L.335
-L.335:
-  store i64 42, ptr %v.2753
-  %t.27540 = load i64, ptr %v.2553
-  %t.27541 = load i64, ptr %v.2753
-  %t.27542 = icmp eq i64 %t.27540, %t.27541
-  %t.27543 = zext i1 %t.27542 to i64
-  store i64 %t.27543, ptr %v.2754
-  %t.27550 = load i64, ptr %v.2754
-  %t.27551 = icmp eq i64 %t.27550, 0
-  br i1 %t.27551, label %L.336, label %L.fall.2755
-L.fall.2755:
-  %t.27569 = call i64 @token_TK_STAR()
-  store i64 %t.27569, ptr %v.2756
-  %t.27570 = load i64, ptr %v.2756
-  ret i64 %t.27570
-L.336:
-  br label %L.337
-L.337:
-  store i64 47, ptr %v.2761
-  %t.27620 = load i64, ptr %v.2553
-  %t.27621 = load i64, ptr %v.2761
-  %t.27622 = icmp eq i64 %t.27620, %t.27621
-  %t.27623 = zext i1 %t.27622 to i64
-  store i64 %t.27623, ptr %v.2762
-  %t.27630 = load i64, ptr %v.2762
-  %t.27631 = icmp eq i64 %t.27630, 0
-  br i1 %t.27631, label %L.338, label %L.fall.2763
-L.fall.2763:
-  %t.27649 = call i64 @token_TK_SLASH()
-  store i64 %t.27649, ptr %v.2764
-  %t.27650 = load i64, ptr %v.2764
-  ret i64 %t.27650
-L.338:
-  br label %L.339
-L.339:
-  store i64 37, ptr %v.2769
-  %t.27700 = load i64, ptr %v.2553
-  %t.27701 = load i64, ptr %v.2769
-  %t.27702 = icmp eq i64 %t.27700, %t.27701
-  %t.27703 = zext i1 %t.27702 to i64
-  store i64 %t.27703, ptr %v.2770
-  %t.27710 = load i64, ptr %v.2770
-  %t.27711 = icmp eq i64 %t.27710, 0
-  br i1 %t.27711, label %L.340, label %L.fall.2771
-L.fall.2771:
-  %t.27729 = call i64 @token_TK_PERCENT()
-  store i64 %t.27729, ptr %v.2772
-  %t.27730 = load i64, ptr %v.2772
-  ret i64 %t.27730
-L.340:
-  br label %L.341
-L.341:
-  store i64 94, ptr %v.2777
-  %t.27780 = load i64, ptr %v.2553
+  store i64 58, ptr %v.2774
+  %t.27750 = load i64, ptr %v.2614
+  %t.27751 = load i64, ptr %v.2774
+  %t.27752 = icmp eq i64 %t.27750, %t.27751
+  %t.27753 = zext i1 %t.27752 to i64
+  store i64 %t.27753, ptr %v.2775
+  store i64 61, ptr %v.2776
+  %t.27770 = load i64, ptr %v.2616
+  %t.27771 = load i64, ptr %v.2776
+  %t.27772 = icmp eq i64 %t.27770, %t.27771
+  %t.27773 = zext i1 %t.27772 to i64
+  store i64 %t.27773, ptr %v.2777
+  %t.27780 = load i64, ptr %v.2775
   %t.27781 = load i64, ptr %v.2777
-  %t.27782 = icmp eq i64 %t.27780, %t.27781
-  %t.27783 = zext i1 %t.27782 to i64
-  store i64 %t.27783, ptr %v.2778
+  %t.27782 = and i64 %t.27780, %t.27781
+  store i64 %t.27782, ptr %v.2778
   %t.27790 = load i64, ptr %v.2778
   %t.27791 = icmp eq i64 %t.27790, 0
-  br i1 %t.27791, label %L.342, label %L.fall.2779
+  br i1 %t.27791, label %L.332, label %L.fall.2779
 L.fall.2779:
-  %t.27809 = call i64 @token_TK_CARET()
+  %t.27809 = call i64 @token_TK_COLONEQUAL()
   store i64 %t.27809, ptr %v.2780
   %t.27810 = load i64, ptr %v.2780
   ret i64 %t.27810
-L.342:
-  br label %L.343
-L.343:
-  store i64 38, ptr %v.2785
-  %t.27860 = load i64, ptr %v.2553
+L.332:
+  br label %L.333
+L.333:
+  store i64 58, ptr %v.2785
+  %t.27860 = load i64, ptr %v.2614
   %t.27861 = load i64, ptr %v.2785
   %t.27862 = icmp eq i64 %t.27860, %t.27861
   %t.27863 = zext i1 %t.27862 to i64
   store i64 %t.27863, ptr %v.2786
   %t.27870 = load i64, ptr %v.2786
   %t.27871 = icmp eq i64 %t.27870, 0
-  br i1 %t.27871, label %L.344, label %L.fall.2787
+  br i1 %t.27871, label %L.334, label %L.fall.2787
 L.fall.2787:
-  %t.27889 = call i64 @token_TK_AMPERSAND()
+  %t.27889 = call i64 @token_TK_COLON()
   store i64 %t.27889, ptr %v.2788
   %t.27890 = load i64, ptr %v.2788
   ret i64 %t.27890
-L.344:
-  br label %L.345
-L.345:
-  store i64 124, ptr %v.2793
-  %t.27940 = load i64, ptr %v.2553
+L.334:
+  br label %L.335
+L.335:
+  store i64 59, ptr %v.2793
+  %t.27940 = load i64, ptr %v.2614
   %t.27941 = load i64, ptr %v.2793
   %t.27942 = icmp eq i64 %t.27940, %t.27941
   %t.27943 = zext i1 %t.27942 to i64
   store i64 %t.27943, ptr %v.2794
   %t.27950 = load i64, ptr %v.2794
   %t.27951 = icmp eq i64 %t.27950, 0
-  br i1 %t.27951, label %L.346, label %L.fall.2795
+  br i1 %t.27951, label %L.336, label %L.fall.2795
 L.fall.2795:
-  %t.27969 = call i64 @token_TK_PIPE()
+  %t.27969 = call i64 @token_TK_SEMI()
   store i64 %t.27969, ptr %v.2796
   %t.27970 = load i64, ptr %v.2796
   ret i64 %t.27970
-L.346:
-  br label %L.347
-L.347:
-  store i64 60, ptr %v.2801
-  %t.28020 = load i64, ptr %v.2553
+L.336:
+  br label %L.337
+L.337:
+  store i64 46, ptr %v.2801
+  %t.28020 = load i64, ptr %v.2614
   %t.28021 = load i64, ptr %v.2801
   %t.28022 = icmp eq i64 %t.28020, %t.28021
   %t.28023 = zext i1 %t.28022 to i64
   store i64 %t.28023, ptr %v.2802
   %t.28030 = load i64, ptr %v.2802
   %t.28031 = icmp eq i64 %t.28030, 0
-  br i1 %t.28031, label %L.348, label %L.fall.2803
+  br i1 %t.28031, label %L.338, label %L.fall.2803
 L.fall.2803:
-  %t.28049 = call i64 @token_TK_LT()
+  %t.28049 = call i64 @token_TK_DOT()
   store i64 %t.28049, ptr %v.2804
   %t.28050 = load i64, ptr %v.2804
   ret i64 %t.28050
-L.348:
-  br label %L.349
-L.349:
-  store i64 62, ptr %v.2809
-  %t.28100 = load i64, ptr %v.2553
+L.338:
+  br label %L.339
+L.339:
+  store i64 43, ptr %v.2809
+  %t.28100 = load i64, ptr %v.2614
   %t.28101 = load i64, ptr %v.2809
   %t.28102 = icmp eq i64 %t.28100, %t.28101
   %t.28103 = zext i1 %t.28102 to i64
   store i64 %t.28103, ptr %v.2810
   %t.28110 = load i64, ptr %v.2810
   %t.28111 = icmp eq i64 %t.28110, 0
-  br i1 %t.28111, label %L.350, label %L.fall.2811
+  br i1 %t.28111, label %L.340, label %L.fall.2811
 L.fall.2811:
-  %t.28129 = call i64 @token_TK_GT()
+  %t.28129 = call i64 @token_TK_PLUS()
   store i64 %t.28129, ptr %v.2812
   %t.28130 = load i64, ptr %v.2812
   ret i64 %t.28130
-L.350:
-  br label %L.351
-L.351:
-  store i64 61, ptr %v.2817
-  %t.28180 = load i64, ptr %v.2553
+L.340:
+  br label %L.341
+L.341:
+  store i64 45, ptr %v.2817
+  %t.28180 = load i64, ptr %v.2614
   %t.28181 = load i64, ptr %v.2817
   %t.28182 = icmp eq i64 %t.28180, %t.28181
   %t.28183 = zext i1 %t.28182 to i64
   store i64 %t.28183, ptr %v.2818
   %t.28190 = load i64, ptr %v.2818
   %t.28191 = icmp eq i64 %t.28190, 0
-  br i1 %t.28191, label %L.352, label %L.fall.2819
+  br i1 %t.28191, label %L.342, label %L.fall.2819
 L.fall.2819:
-  %t.28209 = call i64 @token_TK_ASSIGN()
+  %t.28209 = call i64 @token_TK_MINUS()
   store i64 %t.28209, ptr %v.2820
   %t.28210 = load i64, ptr %v.2820
   ret i64 %t.28210
-L.352:
-  br label %L.353
-L.353:
-  store i64 33, ptr %v.2825
-  %t.28260 = load i64, ptr %v.2553
+L.342:
+  br label %L.343
+L.343:
+  store i64 42, ptr %v.2825
+  %t.28260 = load i64, ptr %v.2614
   %t.28261 = load i64, ptr %v.2825
   %t.28262 = icmp eq i64 %t.28260, %t.28261
   %t.28263 = zext i1 %t.28262 to i64
   store i64 %t.28263, ptr %v.2826
   %t.28270 = load i64, ptr %v.2826
   %t.28271 = icmp eq i64 %t.28270, 0
-  br i1 %t.28271, label %L.354, label %L.fall.2827
+  br i1 %t.28271, label %L.344, label %L.fall.2827
 L.fall.2827:
-  %t.28289 = call i64 @token_TK_NOT()
+  %t.28289 = call i64 @token_TK_STAR()
   store i64 %t.28289, ptr %v.2828
   %t.28290 = load i64, ptr %v.2828
   ret i64 %t.28290
-L.354:
-  br label %L.355
-L.355:
-  %t.28340 = load i64, ptr %v.2553
-  %t.28349 = call i64 @lexer_is_digit(i64 %t.28340)
-  store i64 %t.28349, ptr %v.2834
+L.344:
+  br label %L.345
+L.345:
+  store i64 47, ptr %v.2833
+  %t.28340 = load i64, ptr %v.2614
+  %t.28341 = load i64, ptr %v.2833
+  %t.28342 = icmp eq i64 %t.28340, %t.28341
+  %t.28343 = zext i1 %t.28342 to i64
+  store i64 %t.28343, ptr %v.2834
   %t.28350 = load i64, ptr %v.2834
   %t.28351 = icmp eq i64 %t.28350, 0
-  br i1 %t.28351, label %L.356, label %L.fall.2835
+  br i1 %t.28351, label %L.346, label %L.fall.2835
 L.fall.2835:
-  %t.28369 = call i64 @token_TK_INT()
+  %t.28369 = call i64 @token_TK_SLASH()
   store i64 %t.28369, ptr %v.2836
   %t.28370 = load i64, ptr %v.2836
   ret i64 %t.28370
-L.356:
-  br label %L.357
-L.357:
-  store i64 34, ptr %v.2841
-  %t.28420 = load i64, ptr %v.2553
+L.346:
+  br label %L.347
+L.347:
+  store i64 37, ptr %v.2841
+  %t.28420 = load i64, ptr %v.2614
   %t.28421 = load i64, ptr %v.2841
   %t.28422 = icmp eq i64 %t.28420, %t.28421
   %t.28423 = zext i1 %t.28422 to i64
   store i64 %t.28423, ptr %v.2842
   %t.28430 = load i64, ptr %v.2842
   %t.28431 = icmp eq i64 %t.28430, 0
-  br i1 %t.28431, label %L.358, label %L.fall.2843
+  br i1 %t.28431, label %L.348, label %L.fall.2843
 L.fall.2843:
-  %t.28449 = call i64 @token_TK_STRING()
+  %t.28449 = call i64 @token_TK_PERCENT()
   store i64 %t.28449, ptr %v.2844
   %t.28450 = load i64, ptr %v.2844
   ret i64 %t.28450
+L.348:
+  br label %L.349
+L.349:
+  store i64 94, ptr %v.2849
+  %t.28500 = load i64, ptr %v.2614
+  %t.28501 = load i64, ptr %v.2849
+  %t.28502 = icmp eq i64 %t.28500, %t.28501
+  %t.28503 = zext i1 %t.28502 to i64
+  store i64 %t.28503, ptr %v.2850
+  %t.28510 = load i64, ptr %v.2850
+  %t.28511 = icmp eq i64 %t.28510, 0
+  br i1 %t.28511, label %L.350, label %L.fall.2851
+L.fall.2851:
+  %t.28529 = call i64 @token_TK_CARET()
+  store i64 %t.28529, ptr %v.2852
+  %t.28530 = load i64, ptr %v.2852
+  ret i64 %t.28530
+L.350:
+  br label %L.351
+L.351:
+  store i64 38, ptr %v.2857
+  %t.28580 = load i64, ptr %v.2614
+  %t.28581 = load i64, ptr %v.2857
+  %t.28582 = icmp eq i64 %t.28580, %t.28581
+  %t.28583 = zext i1 %t.28582 to i64
+  store i64 %t.28583, ptr %v.2858
+  %t.28590 = load i64, ptr %v.2858
+  %t.28591 = icmp eq i64 %t.28590, 0
+  br i1 %t.28591, label %L.352, label %L.fall.2859
+L.fall.2859:
+  %t.28609 = call i64 @token_TK_AMPERSAND()
+  store i64 %t.28609, ptr %v.2860
+  %t.28610 = load i64, ptr %v.2860
+  ret i64 %t.28610
+L.352:
+  br label %L.353
+L.353:
+  store i64 124, ptr %v.2865
+  %t.28660 = load i64, ptr %v.2614
+  %t.28661 = load i64, ptr %v.2865
+  %t.28662 = icmp eq i64 %t.28660, %t.28661
+  %t.28663 = zext i1 %t.28662 to i64
+  store i64 %t.28663, ptr %v.2866
+  %t.28670 = load i64, ptr %v.2866
+  %t.28671 = icmp eq i64 %t.28670, 0
+  br i1 %t.28671, label %L.354, label %L.fall.2867
+L.fall.2867:
+  %t.28689 = call i64 @token_TK_PIPE()
+  store i64 %t.28689, ptr %v.2868
+  %t.28690 = load i64, ptr %v.2868
+  ret i64 %t.28690
+L.354:
+  br label %L.355
+L.355:
+  store i64 60, ptr %v.2873
+  %t.28740 = load i64, ptr %v.2614
+  %t.28741 = load i64, ptr %v.2873
+  %t.28742 = icmp eq i64 %t.28740, %t.28741
+  %t.28743 = zext i1 %t.28742 to i64
+  store i64 %t.28743, ptr %v.2874
+  %t.28750 = load i64, ptr %v.2874
+  %t.28751 = icmp eq i64 %t.28750, 0
+  br i1 %t.28751, label %L.356, label %L.fall.2875
+L.fall.2875:
+  %t.28769 = call i64 @token_TK_LT()
+  store i64 %t.28769, ptr %v.2876
+  %t.28770 = load i64, ptr %v.2876
+  ret i64 %t.28770
+L.356:
+  br label %L.357
+L.357:
+  store i64 62, ptr %v.2881
+  %t.28820 = load i64, ptr %v.2614
+  %t.28821 = load i64, ptr %v.2881
+  %t.28822 = icmp eq i64 %t.28820, %t.28821
+  %t.28823 = zext i1 %t.28822 to i64
+  store i64 %t.28823, ptr %v.2882
+  %t.28830 = load i64, ptr %v.2882
+  %t.28831 = icmp eq i64 %t.28830, 0
+  br i1 %t.28831, label %L.358, label %L.fall.2883
+L.fall.2883:
+  %t.28849 = call i64 @token_TK_GT()
+  store i64 %t.28849, ptr %v.2884
+  %t.28850 = load i64, ptr %v.2884
+  ret i64 %t.28850
 L.358:
   br label %L.359
 L.359:
-  %t.28500 = load i64, ptr %v.2553
-  %t.28509 = call i64 @lexer_is_alpha(i64 %t.28500)
-  store i64 %t.28509, ptr %v.2850
-  %t.28510 = load i64, ptr %v.2850
-  %t.28511 = icmp eq i64 %t.28510, 0
-  br i1 %t.28511, label %L.360, label %L.fall.2851
-L.fall.2851:
-  %t.28520 = load i64, ptr %v.90001
-  store i64 %t.28520, ptr %v.2852
-  br label %L.362
+  store i64 61, ptr %v.2889
+  %t.28900 = load i64, ptr %v.2614
+  %t.28901 = load i64, ptr %v.2889
+  %t.28902 = icmp eq i64 %t.28900, %t.28901
+  %t.28903 = zext i1 %t.28902 to i64
+  store i64 %t.28903, ptr %v.2890
+  %t.28910 = load i64, ptr %v.2890
+  %t.28911 = icmp eq i64 %t.28910, 0
+  br i1 %t.28911, label %L.360, label %L.fall.2891
+L.fall.2891:
+  %t.28929 = call i64 @token_TK_ASSIGN()
+  store i64 %t.28929, ptr %v.2892
+  %t.28930 = load i64, ptr %v.2892
+  ret i64 %t.28930
+L.360:
+  br label %L.361
+L.361:
+  store i64 33, ptr %v.2897
+  %t.28980 = load i64, ptr %v.2614
+  %t.28981 = load i64, ptr %v.2897
+  %t.28982 = icmp eq i64 %t.28980, %t.28981
+  %t.28983 = zext i1 %t.28982 to i64
+  store i64 %t.28983, ptr %v.2898
+  %t.28990 = load i64, ptr %v.2898
+  %t.28991 = icmp eq i64 %t.28990, 0
+  br i1 %t.28991, label %L.362, label %L.fall.2899
+L.fall.2899:
+  %t.29009 = call i64 @token_TK_NOT()
+  store i64 %t.29009, ptr %v.2900
+  %t.29010 = load i64, ptr %v.2900
+  ret i64 %t.29010
 L.362:
-  %t.28540 = load i64, ptr %v.2852
-  %t.28541 = load i64, ptr %v.2542
-  %t.28542 = icmp slt i64 %t.28540, %t.28541
-  %t.28543 = zext i1 %t.28542 to i64
-  store i64 %t.28543, ptr %v.2854
-  %t.28570 = load i64, ptr %v.90000
-  %t.28571 = load i64, ptr %v.2852
-  %t.28579 = call i64 @lexer_lex_peek(i64 %t.28570, i64 %t.28571)
-  store i64 %t.28579, ptr %v.2857
-  %t.28590 = load i64, ptr %v.2857
-  %t.28599 = call i64 @lexer_is_alpha(i64 %t.28590)
-  store i64 %t.28599, ptr %v.2859
-  %t.28620 = load i64, ptr %v.90000
-  %t.28621 = load i64, ptr %v.2852
-  %t.28629 = call i64 @lexer_lex_peek(i64 %t.28620, i64 %t.28621)
-  store i64 %t.28629, ptr %v.2862
-  %t.28640 = load i64, ptr %v.2862
-  %t.28649 = call i64 @lexer_is_digit(i64 %t.28640)
-  store i64 %t.28649, ptr %v.2864
-  %t.28650 = load i64, ptr %v.2859
-  %t.28651 = load i64, ptr %v.2864
-  %t.28652 = or i64 %t.28650, %t.28651
-  store i64 %t.28652, ptr %v.2865
-  %t.28660 = load i64, ptr %v.2854
-  %t.28661 = load i64, ptr %v.2865
-  %t.28662 = and i64 %t.28660, %t.28661
-  store i64 %t.28662, ptr %v.2866
-  %t.28670 = load i64, ptr %v.2866
-  %t.28671 = icmp eq i64 %t.28670, 0
-  br i1 %t.28671, label %L.363, label %L.fall.2867
-L.fall.2867:
-  store i64 1, ptr %v.2868
-  %t.28690 = load i64, ptr %v.2852
-  %t.28691 = load i64, ptr %v.2868
-  %t.28692 = add i64 %t.28690, %t.28691
-  store i64 %t.28692, ptr %v.2869
-  %t.28700 = load i64, ptr %v.2869
-  store i64 %t.28700, ptr %v.2852
-  br label %L.362
+  br label %L.363
 L.363:
-  %t.28760 = load i64, ptr %v.90000
-  %t.28761 = load i64, ptr %v.90001
-  %t.28762 = load i64, ptr %v.2852
-  %t.28769 = call i64 @strings_str_substring(i64 %t.28760, i64 %t.28761, i64 %t.28762)
-  store i64 %t.28769, ptr %v.2876
-  %t.28770 = load i64, ptr %v.2876
-  store i64 %t.28770, ptr %v.2877
-  %t.28780 = ptrtoint ptr @.str.86 to i64
-  store i64 %t.28780, ptr %v.2878
-  %t.28790 = load i64, ptr %v.2877
-  %t.28791 = inttoptr i64 %t.28790 to ptr
-  %t.28792 = load i64, ptr %v.2878
-  %t.28793 = inttoptr i64 %t.28792 to ptr
-  %t.28794 = call i64 @ease_str_eq(ptr %t.28791, ptr %t.28793)
-  store i64 %t.28794, ptr %v.2879
-  %t.28800 = load i64, ptr %v.2879
-  %t.28801 = icmp eq i64 %t.28800, 0
-  br i1 %t.28801, label %L.364, label %L.fall.2880
-L.fall.2880:
-  %t.28819 = call i64 @token_TK_FN()
-  store i64 %t.28819, ptr %v.2881
-  %t.28820 = load i64, ptr %v.2881
-  ret i64 %t.28820
+  %t.29060 = load i64, ptr %v.2614
+  %t.29069 = call i64 @lexer_is_digit(i64 %t.29060)
+  store i64 %t.29069, ptr %v.2906
+  %t.29070 = load i64, ptr %v.2906
+  %t.29071 = icmp eq i64 %t.29070, 0
+  br i1 %t.29071, label %L.364, label %L.fall.2907
+L.fall.2907:
+  %t.29089 = call i64 @token_TK_INT()
+  store i64 %t.29089, ptr %v.2908
+  %t.29090 = load i64, ptr %v.2908
+  ret i64 %t.29090
 L.364:
   br label %L.365
 L.365:
-  %t.28860 = ptrtoint ptr @.str.87 to i64
-  store i64 %t.28860, ptr %v.2886
-  %t.28870 = load i64, ptr %v.2877
-  %t.28871 = inttoptr i64 %t.28870 to ptr
-  %t.28872 = load i64, ptr %v.2886
-  %t.28873 = inttoptr i64 %t.28872 to ptr
-  %t.28874 = call i64 @ease_str_eq(ptr %t.28871, ptr %t.28873)
-  store i64 %t.28874, ptr %v.2887
-  %t.28880 = load i64, ptr %v.2887
-  %t.28881 = icmp eq i64 %t.28880, 0
-  br i1 %t.28881, label %L.366, label %L.fall.2888
-L.fall.2888:
-  %t.28899 = call i64 @token_TK_LET()
-  store i64 %t.28899, ptr %v.2889
-  %t.28900 = load i64, ptr %v.2889
-  ret i64 %t.28900
+  store i64 34, ptr %v.2913
+  %t.29140 = load i64, ptr %v.2614
+  %t.29141 = load i64, ptr %v.2913
+  %t.29142 = icmp eq i64 %t.29140, %t.29141
+  %t.29143 = zext i1 %t.29142 to i64
+  store i64 %t.29143, ptr %v.2914
+  %t.29150 = load i64, ptr %v.2914
+  %t.29151 = icmp eq i64 %t.29150, 0
+  br i1 %t.29151, label %L.366, label %L.fall.2915
+L.fall.2915:
+  %t.29169 = call i64 @token_TK_STRING()
+  store i64 %t.29169, ptr %v.2916
+  %t.29170 = load i64, ptr %v.2916
+  ret i64 %t.29170
 L.366:
   br label %L.367
 L.367:
-  %t.28940 = ptrtoint ptr @.str.88 to i64
-  store i64 %t.28940, ptr %v.2894
-  %t.28950 = load i64, ptr %v.2877
-  %t.28951 = inttoptr i64 %t.28950 to ptr
-  %t.28952 = load i64, ptr %v.2894
-  %t.28953 = inttoptr i64 %t.28952 to ptr
-  %t.28954 = call i64 @ease_str_eq(ptr %t.28951, ptr %t.28953)
-  store i64 %t.28954, ptr %v.2895
-  %t.28960 = load i64, ptr %v.2895
-  %t.28961 = icmp eq i64 %t.28960, 0
-  br i1 %t.28961, label %L.368, label %L.fall.2896
-L.fall.2896:
-  %t.28979 = call i64 @token_TK_MUT()
-  store i64 %t.28979, ptr %v.2897
-  %t.28980 = load i64, ptr %v.2897
-  ret i64 %t.28980
-L.368:
-  br label %L.369
-L.369:
-  %t.29020 = ptrtoint ptr @.str.89 to i64
-  store i64 %t.29020, ptr %v.2902
-  %t.29030 = load i64, ptr %v.2877
-  %t.29031 = inttoptr i64 %t.29030 to ptr
-  %t.29032 = load i64, ptr %v.2902
-  %t.29033 = inttoptr i64 %t.29032 to ptr
-  %t.29034 = call i64 @ease_str_eq(ptr %t.29031, ptr %t.29033)
-  store i64 %t.29034, ptr %v.2903
-  %t.29040 = load i64, ptr %v.2903
-  %t.29041 = icmp eq i64 %t.29040, 0
-  br i1 %t.29041, label %L.370, label %L.fall.2904
-L.fall.2904:
-  %t.29059 = call i64 @token_TK_IF()
-  store i64 %t.29059, ptr %v.2905
-  %t.29060 = load i64, ptr %v.2905
-  ret i64 %t.29060
+  %t.29220 = load i64, ptr %v.2614
+  %t.29229 = call i64 @lexer_is_alpha(i64 %t.29220)
+  store i64 %t.29229, ptr %v.2922
+  %t.29230 = load i64, ptr %v.2922
+  %t.29231 = icmp eq i64 %t.29230, 0
+  br i1 %t.29231, label %L.368, label %L.fall.2923
+L.fall.2923:
+  %t.29240 = load i64, ptr %v.90001
+  store i64 %t.29240, ptr %v.2924
+  br label %L.370
 L.370:
-  br label %L.371
-L.371:
-  %t.29100 = ptrtoint ptr @.str.90 to i64
-  store i64 %t.29100, ptr %v.2910
-  %t.29110 = load i64, ptr %v.2877
-  %t.29111 = inttoptr i64 %t.29110 to ptr
-  %t.29112 = load i64, ptr %v.2910
-  %t.29113 = inttoptr i64 %t.29112 to ptr
-  %t.29114 = call i64 @ease_str_eq(ptr %t.29111, ptr %t.29113)
-  store i64 %t.29114, ptr %v.2911
-  %t.29120 = load i64, ptr %v.2911
-  %t.29121 = icmp eq i64 %t.29120, 0
-  br i1 %t.29121, label %L.372, label %L.fall.2912
-L.fall.2912:
-  %t.29139 = call i64 @token_TK_ELSE()
-  store i64 %t.29139, ptr %v.2913
-  %t.29140 = load i64, ptr %v.2913
-  ret i64 %t.29140
-L.372:
-  br label %L.373
-L.373:
-  %t.29180 = ptrtoint ptr @.str.91 to i64
-  store i64 %t.29180, ptr %v.2918
-  %t.29190 = load i64, ptr %v.2877
-  %t.29191 = inttoptr i64 %t.29190 to ptr
-  %t.29192 = load i64, ptr %v.2918
-  %t.29193 = inttoptr i64 %t.29192 to ptr
-  %t.29194 = call i64 @ease_str_eq(ptr %t.29191, ptr %t.29193)
-  store i64 %t.29194, ptr %v.2919
-  %t.29200 = load i64, ptr %v.2919
-  %t.29201 = icmp eq i64 %t.29200, 0
-  br i1 %t.29201, label %L.374, label %L.fall.2920
-L.fall.2920:
-  %t.29219 = call i64 @token_TK_FOR()
-  store i64 %t.29219, ptr %v.2921
-  %t.29220 = load i64, ptr %v.2921
-  ret i64 %t.29220
-L.374:
-  br label %L.375
-L.375:
-  %t.29260 = ptrtoint ptr @.str.92 to i64
-  store i64 %t.29260, ptr %v.2926
-  %t.29270 = load i64, ptr %v.2877
-  %t.29271 = inttoptr i64 %t.29270 to ptr
-  %t.29272 = load i64, ptr %v.2926
-  %t.29273 = inttoptr i64 %t.29272 to ptr
-  %t.29274 = call i64 @ease_str_eq(ptr %t.29271, ptr %t.29273)
-  store i64 %t.29274, ptr %v.2927
-  %t.29280 = load i64, ptr %v.2927
-  %t.29281 = icmp eq i64 %t.29280, 0
-  br i1 %t.29281, label %L.376, label %L.fall.2928
-L.fall.2928:
-  %t.29299 = call i64 @token_TK_IN()
+  %t.29260 = load i64, ptr %v.2924
+  %t.29261 = load i64, ptr %v.2603
+  %t.29262 = icmp slt i64 %t.29260, %t.29261
+  %t.29263 = zext i1 %t.29262 to i64
+  store i64 %t.29263, ptr %v.2926
+  %t.29290 = load i64, ptr %v.90000
+  %t.29291 = load i64, ptr %v.2924
+  %t.29299 = call i64 @lexer_lex_peek(i64 %t.29290, i64 %t.29291)
   store i64 %t.29299, ptr %v.2929
-  %t.29300 = load i64, ptr %v.2929
-  ret i64 %t.29300
-L.376:
-  br label %L.377
-L.377:
-  %t.29340 = ptrtoint ptr @.str.93 to i64
-  store i64 %t.29340, ptr %v.2934
-  %t.29350 = load i64, ptr %v.2877
-  %t.29351 = inttoptr i64 %t.29350 to ptr
-  %t.29352 = load i64, ptr %v.2934
-  %t.29353 = inttoptr i64 %t.29352 to ptr
-  %t.29354 = call i64 @ease_str_eq(ptr %t.29351, ptr %t.29353)
-  store i64 %t.29354, ptr %v.2935
-  %t.29360 = load i64, ptr %v.2935
-  %t.29361 = icmp eq i64 %t.29360, 0
-  br i1 %t.29361, label %L.378, label %L.fall.2936
-L.fall.2936:
-  %t.29379 = call i64 @token_TK_RETURN()
-  store i64 %t.29379, ptr %v.2937
-  %t.29380 = load i64, ptr %v.2937
-  ret i64 %t.29380
-L.378:
-  br label %L.379
-L.379:
-  %t.29420 = ptrtoint ptr @.str.94 to i64
-  store i64 %t.29420, ptr %v.2942
-  %t.29430 = load i64, ptr %v.2877
-  %t.29431 = inttoptr i64 %t.29430 to ptr
-  %t.29432 = load i64, ptr %v.2942
-  %t.29433 = inttoptr i64 %t.29432 to ptr
-  %t.29434 = call i64 @ease_str_eq(ptr %t.29431, ptr %t.29433)
-  store i64 %t.29434, ptr %v.2943
-  %t.29440 = load i64, ptr %v.2943
-  %t.29441 = icmp eq i64 %t.29440, 0
-  br i1 %t.29441, label %L.380, label %L.fall.2944
-L.fall.2944:
-  %t.29459 = call i64 @token_TK_BREAK()
-  store i64 %t.29459, ptr %v.2945
-  %t.29460 = load i64, ptr %v.2945
-  ret i64 %t.29460
-L.380:
-  br label %L.381
-L.381:
-  %t.29500 = ptrtoint ptr @.str.95 to i64
+  %t.29310 = load i64, ptr %v.2929
+  %t.29319 = call i64 @lexer_is_alpha(i64 %t.29310)
+  store i64 %t.29319, ptr %v.2931
+  %t.29340 = load i64, ptr %v.90000
+  %t.29341 = load i64, ptr %v.2924
+  %t.29349 = call i64 @lexer_lex_peek(i64 %t.29340, i64 %t.29341)
+  store i64 %t.29349, ptr %v.2934
+  %t.29360 = load i64, ptr %v.2934
+  %t.29369 = call i64 @lexer_is_digit(i64 %t.29360)
+  store i64 %t.29369, ptr %v.2936
+  %t.29370 = load i64, ptr %v.2931
+  %t.29371 = load i64, ptr %v.2936
+  %t.29372 = or i64 %t.29370, %t.29371
+  store i64 %t.29372, ptr %v.2937
+  %t.29380 = load i64, ptr %v.2926
+  %t.29381 = load i64, ptr %v.2937
+  %t.29382 = and i64 %t.29380, %t.29381
+  store i64 %t.29382, ptr %v.2938
+  %t.29390 = load i64, ptr %v.2938
+  %t.29391 = icmp eq i64 %t.29390, 0
+  br i1 %t.29391, label %L.371, label %L.fall.2939
+L.fall.2939:
+  store i64 1, ptr %v.2940
+  %t.29410 = load i64, ptr %v.2924
+  %t.29411 = load i64, ptr %v.2940
+  %t.29412 = add i64 %t.29410, %t.29411
+  store i64 %t.29412, ptr %v.2941
+  %t.29420 = load i64, ptr %v.2941
+  store i64 %t.29420, ptr %v.2924
+  br label %L.370
+L.371:
+  %t.29480 = load i64, ptr %v.90000
+  %t.29481 = load i64, ptr %v.90001
+  %t.29482 = load i64, ptr %v.2924
+  %t.29489 = call i64 @strings_str_substring(i64 %t.29480, i64 %t.29481, i64 %t.29482)
+  store i64 %t.29489, ptr %v.2948
+  %t.29490 = load i64, ptr %v.2948
+  store i64 %t.29490, ptr %v.2949
+  %t.29500 = ptrtoint ptr @.str.86 to i64
   store i64 %t.29500, ptr %v.2950
-  %t.29510 = load i64, ptr %v.2877
+  %t.29510 = load i64, ptr %v.2949
   %t.29511 = inttoptr i64 %t.29510 to ptr
   %t.29512 = load i64, ptr %v.2950
   %t.29513 = inttoptr i64 %t.29512 to ptr
@@ -10046,18 +10030,18 @@ L.381:
   store i64 %t.29514, ptr %v.2951
   %t.29520 = load i64, ptr %v.2951
   %t.29521 = icmp eq i64 %t.29520, 0
-  br i1 %t.29521, label %L.382, label %L.fall.2952
+  br i1 %t.29521, label %L.372, label %L.fall.2952
 L.fall.2952:
-  %t.29539 = call i64 @token_TK_STRUCT()
+  %t.29539 = call i64 @token_TK_FN()
   store i64 %t.29539, ptr %v.2953
   %t.29540 = load i64, ptr %v.2953
   ret i64 %t.29540
-L.382:
-  br label %L.383
-L.383:
-  %t.29580 = ptrtoint ptr @.str.96 to i64
+L.372:
+  br label %L.373
+L.373:
+  %t.29580 = ptrtoint ptr @.str.87 to i64
   store i64 %t.29580, ptr %v.2958
-  %t.29590 = load i64, ptr %v.2877
+  %t.29590 = load i64, ptr %v.2949
   %t.29591 = inttoptr i64 %t.29590 to ptr
   %t.29592 = load i64, ptr %v.2958
   %t.29593 = inttoptr i64 %t.29592 to ptr
@@ -10065,18 +10049,18 @@ L.383:
   store i64 %t.29594, ptr %v.2959
   %t.29600 = load i64, ptr %v.2959
   %t.29601 = icmp eq i64 %t.29600, 0
-  br i1 %t.29601, label %L.384, label %L.fall.2960
+  br i1 %t.29601, label %L.374, label %L.fall.2960
 L.fall.2960:
-  %t.29619 = call i64 @token_TK_TRUE()
+  %t.29619 = call i64 @token_TK_IF()
   store i64 %t.29619, ptr %v.2961
   %t.29620 = load i64, ptr %v.2961
   ret i64 %t.29620
-L.384:
-  br label %L.385
-L.385:
-  %t.29660 = ptrtoint ptr @.str.97 to i64
+L.374:
+  br label %L.375
+L.375:
+  %t.29660 = ptrtoint ptr @.str.88 to i64
   store i64 %t.29660, ptr %v.2966
-  %t.29670 = load i64, ptr %v.2877
+  %t.29670 = load i64, ptr %v.2949
   %t.29671 = inttoptr i64 %t.29670 to ptr
   %t.29672 = load i64, ptr %v.2966
   %t.29673 = inttoptr i64 %t.29672 to ptr
@@ -10084,18 +10068,18 @@ L.385:
   store i64 %t.29674, ptr %v.2967
   %t.29680 = load i64, ptr %v.2967
   %t.29681 = icmp eq i64 %t.29680, 0
-  br i1 %t.29681, label %L.386, label %L.fall.2968
+  br i1 %t.29681, label %L.376, label %L.fall.2968
 L.fall.2968:
-  %t.29699 = call i64 @token_TK_FALSE()
+  %t.29699 = call i64 @token_TK_ELSE()
   store i64 %t.29699, ptr %v.2969
   %t.29700 = load i64, ptr %v.2969
   ret i64 %t.29700
-L.386:
-  br label %L.387
-L.387:
-  %t.29740 = ptrtoint ptr @.str.98 to i64
+L.376:
+  br label %L.377
+L.377:
+  %t.29740 = ptrtoint ptr @.str.89 to i64
   store i64 %t.29740, ptr %v.2974
-  %t.29750 = load i64, ptr %v.2877
+  %t.29750 = load i64, ptr %v.2949
   %t.29751 = inttoptr i64 %t.29750 to ptr
   %t.29752 = load i64, ptr %v.2974
   %t.29753 = inttoptr i64 %t.29752 to ptr
@@ -10103,18 +10087,18 @@ L.387:
   store i64 %t.29754, ptr %v.2975
   %t.29760 = load i64, ptr %v.2975
   %t.29761 = icmp eq i64 %t.29760, 0
-  br i1 %t.29761, label %L.388, label %L.fall.2976
+  br i1 %t.29761, label %L.378, label %L.fall.2976
 L.fall.2976:
-  %t.29779 = call i64 @token_TK_IMPORT()
+  %t.29779 = call i64 @token_TK_FOR()
   store i64 %t.29779, ptr %v.2977
   %t.29780 = load i64, ptr %v.2977
   ret i64 %t.29780
-L.388:
-  br label %L.389
-L.389:
-  %t.29820 = ptrtoint ptr @.str.99 to i64
+L.378:
+  br label %L.379
+L.379:
+  %t.29820 = ptrtoint ptr @.str.90 to i64
   store i64 %t.29820, ptr %v.2982
-  %t.29830 = load i64, ptr %v.2877
+  %t.29830 = load i64, ptr %v.2949
   %t.29831 = inttoptr i64 %t.29830 to ptr
   %t.29832 = load i64, ptr %v.2982
   %t.29833 = inttoptr i64 %t.29832 to ptr
@@ -10122,86 +10106,168 @@ L.389:
   store i64 %t.29834, ptr %v.2983
   %t.29840 = load i64, ptr %v.2983
   %t.29841 = icmp eq i64 %t.29840, 0
-  br i1 %t.29841, label %L.390, label %L.fall.2984
+  br i1 %t.29841, label %L.380, label %L.fall.2984
 L.fall.2984:
-  %t.29859 = call i64 @token_TK_PACKAGE()
+  %t.29859 = call i64 @token_TK_IN()
   store i64 %t.29859, ptr %v.2985
   %t.29860 = load i64, ptr %v.2985
   ret i64 %t.29860
+L.380:
+  br label %L.381
+L.381:
+  %t.29900 = ptrtoint ptr @.str.91 to i64
+  store i64 %t.29900, ptr %v.2990
+  %t.29910 = load i64, ptr %v.2949
+  %t.29911 = inttoptr i64 %t.29910 to ptr
+  %t.29912 = load i64, ptr %v.2990
+  %t.29913 = inttoptr i64 %t.29912 to ptr
+  %t.29914 = call i64 @ease_str_eq(ptr %t.29911, ptr %t.29913)
+  store i64 %t.29914, ptr %v.2991
+  %t.29920 = load i64, ptr %v.2991
+  %t.29921 = icmp eq i64 %t.29920, 0
+  br i1 %t.29921, label %L.382, label %L.fall.2992
+L.fall.2992:
+  %t.29939 = call i64 @token_TK_RETURN()
+  store i64 %t.29939, ptr %v.2993
+  %t.29940 = load i64, ptr %v.2993
+  ret i64 %t.29940
+L.382:
+  br label %L.383
+L.383:
+  %t.29980 = ptrtoint ptr @.str.92 to i64
+  store i64 %t.29980, ptr %v.2998
+  %t.29990 = load i64, ptr %v.2949
+  %t.29991 = inttoptr i64 %t.29990 to ptr
+  %t.29992 = load i64, ptr %v.2998
+  %t.29993 = inttoptr i64 %t.29992 to ptr
+  %t.29994 = call i64 @ease_str_eq(ptr %t.29991, ptr %t.29993)
+  store i64 %t.29994, ptr %v.2999
+  %t.30000 = load i64, ptr %v.2999
+  %t.30001 = icmp eq i64 %t.30000, 0
+  br i1 %t.30001, label %L.384, label %L.fall.3000
+L.fall.3000:
+  %t.30019 = call i64 @token_TK_BREAK()
+  store i64 %t.30019, ptr %v.3001
+  %t.30020 = load i64, ptr %v.3001
+  ret i64 %t.30020
+L.384:
+  br label %L.385
+L.385:
+  %t.30060 = ptrtoint ptr @.str.93 to i64
+  store i64 %t.30060, ptr %v.3006
+  %t.30070 = load i64, ptr %v.2949
+  %t.30071 = inttoptr i64 %t.30070 to ptr
+  %t.30072 = load i64, ptr %v.3006
+  %t.30073 = inttoptr i64 %t.30072 to ptr
+  %t.30074 = call i64 @ease_str_eq(ptr %t.30071, ptr %t.30073)
+  store i64 %t.30074, ptr %v.3007
+  %t.30080 = load i64, ptr %v.3007
+  %t.30081 = icmp eq i64 %t.30080, 0
+  br i1 %t.30081, label %L.386, label %L.fall.3008
+L.fall.3008:
+  %t.30099 = call i64 @token_TK_STRUCT()
+  store i64 %t.30099, ptr %v.3009
+  %t.30100 = load i64, ptr %v.3009
+  ret i64 %t.30100
+L.386:
+  br label %L.387
+L.387:
+  %t.30140 = ptrtoint ptr @.str.94 to i64
+  store i64 %t.30140, ptr %v.3014
+  %t.30150 = load i64, ptr %v.2949
+  %t.30151 = inttoptr i64 %t.30150 to ptr
+  %t.30152 = load i64, ptr %v.3014
+  %t.30153 = inttoptr i64 %t.30152 to ptr
+  %t.30154 = call i64 @ease_str_eq(ptr %t.30151, ptr %t.30153)
+  store i64 %t.30154, ptr %v.3015
+  %t.30160 = load i64, ptr %v.3015
+  %t.30161 = icmp eq i64 %t.30160, 0
+  br i1 %t.30161, label %L.388, label %L.fall.3016
+L.fall.3016:
+  %t.30179 = call i64 @token_TK_TRUE()
+  store i64 %t.30179, ptr %v.3017
+  %t.30180 = load i64, ptr %v.3017
+  ret i64 %t.30180
+L.388:
+  br label %L.389
+L.389:
+  %t.30220 = ptrtoint ptr @.str.95 to i64
+  store i64 %t.30220, ptr %v.3022
+  %t.30230 = load i64, ptr %v.2949
+  %t.30231 = inttoptr i64 %t.30230 to ptr
+  %t.30232 = load i64, ptr %v.3022
+  %t.30233 = inttoptr i64 %t.30232 to ptr
+  %t.30234 = call i64 @ease_str_eq(ptr %t.30231, ptr %t.30233)
+  store i64 %t.30234, ptr %v.3023
+  %t.30240 = load i64, ptr %v.3023
+  %t.30241 = icmp eq i64 %t.30240, 0
+  br i1 %t.30241, label %L.390, label %L.fall.3024
+L.fall.3024:
+  %t.30259 = call i64 @token_TK_FALSE()
+  store i64 %t.30259, ptr %v.3025
+  %t.30260 = load i64, ptr %v.3025
+  ret i64 %t.30260
 L.390:
   br label %L.391
 L.391:
-  %t.29909 = call i64 @token_TK_IDENT()
-  store i64 %t.29909, ptr %v.2990
-  %t.29910 = load i64, ptr %v.2990
-  ret i64 %t.29910
-L.360:
-  br label %L.361
-L.361:
-  %t.29959 = call i64 @token_TK_EOF()
-  store i64 %t.29959, ptr %v.2995
-  %t.29960 = load i64, ptr %v.2995
-  ret i64 %t.29960
+  %t.30300 = ptrtoint ptr @.str.96 to i64
+  store i64 %t.30300, ptr %v.3030
+  %t.30310 = load i64, ptr %v.2949
+  %t.30311 = inttoptr i64 %t.30310 to ptr
+  %t.30312 = load i64, ptr %v.3030
+  %t.30313 = inttoptr i64 %t.30312 to ptr
+  %t.30314 = call i64 @ease_str_eq(ptr %t.30311, ptr %t.30313)
+  store i64 %t.30314, ptr %v.3031
+  %t.30320 = load i64, ptr %v.3031
+  %t.30321 = icmp eq i64 %t.30320, 0
+  br i1 %t.30321, label %L.392, label %L.fall.3032
+L.fall.3032:
+  %t.30339 = call i64 @token_TK_IMPORT()
+  store i64 %t.30339, ptr %v.3033
+  %t.30340 = load i64, ptr %v.3033
+  ret i64 %t.30340
+L.392:
+  br label %L.393
+L.393:
+  %t.30380 = ptrtoint ptr @.str.97 to i64
+  store i64 %t.30380, ptr %v.3038
+  %t.30390 = load i64, ptr %v.2949
+  %t.30391 = inttoptr i64 %t.30390 to ptr
+  %t.30392 = load i64, ptr %v.3038
+  %t.30393 = inttoptr i64 %t.30392 to ptr
+  %t.30394 = call i64 @ease_str_eq(ptr %t.30391, ptr %t.30393)
+  store i64 %t.30394, ptr %v.3039
+  %t.30400 = load i64, ptr %v.3039
+  %t.30401 = icmp eq i64 %t.30400, 0
+  br i1 %t.30401, label %L.394, label %L.fall.3040
+L.fall.3040:
+  %t.30419 = call i64 @token_TK_PACKAGE()
+  store i64 %t.30419, ptr %v.3041
+  %t.30420 = load i64, ptr %v.3041
+  ret i64 %t.30420
+L.394:
+  br label %L.395
+L.395:
+  %t.30469 = call i64 @token_TK_IDENT()
+  store i64 %t.30469, ptr %v.3046
+  %t.30470 = load i64, ptr %v.3046
+  ret i64 %t.30470
+L.368:
+  br label %L.369
+L.369:
+  %t.30519 = call i64 @token_TK_EOF()
+  store i64 %t.30519, ptr %v.3051
+  %t.30520 = load i64, ptr %v.3051
+  ret i64 %t.30520
 }
 
 define i64 @lexer_lex_end(i64 %param.0, i64 %param.1, i64 %param.2) {
   %v.90000 = alloca i64
   %v.90001 = alloca i64
   %v.90002 = alloca i64
-  %v.2998 = alloca i64
-  %v.2999 = alloca i64
-  %v.0 = alloca i64
-  %v.3005 = alloca i64
-  %v.3006 = alloca i64
-  %v.3007 = alloca i64
-  %v.3008 = alloca i64
-  %v.3009 = alloca i64
-  %v.3010 = alloca i64
-  %v.3011 = alloca i64
-  %v.3012 = alloca i64
-  %v.3013 = alloca i64
-  %v.3014 = alloca i64
-  %v.3015 = alloca i64
-  %v.3016 = alloca i64
-  %v.3017 = alloca i64
-  %v.3018 = alloca i64
-  %v.3019 = alloca i64
-  %v.3020 = alloca i64
-  %v.3021 = alloca i64
-  %v.3022 = alloca i64
-  %v.3023 = alloca i64
-  %v.3024 = alloca i64
-  %v.3025 = alloca i64
-  %v.3026 = alloca i64
-  %v.3027 = alloca i64
-  %v.3029 = alloca i64
-  %v.3030 = alloca i64
-  %v.3035 = alloca i64
-  %v.3036 = alloca i64
-  %v.3037 = alloca i64
-  %v.3038 = alloca i64
-  %v.3039 = alloca i64
-  %v.3040 = alloca i64
-  %v.3041 = alloca i64
-  %v.3042 = alloca i64
-  %v.3043 = alloca i64
-  %v.3044 = alloca i64
-  %v.3045 = alloca i64
-  %v.3046 = alloca i64
-  %v.3047 = alloca i64
-  %v.3048 = alloca i64
-  %v.3049 = alloca i64
-  %v.3050 = alloca i64
-  %v.3051 = alloca i64
-  %v.3052 = alloca i64
-  %v.3053 = alloca i64
   %v.3054 = alloca i64
   %v.3055 = alloca i64
-  %v.3056 = alloca i64
-  %v.3057 = alloca i64
-  %v.3058 = alloca i64
-  %v.3059 = alloca i64
-  %v.3060 = alloca i64
+  %v.0 = alloca i64
   %v.3061 = alloca i64
   %v.3062 = alloca i64
   %v.3063 = alloca i64
@@ -10228,128 +10294,139 @@ define i64 @lexer_lex_end(i64 %param.0, i64 %param.1, i64 %param.2) {
   %v.3084 = alloca i64
   %v.3085 = alloca i64
   %v.3086 = alloca i64
-  %v.3087 = alloca i64
   %v.3088 = alloca i64
   %v.3089 = alloca i64
-  %v.3090 = alloca i64
-  %v.3091 = alloca i64
-  %v.3092 = alloca i64
-  %v.3093 = alloca i64
   %v.3094 = alloca i64
   %v.3095 = alloca i64
   %v.3096 = alloca i64
   %v.3097 = alloca i64
   %v.3098 = alloca i64
   %v.3099 = alloca i64
+  %v.3100 = alloca i64
   %v.3101 = alloca i64
   %v.3102 = alloca i64
+  %v.3103 = alloca i64
+  %v.3104 = alloca i64
+  %v.3105 = alloca i64
+  %v.3106 = alloca i64
   %v.3107 = alloca i64
   %v.3108 = alloca i64
+  %v.3109 = alloca i64
   %v.3110 = alloca i64
   %v.3111 = alloca i64
   %v.3112 = alloca i64
   %v.3113 = alloca i64
   %v.3114 = alloca i64
+  %v.3115 = alloca i64
+  %v.3116 = alloca i64
   %v.3117 = alloca i64
   %v.3118 = alloca i64
   %v.3119 = alloca i64
   %v.3120 = alloca i64
   %v.3121 = alloca i64
   %v.3122 = alloca i64
+  %v.3123 = alloca i64
+  %v.3124 = alloca i64
   %v.3125 = alloca i64
   %v.3126 = alloca i64
   %v.3127 = alloca i64
   %v.3128 = alloca i64
+  %v.3129 = alloca i64
   %v.3130 = alloca i64
   %v.3131 = alloca i64
+  %v.3132 = alloca i64
+  %v.3133 = alloca i64
   %v.3134 = alloca i64
   %v.3135 = alloca i64
+  %v.3136 = alloca i64
+  %v.3137 = alloca i64
   %v.3138 = alloca i64
+  %v.3139 = alloca i64
   %v.3140 = alloca i64
   %v.3141 = alloca i64
+  %v.3142 = alloca i64
   %v.3143 = alloca i64
   %v.3144 = alloca i64
+  %v.3145 = alloca i64
+  %v.3146 = alloca i64
+  %v.3147 = alloca i64
+  %v.3148 = alloca i64
+  %v.3149 = alloca i64
+  %v.3150 = alloca i64
   %v.3151 = alloca i64
   %v.3152 = alloca i64
+  %v.3153 = alloca i64
+  %v.3154 = alloca i64
   %v.3155 = alloca i64
+  %v.3156 = alloca i64
   %v.3157 = alloca i64
   %v.3158 = alloca i64
   %v.3160 = alloca i64
   %v.3161 = alloca i64
+  %v.3166 = alloca i64
+  %v.3167 = alloca i64
+  %v.3169 = alloca i64
   %v.3170 = alloca i64
   %v.3171 = alloca i64
+  %v.3172 = alloca i64
   %v.3173 = alloca i64
-  %v.3174 = alloca i64
-  %v.3175 = alloca i64
+  %v.3176 = alloca i64
   %v.3177 = alloca i64
   %v.3178 = alloca i64
-  %v.3182 = alloca i64
-  %v.3183 = alloca i64
+  %v.3179 = alloca i64
+  %v.3180 = alloca i64
+  %v.3181 = alloca i64
   %v.3184 = alloca i64
   %v.3185 = alloca i64
+  %v.3186 = alloca i64
   %v.3187 = alloca i64
-  %v.3188 = alloca i64
+  %v.3189 = alloca i64
+  %v.3190 = alloca i64
   %v.3193 = alloca i64
   %v.3194 = alloca i64
-  %v.3196 = alloca i64
   %v.3197 = alloca i64
-  %v.3201 = alloca i64
+  %v.3199 = alloca i64
+  %v.3200 = alloca i64
   %v.3202 = alloca i64
+  %v.3203 = alloca i64
+  %v.3210 = alloca i64
   %v.3211 = alloca i64
-  %v.3212 = alloca i64
-  %v.3213 = alloca i64
   %v.3214 = alloca i64
-  %v.3215 = alloca i64
   %v.3216 = alloca i64
   %v.3217 = alloca i64
-  %v.3218 = alloca i64
   %v.3219 = alloca i64
   %v.3220 = alloca i64
-  %v.3221 = alloca i64
-  %v.3222 = alloca i64
-  %v.3223 = alloca i64
-  %v.3224 = alloca i64
-  %v.3225 = alloca i64
-  %v.3226 = alloca i64
-  %v.3227 = alloca i64
-  %v.3228 = alloca i64
   %v.3229 = alloca i64
   %v.3230 = alloca i64
-  %v.3231 = alloca i64
   %v.3232 = alloca i64
   %v.3233 = alloca i64
   %v.3234 = alloca i64
-  %v.3235 = alloca i64
   %v.3236 = alloca i64
   %v.3237 = alloca i64
-  %v.3238 = alloca i64
-  %v.3239 = alloca i64
-  %v.3240 = alloca i64
   %v.3241 = alloca i64
   %v.3242 = alloca i64
   %v.3243 = alloca i64
   %v.3244 = alloca i64
-  %v.3245 = alloca i64
   %v.3246 = alloca i64
   %v.3247 = alloca i64
-  %v.3248 = alloca i64
-  %v.3249 = alloca i64
-  %v.3250 = alloca i64
-  %v.3251 = alloca i64
   %v.3252 = alloca i64
   %v.3253 = alloca i64
-  %v.3254 = alloca i64
+  %v.3255 = alloca i64
   %v.3256 = alloca i64
-  %v.3258 = alloca i64
-  %v.3259 = alloca i64
-  %v.3262 = alloca i64
-  %v.3264 = alloca i64
-  %v.3267 = alloca i64
-  %v.3269 = alloca i64
+  %v.3260 = alloca i64
+  %v.3261 = alloca i64
   %v.3270 = alloca i64
   %v.3271 = alloca i64
+  %v.3272 = alloca i64
   %v.3273 = alloca i64
   %v.3274 = alloca i64
+  %v.3275 = alloca i64
+  %v.3276 = alloca i64
+  %v.3277 = alloca i64
+  %v.3278 = alloca i64
+  %v.3279 = alloca i64
+  %v.3280 = alloca i64
+  %v.3281 = alloca i64
   %v.3282 = alloca i64
   %v.3283 = alloca i64
   %v.3284 = alloca i64
@@ -10373,973 +10450,20 @@ define i64 @lexer_lex_end(i64 %param.0, i64 %param.1, i64 %param.2) {
   %v.3302 = alloca i64
   %v.3303 = alloca i64
   %v.3304 = alloca i64
+  %v.3305 = alloca i64
   %v.3306 = alloca i64
   %v.3307 = alloca i64
+  %v.3309 = alloca i64
+  %v.3311 = alloca i64
   %v.3312 = alloca i64
-  %v.3313 = alloca i64
-  store i64 %param.0, ptr %v.90000
-  store i64 %param.1, ptr %v.90001
-  store i64 %param.2, ptr %v.90002
-  br label %B.body
-B.body:
-  %t.29989 = call i64 @token_TK_EOF()
-  store i64 %t.29989, ptr %v.2998
-  %t.29990 = load i64, ptr %v.90002
-  %t.29991 = load i64, ptr %v.2998
-  %t.29992 = icmp eq i64 %t.29990, %t.29991
-  %t.29993 = zext i1 %t.29992 to i64
-  store i64 %t.29993, ptr %v.2999
-  %t.30000 = load i64, ptr %v.2999
-  %t.30001 = icmp eq i64 %t.30000, 0
-  br i1 %t.30001, label %L.392, label %L.fall.3000
-L.fall.3000:
-  %t.30010 = load i64, ptr %v.90001
-  ret i64 %t.30010
-L.392:
-  br label %L.393
-L.393:
-  %t.30059 = call i64 @token_TK_ARROW()
-  store i64 %t.30059, ptr %v.3005
-  %t.30060 = load i64, ptr %v.90002
-  %t.30061 = load i64, ptr %v.3005
-  %t.30062 = icmp eq i64 %t.30060, %t.30061
-  %t.30063 = zext i1 %t.30062 to i64
-  store i64 %t.30063, ptr %v.3006
-  %t.30079 = call i64 @token_TK_LE()
-  store i64 %t.30079, ptr %v.3007
-  %t.30080 = load i64, ptr %v.90002
-  %t.30081 = load i64, ptr %v.3007
-  %t.30082 = icmp eq i64 %t.30080, %t.30081
-  %t.30083 = zext i1 %t.30082 to i64
-  store i64 %t.30083, ptr %v.3008
-  %t.30090 = load i64, ptr %v.3006
-  %t.30091 = load i64, ptr %v.3008
-  %t.30092 = or i64 %t.30090, %t.30091
-  store i64 %t.30092, ptr %v.3009
-  %t.30109 = call i64 @token_TK_GE()
-  store i64 %t.30109, ptr %v.3010
-  %t.30110 = load i64, ptr %v.90002
-  %t.30111 = load i64, ptr %v.3010
-  %t.30112 = icmp eq i64 %t.30110, %t.30111
-  %t.30113 = zext i1 %t.30112 to i64
-  store i64 %t.30113, ptr %v.3011
-  %t.30120 = load i64, ptr %v.3009
-  %t.30121 = load i64, ptr %v.3011
-  %t.30122 = or i64 %t.30120, %t.30121
-  store i64 %t.30122, ptr %v.3012
-  %t.30139 = call i64 @token_TK_EQ()
-  store i64 %t.30139, ptr %v.3013
-  %t.30140 = load i64, ptr %v.90002
-  %t.30141 = load i64, ptr %v.3013
-  %t.30142 = icmp eq i64 %t.30140, %t.30141
-  %t.30143 = zext i1 %t.30142 to i64
-  store i64 %t.30143, ptr %v.3014
-  %t.30150 = load i64, ptr %v.3012
-  %t.30151 = load i64, ptr %v.3014
-  %t.30152 = or i64 %t.30150, %t.30151
-  store i64 %t.30152, ptr %v.3015
-  %t.30169 = call i64 @token_TK_NE()
-  store i64 %t.30169, ptr %v.3016
-  %t.30170 = load i64, ptr %v.90002
-  %t.30171 = load i64, ptr %v.3016
-  %t.30172 = icmp eq i64 %t.30170, %t.30171
-  %t.30173 = zext i1 %t.30172 to i64
-  store i64 %t.30173, ptr %v.3017
-  %t.30180 = load i64, ptr %v.3015
-  %t.30181 = load i64, ptr %v.3017
-  %t.30182 = or i64 %t.30180, %t.30181
-  store i64 %t.30182, ptr %v.3018
-  %t.30199 = call i64 @token_TK_AND()
-  store i64 %t.30199, ptr %v.3019
-  %t.30200 = load i64, ptr %v.90002
-  %t.30201 = load i64, ptr %v.3019
-  %t.30202 = icmp eq i64 %t.30200, %t.30201
-  %t.30203 = zext i1 %t.30202 to i64
-  store i64 %t.30203, ptr %v.3020
-  %t.30210 = load i64, ptr %v.3018
-  %t.30211 = load i64, ptr %v.3020
-  %t.30212 = or i64 %t.30210, %t.30211
-  store i64 %t.30212, ptr %v.3021
-  %t.30229 = call i64 @token_TK_OR()
-  store i64 %t.30229, ptr %v.3022
-  %t.30230 = load i64, ptr %v.90002
-  %t.30231 = load i64, ptr %v.3022
-  %t.30232 = icmp eq i64 %t.30230, %t.30231
-  %t.30233 = zext i1 %t.30232 to i64
-  store i64 %t.30233, ptr %v.3023
-  %t.30240 = load i64, ptr %v.3021
-  %t.30241 = load i64, ptr %v.3023
-  %t.30242 = or i64 %t.30240, %t.30241
-  store i64 %t.30242, ptr %v.3024
-  %t.30259 = call i64 @token_TK_DOTDOT()
-  store i64 %t.30259, ptr %v.3025
-  %t.30260 = load i64, ptr %v.90002
-  %t.30261 = load i64, ptr %v.3025
-  %t.30262 = icmp eq i64 %t.30260, %t.30261
-  %t.30263 = zext i1 %t.30262 to i64
-  store i64 %t.30263, ptr %v.3026
-  %t.30270 = load i64, ptr %v.3024
-  %t.30271 = load i64, ptr %v.3026
-  %t.30272 = or i64 %t.30270, %t.30271
-  store i64 %t.30272, ptr %v.3027
-  %t.30280 = load i64, ptr %v.3027
-  %t.30281 = icmp eq i64 %t.30280, 0
-  br i1 %t.30281, label %L.394, label %L.fall.3028
-L.fall.3028:
-  store i64 2, ptr %v.3029
-  %t.30300 = load i64, ptr %v.90001
-  %t.30301 = load i64, ptr %v.3029
-  %t.30302 = add i64 %t.30300, %t.30301
-  store i64 %t.30302, ptr %v.3030
-  %t.30310 = load i64, ptr %v.3030
-  ret i64 %t.30310
-L.394:
-  br label %L.395
-L.395:
-  %t.30359 = call i64 @token_TK_LPAREN()
-  store i64 %t.30359, ptr %v.3035
-  %t.30360 = load i64, ptr %v.90002
-  %t.30361 = load i64, ptr %v.3035
-  %t.30362 = icmp eq i64 %t.30360, %t.30361
-  %t.30363 = zext i1 %t.30362 to i64
-  store i64 %t.30363, ptr %v.3036
-  %t.30379 = call i64 @token_TK_RPAREN()
-  store i64 %t.30379, ptr %v.3037
-  %t.30380 = load i64, ptr %v.90002
-  %t.30381 = load i64, ptr %v.3037
-  %t.30382 = icmp eq i64 %t.30380, %t.30381
-  %t.30383 = zext i1 %t.30382 to i64
-  store i64 %t.30383, ptr %v.3038
-  %t.30390 = load i64, ptr %v.3036
-  %t.30391 = load i64, ptr %v.3038
-  %t.30392 = or i64 %t.30390, %t.30391
-  store i64 %t.30392, ptr %v.3039
-  %t.30409 = call i64 @token_TK_LBRACE()
-  store i64 %t.30409, ptr %v.3040
-  %t.30410 = load i64, ptr %v.90002
-  %t.30411 = load i64, ptr %v.3040
-  %t.30412 = icmp eq i64 %t.30410, %t.30411
-  %t.30413 = zext i1 %t.30412 to i64
-  store i64 %t.30413, ptr %v.3041
-  %t.30420 = load i64, ptr %v.3039
-  %t.30421 = load i64, ptr %v.3041
-  %t.30422 = or i64 %t.30420, %t.30421
-  store i64 %t.30422, ptr %v.3042
-  %t.30439 = call i64 @token_TK_RBRACE()
-  store i64 %t.30439, ptr %v.3043
-  %t.30440 = load i64, ptr %v.90002
-  %t.30441 = load i64, ptr %v.3043
-  %t.30442 = icmp eq i64 %t.30440, %t.30441
-  %t.30443 = zext i1 %t.30442 to i64
-  store i64 %t.30443, ptr %v.3044
-  %t.30450 = load i64, ptr %v.3042
-  %t.30451 = load i64, ptr %v.3044
-  %t.30452 = or i64 %t.30450, %t.30451
-  store i64 %t.30452, ptr %v.3045
-  %t.30469 = call i64 @token_TK_LBRACKET()
-  store i64 %t.30469, ptr %v.3046
-  %t.30470 = load i64, ptr %v.90002
-  %t.30471 = load i64, ptr %v.3046
-  %t.30472 = icmp eq i64 %t.30470, %t.30471
-  %t.30473 = zext i1 %t.30472 to i64
-  store i64 %t.30473, ptr %v.3047
-  %t.30480 = load i64, ptr %v.3045
-  %t.30481 = load i64, ptr %v.3047
-  %t.30482 = or i64 %t.30480, %t.30481
-  store i64 %t.30482, ptr %v.3048
-  %t.30499 = call i64 @token_TK_RBRACKET()
-  store i64 %t.30499, ptr %v.3049
-  %t.30500 = load i64, ptr %v.90002
-  %t.30501 = load i64, ptr %v.3049
-  %t.30502 = icmp eq i64 %t.30500, %t.30501
-  %t.30503 = zext i1 %t.30502 to i64
-  store i64 %t.30503, ptr %v.3050
-  %t.30510 = load i64, ptr %v.3048
-  %t.30511 = load i64, ptr %v.3050
-  %t.30512 = or i64 %t.30510, %t.30511
-  store i64 %t.30512, ptr %v.3051
-  %t.30529 = call i64 @token_TK_COMMA()
-  store i64 %t.30529, ptr %v.3052
-  %t.30530 = load i64, ptr %v.90002
-  %t.30531 = load i64, ptr %v.3052
-  %t.30532 = icmp eq i64 %t.30530, %t.30531
-  %t.30533 = zext i1 %t.30532 to i64
-  store i64 %t.30533, ptr %v.3053
-  %t.30540 = load i64, ptr %v.3051
-  %t.30541 = load i64, ptr %v.3053
-  %t.30542 = or i64 %t.30540, %t.30541
-  store i64 %t.30542, ptr %v.3054
-  %t.30559 = call i64 @token_TK_COLON()
-  store i64 %t.30559, ptr %v.3055
-  %t.30560 = load i64, ptr %v.90002
-  %t.30561 = load i64, ptr %v.3055
-  %t.30562 = icmp eq i64 %t.30560, %t.30561
-  %t.30563 = zext i1 %t.30562 to i64
-  store i64 %t.30563, ptr %v.3056
-  %t.30570 = load i64, ptr %v.3054
-  %t.30571 = load i64, ptr %v.3056
-  %t.30572 = or i64 %t.30570, %t.30571
-  store i64 %t.30572, ptr %v.3057
-  %t.30589 = call i64 @token_TK_SEMI()
-  store i64 %t.30589, ptr %v.3058
-  %t.30590 = load i64, ptr %v.90002
-  %t.30591 = load i64, ptr %v.3058
-  %t.30592 = icmp eq i64 %t.30590, %t.30591
-  %t.30593 = zext i1 %t.30592 to i64
-  store i64 %t.30593, ptr %v.3059
-  %t.30600 = load i64, ptr %v.3057
-  %t.30601 = load i64, ptr %v.3059
-  %t.30602 = or i64 %t.30600, %t.30601
-  store i64 %t.30602, ptr %v.3060
-  %t.30619 = call i64 @token_TK_DOT()
-  store i64 %t.30619, ptr %v.3061
-  %t.30620 = load i64, ptr %v.90002
-  %t.30621 = load i64, ptr %v.3061
-  %t.30622 = icmp eq i64 %t.30620, %t.30621
-  %t.30623 = zext i1 %t.30622 to i64
-  store i64 %t.30623, ptr %v.3062
-  %t.30630 = load i64, ptr %v.3060
-  %t.30631 = load i64, ptr %v.3062
-  %t.30632 = or i64 %t.30630, %t.30631
-  store i64 %t.30632, ptr %v.3063
-  %t.30649 = call i64 @token_TK_PLUS()
-  store i64 %t.30649, ptr %v.3064
-  %t.30650 = load i64, ptr %v.90002
-  %t.30651 = load i64, ptr %v.3064
-  %t.30652 = icmp eq i64 %t.30650, %t.30651
-  %t.30653 = zext i1 %t.30652 to i64
-  store i64 %t.30653, ptr %v.3065
-  %t.30660 = load i64, ptr %v.3063
-  %t.30661 = load i64, ptr %v.3065
-  %t.30662 = or i64 %t.30660, %t.30661
-  store i64 %t.30662, ptr %v.3066
-  %t.30679 = call i64 @token_TK_MINUS()
-  store i64 %t.30679, ptr %v.3067
-  %t.30680 = load i64, ptr %v.90002
-  %t.30681 = load i64, ptr %v.3067
-  %t.30682 = icmp eq i64 %t.30680, %t.30681
-  %t.30683 = zext i1 %t.30682 to i64
-  store i64 %t.30683, ptr %v.3068
-  %t.30690 = load i64, ptr %v.3066
-  %t.30691 = load i64, ptr %v.3068
-  %t.30692 = or i64 %t.30690, %t.30691
-  store i64 %t.30692, ptr %v.3069
-  %t.30709 = call i64 @token_TK_STAR()
-  store i64 %t.30709, ptr %v.3070
-  %t.30710 = load i64, ptr %v.90002
-  %t.30711 = load i64, ptr %v.3070
-  %t.30712 = icmp eq i64 %t.30710, %t.30711
-  %t.30713 = zext i1 %t.30712 to i64
-  store i64 %t.30713, ptr %v.3071
-  %t.30720 = load i64, ptr %v.3069
-  %t.30721 = load i64, ptr %v.3071
-  %t.30722 = or i64 %t.30720, %t.30721
-  store i64 %t.30722, ptr %v.3072
-  %t.30739 = call i64 @token_TK_SLASH()
-  store i64 %t.30739, ptr %v.3073
-  %t.30740 = load i64, ptr %v.90002
-  %t.30741 = load i64, ptr %v.3073
-  %t.30742 = icmp eq i64 %t.30740, %t.30741
-  %t.30743 = zext i1 %t.30742 to i64
-  store i64 %t.30743, ptr %v.3074
-  %t.30750 = load i64, ptr %v.3072
-  %t.30751 = load i64, ptr %v.3074
-  %t.30752 = or i64 %t.30750, %t.30751
-  store i64 %t.30752, ptr %v.3075
-  %t.30769 = call i64 @token_TK_PERCENT()
-  store i64 %t.30769, ptr %v.3076
-  %t.30770 = load i64, ptr %v.90002
-  %t.30771 = load i64, ptr %v.3076
-  %t.30772 = icmp eq i64 %t.30770, %t.30771
-  %t.30773 = zext i1 %t.30772 to i64
-  store i64 %t.30773, ptr %v.3077
-  %t.30780 = load i64, ptr %v.3075
-  %t.30781 = load i64, ptr %v.3077
-  %t.30782 = or i64 %t.30780, %t.30781
-  store i64 %t.30782, ptr %v.3078
-  %t.30799 = call i64 @token_TK_CARET()
-  store i64 %t.30799, ptr %v.3079
-  %t.30800 = load i64, ptr %v.90002
-  %t.30801 = load i64, ptr %v.3079
-  %t.30802 = icmp eq i64 %t.30800, %t.30801
-  %t.30803 = zext i1 %t.30802 to i64
-  store i64 %t.30803, ptr %v.3080
-  %t.30810 = load i64, ptr %v.3078
-  %t.30811 = load i64, ptr %v.3080
-  %t.30812 = or i64 %t.30810, %t.30811
-  store i64 %t.30812, ptr %v.3081
-  %t.30829 = call i64 @token_TK_AMPERSAND()
-  store i64 %t.30829, ptr %v.3082
-  %t.30830 = load i64, ptr %v.90002
-  %t.30831 = load i64, ptr %v.3082
-  %t.30832 = icmp eq i64 %t.30830, %t.30831
-  %t.30833 = zext i1 %t.30832 to i64
-  store i64 %t.30833, ptr %v.3083
-  %t.30840 = load i64, ptr %v.3081
-  %t.30841 = load i64, ptr %v.3083
-  %t.30842 = or i64 %t.30840, %t.30841
-  store i64 %t.30842, ptr %v.3084
-  %t.30859 = call i64 @token_TK_PIPE()
-  store i64 %t.30859, ptr %v.3085
-  %t.30860 = load i64, ptr %v.90002
-  %t.30861 = load i64, ptr %v.3085
-  %t.30862 = icmp eq i64 %t.30860, %t.30861
-  %t.30863 = zext i1 %t.30862 to i64
-  store i64 %t.30863, ptr %v.3086
-  %t.30870 = load i64, ptr %v.3084
-  %t.30871 = load i64, ptr %v.3086
-  %t.30872 = or i64 %t.30870, %t.30871
-  store i64 %t.30872, ptr %v.3087
-  %t.30889 = call i64 @token_TK_LT()
-  store i64 %t.30889, ptr %v.3088
-  %t.30890 = load i64, ptr %v.90002
-  %t.30891 = load i64, ptr %v.3088
-  %t.30892 = icmp eq i64 %t.30890, %t.30891
-  %t.30893 = zext i1 %t.30892 to i64
-  store i64 %t.30893, ptr %v.3089
-  %t.30900 = load i64, ptr %v.3087
-  %t.30901 = load i64, ptr %v.3089
-  %t.30902 = or i64 %t.30900, %t.30901
-  store i64 %t.30902, ptr %v.3090
-  %t.30919 = call i64 @token_TK_GT()
-  store i64 %t.30919, ptr %v.3091
-  %t.30920 = load i64, ptr %v.90002
-  %t.30921 = load i64, ptr %v.3091
-  %t.30922 = icmp eq i64 %t.30920, %t.30921
-  %t.30923 = zext i1 %t.30922 to i64
-  store i64 %t.30923, ptr %v.3092
-  %t.30930 = load i64, ptr %v.3090
-  %t.30931 = load i64, ptr %v.3092
-  %t.30932 = or i64 %t.30930, %t.30931
-  store i64 %t.30932, ptr %v.3093
-  %t.30949 = call i64 @token_TK_ASSIGN()
-  store i64 %t.30949, ptr %v.3094
-  %t.30950 = load i64, ptr %v.90002
-  %t.30951 = load i64, ptr %v.3094
-  %t.30952 = icmp eq i64 %t.30950, %t.30951
-  %t.30953 = zext i1 %t.30952 to i64
-  store i64 %t.30953, ptr %v.3095
-  %t.30960 = load i64, ptr %v.3093
-  %t.30961 = load i64, ptr %v.3095
-  %t.30962 = or i64 %t.30960, %t.30961
-  store i64 %t.30962, ptr %v.3096
-  %t.30979 = call i64 @token_TK_NOT()
-  store i64 %t.30979, ptr %v.3097
-  %t.30980 = load i64, ptr %v.90002
-  %t.30981 = load i64, ptr %v.3097
-  %t.30982 = icmp eq i64 %t.30980, %t.30981
-  %t.30983 = zext i1 %t.30982 to i64
-  store i64 %t.30983, ptr %v.3098
-  %t.30990 = load i64, ptr %v.3096
-  %t.30991 = load i64, ptr %v.3098
-  %t.30992 = or i64 %t.30990, %t.30991
-  store i64 %t.30992, ptr %v.3099
-  %t.31000 = load i64, ptr %v.3099
-  %t.31001 = icmp eq i64 %t.31000, 0
-  br i1 %t.31001, label %L.396, label %L.fall.3100
-L.fall.3100:
-  store i64 1, ptr %v.3101
-  %t.31020 = load i64, ptr %v.90001
-  %t.31021 = load i64, ptr %v.3101
-  %t.31022 = add i64 %t.31020, %t.31021
-  store i64 %t.31022, ptr %v.3102
-  %t.31030 = load i64, ptr %v.3102
-  ret i64 %t.31030
-L.396:
-  br label %L.397
-L.397:
-  %t.31079 = call i64 @token_TK_INT()
-  store i64 %t.31079, ptr %v.3107
-  %t.31080 = load i64, ptr %v.90002
-  %t.31081 = load i64, ptr %v.3107
-  %t.31082 = icmp eq i64 %t.31080, %t.31081
-  %t.31083 = zext i1 %t.31082 to i64
-  store i64 %t.31083, ptr %v.3108
-  %t.31090 = load i64, ptr %v.3108
-  %t.31091 = icmp eq i64 %t.31090, 0
-  br i1 %t.31091, label %L.398, label %L.fall.3109
-L.fall.3109:
-  %t.31100 = load i64, ptr %v.90001
-  store i64 %t.31100, ptr %v.3110
-  store i64 1, ptr %v.3111
-  %t.31120 = load i64, ptr %v.3110
-  %t.31121 = load i64, ptr %v.3111
-  %t.31122 = add i64 %t.31120, %t.31121
-  store i64 %t.31122, ptr %v.3112
-  %t.31130 = load i64, ptr %v.90000
-  %t.31131 = inttoptr i64 %t.31130 to ptr
-  %t.31132 = call i64 @ease_str_len(ptr %t.31131)
-  store i64 %t.31132, ptr %v.3113
-  %t.31140 = load i64, ptr %v.3112
-  %t.31141 = load i64, ptr %v.3113
-  %t.31142 = icmp slt i64 %t.31140, %t.31141
-  %t.31143 = zext i1 %t.31142 to i64
-  store i64 %t.31143, ptr %v.3114
-  %t.31170 = load i64, ptr %v.90000
-  %t.31171 = load i64, ptr %v.3110
-  %t.31179 = call i64 @lexer_lex_peek(i64 %t.31170, i64 %t.31171)
-  store i64 %t.31179, ptr %v.3117
-  store i64 48, ptr %v.3118
-  %t.31190 = load i64, ptr %v.3117
-  %t.31191 = load i64, ptr %v.3118
-  %t.31192 = icmp eq i64 %t.31190, %t.31191
-  %t.31193 = zext i1 %t.31192 to i64
-  store i64 %t.31193, ptr %v.3119
-  %t.31200 = load i64, ptr %v.3114
-  %t.31201 = load i64, ptr %v.3119
-  %t.31202 = and i64 %t.31200, %t.31201
-  store i64 %t.31202, ptr %v.3120
-  store i64 1, ptr %v.3121
-  %t.31220 = load i64, ptr %v.3110
-  %t.31221 = load i64, ptr %v.3121
-  %t.31222 = add i64 %t.31220, %t.31221
-  store i64 %t.31222, ptr %v.3122
-  %t.31250 = load i64, ptr %v.90000
-  %t.31251 = load i64, ptr %v.3122
-  %t.31259 = call i64 @lexer_lex_peek(i64 %t.31250, i64 %t.31251)
-  store i64 %t.31259, ptr %v.3125
-  store i64 120, ptr %v.3126
-  %t.31270 = load i64, ptr %v.3125
-  %t.31271 = load i64, ptr %v.3126
-  %t.31272 = icmp eq i64 %t.31270, %t.31271
-  %t.31273 = zext i1 %t.31272 to i64
-  store i64 %t.31273, ptr %v.3127
-  %t.31280 = load i64, ptr %v.3120
-  %t.31281 = load i64, ptr %v.3127
-  %t.31282 = and i64 %t.31280, %t.31281
-  store i64 %t.31282, ptr %v.3128
-  %t.31290 = load i64, ptr %v.3128
-  %t.31291 = icmp eq i64 %t.31290, 0
-  br i1 %t.31291, label %L.400, label %L.fall.3129
-L.fall.3129:
-  store i64 2, ptr %v.3130
-  %t.31310 = load i64, ptr %v.3110
-  %t.31311 = load i64, ptr %v.3130
-  %t.31312 = add i64 %t.31310, %t.31311
-  store i64 %t.31312, ptr %v.3131
-  %t.31320 = load i64, ptr %v.3131
-  store i64 %t.31320, ptr %v.3110
-  br label %L.402
-L.402:
-  %t.31340 = load i64, ptr %v.90000
-  %t.31341 = inttoptr i64 %t.31340 to ptr
-  %t.31342 = call i64 @ease_str_len(ptr %t.31341)
-  store i64 %t.31342, ptr %v.3134
-  %t.31350 = load i64, ptr %v.3110
-  %t.31351 = load i64, ptr %v.3134
-  %t.31352 = icmp slt i64 %t.31350, %t.31351
-  %t.31353 = zext i1 %t.31352 to i64
-  store i64 %t.31353, ptr %v.3135
-  %t.31380 = load i64, ptr %v.90000
-  %t.31381 = load i64, ptr %v.3110
-  %t.31389 = call i64 @lexer_lex_peek(i64 %t.31380, i64 %t.31381)
-  store i64 %t.31389, ptr %v.3138
-  %t.31400 = load i64, ptr %v.3138
-  %t.31409 = call i64 @lexer_is_hex_digit(i64 %t.31400)
-  store i64 %t.31409, ptr %v.3140
-  %t.31410 = load i64, ptr %v.3135
-  %t.31411 = load i64, ptr %v.3140
-  %t.31412 = and i64 %t.31410, %t.31411
-  store i64 %t.31412, ptr %v.3141
-  %t.31420 = load i64, ptr %v.3141
-  %t.31421 = icmp eq i64 %t.31420, 0
-  br i1 %t.31421, label %L.403, label %L.fall.3142
-L.fall.3142:
-  store i64 1, ptr %v.3143
-  %t.31440 = load i64, ptr %v.3110
-  %t.31441 = load i64, ptr %v.3143
-  %t.31442 = add i64 %t.31440, %t.31441
-  store i64 %t.31442, ptr %v.3144
-  %t.31450 = load i64, ptr %v.3144
-  store i64 %t.31450, ptr %v.3110
-  br label %L.402
-L.403:
-  br label %L.401
-L.400:
-  br label %L.404
-L.404:
-  %t.31510 = load i64, ptr %v.90000
-  %t.31511 = inttoptr i64 %t.31510 to ptr
-  %t.31512 = call i64 @ease_str_len(ptr %t.31511)
-  store i64 %t.31512, ptr %v.3151
-  %t.31520 = load i64, ptr %v.3110
-  %t.31521 = load i64, ptr %v.3151
-  %t.31522 = icmp slt i64 %t.31520, %t.31521
-  %t.31523 = zext i1 %t.31522 to i64
-  store i64 %t.31523, ptr %v.3152
-  %t.31550 = load i64, ptr %v.90000
-  %t.31551 = load i64, ptr %v.3110
-  %t.31559 = call i64 @lexer_lex_peek(i64 %t.31550, i64 %t.31551)
-  store i64 %t.31559, ptr %v.3155
-  %t.31570 = load i64, ptr %v.3155
-  %t.31579 = call i64 @lexer_is_digit(i64 %t.31570)
-  store i64 %t.31579, ptr %v.3157
-  %t.31580 = load i64, ptr %v.3152
-  %t.31581 = load i64, ptr %v.3157
-  %t.31582 = and i64 %t.31580, %t.31581
-  store i64 %t.31582, ptr %v.3158
-  %t.31590 = load i64, ptr %v.3158
-  %t.31591 = icmp eq i64 %t.31590, 0
-  br i1 %t.31591, label %L.405, label %L.fall.3159
-L.fall.3159:
-  store i64 1, ptr %v.3160
-  %t.31610 = load i64, ptr %v.3110
-  %t.31611 = load i64, ptr %v.3160
-  %t.31612 = add i64 %t.31610, %t.31611
-  store i64 %t.31612, ptr %v.3161
-  %t.31620 = load i64, ptr %v.3161
-  store i64 %t.31620, ptr %v.3110
-  br label %L.404
-L.405:
-  br label %L.401
-L.401:
-  %t.31660 = load i64, ptr %v.3110
-  ret i64 %t.31660
-L.398:
-  br label %L.399
-L.399:
-  %t.31709 = call i64 @token_TK_STRING()
-  store i64 %t.31709, ptr %v.3170
-  %t.31710 = load i64, ptr %v.90002
-  %t.31711 = load i64, ptr %v.3170
-  %t.31712 = icmp eq i64 %t.31710, %t.31711
-  %t.31713 = zext i1 %t.31712 to i64
-  store i64 %t.31713, ptr %v.3171
-  %t.31720 = load i64, ptr %v.3171
-  %t.31721 = icmp eq i64 %t.31720, 0
-  br i1 %t.31721, label %L.406, label %L.fall.3172
-L.fall.3172:
-  store i64 1, ptr %v.3173
-  %t.31740 = load i64, ptr %v.90001
-  %t.31741 = load i64, ptr %v.3173
-  %t.31742 = add i64 %t.31740, %t.31741
-  store i64 %t.31742, ptr %v.3174
-  %t.31750 = load i64, ptr %v.3174
-  store i64 %t.31750, ptr %v.3175
-  br label %L.408
-L.408:
-  %t.31770 = load i64, ptr %v.90000
-  %t.31771 = inttoptr i64 %t.31770 to ptr
-  %t.31772 = call i64 @ease_str_len(ptr %t.31771)
-  store i64 %t.31772, ptr %v.3177
-  %t.31780 = load i64, ptr %v.3175
-  %t.31781 = load i64, ptr %v.3177
-  %t.31782 = icmp slt i64 %t.31780, %t.31781
-  %t.31783 = zext i1 %t.31782 to i64
-  store i64 %t.31783, ptr %v.3178
-  %t.31790 = load i64, ptr %v.3178
-  %t.31791 = icmp eq i64 %t.31790, 0
-  br i1 %t.31791, label %L.409, label %L.fall.3179
-L.fall.3179:
-  %t.31820 = load i64, ptr %v.90000
-  %t.31821 = load i64, ptr %v.3175
-  %t.31829 = call i64 @lexer_lex_peek(i64 %t.31820, i64 %t.31821)
-  store i64 %t.31829, ptr %v.3182
-  %t.31830 = load i64, ptr %v.3182
-  store i64 %t.31830, ptr %v.3183
-  store i64 34, ptr %v.3184
-  %t.31850 = load i64, ptr %v.3183
-  %t.31851 = load i64, ptr %v.3184
-  %t.31852 = icmp eq i64 %t.31850, %t.31851
-  %t.31853 = zext i1 %t.31852 to i64
-  store i64 %t.31853, ptr %v.3185
-  %t.31860 = load i64, ptr %v.3185
-  %t.31861 = icmp eq i64 %t.31860, 0
-  br i1 %t.31861, label %L.410, label %L.fall.3186
-L.fall.3186:
-  store i64 1, ptr %v.3187
-  %t.31880 = load i64, ptr %v.3175
-  %t.31881 = load i64, ptr %v.3187
-  %t.31882 = add i64 %t.31880, %t.31881
-  store i64 %t.31882, ptr %v.3188
-  %t.31890 = load i64, ptr %v.3188
-  ret i64 %t.31890
-L.410:
-  br label %L.411
-L.411:
-  store i64 92, ptr %v.3193
-  %t.31940 = load i64, ptr %v.3183
-  %t.31941 = load i64, ptr %v.3193
-  %t.31942 = icmp eq i64 %t.31940, %t.31941
-  %t.31943 = zext i1 %t.31942 to i64
-  store i64 %t.31943, ptr %v.3194
-  %t.31950 = load i64, ptr %v.3194
-  %t.31951 = icmp eq i64 %t.31950, 0
-  br i1 %t.31951, label %L.412, label %L.fall.3195
-L.fall.3195:
-  store i64 2, ptr %v.3196
-  %t.31970 = load i64, ptr %v.3175
-  %t.31971 = load i64, ptr %v.3196
-  %t.31972 = add i64 %t.31970, %t.31971
-  store i64 %t.31972, ptr %v.3197
-  %t.31980 = load i64, ptr %v.3197
-  store i64 %t.31980, ptr %v.3175
-  br label %L.413
-L.412:
-  store i64 1, ptr %v.3201
-  %t.32020 = load i64, ptr %v.3175
-  %t.32021 = load i64, ptr %v.3201
-  %t.32022 = add i64 %t.32020, %t.32021
-  store i64 %t.32022, ptr %v.3202
-  %t.32030 = load i64, ptr %v.3202
-  store i64 %t.32030, ptr %v.3175
-  br label %L.413
-L.413:
-  br label %L.408
-L.409:
-  %t.32070 = load i64, ptr %v.3175
-  ret i64 %t.32070
-L.406:
-  br label %L.407
-L.407:
-  %t.32119 = call i64 @token_TK_IDENT()
-  store i64 %t.32119, ptr %v.3211
-  %t.32120 = load i64, ptr %v.90002
-  %t.32121 = load i64, ptr %v.3211
-  %t.32122 = icmp eq i64 %t.32120, %t.32121
-  %t.32123 = zext i1 %t.32122 to i64
-  store i64 %t.32123, ptr %v.3212
-  %t.32139 = call i64 @token_TK_FN()
-  store i64 %t.32139, ptr %v.3213
-  %t.32140 = load i64, ptr %v.90002
-  %t.32141 = load i64, ptr %v.3213
-  %t.32142 = icmp eq i64 %t.32140, %t.32141
-  %t.32143 = zext i1 %t.32142 to i64
-  store i64 %t.32143, ptr %v.3214
-  %t.32150 = load i64, ptr %v.3212
-  %t.32151 = load i64, ptr %v.3214
-  %t.32152 = or i64 %t.32150, %t.32151
-  store i64 %t.32152, ptr %v.3215
-  %t.32169 = call i64 @token_TK_LET()
-  store i64 %t.32169, ptr %v.3216
-  %t.32170 = load i64, ptr %v.90002
-  %t.32171 = load i64, ptr %v.3216
-  %t.32172 = icmp eq i64 %t.32170, %t.32171
-  %t.32173 = zext i1 %t.32172 to i64
-  store i64 %t.32173, ptr %v.3217
-  %t.32180 = load i64, ptr %v.3215
-  %t.32181 = load i64, ptr %v.3217
-  %t.32182 = or i64 %t.32180, %t.32181
-  store i64 %t.32182, ptr %v.3218
-  %t.32199 = call i64 @token_TK_MUT()
-  store i64 %t.32199, ptr %v.3219
-  %t.32200 = load i64, ptr %v.90002
-  %t.32201 = load i64, ptr %v.3219
-  %t.32202 = icmp eq i64 %t.32200, %t.32201
-  %t.32203 = zext i1 %t.32202 to i64
-  store i64 %t.32203, ptr %v.3220
-  %t.32210 = load i64, ptr %v.3218
-  %t.32211 = load i64, ptr %v.3220
-  %t.32212 = or i64 %t.32210, %t.32211
-  store i64 %t.32212, ptr %v.3221
-  %t.32229 = call i64 @token_TK_IF()
-  store i64 %t.32229, ptr %v.3222
-  %t.32230 = load i64, ptr %v.90002
-  %t.32231 = load i64, ptr %v.3222
-  %t.32232 = icmp eq i64 %t.32230, %t.32231
-  %t.32233 = zext i1 %t.32232 to i64
-  store i64 %t.32233, ptr %v.3223
-  %t.32240 = load i64, ptr %v.3221
-  %t.32241 = load i64, ptr %v.3223
-  %t.32242 = or i64 %t.32240, %t.32241
-  store i64 %t.32242, ptr %v.3224
-  %t.32259 = call i64 @token_TK_ELSE()
-  store i64 %t.32259, ptr %v.3225
-  %t.32260 = load i64, ptr %v.90002
-  %t.32261 = load i64, ptr %v.3225
-  %t.32262 = icmp eq i64 %t.32260, %t.32261
-  %t.32263 = zext i1 %t.32262 to i64
-  store i64 %t.32263, ptr %v.3226
-  %t.32270 = load i64, ptr %v.3224
-  %t.32271 = load i64, ptr %v.3226
-  %t.32272 = or i64 %t.32270, %t.32271
-  store i64 %t.32272, ptr %v.3227
-  %t.32289 = call i64 @token_TK_FOR()
-  store i64 %t.32289, ptr %v.3228
-  %t.32290 = load i64, ptr %v.90002
-  %t.32291 = load i64, ptr %v.3228
-  %t.32292 = icmp eq i64 %t.32290, %t.32291
-  %t.32293 = zext i1 %t.32292 to i64
-  store i64 %t.32293, ptr %v.3229
-  %t.32300 = load i64, ptr %v.3227
-  %t.32301 = load i64, ptr %v.3229
-  %t.32302 = or i64 %t.32300, %t.32301
-  store i64 %t.32302, ptr %v.3230
-  %t.32319 = call i64 @token_TK_IN()
-  store i64 %t.32319, ptr %v.3231
-  %t.32320 = load i64, ptr %v.90002
-  %t.32321 = load i64, ptr %v.3231
-  %t.32322 = icmp eq i64 %t.32320, %t.32321
-  %t.32323 = zext i1 %t.32322 to i64
-  store i64 %t.32323, ptr %v.3232
-  %t.32330 = load i64, ptr %v.3230
-  %t.32331 = load i64, ptr %v.3232
-  %t.32332 = or i64 %t.32330, %t.32331
-  store i64 %t.32332, ptr %v.3233
-  %t.32349 = call i64 @token_TK_RETURN()
-  store i64 %t.32349, ptr %v.3234
-  %t.32350 = load i64, ptr %v.90002
-  %t.32351 = load i64, ptr %v.3234
-  %t.32352 = icmp eq i64 %t.32350, %t.32351
-  %t.32353 = zext i1 %t.32352 to i64
-  store i64 %t.32353, ptr %v.3235
-  %t.32360 = load i64, ptr %v.3233
-  %t.32361 = load i64, ptr %v.3235
-  %t.32362 = or i64 %t.32360, %t.32361
-  store i64 %t.32362, ptr %v.3236
-  %t.32379 = call i64 @token_TK_BREAK()
-  store i64 %t.32379, ptr %v.3237
-  %t.32380 = load i64, ptr %v.90002
-  %t.32381 = load i64, ptr %v.3237
-  %t.32382 = icmp eq i64 %t.32380, %t.32381
-  %t.32383 = zext i1 %t.32382 to i64
-  store i64 %t.32383, ptr %v.3238
-  %t.32390 = load i64, ptr %v.3236
-  %t.32391 = load i64, ptr %v.3238
-  %t.32392 = or i64 %t.32390, %t.32391
-  store i64 %t.32392, ptr %v.3239
-  %t.32409 = call i64 @token_TK_STRUCT()
-  store i64 %t.32409, ptr %v.3240
-  %t.32410 = load i64, ptr %v.90002
-  %t.32411 = load i64, ptr %v.3240
-  %t.32412 = icmp eq i64 %t.32410, %t.32411
-  %t.32413 = zext i1 %t.32412 to i64
-  store i64 %t.32413, ptr %v.3241
-  %t.32420 = load i64, ptr %v.3239
-  %t.32421 = load i64, ptr %v.3241
-  %t.32422 = or i64 %t.32420, %t.32421
-  store i64 %t.32422, ptr %v.3242
-  %t.32439 = call i64 @token_TK_TRUE()
-  store i64 %t.32439, ptr %v.3243
-  %t.32440 = load i64, ptr %v.90002
-  %t.32441 = load i64, ptr %v.3243
-  %t.32442 = icmp eq i64 %t.32440, %t.32441
-  %t.32443 = zext i1 %t.32442 to i64
-  store i64 %t.32443, ptr %v.3244
-  %t.32450 = load i64, ptr %v.3242
-  %t.32451 = load i64, ptr %v.3244
-  %t.32452 = or i64 %t.32450, %t.32451
-  store i64 %t.32452, ptr %v.3245
-  %t.32469 = call i64 @token_TK_FALSE()
-  store i64 %t.32469, ptr %v.3246
-  %t.32470 = load i64, ptr %v.90002
-  %t.32471 = load i64, ptr %v.3246
-  %t.32472 = icmp eq i64 %t.32470, %t.32471
-  %t.32473 = zext i1 %t.32472 to i64
-  store i64 %t.32473, ptr %v.3247
-  %t.32480 = load i64, ptr %v.3245
-  %t.32481 = load i64, ptr %v.3247
-  %t.32482 = or i64 %t.32480, %t.32481
-  store i64 %t.32482, ptr %v.3248
-  %t.32499 = call i64 @token_TK_IMPORT()
-  store i64 %t.32499, ptr %v.3249
-  %t.32500 = load i64, ptr %v.90002
-  %t.32501 = load i64, ptr %v.3249
-  %t.32502 = icmp eq i64 %t.32500, %t.32501
-  %t.32503 = zext i1 %t.32502 to i64
-  store i64 %t.32503, ptr %v.3250
-  %t.32510 = load i64, ptr %v.3248
-  %t.32511 = load i64, ptr %v.3250
-  %t.32512 = or i64 %t.32510, %t.32511
-  store i64 %t.32512, ptr %v.3251
-  %t.32529 = call i64 @token_TK_PACKAGE()
-  store i64 %t.32529, ptr %v.3252
-  %t.32530 = load i64, ptr %v.90002
-  %t.32531 = load i64, ptr %v.3252
-  %t.32532 = icmp eq i64 %t.32530, %t.32531
-  %t.32533 = zext i1 %t.32532 to i64
-  store i64 %t.32533, ptr %v.3253
-  %t.32540 = load i64, ptr %v.3251
-  %t.32541 = load i64, ptr %v.3253
-  %t.32542 = or i64 %t.32540, %t.32541
-  store i64 %t.32542, ptr %v.3254
-  %t.32550 = load i64, ptr %v.3254
-  %t.32551 = icmp eq i64 %t.32550, 0
-  br i1 %t.32551, label %L.414, label %L.fall.3255
-L.fall.3255:
-  %t.32560 = load i64, ptr %v.90001
-  store i64 %t.32560, ptr %v.3256
-  br label %L.416
-L.416:
-  %t.32580 = load i64, ptr %v.90000
-  %t.32581 = inttoptr i64 %t.32580 to ptr
-  %t.32582 = call i64 @ease_str_len(ptr %t.32581)
-  store i64 %t.32582, ptr %v.3258
-  %t.32590 = load i64, ptr %v.3256
-  %t.32591 = load i64, ptr %v.3258
-  %t.32592 = icmp slt i64 %t.32590, %t.32591
-  %t.32593 = zext i1 %t.32592 to i64
-  store i64 %t.32593, ptr %v.3259
-  %t.32620 = load i64, ptr %v.90000
-  %t.32621 = load i64, ptr %v.3256
-  %t.32629 = call i64 @lexer_lex_peek(i64 %t.32620, i64 %t.32621)
-  store i64 %t.32629, ptr %v.3262
-  %t.32640 = load i64, ptr %v.3262
-  %t.32649 = call i64 @lexer_is_alpha(i64 %t.32640)
-  store i64 %t.32649, ptr %v.3264
-  %t.32670 = load i64, ptr %v.90000
-  %t.32671 = load i64, ptr %v.3256
-  %t.32679 = call i64 @lexer_lex_peek(i64 %t.32670, i64 %t.32671)
-  store i64 %t.32679, ptr %v.3267
-  %t.32690 = load i64, ptr %v.3267
-  %t.32699 = call i64 @lexer_is_digit(i64 %t.32690)
-  store i64 %t.32699, ptr %v.3269
-  %t.32700 = load i64, ptr %v.3264
-  %t.32701 = load i64, ptr %v.3269
-  %t.32702 = or i64 %t.32700, %t.32701
-  store i64 %t.32702, ptr %v.3270
-  %t.32710 = load i64, ptr %v.3259
-  %t.32711 = load i64, ptr %v.3270
-  %t.32712 = and i64 %t.32710, %t.32711
-  store i64 %t.32712, ptr %v.3271
-  %t.32720 = load i64, ptr %v.3271
-  %t.32721 = icmp eq i64 %t.32720, 0
-  br i1 %t.32721, label %L.417, label %L.fall.3272
-L.fall.3272:
-  store i64 1, ptr %v.3273
-  %t.32740 = load i64, ptr %v.3256
-  %t.32741 = load i64, ptr %v.3273
-  %t.32742 = add i64 %t.32740, %t.32741
-  store i64 %t.32742, ptr %v.3274
-  %t.32750 = load i64, ptr %v.3274
-  store i64 %t.32750, ptr %v.3256
-  br label %L.416
-L.417:
-  %t.32780 = load i64, ptr %v.3256
-  ret i64 %t.32780
-L.414:
-  br label %L.415
-L.415:
-  %t.32829 = call i64 @token_TK_ARROW()
-  store i64 %t.32829, ptr %v.3282
-  %t.32830 = load i64, ptr %v.90002
-  %t.32831 = load i64, ptr %v.3282
-  %t.32832 = icmp eq i64 %t.32830, %t.32831
-  %t.32833 = zext i1 %t.32832 to i64
-  store i64 %t.32833, ptr %v.3283
-  %t.32849 = call i64 @token_TK_LE()
-  store i64 %t.32849, ptr %v.3284
-  %t.32850 = load i64, ptr %v.90002
-  %t.32851 = load i64, ptr %v.3284
-  %t.32852 = icmp eq i64 %t.32850, %t.32851
-  %t.32853 = zext i1 %t.32852 to i64
-  store i64 %t.32853, ptr %v.3285
-  %t.32860 = load i64, ptr %v.3283
-  %t.32861 = load i64, ptr %v.3285
-  %t.32862 = or i64 %t.32860, %t.32861
-  store i64 %t.32862, ptr %v.3286
-  %t.32879 = call i64 @token_TK_GE()
-  store i64 %t.32879, ptr %v.3287
-  %t.32880 = load i64, ptr %v.90002
-  %t.32881 = load i64, ptr %v.3287
-  %t.32882 = icmp eq i64 %t.32880, %t.32881
-  %t.32883 = zext i1 %t.32882 to i64
-  store i64 %t.32883, ptr %v.3288
-  %t.32890 = load i64, ptr %v.3286
-  %t.32891 = load i64, ptr %v.3288
-  %t.32892 = or i64 %t.32890, %t.32891
-  store i64 %t.32892, ptr %v.3289
-  %t.32909 = call i64 @token_TK_EQ()
-  store i64 %t.32909, ptr %v.3290
-  %t.32910 = load i64, ptr %v.90002
-  %t.32911 = load i64, ptr %v.3290
-  %t.32912 = icmp eq i64 %t.32910, %t.32911
-  %t.32913 = zext i1 %t.32912 to i64
-  store i64 %t.32913, ptr %v.3291
-  %t.32920 = load i64, ptr %v.3289
-  %t.32921 = load i64, ptr %v.3291
-  %t.32922 = or i64 %t.32920, %t.32921
-  store i64 %t.32922, ptr %v.3292
-  %t.32939 = call i64 @token_TK_NE()
-  store i64 %t.32939, ptr %v.3293
-  %t.32940 = load i64, ptr %v.90002
-  %t.32941 = load i64, ptr %v.3293
-  %t.32942 = icmp eq i64 %t.32940, %t.32941
-  %t.32943 = zext i1 %t.32942 to i64
-  store i64 %t.32943, ptr %v.3294
-  %t.32950 = load i64, ptr %v.3292
-  %t.32951 = load i64, ptr %v.3294
-  %t.32952 = or i64 %t.32950, %t.32951
-  store i64 %t.32952, ptr %v.3295
-  %t.32969 = call i64 @token_TK_AND()
-  store i64 %t.32969, ptr %v.3296
-  %t.32970 = load i64, ptr %v.90002
-  %t.32971 = load i64, ptr %v.3296
-  %t.32972 = icmp eq i64 %t.32970, %t.32971
-  %t.32973 = zext i1 %t.32972 to i64
-  store i64 %t.32973, ptr %v.3297
-  %t.32980 = load i64, ptr %v.3295
-  %t.32981 = load i64, ptr %v.3297
-  %t.32982 = or i64 %t.32980, %t.32981
-  store i64 %t.32982, ptr %v.3298
-  %t.32999 = call i64 @token_TK_OR()
-  store i64 %t.32999, ptr %v.3299
-  %t.33000 = load i64, ptr %v.90002
-  %t.33001 = load i64, ptr %v.3299
-  %t.33002 = icmp eq i64 %t.33000, %t.33001
-  %t.33003 = zext i1 %t.33002 to i64
-  store i64 %t.33003, ptr %v.3300
-  %t.33010 = load i64, ptr %v.3298
-  %t.33011 = load i64, ptr %v.3300
-  %t.33012 = or i64 %t.33010, %t.33011
-  store i64 %t.33012, ptr %v.3301
-  %t.33029 = call i64 @token_TK_DOTDOT()
-  store i64 %t.33029, ptr %v.3302
-  %t.33030 = load i64, ptr %v.90002
-  %t.33031 = load i64, ptr %v.3302
-  %t.33032 = icmp eq i64 %t.33030, %t.33031
-  %t.33033 = zext i1 %t.33032 to i64
-  store i64 %t.33033, ptr %v.3303
-  %t.33040 = load i64, ptr %v.3301
-  %t.33041 = load i64, ptr %v.3303
-  %t.33042 = or i64 %t.33040, %t.33041
-  store i64 %t.33042, ptr %v.3304
-  %t.33050 = load i64, ptr %v.3304
-  %t.33051 = icmp eq i64 %t.33050, 0
-  br i1 %t.33051, label %L.418, label %L.fall.3305
-L.fall.3305:
-  store i64 2, ptr %v.3306
-  %t.33070 = load i64, ptr %v.90001
-  %t.33071 = load i64, ptr %v.3306
-  %t.33072 = add i64 %t.33070, %t.33071
-  store i64 %t.33072, ptr %v.3307
-  %t.33080 = load i64, ptr %v.3307
-  ret i64 %t.33080
-L.418:
-  br label %L.419
-L.419:
-  store i64 1, ptr %v.3312
-  %t.33130 = load i64, ptr %v.90001
-  %t.33131 = load i64, ptr %v.3312
-  %t.33132 = add i64 %t.33130, %t.33131
-  store i64 %t.33132, ptr %v.3313
-  %t.33140 = load i64, ptr %v.3313
-  ret i64 %t.33140
-}
-
-define i64 @lexer_lex_string_value(i64 %param.0, i64 %param.1, i64 %param.2) {
-  %v.90000 = alloca i64
-  %v.90001 = alloca i64
-  %v.90002 = alloca i64
-  %v.3316 = alloca i64
+  %v.3315 = alloca i64
   %v.3317 = alloca i64
-  %v.3318 = alloca i64
-  %v.3319 = alloca i64
   %v.3320 = alloca i64
-  %v.3321 = alloca i64
   %v.3322 = alloca i64
   %v.3323 = alloca i64
   %v.3324 = alloca i64
-  %v.3325 = alloca i64
   %v.3326 = alloca i64
   %v.3327 = alloca i64
-  %v.3328 = alloca i64
-  %v.3329 = alloca i64
-  %v.3330 = alloca i64
-  %v.3331 = alloca i64
-  %v.3332 = alloca i64
-  %v.3333 = alloca i64
-  %v.3334 = alloca i64
   %v.3335 = alloca i64
   %v.3336 = alloca i64
   %v.3337 = alloca i64
@@ -11365,18 +10489,972 @@ define i64 @lexer_lex_string_value(i64 %param.0, i64 %param.1, i64 %param.2) {
   %v.3357 = alloca i64
   %v.3358 = alloca i64
   %v.3359 = alloca i64
-  %v.3364 = alloca i64
-  %v.3365 = alloca i64
+  %v.3360 = alloca i64
+  %v.3362 = alloca i64
+  %v.3363 = alloca i64
+  %v.3368 = alloca i64
   %v.3369 = alloca i64
-  %v.0 = alloca i64
+  store i64 %param.0, ptr %v.90000
+  store i64 %param.1, ptr %v.90001
+  store i64 %param.2, ptr %v.90002
+  br label %B.body
+B.body:
+  %t.30549 = call i64 @token_TK_EOF()
+  store i64 %t.30549, ptr %v.3054
+  %t.30550 = load i64, ptr %v.90002
+  %t.30551 = load i64, ptr %v.3054
+  %t.30552 = icmp eq i64 %t.30550, %t.30551
+  %t.30553 = zext i1 %t.30552 to i64
+  store i64 %t.30553, ptr %v.3055
+  %t.30560 = load i64, ptr %v.3055
+  %t.30561 = icmp eq i64 %t.30560, 0
+  br i1 %t.30561, label %L.396, label %L.fall.3056
+L.fall.3056:
+  %t.30570 = load i64, ptr %v.90001
+  ret i64 %t.30570
+L.396:
+  br label %L.397
+L.397:
+  %t.30619 = call i64 @token_TK_ARROW()
+  store i64 %t.30619, ptr %v.3061
+  %t.30620 = load i64, ptr %v.90002
+  %t.30621 = load i64, ptr %v.3061
+  %t.30622 = icmp eq i64 %t.30620, %t.30621
+  %t.30623 = zext i1 %t.30622 to i64
+  store i64 %t.30623, ptr %v.3062
+  %t.30639 = call i64 @token_TK_LE()
+  store i64 %t.30639, ptr %v.3063
+  %t.30640 = load i64, ptr %v.90002
+  %t.30641 = load i64, ptr %v.3063
+  %t.30642 = icmp eq i64 %t.30640, %t.30641
+  %t.30643 = zext i1 %t.30642 to i64
+  store i64 %t.30643, ptr %v.3064
+  %t.30650 = load i64, ptr %v.3062
+  %t.30651 = load i64, ptr %v.3064
+  %t.30652 = or i64 %t.30650, %t.30651
+  store i64 %t.30652, ptr %v.3065
+  %t.30669 = call i64 @token_TK_GE()
+  store i64 %t.30669, ptr %v.3066
+  %t.30670 = load i64, ptr %v.90002
+  %t.30671 = load i64, ptr %v.3066
+  %t.30672 = icmp eq i64 %t.30670, %t.30671
+  %t.30673 = zext i1 %t.30672 to i64
+  store i64 %t.30673, ptr %v.3067
+  %t.30680 = load i64, ptr %v.3065
+  %t.30681 = load i64, ptr %v.3067
+  %t.30682 = or i64 %t.30680, %t.30681
+  store i64 %t.30682, ptr %v.3068
+  %t.30699 = call i64 @token_TK_EQ()
+  store i64 %t.30699, ptr %v.3069
+  %t.30700 = load i64, ptr %v.90002
+  %t.30701 = load i64, ptr %v.3069
+  %t.30702 = icmp eq i64 %t.30700, %t.30701
+  %t.30703 = zext i1 %t.30702 to i64
+  store i64 %t.30703, ptr %v.3070
+  %t.30710 = load i64, ptr %v.3068
+  %t.30711 = load i64, ptr %v.3070
+  %t.30712 = or i64 %t.30710, %t.30711
+  store i64 %t.30712, ptr %v.3071
+  %t.30729 = call i64 @token_TK_NE()
+  store i64 %t.30729, ptr %v.3072
+  %t.30730 = load i64, ptr %v.90002
+  %t.30731 = load i64, ptr %v.3072
+  %t.30732 = icmp eq i64 %t.30730, %t.30731
+  %t.30733 = zext i1 %t.30732 to i64
+  store i64 %t.30733, ptr %v.3073
+  %t.30740 = load i64, ptr %v.3071
+  %t.30741 = load i64, ptr %v.3073
+  %t.30742 = or i64 %t.30740, %t.30741
+  store i64 %t.30742, ptr %v.3074
+  %t.30759 = call i64 @token_TK_AND()
+  store i64 %t.30759, ptr %v.3075
+  %t.30760 = load i64, ptr %v.90002
+  %t.30761 = load i64, ptr %v.3075
+  %t.30762 = icmp eq i64 %t.30760, %t.30761
+  %t.30763 = zext i1 %t.30762 to i64
+  store i64 %t.30763, ptr %v.3076
+  %t.30770 = load i64, ptr %v.3074
+  %t.30771 = load i64, ptr %v.3076
+  %t.30772 = or i64 %t.30770, %t.30771
+  store i64 %t.30772, ptr %v.3077
+  %t.30789 = call i64 @token_TK_OR()
+  store i64 %t.30789, ptr %v.3078
+  %t.30790 = load i64, ptr %v.90002
+  %t.30791 = load i64, ptr %v.3078
+  %t.30792 = icmp eq i64 %t.30790, %t.30791
+  %t.30793 = zext i1 %t.30792 to i64
+  store i64 %t.30793, ptr %v.3079
+  %t.30800 = load i64, ptr %v.3077
+  %t.30801 = load i64, ptr %v.3079
+  %t.30802 = or i64 %t.30800, %t.30801
+  store i64 %t.30802, ptr %v.3080
+  %t.30819 = call i64 @token_TK_DOTDOT()
+  store i64 %t.30819, ptr %v.3081
+  %t.30820 = load i64, ptr %v.90002
+  %t.30821 = load i64, ptr %v.3081
+  %t.30822 = icmp eq i64 %t.30820, %t.30821
+  %t.30823 = zext i1 %t.30822 to i64
+  store i64 %t.30823, ptr %v.3082
+  %t.30830 = load i64, ptr %v.3080
+  %t.30831 = load i64, ptr %v.3082
+  %t.30832 = or i64 %t.30830, %t.30831
+  store i64 %t.30832, ptr %v.3083
+  %t.30849 = call i64 @token_TK_COLONEQUAL()
+  store i64 %t.30849, ptr %v.3084
+  %t.30850 = load i64, ptr %v.90002
+  %t.30851 = load i64, ptr %v.3084
+  %t.30852 = icmp eq i64 %t.30850, %t.30851
+  %t.30853 = zext i1 %t.30852 to i64
+  store i64 %t.30853, ptr %v.3085
+  %t.30860 = load i64, ptr %v.3083
+  %t.30861 = load i64, ptr %v.3085
+  %t.30862 = or i64 %t.30860, %t.30861
+  store i64 %t.30862, ptr %v.3086
+  %t.30870 = load i64, ptr %v.3086
+  %t.30871 = icmp eq i64 %t.30870, 0
+  br i1 %t.30871, label %L.398, label %L.fall.3087
+L.fall.3087:
+  store i64 2, ptr %v.3088
+  %t.30890 = load i64, ptr %v.90001
+  %t.30891 = load i64, ptr %v.3088
+  %t.30892 = add i64 %t.30890, %t.30891
+  store i64 %t.30892, ptr %v.3089
+  %t.30900 = load i64, ptr %v.3089
+  ret i64 %t.30900
+L.398:
+  br label %L.399
+L.399:
+  %t.30949 = call i64 @token_TK_LPAREN()
+  store i64 %t.30949, ptr %v.3094
+  %t.30950 = load i64, ptr %v.90002
+  %t.30951 = load i64, ptr %v.3094
+  %t.30952 = icmp eq i64 %t.30950, %t.30951
+  %t.30953 = zext i1 %t.30952 to i64
+  store i64 %t.30953, ptr %v.3095
+  %t.30969 = call i64 @token_TK_RPAREN()
+  store i64 %t.30969, ptr %v.3096
+  %t.30970 = load i64, ptr %v.90002
+  %t.30971 = load i64, ptr %v.3096
+  %t.30972 = icmp eq i64 %t.30970, %t.30971
+  %t.30973 = zext i1 %t.30972 to i64
+  store i64 %t.30973, ptr %v.3097
+  %t.30980 = load i64, ptr %v.3095
+  %t.30981 = load i64, ptr %v.3097
+  %t.30982 = or i64 %t.30980, %t.30981
+  store i64 %t.30982, ptr %v.3098
+  %t.30999 = call i64 @token_TK_LBRACE()
+  store i64 %t.30999, ptr %v.3099
+  %t.31000 = load i64, ptr %v.90002
+  %t.31001 = load i64, ptr %v.3099
+  %t.31002 = icmp eq i64 %t.31000, %t.31001
+  %t.31003 = zext i1 %t.31002 to i64
+  store i64 %t.31003, ptr %v.3100
+  %t.31010 = load i64, ptr %v.3098
+  %t.31011 = load i64, ptr %v.3100
+  %t.31012 = or i64 %t.31010, %t.31011
+  store i64 %t.31012, ptr %v.3101
+  %t.31029 = call i64 @token_TK_RBRACE()
+  store i64 %t.31029, ptr %v.3102
+  %t.31030 = load i64, ptr %v.90002
+  %t.31031 = load i64, ptr %v.3102
+  %t.31032 = icmp eq i64 %t.31030, %t.31031
+  %t.31033 = zext i1 %t.31032 to i64
+  store i64 %t.31033, ptr %v.3103
+  %t.31040 = load i64, ptr %v.3101
+  %t.31041 = load i64, ptr %v.3103
+  %t.31042 = or i64 %t.31040, %t.31041
+  store i64 %t.31042, ptr %v.3104
+  %t.31059 = call i64 @token_TK_LBRACKET()
+  store i64 %t.31059, ptr %v.3105
+  %t.31060 = load i64, ptr %v.90002
+  %t.31061 = load i64, ptr %v.3105
+  %t.31062 = icmp eq i64 %t.31060, %t.31061
+  %t.31063 = zext i1 %t.31062 to i64
+  store i64 %t.31063, ptr %v.3106
+  %t.31070 = load i64, ptr %v.3104
+  %t.31071 = load i64, ptr %v.3106
+  %t.31072 = or i64 %t.31070, %t.31071
+  store i64 %t.31072, ptr %v.3107
+  %t.31089 = call i64 @token_TK_RBRACKET()
+  store i64 %t.31089, ptr %v.3108
+  %t.31090 = load i64, ptr %v.90002
+  %t.31091 = load i64, ptr %v.3108
+  %t.31092 = icmp eq i64 %t.31090, %t.31091
+  %t.31093 = zext i1 %t.31092 to i64
+  store i64 %t.31093, ptr %v.3109
+  %t.31100 = load i64, ptr %v.3107
+  %t.31101 = load i64, ptr %v.3109
+  %t.31102 = or i64 %t.31100, %t.31101
+  store i64 %t.31102, ptr %v.3110
+  %t.31119 = call i64 @token_TK_COMMA()
+  store i64 %t.31119, ptr %v.3111
+  %t.31120 = load i64, ptr %v.90002
+  %t.31121 = load i64, ptr %v.3111
+  %t.31122 = icmp eq i64 %t.31120, %t.31121
+  %t.31123 = zext i1 %t.31122 to i64
+  store i64 %t.31123, ptr %v.3112
+  %t.31130 = load i64, ptr %v.3110
+  %t.31131 = load i64, ptr %v.3112
+  %t.31132 = or i64 %t.31130, %t.31131
+  store i64 %t.31132, ptr %v.3113
+  %t.31149 = call i64 @token_TK_COLON()
+  store i64 %t.31149, ptr %v.3114
+  %t.31150 = load i64, ptr %v.90002
+  %t.31151 = load i64, ptr %v.3114
+  %t.31152 = icmp eq i64 %t.31150, %t.31151
+  %t.31153 = zext i1 %t.31152 to i64
+  store i64 %t.31153, ptr %v.3115
+  %t.31160 = load i64, ptr %v.3113
+  %t.31161 = load i64, ptr %v.3115
+  %t.31162 = or i64 %t.31160, %t.31161
+  store i64 %t.31162, ptr %v.3116
+  %t.31179 = call i64 @token_TK_SEMI()
+  store i64 %t.31179, ptr %v.3117
+  %t.31180 = load i64, ptr %v.90002
+  %t.31181 = load i64, ptr %v.3117
+  %t.31182 = icmp eq i64 %t.31180, %t.31181
+  %t.31183 = zext i1 %t.31182 to i64
+  store i64 %t.31183, ptr %v.3118
+  %t.31190 = load i64, ptr %v.3116
+  %t.31191 = load i64, ptr %v.3118
+  %t.31192 = or i64 %t.31190, %t.31191
+  store i64 %t.31192, ptr %v.3119
+  %t.31209 = call i64 @token_TK_DOT()
+  store i64 %t.31209, ptr %v.3120
+  %t.31210 = load i64, ptr %v.90002
+  %t.31211 = load i64, ptr %v.3120
+  %t.31212 = icmp eq i64 %t.31210, %t.31211
+  %t.31213 = zext i1 %t.31212 to i64
+  store i64 %t.31213, ptr %v.3121
+  %t.31220 = load i64, ptr %v.3119
+  %t.31221 = load i64, ptr %v.3121
+  %t.31222 = or i64 %t.31220, %t.31221
+  store i64 %t.31222, ptr %v.3122
+  %t.31239 = call i64 @token_TK_PLUS()
+  store i64 %t.31239, ptr %v.3123
+  %t.31240 = load i64, ptr %v.90002
+  %t.31241 = load i64, ptr %v.3123
+  %t.31242 = icmp eq i64 %t.31240, %t.31241
+  %t.31243 = zext i1 %t.31242 to i64
+  store i64 %t.31243, ptr %v.3124
+  %t.31250 = load i64, ptr %v.3122
+  %t.31251 = load i64, ptr %v.3124
+  %t.31252 = or i64 %t.31250, %t.31251
+  store i64 %t.31252, ptr %v.3125
+  %t.31269 = call i64 @token_TK_MINUS()
+  store i64 %t.31269, ptr %v.3126
+  %t.31270 = load i64, ptr %v.90002
+  %t.31271 = load i64, ptr %v.3126
+  %t.31272 = icmp eq i64 %t.31270, %t.31271
+  %t.31273 = zext i1 %t.31272 to i64
+  store i64 %t.31273, ptr %v.3127
+  %t.31280 = load i64, ptr %v.3125
+  %t.31281 = load i64, ptr %v.3127
+  %t.31282 = or i64 %t.31280, %t.31281
+  store i64 %t.31282, ptr %v.3128
+  %t.31299 = call i64 @token_TK_STAR()
+  store i64 %t.31299, ptr %v.3129
+  %t.31300 = load i64, ptr %v.90002
+  %t.31301 = load i64, ptr %v.3129
+  %t.31302 = icmp eq i64 %t.31300, %t.31301
+  %t.31303 = zext i1 %t.31302 to i64
+  store i64 %t.31303, ptr %v.3130
+  %t.31310 = load i64, ptr %v.3128
+  %t.31311 = load i64, ptr %v.3130
+  %t.31312 = or i64 %t.31310, %t.31311
+  store i64 %t.31312, ptr %v.3131
+  %t.31329 = call i64 @token_TK_SLASH()
+  store i64 %t.31329, ptr %v.3132
+  %t.31330 = load i64, ptr %v.90002
+  %t.31331 = load i64, ptr %v.3132
+  %t.31332 = icmp eq i64 %t.31330, %t.31331
+  %t.31333 = zext i1 %t.31332 to i64
+  store i64 %t.31333, ptr %v.3133
+  %t.31340 = load i64, ptr %v.3131
+  %t.31341 = load i64, ptr %v.3133
+  %t.31342 = or i64 %t.31340, %t.31341
+  store i64 %t.31342, ptr %v.3134
+  %t.31359 = call i64 @token_TK_PERCENT()
+  store i64 %t.31359, ptr %v.3135
+  %t.31360 = load i64, ptr %v.90002
+  %t.31361 = load i64, ptr %v.3135
+  %t.31362 = icmp eq i64 %t.31360, %t.31361
+  %t.31363 = zext i1 %t.31362 to i64
+  store i64 %t.31363, ptr %v.3136
+  %t.31370 = load i64, ptr %v.3134
+  %t.31371 = load i64, ptr %v.3136
+  %t.31372 = or i64 %t.31370, %t.31371
+  store i64 %t.31372, ptr %v.3137
+  %t.31389 = call i64 @token_TK_CARET()
+  store i64 %t.31389, ptr %v.3138
+  %t.31390 = load i64, ptr %v.90002
+  %t.31391 = load i64, ptr %v.3138
+  %t.31392 = icmp eq i64 %t.31390, %t.31391
+  %t.31393 = zext i1 %t.31392 to i64
+  store i64 %t.31393, ptr %v.3139
+  %t.31400 = load i64, ptr %v.3137
+  %t.31401 = load i64, ptr %v.3139
+  %t.31402 = or i64 %t.31400, %t.31401
+  store i64 %t.31402, ptr %v.3140
+  %t.31419 = call i64 @token_TK_AMPERSAND()
+  store i64 %t.31419, ptr %v.3141
+  %t.31420 = load i64, ptr %v.90002
+  %t.31421 = load i64, ptr %v.3141
+  %t.31422 = icmp eq i64 %t.31420, %t.31421
+  %t.31423 = zext i1 %t.31422 to i64
+  store i64 %t.31423, ptr %v.3142
+  %t.31430 = load i64, ptr %v.3140
+  %t.31431 = load i64, ptr %v.3142
+  %t.31432 = or i64 %t.31430, %t.31431
+  store i64 %t.31432, ptr %v.3143
+  %t.31449 = call i64 @token_TK_PIPE()
+  store i64 %t.31449, ptr %v.3144
+  %t.31450 = load i64, ptr %v.90002
+  %t.31451 = load i64, ptr %v.3144
+  %t.31452 = icmp eq i64 %t.31450, %t.31451
+  %t.31453 = zext i1 %t.31452 to i64
+  store i64 %t.31453, ptr %v.3145
+  %t.31460 = load i64, ptr %v.3143
+  %t.31461 = load i64, ptr %v.3145
+  %t.31462 = or i64 %t.31460, %t.31461
+  store i64 %t.31462, ptr %v.3146
+  %t.31479 = call i64 @token_TK_LT()
+  store i64 %t.31479, ptr %v.3147
+  %t.31480 = load i64, ptr %v.90002
+  %t.31481 = load i64, ptr %v.3147
+  %t.31482 = icmp eq i64 %t.31480, %t.31481
+  %t.31483 = zext i1 %t.31482 to i64
+  store i64 %t.31483, ptr %v.3148
+  %t.31490 = load i64, ptr %v.3146
+  %t.31491 = load i64, ptr %v.3148
+  %t.31492 = or i64 %t.31490, %t.31491
+  store i64 %t.31492, ptr %v.3149
+  %t.31509 = call i64 @token_TK_GT()
+  store i64 %t.31509, ptr %v.3150
+  %t.31510 = load i64, ptr %v.90002
+  %t.31511 = load i64, ptr %v.3150
+  %t.31512 = icmp eq i64 %t.31510, %t.31511
+  %t.31513 = zext i1 %t.31512 to i64
+  store i64 %t.31513, ptr %v.3151
+  %t.31520 = load i64, ptr %v.3149
+  %t.31521 = load i64, ptr %v.3151
+  %t.31522 = or i64 %t.31520, %t.31521
+  store i64 %t.31522, ptr %v.3152
+  %t.31539 = call i64 @token_TK_ASSIGN()
+  store i64 %t.31539, ptr %v.3153
+  %t.31540 = load i64, ptr %v.90002
+  %t.31541 = load i64, ptr %v.3153
+  %t.31542 = icmp eq i64 %t.31540, %t.31541
+  %t.31543 = zext i1 %t.31542 to i64
+  store i64 %t.31543, ptr %v.3154
+  %t.31550 = load i64, ptr %v.3152
+  %t.31551 = load i64, ptr %v.3154
+  %t.31552 = or i64 %t.31550, %t.31551
+  store i64 %t.31552, ptr %v.3155
+  %t.31569 = call i64 @token_TK_NOT()
+  store i64 %t.31569, ptr %v.3156
+  %t.31570 = load i64, ptr %v.90002
+  %t.31571 = load i64, ptr %v.3156
+  %t.31572 = icmp eq i64 %t.31570, %t.31571
+  %t.31573 = zext i1 %t.31572 to i64
+  store i64 %t.31573, ptr %v.3157
+  %t.31580 = load i64, ptr %v.3155
+  %t.31581 = load i64, ptr %v.3157
+  %t.31582 = or i64 %t.31580, %t.31581
+  store i64 %t.31582, ptr %v.3158
+  %t.31590 = load i64, ptr %v.3158
+  %t.31591 = icmp eq i64 %t.31590, 0
+  br i1 %t.31591, label %L.400, label %L.fall.3159
+L.fall.3159:
+  store i64 1, ptr %v.3160
+  %t.31610 = load i64, ptr %v.90001
+  %t.31611 = load i64, ptr %v.3160
+  %t.31612 = add i64 %t.31610, %t.31611
+  store i64 %t.31612, ptr %v.3161
+  %t.31620 = load i64, ptr %v.3161
+  ret i64 %t.31620
+L.400:
+  br label %L.401
+L.401:
+  %t.31669 = call i64 @token_TK_INT()
+  store i64 %t.31669, ptr %v.3166
+  %t.31670 = load i64, ptr %v.90002
+  %t.31671 = load i64, ptr %v.3166
+  %t.31672 = icmp eq i64 %t.31670, %t.31671
+  %t.31673 = zext i1 %t.31672 to i64
+  store i64 %t.31673, ptr %v.3167
+  %t.31680 = load i64, ptr %v.3167
+  %t.31681 = icmp eq i64 %t.31680, 0
+  br i1 %t.31681, label %L.402, label %L.fall.3168
+L.fall.3168:
+  %t.31690 = load i64, ptr %v.90001
+  store i64 %t.31690, ptr %v.3169
+  store i64 1, ptr %v.3170
+  %t.31710 = load i64, ptr %v.3169
+  %t.31711 = load i64, ptr %v.3170
+  %t.31712 = add i64 %t.31710, %t.31711
+  store i64 %t.31712, ptr %v.3171
+  %t.31720 = load i64, ptr %v.90000
+  %t.31721 = inttoptr i64 %t.31720 to ptr
+  %t.31722 = call i64 @ease_str_len(ptr %t.31721)
+  store i64 %t.31722, ptr %v.3172
+  %t.31730 = load i64, ptr %v.3171
+  %t.31731 = load i64, ptr %v.3172
+  %t.31732 = icmp slt i64 %t.31730, %t.31731
+  %t.31733 = zext i1 %t.31732 to i64
+  store i64 %t.31733, ptr %v.3173
+  %t.31760 = load i64, ptr %v.90000
+  %t.31761 = load i64, ptr %v.3169
+  %t.31769 = call i64 @lexer_lex_peek(i64 %t.31760, i64 %t.31761)
+  store i64 %t.31769, ptr %v.3176
+  store i64 48, ptr %v.3177
+  %t.31780 = load i64, ptr %v.3176
+  %t.31781 = load i64, ptr %v.3177
+  %t.31782 = icmp eq i64 %t.31780, %t.31781
+  %t.31783 = zext i1 %t.31782 to i64
+  store i64 %t.31783, ptr %v.3178
+  %t.31790 = load i64, ptr %v.3173
+  %t.31791 = load i64, ptr %v.3178
+  %t.31792 = and i64 %t.31790, %t.31791
+  store i64 %t.31792, ptr %v.3179
+  store i64 1, ptr %v.3180
+  %t.31810 = load i64, ptr %v.3169
+  %t.31811 = load i64, ptr %v.3180
+  %t.31812 = add i64 %t.31810, %t.31811
+  store i64 %t.31812, ptr %v.3181
+  %t.31840 = load i64, ptr %v.90000
+  %t.31841 = load i64, ptr %v.3181
+  %t.31849 = call i64 @lexer_lex_peek(i64 %t.31840, i64 %t.31841)
+  store i64 %t.31849, ptr %v.3184
+  store i64 120, ptr %v.3185
+  %t.31860 = load i64, ptr %v.3184
+  %t.31861 = load i64, ptr %v.3185
+  %t.31862 = icmp eq i64 %t.31860, %t.31861
+  %t.31863 = zext i1 %t.31862 to i64
+  store i64 %t.31863, ptr %v.3186
+  %t.31870 = load i64, ptr %v.3179
+  %t.31871 = load i64, ptr %v.3186
+  %t.31872 = and i64 %t.31870, %t.31871
+  store i64 %t.31872, ptr %v.3187
+  %t.31880 = load i64, ptr %v.3187
+  %t.31881 = icmp eq i64 %t.31880, 0
+  br i1 %t.31881, label %L.404, label %L.fall.3188
+L.fall.3188:
+  store i64 2, ptr %v.3189
+  %t.31900 = load i64, ptr %v.3169
+  %t.31901 = load i64, ptr %v.3189
+  %t.31902 = add i64 %t.31900, %t.31901
+  store i64 %t.31902, ptr %v.3190
+  %t.31910 = load i64, ptr %v.3190
+  store i64 %t.31910, ptr %v.3169
+  br label %L.406
+L.406:
+  %t.31930 = load i64, ptr %v.90000
+  %t.31931 = inttoptr i64 %t.31930 to ptr
+  %t.31932 = call i64 @ease_str_len(ptr %t.31931)
+  store i64 %t.31932, ptr %v.3193
+  %t.31940 = load i64, ptr %v.3169
+  %t.31941 = load i64, ptr %v.3193
+  %t.31942 = icmp slt i64 %t.31940, %t.31941
+  %t.31943 = zext i1 %t.31942 to i64
+  store i64 %t.31943, ptr %v.3194
+  %t.31970 = load i64, ptr %v.90000
+  %t.31971 = load i64, ptr %v.3169
+  %t.31979 = call i64 @lexer_lex_peek(i64 %t.31970, i64 %t.31971)
+  store i64 %t.31979, ptr %v.3197
+  %t.31990 = load i64, ptr %v.3197
+  %t.31999 = call i64 @lexer_is_hex_digit(i64 %t.31990)
+  store i64 %t.31999, ptr %v.3199
+  %t.32000 = load i64, ptr %v.3194
+  %t.32001 = load i64, ptr %v.3199
+  %t.32002 = and i64 %t.32000, %t.32001
+  store i64 %t.32002, ptr %v.3200
+  %t.32010 = load i64, ptr %v.3200
+  %t.32011 = icmp eq i64 %t.32010, 0
+  br i1 %t.32011, label %L.407, label %L.fall.3201
+L.fall.3201:
+  store i64 1, ptr %v.3202
+  %t.32030 = load i64, ptr %v.3169
+  %t.32031 = load i64, ptr %v.3202
+  %t.32032 = add i64 %t.32030, %t.32031
+  store i64 %t.32032, ptr %v.3203
+  %t.32040 = load i64, ptr %v.3203
+  store i64 %t.32040, ptr %v.3169
+  br label %L.406
+L.407:
+  br label %L.405
+L.404:
+  br label %L.408
+L.408:
+  %t.32100 = load i64, ptr %v.90000
+  %t.32101 = inttoptr i64 %t.32100 to ptr
+  %t.32102 = call i64 @ease_str_len(ptr %t.32101)
+  store i64 %t.32102, ptr %v.3210
+  %t.32110 = load i64, ptr %v.3169
+  %t.32111 = load i64, ptr %v.3210
+  %t.32112 = icmp slt i64 %t.32110, %t.32111
+  %t.32113 = zext i1 %t.32112 to i64
+  store i64 %t.32113, ptr %v.3211
+  %t.32140 = load i64, ptr %v.90000
+  %t.32141 = load i64, ptr %v.3169
+  %t.32149 = call i64 @lexer_lex_peek(i64 %t.32140, i64 %t.32141)
+  store i64 %t.32149, ptr %v.3214
+  %t.32160 = load i64, ptr %v.3214
+  %t.32169 = call i64 @lexer_is_digit(i64 %t.32160)
+  store i64 %t.32169, ptr %v.3216
+  %t.32170 = load i64, ptr %v.3211
+  %t.32171 = load i64, ptr %v.3216
+  %t.32172 = and i64 %t.32170, %t.32171
+  store i64 %t.32172, ptr %v.3217
+  %t.32180 = load i64, ptr %v.3217
+  %t.32181 = icmp eq i64 %t.32180, 0
+  br i1 %t.32181, label %L.409, label %L.fall.3218
+L.fall.3218:
+  store i64 1, ptr %v.3219
+  %t.32200 = load i64, ptr %v.3169
+  %t.32201 = load i64, ptr %v.3219
+  %t.32202 = add i64 %t.32200, %t.32201
+  store i64 %t.32202, ptr %v.3220
+  %t.32210 = load i64, ptr %v.3220
+  store i64 %t.32210, ptr %v.3169
+  br label %L.408
+L.409:
+  br label %L.405
+L.405:
+  %t.32250 = load i64, ptr %v.3169
+  ret i64 %t.32250
+L.402:
+  br label %L.403
+L.403:
+  %t.32299 = call i64 @token_TK_STRING()
+  store i64 %t.32299, ptr %v.3229
+  %t.32300 = load i64, ptr %v.90002
+  %t.32301 = load i64, ptr %v.3229
+  %t.32302 = icmp eq i64 %t.32300, %t.32301
+  %t.32303 = zext i1 %t.32302 to i64
+  store i64 %t.32303, ptr %v.3230
+  %t.32310 = load i64, ptr %v.3230
+  %t.32311 = icmp eq i64 %t.32310, 0
+  br i1 %t.32311, label %L.410, label %L.fall.3231
+L.fall.3231:
+  store i64 1, ptr %v.3232
+  %t.32330 = load i64, ptr %v.90001
+  %t.32331 = load i64, ptr %v.3232
+  %t.32332 = add i64 %t.32330, %t.32331
+  store i64 %t.32332, ptr %v.3233
+  %t.32340 = load i64, ptr %v.3233
+  store i64 %t.32340, ptr %v.3234
+  br label %L.412
+L.412:
+  %t.32360 = load i64, ptr %v.90000
+  %t.32361 = inttoptr i64 %t.32360 to ptr
+  %t.32362 = call i64 @ease_str_len(ptr %t.32361)
+  store i64 %t.32362, ptr %v.3236
+  %t.32370 = load i64, ptr %v.3234
+  %t.32371 = load i64, ptr %v.3236
+  %t.32372 = icmp slt i64 %t.32370, %t.32371
+  %t.32373 = zext i1 %t.32372 to i64
+  store i64 %t.32373, ptr %v.3237
+  %t.32380 = load i64, ptr %v.3237
+  %t.32381 = icmp eq i64 %t.32380, 0
+  br i1 %t.32381, label %L.413, label %L.fall.3238
+L.fall.3238:
+  %t.32410 = load i64, ptr %v.90000
+  %t.32411 = load i64, ptr %v.3234
+  %t.32419 = call i64 @lexer_lex_peek(i64 %t.32410, i64 %t.32411)
+  store i64 %t.32419, ptr %v.3241
+  %t.32420 = load i64, ptr %v.3241
+  store i64 %t.32420, ptr %v.3242
+  store i64 34, ptr %v.3243
+  %t.32440 = load i64, ptr %v.3242
+  %t.32441 = load i64, ptr %v.3243
+  %t.32442 = icmp eq i64 %t.32440, %t.32441
+  %t.32443 = zext i1 %t.32442 to i64
+  store i64 %t.32443, ptr %v.3244
+  %t.32450 = load i64, ptr %v.3244
+  %t.32451 = icmp eq i64 %t.32450, 0
+  br i1 %t.32451, label %L.414, label %L.fall.3245
+L.fall.3245:
+  store i64 1, ptr %v.3246
+  %t.32470 = load i64, ptr %v.3234
+  %t.32471 = load i64, ptr %v.3246
+  %t.32472 = add i64 %t.32470, %t.32471
+  store i64 %t.32472, ptr %v.3247
+  %t.32480 = load i64, ptr %v.3247
+  ret i64 %t.32480
+L.414:
+  br label %L.415
+L.415:
+  store i64 92, ptr %v.3252
+  %t.32530 = load i64, ptr %v.3242
+  %t.32531 = load i64, ptr %v.3252
+  %t.32532 = icmp eq i64 %t.32530, %t.32531
+  %t.32533 = zext i1 %t.32532 to i64
+  store i64 %t.32533, ptr %v.3253
+  %t.32540 = load i64, ptr %v.3253
+  %t.32541 = icmp eq i64 %t.32540, 0
+  br i1 %t.32541, label %L.416, label %L.fall.3254
+L.fall.3254:
+  store i64 2, ptr %v.3255
+  %t.32560 = load i64, ptr %v.3234
+  %t.32561 = load i64, ptr %v.3255
+  %t.32562 = add i64 %t.32560, %t.32561
+  store i64 %t.32562, ptr %v.3256
+  %t.32570 = load i64, ptr %v.3256
+  store i64 %t.32570, ptr %v.3234
+  br label %L.417
+L.416:
+  store i64 1, ptr %v.3260
+  %t.32610 = load i64, ptr %v.3234
+  %t.32611 = load i64, ptr %v.3260
+  %t.32612 = add i64 %t.32610, %t.32611
+  store i64 %t.32612, ptr %v.3261
+  %t.32620 = load i64, ptr %v.3261
+  store i64 %t.32620, ptr %v.3234
+  br label %L.417
+L.417:
+  br label %L.412
+L.413:
+  %t.32660 = load i64, ptr %v.3234
+  ret i64 %t.32660
+L.410:
+  br label %L.411
+L.411:
+  %t.32709 = call i64 @token_TK_IDENT()
+  store i64 %t.32709, ptr %v.3270
+  %t.32710 = load i64, ptr %v.90002
+  %t.32711 = load i64, ptr %v.3270
+  %t.32712 = icmp eq i64 %t.32710, %t.32711
+  %t.32713 = zext i1 %t.32712 to i64
+  store i64 %t.32713, ptr %v.3271
+  %t.32729 = call i64 @token_TK_FN()
+  store i64 %t.32729, ptr %v.3272
+  %t.32730 = load i64, ptr %v.90002
+  %t.32731 = load i64, ptr %v.3272
+  %t.32732 = icmp eq i64 %t.32730, %t.32731
+  %t.32733 = zext i1 %t.32732 to i64
+  store i64 %t.32733, ptr %v.3273
+  %t.32740 = load i64, ptr %v.3271
+  %t.32741 = load i64, ptr %v.3273
+  %t.32742 = or i64 %t.32740, %t.32741
+  store i64 %t.32742, ptr %v.3274
+  %t.32759 = call i64 @token_TK_IF()
+  store i64 %t.32759, ptr %v.3275
+  %t.32760 = load i64, ptr %v.90002
+  %t.32761 = load i64, ptr %v.3275
+  %t.32762 = icmp eq i64 %t.32760, %t.32761
+  %t.32763 = zext i1 %t.32762 to i64
+  store i64 %t.32763, ptr %v.3276
+  %t.32770 = load i64, ptr %v.3274
+  %t.32771 = load i64, ptr %v.3276
+  %t.32772 = or i64 %t.32770, %t.32771
+  store i64 %t.32772, ptr %v.3277
+  %t.32789 = call i64 @token_TK_ELSE()
+  store i64 %t.32789, ptr %v.3278
+  %t.32790 = load i64, ptr %v.90002
+  %t.32791 = load i64, ptr %v.3278
+  %t.32792 = icmp eq i64 %t.32790, %t.32791
+  %t.32793 = zext i1 %t.32792 to i64
+  store i64 %t.32793, ptr %v.3279
+  %t.32800 = load i64, ptr %v.3277
+  %t.32801 = load i64, ptr %v.3279
+  %t.32802 = or i64 %t.32800, %t.32801
+  store i64 %t.32802, ptr %v.3280
+  %t.32819 = call i64 @token_TK_FOR()
+  store i64 %t.32819, ptr %v.3281
+  %t.32820 = load i64, ptr %v.90002
+  %t.32821 = load i64, ptr %v.3281
+  %t.32822 = icmp eq i64 %t.32820, %t.32821
+  %t.32823 = zext i1 %t.32822 to i64
+  store i64 %t.32823, ptr %v.3282
+  %t.32830 = load i64, ptr %v.3280
+  %t.32831 = load i64, ptr %v.3282
+  %t.32832 = or i64 %t.32830, %t.32831
+  store i64 %t.32832, ptr %v.3283
+  %t.32849 = call i64 @token_TK_IN()
+  store i64 %t.32849, ptr %v.3284
+  %t.32850 = load i64, ptr %v.90002
+  %t.32851 = load i64, ptr %v.3284
+  %t.32852 = icmp eq i64 %t.32850, %t.32851
+  %t.32853 = zext i1 %t.32852 to i64
+  store i64 %t.32853, ptr %v.3285
+  %t.32860 = load i64, ptr %v.3283
+  %t.32861 = load i64, ptr %v.3285
+  %t.32862 = or i64 %t.32860, %t.32861
+  store i64 %t.32862, ptr %v.3286
+  %t.32879 = call i64 @token_TK_RETURN()
+  store i64 %t.32879, ptr %v.3287
+  %t.32880 = load i64, ptr %v.90002
+  %t.32881 = load i64, ptr %v.3287
+  %t.32882 = icmp eq i64 %t.32880, %t.32881
+  %t.32883 = zext i1 %t.32882 to i64
+  store i64 %t.32883, ptr %v.3288
+  %t.32890 = load i64, ptr %v.3286
+  %t.32891 = load i64, ptr %v.3288
+  %t.32892 = or i64 %t.32890, %t.32891
+  store i64 %t.32892, ptr %v.3289
+  %t.32909 = call i64 @token_TK_BREAK()
+  store i64 %t.32909, ptr %v.3290
+  %t.32910 = load i64, ptr %v.90002
+  %t.32911 = load i64, ptr %v.3290
+  %t.32912 = icmp eq i64 %t.32910, %t.32911
+  %t.32913 = zext i1 %t.32912 to i64
+  store i64 %t.32913, ptr %v.3291
+  %t.32920 = load i64, ptr %v.3289
+  %t.32921 = load i64, ptr %v.3291
+  %t.32922 = or i64 %t.32920, %t.32921
+  store i64 %t.32922, ptr %v.3292
+  %t.32939 = call i64 @token_TK_STRUCT()
+  store i64 %t.32939, ptr %v.3293
+  %t.32940 = load i64, ptr %v.90002
+  %t.32941 = load i64, ptr %v.3293
+  %t.32942 = icmp eq i64 %t.32940, %t.32941
+  %t.32943 = zext i1 %t.32942 to i64
+  store i64 %t.32943, ptr %v.3294
+  %t.32950 = load i64, ptr %v.3292
+  %t.32951 = load i64, ptr %v.3294
+  %t.32952 = or i64 %t.32950, %t.32951
+  store i64 %t.32952, ptr %v.3295
+  %t.32969 = call i64 @token_TK_TRUE()
+  store i64 %t.32969, ptr %v.3296
+  %t.32970 = load i64, ptr %v.90002
+  %t.32971 = load i64, ptr %v.3296
+  %t.32972 = icmp eq i64 %t.32970, %t.32971
+  %t.32973 = zext i1 %t.32972 to i64
+  store i64 %t.32973, ptr %v.3297
+  %t.32980 = load i64, ptr %v.3295
+  %t.32981 = load i64, ptr %v.3297
+  %t.32982 = or i64 %t.32980, %t.32981
+  store i64 %t.32982, ptr %v.3298
+  %t.32999 = call i64 @token_TK_FALSE()
+  store i64 %t.32999, ptr %v.3299
+  %t.33000 = load i64, ptr %v.90002
+  %t.33001 = load i64, ptr %v.3299
+  %t.33002 = icmp eq i64 %t.33000, %t.33001
+  %t.33003 = zext i1 %t.33002 to i64
+  store i64 %t.33003, ptr %v.3300
+  %t.33010 = load i64, ptr %v.3298
+  %t.33011 = load i64, ptr %v.3300
+  %t.33012 = or i64 %t.33010, %t.33011
+  store i64 %t.33012, ptr %v.3301
+  %t.33029 = call i64 @token_TK_IMPORT()
+  store i64 %t.33029, ptr %v.3302
+  %t.33030 = load i64, ptr %v.90002
+  %t.33031 = load i64, ptr %v.3302
+  %t.33032 = icmp eq i64 %t.33030, %t.33031
+  %t.33033 = zext i1 %t.33032 to i64
+  store i64 %t.33033, ptr %v.3303
+  %t.33040 = load i64, ptr %v.3301
+  %t.33041 = load i64, ptr %v.3303
+  %t.33042 = or i64 %t.33040, %t.33041
+  store i64 %t.33042, ptr %v.3304
+  %t.33059 = call i64 @token_TK_PACKAGE()
+  store i64 %t.33059, ptr %v.3305
+  %t.33060 = load i64, ptr %v.90002
+  %t.33061 = load i64, ptr %v.3305
+  %t.33062 = icmp eq i64 %t.33060, %t.33061
+  %t.33063 = zext i1 %t.33062 to i64
+  store i64 %t.33063, ptr %v.3306
+  %t.33070 = load i64, ptr %v.3304
+  %t.33071 = load i64, ptr %v.3306
+  %t.33072 = or i64 %t.33070, %t.33071
+  store i64 %t.33072, ptr %v.3307
+  %t.33080 = load i64, ptr %v.3307
+  %t.33081 = icmp eq i64 %t.33080, 0
+  br i1 %t.33081, label %L.418, label %L.fall.3308
+L.fall.3308:
+  %t.33090 = load i64, ptr %v.90001
+  store i64 %t.33090, ptr %v.3309
+  br label %L.420
+L.420:
+  %t.33110 = load i64, ptr %v.90000
+  %t.33111 = inttoptr i64 %t.33110 to ptr
+  %t.33112 = call i64 @ease_str_len(ptr %t.33111)
+  store i64 %t.33112, ptr %v.3311
+  %t.33120 = load i64, ptr %v.3309
+  %t.33121 = load i64, ptr %v.3311
+  %t.33122 = icmp slt i64 %t.33120, %t.33121
+  %t.33123 = zext i1 %t.33122 to i64
+  store i64 %t.33123, ptr %v.3312
+  %t.33150 = load i64, ptr %v.90000
+  %t.33151 = load i64, ptr %v.3309
+  %t.33159 = call i64 @lexer_lex_peek(i64 %t.33150, i64 %t.33151)
+  store i64 %t.33159, ptr %v.3315
+  %t.33170 = load i64, ptr %v.3315
+  %t.33179 = call i64 @lexer_is_alpha(i64 %t.33170)
+  store i64 %t.33179, ptr %v.3317
+  %t.33200 = load i64, ptr %v.90000
+  %t.33201 = load i64, ptr %v.3309
+  %t.33209 = call i64 @lexer_lex_peek(i64 %t.33200, i64 %t.33201)
+  store i64 %t.33209, ptr %v.3320
+  %t.33220 = load i64, ptr %v.3320
+  %t.33229 = call i64 @lexer_is_digit(i64 %t.33220)
+  store i64 %t.33229, ptr %v.3322
+  %t.33230 = load i64, ptr %v.3317
+  %t.33231 = load i64, ptr %v.3322
+  %t.33232 = or i64 %t.33230, %t.33231
+  store i64 %t.33232, ptr %v.3323
+  %t.33240 = load i64, ptr %v.3312
+  %t.33241 = load i64, ptr %v.3323
+  %t.33242 = and i64 %t.33240, %t.33241
+  store i64 %t.33242, ptr %v.3324
+  %t.33250 = load i64, ptr %v.3324
+  %t.33251 = icmp eq i64 %t.33250, 0
+  br i1 %t.33251, label %L.421, label %L.fall.3325
+L.fall.3325:
+  store i64 1, ptr %v.3326
+  %t.33270 = load i64, ptr %v.3309
+  %t.33271 = load i64, ptr %v.3326
+  %t.33272 = add i64 %t.33270, %t.33271
+  store i64 %t.33272, ptr %v.3327
+  %t.33280 = load i64, ptr %v.3327
+  store i64 %t.33280, ptr %v.3309
+  br label %L.420
+L.421:
+  %t.33310 = load i64, ptr %v.3309
+  ret i64 %t.33310
+L.418:
+  br label %L.419
+L.419:
+  %t.33359 = call i64 @token_TK_ARROW()
+  store i64 %t.33359, ptr %v.3335
+  %t.33360 = load i64, ptr %v.90002
+  %t.33361 = load i64, ptr %v.3335
+  %t.33362 = icmp eq i64 %t.33360, %t.33361
+  %t.33363 = zext i1 %t.33362 to i64
+  store i64 %t.33363, ptr %v.3336
+  %t.33379 = call i64 @token_TK_LE()
+  store i64 %t.33379, ptr %v.3337
+  %t.33380 = load i64, ptr %v.90002
+  %t.33381 = load i64, ptr %v.3337
+  %t.33382 = icmp eq i64 %t.33380, %t.33381
+  %t.33383 = zext i1 %t.33382 to i64
+  store i64 %t.33383, ptr %v.3338
+  %t.33390 = load i64, ptr %v.3336
+  %t.33391 = load i64, ptr %v.3338
+  %t.33392 = or i64 %t.33390, %t.33391
+  store i64 %t.33392, ptr %v.3339
+  %t.33409 = call i64 @token_TK_GE()
+  store i64 %t.33409, ptr %v.3340
+  %t.33410 = load i64, ptr %v.90002
+  %t.33411 = load i64, ptr %v.3340
+  %t.33412 = icmp eq i64 %t.33410, %t.33411
+  %t.33413 = zext i1 %t.33412 to i64
+  store i64 %t.33413, ptr %v.3341
+  %t.33420 = load i64, ptr %v.3339
+  %t.33421 = load i64, ptr %v.3341
+  %t.33422 = or i64 %t.33420, %t.33421
+  store i64 %t.33422, ptr %v.3342
+  %t.33439 = call i64 @token_TK_EQ()
+  store i64 %t.33439, ptr %v.3343
+  %t.33440 = load i64, ptr %v.90002
+  %t.33441 = load i64, ptr %v.3343
+  %t.33442 = icmp eq i64 %t.33440, %t.33441
+  %t.33443 = zext i1 %t.33442 to i64
+  store i64 %t.33443, ptr %v.3344
+  %t.33450 = load i64, ptr %v.3342
+  %t.33451 = load i64, ptr %v.3344
+  %t.33452 = or i64 %t.33450, %t.33451
+  store i64 %t.33452, ptr %v.3345
+  %t.33469 = call i64 @token_TK_NE()
+  store i64 %t.33469, ptr %v.3346
+  %t.33470 = load i64, ptr %v.90002
+  %t.33471 = load i64, ptr %v.3346
+  %t.33472 = icmp eq i64 %t.33470, %t.33471
+  %t.33473 = zext i1 %t.33472 to i64
+  store i64 %t.33473, ptr %v.3347
+  %t.33480 = load i64, ptr %v.3345
+  %t.33481 = load i64, ptr %v.3347
+  %t.33482 = or i64 %t.33480, %t.33481
+  store i64 %t.33482, ptr %v.3348
+  %t.33499 = call i64 @token_TK_AND()
+  store i64 %t.33499, ptr %v.3349
+  %t.33500 = load i64, ptr %v.90002
+  %t.33501 = load i64, ptr %v.3349
+  %t.33502 = icmp eq i64 %t.33500, %t.33501
+  %t.33503 = zext i1 %t.33502 to i64
+  store i64 %t.33503, ptr %v.3350
+  %t.33510 = load i64, ptr %v.3348
+  %t.33511 = load i64, ptr %v.3350
+  %t.33512 = or i64 %t.33510, %t.33511
+  store i64 %t.33512, ptr %v.3351
+  %t.33529 = call i64 @token_TK_OR()
+  store i64 %t.33529, ptr %v.3352
+  %t.33530 = load i64, ptr %v.90002
+  %t.33531 = load i64, ptr %v.3352
+  %t.33532 = icmp eq i64 %t.33530, %t.33531
+  %t.33533 = zext i1 %t.33532 to i64
+  store i64 %t.33533, ptr %v.3353
+  %t.33540 = load i64, ptr %v.3351
+  %t.33541 = load i64, ptr %v.3353
+  %t.33542 = or i64 %t.33540, %t.33541
+  store i64 %t.33542, ptr %v.3354
+  %t.33559 = call i64 @token_TK_DOTDOT()
+  store i64 %t.33559, ptr %v.3355
+  %t.33560 = load i64, ptr %v.90002
+  %t.33561 = load i64, ptr %v.3355
+  %t.33562 = icmp eq i64 %t.33560, %t.33561
+  %t.33563 = zext i1 %t.33562 to i64
+  store i64 %t.33563, ptr %v.3356
+  %t.33570 = load i64, ptr %v.3354
+  %t.33571 = load i64, ptr %v.3356
+  %t.33572 = or i64 %t.33570, %t.33571
+  store i64 %t.33572, ptr %v.3357
+  %t.33589 = call i64 @token_TK_COLONEQUAL()
+  store i64 %t.33589, ptr %v.3358
+  %t.33590 = load i64, ptr %v.90002
+  %t.33591 = load i64, ptr %v.3358
+  %t.33592 = icmp eq i64 %t.33590, %t.33591
+  %t.33593 = zext i1 %t.33592 to i64
+  store i64 %t.33593, ptr %v.3359
+  %t.33600 = load i64, ptr %v.3357
+  %t.33601 = load i64, ptr %v.3359
+  %t.33602 = or i64 %t.33600, %t.33601
+  store i64 %t.33602, ptr %v.3360
+  %t.33610 = load i64, ptr %v.3360
+  %t.33611 = icmp eq i64 %t.33610, 0
+  br i1 %t.33611, label %L.422, label %L.fall.3361
+L.fall.3361:
+  store i64 2, ptr %v.3362
+  %t.33630 = load i64, ptr %v.90001
+  %t.33631 = load i64, ptr %v.3362
+  %t.33632 = add i64 %t.33630, %t.33631
+  store i64 %t.33632, ptr %v.3363
+  %t.33640 = load i64, ptr %v.3363
+  ret i64 %t.33640
+L.422:
+  br label %L.423
+L.423:
+  store i64 1, ptr %v.3368
+  %t.33690 = load i64, ptr %v.90001
+  %t.33691 = load i64, ptr %v.3368
+  %t.33692 = add i64 %t.33690, %t.33691
+  store i64 %t.33692, ptr %v.3369
+  %t.33700 = load i64, ptr %v.3369
+  ret i64 %t.33700
+}
+
+define i64 @lexer_lex_string_value(i64 %param.0, i64 %param.1, i64 %param.2) {
+  %v.90000 = alloca i64
+  %v.90001 = alloca i64
+  %v.90002 = alloca i64
+  %v.3372 = alloca i64
+  %v.3373 = alloca i64
   %v.3374 = alloca i64
   %v.3375 = alloca i64
+  %v.3376 = alloca i64
+  %v.3377 = alloca i64
+  %v.3378 = alloca i64
+  %v.3379 = alloca i64
   %v.3380 = alloca i64
   %v.3381 = alloca i64
   %v.3382 = alloca i64
   %v.3383 = alloca i64
   %v.3384 = alloca i64
   %v.3385 = alloca i64
+  %v.3386 = alloca i64
+  %v.3387 = alloca i64
+  %v.3388 = alloca i64
   %v.3389 = alloca i64
   %v.3390 = alloca i64
   %v.3391 = alloca i64
@@ -11385,7 +11463,9 @@ define i64 @lexer_lex_string_value(i64 %param.0, i64 %param.1, i64 %param.2) {
   %v.3394 = alloca i64
   %v.3395 = alloca i64
   %v.3396 = alloca i64
+  %v.3397 = alloca i64
   %v.3398 = alloca i64
+  %v.3399 = alloca i64
   %v.3400 = alloca i64
   %v.3401 = alloca i64
   %v.3402 = alloca i64
@@ -11394,1498 +11474,1507 @@ define i64 @lexer_lex_string_value(i64 %param.0, i64 %param.1, i64 %param.2) {
   %v.3405 = alloca i64
   %v.3406 = alloca i64
   %v.3407 = alloca i64
+  %v.3408 = alloca i64
   %v.3409 = alloca i64
-  %v.3410 = alloca i64
-  %v.3411 = alloca i64
-  %v.3412 = alloca i64
-  %v.3413 = alloca i64
   %v.3414 = alloca i64
-  %v.3416 = alloca i64
-  %v.3417 = alloca i64
-  %v.3422 = alloca i64
-  %v.3423 = alloca i64
+  %v.3415 = alloca i64
+  %v.3419 = alloca i64
+  %v.0 = alloca i64
+  %v.3424 = alloca i64
   %v.3425 = alloca i64
-  %v.3426 = alloca i64
+  %v.3430 = alloca i64
   %v.3431 = alloca i64
   %v.3432 = alloca i64
+  %v.3433 = alloca i64
   %v.3434 = alloca i64
   %v.3435 = alloca i64
+  %v.3439 = alloca i64
   %v.3440 = alloca i64
   %v.3441 = alloca i64
+  %v.3442 = alloca i64
   %v.3443 = alloca i64
   %v.3444 = alloca i64
-  %v.3449 = alloca i64
+  %v.3445 = alloca i64
+  %v.3446 = alloca i64
+  %v.3448 = alloca i64
   %v.3450 = alloca i64
+  %v.3451 = alloca i64
+  %v.3452 = alloca i64
+  %v.3453 = alloca i64
+  %v.3454 = alloca i64
   %v.3455 = alloca i64
   %v.3456 = alloca i64
+  %v.3457 = alloca i64
+  %v.3459 = alloca i64
   %v.3460 = alloca i64
   %v.3461 = alloca i64
-  %v.3465 = alloca i64
+  %v.3462 = alloca i64
+  %v.3463 = alloca i64
+  %v.3464 = alloca i64
   %v.3466 = alloca i64
-  %v.3468 = alloca i64
-  %v.3469 = alloca i64
-  %v.3478 = alloca i64
+  %v.3467 = alloca i64
+  %v.3472 = alloca i64
+  %v.3473 = alloca i64
+  %v.3475 = alloca i64
+  %v.3476 = alloca i64
+  %v.3481 = alloca i64
+  %v.3482 = alloca i64
+  %v.3484 = alloca i64
+  %v.3485 = alloca i64
+  %v.3490 = alloca i64
+  %v.3491 = alloca i64
+  %v.3493 = alloca i64
+  %v.3494 = alloca i64
+  %v.3499 = alloca i64
+  %v.3500 = alloca i64
+  %v.3505 = alloca i64
+  %v.3506 = alloca i64
+  %v.3510 = alloca i64
+  %v.3511 = alloca i64
+  %v.3515 = alloca i64
+  %v.3516 = alloca i64
+  %v.3518 = alloca i64
+  %v.3519 = alloca i64
+  %v.3528 = alloca i64
   store i64 %param.0, ptr %v.90000
   store i64 %param.1, ptr %v.90001
   store i64 %param.2, ptr %v.90002
   br label %B.body
 B.body:
-  %t.33169 = call i64 @token_TK_IDENT()
-  store i64 %t.33169, ptr %v.3316
-  %t.33170 = load i64, ptr %v.90002
-  %t.33171 = load i64, ptr %v.3316
-  %t.33172 = icmp eq i64 %t.33170, %t.33171
-  %t.33173 = zext i1 %t.33172 to i64
-  store i64 %t.33173, ptr %v.3317
-  %t.33189 = call i64 @token_TK_FN()
-  store i64 %t.33189, ptr %v.3318
-  %t.33190 = load i64, ptr %v.90002
-  %t.33191 = load i64, ptr %v.3318
-  %t.33192 = icmp eq i64 %t.33190, %t.33191
-  %t.33193 = zext i1 %t.33192 to i64
-  store i64 %t.33193, ptr %v.3319
-  %t.33200 = load i64, ptr %v.3317
-  %t.33201 = load i64, ptr %v.3319
-  %t.33202 = or i64 %t.33200, %t.33201
-  store i64 %t.33202, ptr %v.3320
-  %t.33219 = call i64 @token_TK_LET()
-  store i64 %t.33219, ptr %v.3321
-  %t.33220 = load i64, ptr %v.90002
-  %t.33221 = load i64, ptr %v.3321
-  %t.33222 = icmp eq i64 %t.33220, %t.33221
-  %t.33223 = zext i1 %t.33222 to i64
-  store i64 %t.33223, ptr %v.3322
-  %t.33230 = load i64, ptr %v.3320
-  %t.33231 = load i64, ptr %v.3322
-  %t.33232 = or i64 %t.33230, %t.33231
-  store i64 %t.33232, ptr %v.3323
-  %t.33249 = call i64 @token_TK_MUT()
-  store i64 %t.33249, ptr %v.3324
-  %t.33250 = load i64, ptr %v.90002
-  %t.33251 = load i64, ptr %v.3324
-  %t.33252 = icmp eq i64 %t.33250, %t.33251
-  %t.33253 = zext i1 %t.33252 to i64
-  store i64 %t.33253, ptr %v.3325
-  %t.33260 = load i64, ptr %v.3323
-  %t.33261 = load i64, ptr %v.3325
-  %t.33262 = or i64 %t.33260, %t.33261
-  store i64 %t.33262, ptr %v.3326
-  %t.33279 = call i64 @token_TK_IF()
-  store i64 %t.33279, ptr %v.3327
-  %t.33280 = load i64, ptr %v.90002
-  %t.33281 = load i64, ptr %v.3327
-  %t.33282 = icmp eq i64 %t.33280, %t.33281
-  %t.33283 = zext i1 %t.33282 to i64
-  store i64 %t.33283, ptr %v.3328
-  %t.33290 = load i64, ptr %v.3326
-  %t.33291 = load i64, ptr %v.3328
-  %t.33292 = or i64 %t.33290, %t.33291
-  store i64 %t.33292, ptr %v.3329
-  %t.33309 = call i64 @token_TK_ELSE()
-  store i64 %t.33309, ptr %v.3330
-  %t.33310 = load i64, ptr %v.90002
-  %t.33311 = load i64, ptr %v.3330
-  %t.33312 = icmp eq i64 %t.33310, %t.33311
-  %t.33313 = zext i1 %t.33312 to i64
-  store i64 %t.33313, ptr %v.3331
-  %t.33320 = load i64, ptr %v.3329
-  %t.33321 = load i64, ptr %v.3331
-  %t.33322 = or i64 %t.33320, %t.33321
-  store i64 %t.33322, ptr %v.3332
-  %t.33339 = call i64 @token_TK_FOR()
-  store i64 %t.33339, ptr %v.3333
-  %t.33340 = load i64, ptr %v.90002
-  %t.33341 = load i64, ptr %v.3333
-  %t.33342 = icmp eq i64 %t.33340, %t.33341
-  %t.33343 = zext i1 %t.33342 to i64
-  store i64 %t.33343, ptr %v.3334
-  %t.33350 = load i64, ptr %v.3332
-  %t.33351 = load i64, ptr %v.3334
-  %t.33352 = or i64 %t.33350, %t.33351
-  store i64 %t.33352, ptr %v.3335
-  %t.33369 = call i64 @token_TK_IN()
-  store i64 %t.33369, ptr %v.3336
-  %t.33370 = load i64, ptr %v.90002
-  %t.33371 = load i64, ptr %v.3336
-  %t.33372 = icmp eq i64 %t.33370, %t.33371
-  %t.33373 = zext i1 %t.33372 to i64
-  store i64 %t.33373, ptr %v.3337
-  %t.33380 = load i64, ptr %v.3335
-  %t.33381 = load i64, ptr %v.3337
-  %t.33382 = or i64 %t.33380, %t.33381
-  store i64 %t.33382, ptr %v.3338
-  %t.33399 = call i64 @token_TK_RETURN()
-  store i64 %t.33399, ptr %v.3339
-  %t.33400 = load i64, ptr %v.90002
-  %t.33401 = load i64, ptr %v.3339
-  %t.33402 = icmp eq i64 %t.33400, %t.33401
-  %t.33403 = zext i1 %t.33402 to i64
-  store i64 %t.33403, ptr %v.3340
-  %t.33410 = load i64, ptr %v.3338
-  %t.33411 = load i64, ptr %v.3340
-  %t.33412 = or i64 %t.33410, %t.33411
-  store i64 %t.33412, ptr %v.3341
-  %t.33429 = call i64 @token_TK_BREAK()
-  store i64 %t.33429, ptr %v.3342
-  %t.33430 = load i64, ptr %v.90002
-  %t.33431 = load i64, ptr %v.3342
-  %t.33432 = icmp eq i64 %t.33430, %t.33431
-  %t.33433 = zext i1 %t.33432 to i64
-  store i64 %t.33433, ptr %v.3343
-  %t.33440 = load i64, ptr %v.3341
-  %t.33441 = load i64, ptr %v.3343
-  %t.33442 = or i64 %t.33440, %t.33441
-  store i64 %t.33442, ptr %v.3344
-  %t.33459 = call i64 @token_TK_STRUCT()
-  store i64 %t.33459, ptr %v.3345
-  %t.33460 = load i64, ptr %v.90002
-  %t.33461 = load i64, ptr %v.3345
-  %t.33462 = icmp eq i64 %t.33460, %t.33461
-  %t.33463 = zext i1 %t.33462 to i64
-  store i64 %t.33463, ptr %v.3346
-  %t.33470 = load i64, ptr %v.3344
-  %t.33471 = load i64, ptr %v.3346
-  %t.33472 = or i64 %t.33470, %t.33471
-  store i64 %t.33472, ptr %v.3347
-  %t.33489 = call i64 @token_TK_TRUE()
-  store i64 %t.33489, ptr %v.3348
-  %t.33490 = load i64, ptr %v.90002
-  %t.33491 = load i64, ptr %v.3348
-  %t.33492 = icmp eq i64 %t.33490, %t.33491
-  %t.33493 = zext i1 %t.33492 to i64
-  store i64 %t.33493, ptr %v.3349
-  %t.33500 = load i64, ptr %v.3347
-  %t.33501 = load i64, ptr %v.3349
-  %t.33502 = or i64 %t.33500, %t.33501
-  store i64 %t.33502, ptr %v.3350
-  %t.33519 = call i64 @token_TK_FALSE()
-  store i64 %t.33519, ptr %v.3351
-  %t.33520 = load i64, ptr %v.90002
-  %t.33521 = load i64, ptr %v.3351
-  %t.33522 = icmp eq i64 %t.33520, %t.33521
-  %t.33523 = zext i1 %t.33522 to i64
-  store i64 %t.33523, ptr %v.3352
-  %t.33530 = load i64, ptr %v.3350
-  %t.33531 = load i64, ptr %v.3352
-  %t.33532 = or i64 %t.33530, %t.33531
-  store i64 %t.33532, ptr %v.3353
-  %t.33549 = call i64 @token_TK_IMPORT()
-  store i64 %t.33549, ptr %v.3354
-  %t.33550 = load i64, ptr %v.90002
-  %t.33551 = load i64, ptr %v.3354
-  %t.33552 = icmp eq i64 %t.33550, %t.33551
-  %t.33553 = zext i1 %t.33552 to i64
-  store i64 %t.33553, ptr %v.3355
-  %t.33560 = load i64, ptr %v.3353
-  %t.33561 = load i64, ptr %v.3355
-  %t.33562 = or i64 %t.33560, %t.33561
-  store i64 %t.33562, ptr %v.3356
-  %t.33579 = call i64 @token_TK_PACKAGE()
-  store i64 %t.33579, ptr %v.3357
-  %t.33580 = load i64, ptr %v.90002
-  %t.33581 = load i64, ptr %v.3357
-  %t.33582 = icmp eq i64 %t.33580, %t.33581
-  %t.33583 = zext i1 %t.33582 to i64
-  store i64 %t.33583, ptr %v.3358
-  %t.33590 = load i64, ptr %v.3356
-  %t.33591 = load i64, ptr %v.3358
-  %t.33592 = or i64 %t.33590, %t.33591
-  store i64 %t.33592, ptr %v.3359
-  %t.33600 = load i64, ptr %v.3359
-  %t.33601 = icmp eq i64 %t.33600, 0
-  br i1 %t.33601, label %L.420, label %L.fall.3360
-L.fall.3360:
-  %t.33640 = load i64, ptr %v.90000
-  %t.33641 = load i64, ptr %v.90001
-  %t.33642 = load i64, ptr %v.90002
-  %t.33649 = call i64 @lexer_lex_end(i64 %t.33640, i64 %t.33641, i64 %t.33642)
-  store i64 %t.33649, ptr %v.3364
-  %t.33650 = load i64, ptr %v.3364
-  store i64 %t.33650, ptr %v.3365
-  %t.33690 = load i64, ptr %v.90000
-  %t.33691 = load i64, ptr %v.90001
-  %t.33692 = load i64, ptr %v.3365
-  %t.33699 = call i64 @strings_str_substring(i64 %t.33690, i64 %t.33691, i64 %t.33692)
-  store i64 %t.33699, ptr %v.3369
-  %t.33700 = load i64, ptr %v.3369
-  ret i64 %t.33700
-L.420:
-  br label %L.421
-L.421:
-  %t.33749 = call i64 @token_TK_STRING()
+  %t.33729 = call i64 @token_TK_IDENT()
+  store i64 %t.33729, ptr %v.3372
+  %t.33730 = load i64, ptr %v.90002
+  %t.33731 = load i64, ptr %v.3372
+  %t.33732 = icmp eq i64 %t.33730, %t.33731
+  %t.33733 = zext i1 %t.33732 to i64
+  store i64 %t.33733, ptr %v.3373
+  %t.33749 = call i64 @token_TK_FN()
   store i64 %t.33749, ptr %v.3374
   %t.33750 = load i64, ptr %v.90002
   %t.33751 = load i64, ptr %v.3374
   %t.33752 = icmp eq i64 %t.33750, %t.33751
   %t.33753 = zext i1 %t.33752 to i64
   store i64 %t.33753, ptr %v.3375
-  %t.33760 = load i64, ptr %v.3375
-  %t.33761 = icmp eq i64 %t.33760, 0
-  br i1 %t.33761, label %L.422, label %L.fall.3376
-L.fall.3376:
-  %t.33800 = load i64, ptr %v.90000
-  %t.33801 = load i64, ptr %v.90001
-  %t.33802 = load i64, ptr %v.90002
-  %t.33809 = call i64 @lexer_lex_end(i64 %t.33800, i64 %t.33801, i64 %t.33802)
+  %t.33760 = load i64, ptr %v.3373
+  %t.33761 = load i64, ptr %v.3375
+  %t.33762 = or i64 %t.33760, %t.33761
+  store i64 %t.33762, ptr %v.3376
+  %t.33779 = call i64 @token_TK_IF()
+  store i64 %t.33779, ptr %v.3377
+  %t.33780 = load i64, ptr %v.90002
+  %t.33781 = load i64, ptr %v.3377
+  %t.33782 = icmp eq i64 %t.33780, %t.33781
+  %t.33783 = zext i1 %t.33782 to i64
+  store i64 %t.33783, ptr %v.3378
+  %t.33790 = load i64, ptr %v.3376
+  %t.33791 = load i64, ptr %v.3378
+  %t.33792 = or i64 %t.33790, %t.33791
+  store i64 %t.33792, ptr %v.3379
+  %t.33809 = call i64 @token_TK_ELSE()
   store i64 %t.33809, ptr %v.3380
-  %t.33810 = load i64, ptr %v.3380
-  store i64 %t.33810, ptr %v.3381
-  store i64 1, ptr %v.3382
-  %t.33830 = load i64, ptr %v.90001
-  %t.33831 = load i64, ptr %v.3382
-  %t.33832 = add i64 %t.33830, %t.33831
-  store i64 %t.33832, ptr %v.3383
-  store i64 1, ptr %v.3384
-  %t.33850 = load i64, ptr %v.3381
+  %t.33810 = load i64, ptr %v.90002
+  %t.33811 = load i64, ptr %v.3380
+  %t.33812 = icmp eq i64 %t.33810, %t.33811
+  %t.33813 = zext i1 %t.33812 to i64
+  store i64 %t.33813, ptr %v.3381
+  %t.33820 = load i64, ptr %v.3379
+  %t.33821 = load i64, ptr %v.3381
+  %t.33822 = or i64 %t.33820, %t.33821
+  store i64 %t.33822, ptr %v.3382
+  %t.33839 = call i64 @token_TK_FOR()
+  store i64 %t.33839, ptr %v.3383
+  %t.33840 = load i64, ptr %v.90002
+  %t.33841 = load i64, ptr %v.3383
+  %t.33842 = icmp eq i64 %t.33840, %t.33841
+  %t.33843 = zext i1 %t.33842 to i64
+  store i64 %t.33843, ptr %v.3384
+  %t.33850 = load i64, ptr %v.3382
   %t.33851 = load i64, ptr %v.3384
-  %t.33852 = sub i64 %t.33850, %t.33851
+  %t.33852 = or i64 %t.33850, %t.33851
   store i64 %t.33852, ptr %v.3385
-  %t.33890 = load i64, ptr %v.90000
-  %t.33891 = load i64, ptr %v.3383
-  %t.33892 = load i64, ptr %v.3385
-  %t.33899 = call i64 @strings_str_substring(i64 %t.33890, i64 %t.33891, i64 %t.33892)
+  %t.33869 = call i64 @token_TK_IN()
+  store i64 %t.33869, ptr %v.3386
+  %t.33870 = load i64, ptr %v.90002
+  %t.33871 = load i64, ptr %v.3386
+  %t.33872 = icmp eq i64 %t.33870, %t.33871
+  %t.33873 = zext i1 %t.33872 to i64
+  store i64 %t.33873, ptr %v.3387
+  %t.33880 = load i64, ptr %v.3385
+  %t.33881 = load i64, ptr %v.3387
+  %t.33882 = or i64 %t.33880, %t.33881
+  store i64 %t.33882, ptr %v.3388
+  %t.33899 = call i64 @token_TK_RETURN()
   store i64 %t.33899, ptr %v.3389
-  %t.33900 = load i64, ptr %v.3389
-  store i64 %t.33900, ptr %v.3390
-  %t.33910 = load i64, ptr %v.3390
-  %t.33911 = inttoptr i64 %t.33910 to ptr
-  %t.33912 = call i64 @ease_str_len(ptr %t.33911)
+  %t.33900 = load i64, ptr %v.90002
+  %t.33901 = load i64, ptr %v.3389
+  %t.33902 = icmp eq i64 %t.33900, %t.33901
+  %t.33903 = zext i1 %t.33902 to i64
+  store i64 %t.33903, ptr %v.3390
+  %t.33910 = load i64, ptr %v.3388
+  %t.33911 = load i64, ptr %v.3390
+  %t.33912 = or i64 %t.33910, %t.33911
   store i64 %t.33912, ptr %v.3391
-  %t.33920 = load i64, ptr %v.3391
-  store i64 %t.33920, ptr %v.3392
-  store i64 0, ptr %v.3393
-  %t.33940 = load i64, ptr %v.3393
-  store i64 %t.33940, ptr %v.3394
-  store i64 0, ptr %v.3395
-  %t.33960 = load i64, ptr %v.3395
-  store i64 %t.33960, ptr %v.3396
-  br label %L.424
-L.424:
-  %t.33980 = load i64, ptr %v.3396
-  %t.33981 = load i64, ptr %v.3392
-  %t.33982 = icmp slt i64 %t.33980, %t.33981
-  %t.33983 = zext i1 %t.33982 to i64
-  store i64 %t.33983, ptr %v.3398
-  %t.33990 = load i64, ptr %v.3398
-  %t.33991 = icmp eq i64 %t.33990, 0
-  br i1 %t.33991, label %L.425, label %L.fall.3399
-L.fall.3399:
-  %t.34000 = load i64, ptr %v.3390
-  %t.34001 = inttoptr i64 %t.34000 to ptr
-  %t.34002 = load i64, ptr %v.3396
-  %t.34003 = call i64 @ease_str_char_at(ptr %t.34001, i64 %t.34002)
-  store i64 %t.34003, ptr %v.3400
-  %t.34010 = load i64, ptr %v.3400
-  store i64 %t.34010, ptr %v.3401
-  store i64 92, ptr %v.3402
-  %t.34030 = load i64, ptr %v.3401
+  %t.33929 = call i64 @token_TK_BREAK()
+  store i64 %t.33929, ptr %v.3392
+  %t.33930 = load i64, ptr %v.90002
+  %t.33931 = load i64, ptr %v.3392
+  %t.33932 = icmp eq i64 %t.33930, %t.33931
+  %t.33933 = zext i1 %t.33932 to i64
+  store i64 %t.33933, ptr %v.3393
+  %t.33940 = load i64, ptr %v.3391
+  %t.33941 = load i64, ptr %v.3393
+  %t.33942 = or i64 %t.33940, %t.33941
+  store i64 %t.33942, ptr %v.3394
+  %t.33959 = call i64 @token_TK_STRUCT()
+  store i64 %t.33959, ptr %v.3395
+  %t.33960 = load i64, ptr %v.90002
+  %t.33961 = load i64, ptr %v.3395
+  %t.33962 = icmp eq i64 %t.33960, %t.33961
+  %t.33963 = zext i1 %t.33962 to i64
+  store i64 %t.33963, ptr %v.3396
+  %t.33970 = load i64, ptr %v.3394
+  %t.33971 = load i64, ptr %v.3396
+  %t.33972 = or i64 %t.33970, %t.33971
+  store i64 %t.33972, ptr %v.3397
+  %t.33989 = call i64 @token_TK_TRUE()
+  store i64 %t.33989, ptr %v.3398
+  %t.33990 = load i64, ptr %v.90002
+  %t.33991 = load i64, ptr %v.3398
+  %t.33992 = icmp eq i64 %t.33990, %t.33991
+  %t.33993 = zext i1 %t.33992 to i64
+  store i64 %t.33993, ptr %v.3399
+  %t.34000 = load i64, ptr %v.3397
+  %t.34001 = load i64, ptr %v.3399
+  %t.34002 = or i64 %t.34000, %t.34001
+  store i64 %t.34002, ptr %v.3400
+  %t.34019 = call i64 @token_TK_FALSE()
+  store i64 %t.34019, ptr %v.3401
+  %t.34020 = load i64, ptr %v.90002
+  %t.34021 = load i64, ptr %v.3401
+  %t.34022 = icmp eq i64 %t.34020, %t.34021
+  %t.34023 = zext i1 %t.34022 to i64
+  store i64 %t.34023, ptr %v.3402
+  %t.34030 = load i64, ptr %v.3400
   %t.34031 = load i64, ptr %v.3402
-  %t.34032 = icmp eq i64 %t.34030, %t.34031
-  %t.34033 = zext i1 %t.34032 to i64
-  store i64 %t.34033, ptr %v.3403
-  store i64 1, ptr %v.3404
-  %t.34050 = load i64, ptr %v.3396
+  %t.34032 = or i64 %t.34030, %t.34031
+  store i64 %t.34032, ptr %v.3403
+  %t.34049 = call i64 @token_TK_IMPORT()
+  store i64 %t.34049, ptr %v.3404
+  %t.34050 = load i64, ptr %v.90002
   %t.34051 = load i64, ptr %v.3404
-  %t.34052 = add i64 %t.34050, %t.34051
-  store i64 %t.34052, ptr %v.3405
-  %t.34060 = load i64, ptr %v.3405
-  %t.34061 = load i64, ptr %v.3392
-  %t.34062 = icmp slt i64 %t.34060, %t.34061
-  %t.34063 = zext i1 %t.34062 to i64
-  store i64 %t.34063, ptr %v.3406
-  %t.34070 = load i64, ptr %v.3403
-  %t.34071 = load i64, ptr %v.3406
-  %t.34072 = and i64 %t.34070, %t.34071
-  store i64 %t.34072, ptr %v.3407
-  %t.34080 = load i64, ptr %v.3407
-  %t.34081 = icmp eq i64 %t.34080, 0
-  br i1 %t.34081, label %L.426, label %L.fall.3408
-L.fall.3408:
-  store i64 1, ptr %v.3409
-  %t.34100 = load i64, ptr %v.3396
-  %t.34101 = load i64, ptr %v.3409
-  %t.34102 = add i64 %t.34100, %t.34101
-  store i64 %t.34102, ptr %v.3410
-  %t.34110 = load i64, ptr %v.3390
-  %t.34111 = inttoptr i64 %t.34110 to ptr
-  %t.34112 = load i64, ptr %v.3410
-  %t.34113 = call i64 @ease_str_char_at(ptr %t.34111, i64 %t.34112)
-  store i64 %t.34113, ptr %v.3411
-  %t.34120 = load i64, ptr %v.3411
-  store i64 %t.34120, ptr %v.3412
-  store i64 110, ptr %v.3413
-  %t.34140 = load i64, ptr %v.3412
-  %t.34141 = load i64, ptr %v.3413
-  %t.34142 = icmp eq i64 %t.34140, %t.34141
-  %t.34143 = zext i1 %t.34142 to i64
-  store i64 %t.34143, ptr %v.3414
+  %t.34052 = icmp eq i64 %t.34050, %t.34051
+  %t.34053 = zext i1 %t.34052 to i64
+  store i64 %t.34053, ptr %v.3405
+  %t.34060 = load i64, ptr %v.3403
+  %t.34061 = load i64, ptr %v.3405
+  %t.34062 = or i64 %t.34060, %t.34061
+  store i64 %t.34062, ptr %v.3406
+  %t.34079 = call i64 @token_TK_PACKAGE()
+  store i64 %t.34079, ptr %v.3407
+  %t.34080 = load i64, ptr %v.90002
+  %t.34081 = load i64, ptr %v.3407
+  %t.34082 = icmp eq i64 %t.34080, %t.34081
+  %t.34083 = zext i1 %t.34082 to i64
+  store i64 %t.34083, ptr %v.3408
+  %t.34090 = load i64, ptr %v.3406
+  %t.34091 = load i64, ptr %v.3408
+  %t.34092 = or i64 %t.34090, %t.34091
+  store i64 %t.34092, ptr %v.3409
+  %t.34100 = load i64, ptr %v.3409
+  %t.34101 = icmp eq i64 %t.34100, 0
+  br i1 %t.34101, label %L.424, label %L.fall.3410
+L.fall.3410:
+  %t.34140 = load i64, ptr %v.90000
+  %t.34141 = load i64, ptr %v.90001
+  %t.34142 = load i64, ptr %v.90002
+  %t.34149 = call i64 @lexer_lex_end(i64 %t.34140, i64 %t.34141, i64 %t.34142)
+  store i64 %t.34149, ptr %v.3414
   %t.34150 = load i64, ptr %v.3414
-  %t.34151 = icmp eq i64 %t.34150, 0
-  br i1 %t.34151, label %L.428, label %L.fall.3415
-L.fall.3415:
-  %t.34160 = ptrtoint ptr @.str.100 to i64
-  store i64 %t.34160, ptr %v.3416
-  %t.34170 = load i64, ptr %v.3394
-  %t.34171 = inttoptr i64 %t.34170 to ptr
-  %t.34172 = load i64, ptr %v.3416
-  %t.34173 = inttoptr i64 %t.34172 to ptr
-  %t.34174 = call ptr @ease_str_concat(ptr %t.34171, ptr %t.34173)
-  %t.34175 = ptrtoint ptr %t.34174 to i64
-  store i64 %t.34175, ptr %v.3417
-  %t.34180 = load i64, ptr %v.3417
-  store i64 %t.34180, ptr %v.3394
-  br label %L.429
+  store i64 %t.34150, ptr %v.3415
+  %t.34190 = load i64, ptr %v.90000
+  %t.34191 = load i64, ptr %v.90001
+  %t.34192 = load i64, ptr %v.3415
+  %t.34199 = call i64 @strings_str_substring(i64 %t.34190, i64 %t.34191, i64 %t.34192)
+  store i64 %t.34199, ptr %v.3419
+  %t.34200 = load i64, ptr %v.3419
+  ret i64 %t.34200
+L.424:
+  br label %L.425
+L.425:
+  %t.34249 = call i64 @token_TK_STRING()
+  store i64 %t.34249, ptr %v.3424
+  %t.34250 = load i64, ptr %v.90002
+  %t.34251 = load i64, ptr %v.3424
+  %t.34252 = icmp eq i64 %t.34250, %t.34251
+  %t.34253 = zext i1 %t.34252 to i64
+  store i64 %t.34253, ptr %v.3425
+  %t.34260 = load i64, ptr %v.3425
+  %t.34261 = icmp eq i64 %t.34260, 0
+  br i1 %t.34261, label %L.426, label %L.fall.3426
+L.fall.3426:
+  %t.34300 = load i64, ptr %v.90000
+  %t.34301 = load i64, ptr %v.90001
+  %t.34302 = load i64, ptr %v.90002
+  %t.34309 = call i64 @lexer_lex_end(i64 %t.34300, i64 %t.34301, i64 %t.34302)
+  store i64 %t.34309, ptr %v.3430
+  %t.34310 = load i64, ptr %v.3430
+  store i64 %t.34310, ptr %v.3431
+  store i64 1, ptr %v.3432
+  %t.34330 = load i64, ptr %v.90001
+  %t.34331 = load i64, ptr %v.3432
+  %t.34332 = add i64 %t.34330, %t.34331
+  store i64 %t.34332, ptr %v.3433
+  store i64 1, ptr %v.3434
+  %t.34350 = load i64, ptr %v.3431
+  %t.34351 = load i64, ptr %v.3434
+  %t.34352 = sub i64 %t.34350, %t.34351
+  store i64 %t.34352, ptr %v.3435
+  %t.34390 = load i64, ptr %v.90000
+  %t.34391 = load i64, ptr %v.3433
+  %t.34392 = load i64, ptr %v.3435
+  %t.34399 = call i64 @strings_str_substring(i64 %t.34390, i64 %t.34391, i64 %t.34392)
+  store i64 %t.34399, ptr %v.3439
+  %t.34400 = load i64, ptr %v.3439
+  store i64 %t.34400, ptr %v.3440
+  %t.34410 = load i64, ptr %v.3440
+  %t.34411 = inttoptr i64 %t.34410 to ptr
+  %t.34412 = call i64 @ease_str_len(ptr %t.34411)
+  store i64 %t.34412, ptr %v.3441
+  %t.34420 = load i64, ptr %v.3441
+  store i64 %t.34420, ptr %v.3442
+  store i64 0, ptr %v.3443
+  %t.34440 = load i64, ptr %v.3443
+  store i64 %t.34440, ptr %v.3444
+  store i64 0, ptr %v.3445
+  %t.34460 = load i64, ptr %v.3445
+  store i64 %t.34460, ptr %v.3446
+  br label %L.428
 L.428:
-  br label %L.429
-L.429:
-  store i64 116, ptr %v.3422
-  %t.34230 = load i64, ptr %v.3412
-  %t.34231 = load i64, ptr %v.3422
-  %t.34232 = icmp eq i64 %t.34230, %t.34231
-  %t.34233 = zext i1 %t.34232 to i64
-  store i64 %t.34233, ptr %v.3423
-  %t.34240 = load i64, ptr %v.3423
-  %t.34241 = icmp eq i64 %t.34240, 0
-  br i1 %t.34241, label %L.430, label %L.fall.3424
-L.fall.3424:
-  %t.34250 = ptrtoint ptr @.str.101 to i64
-  store i64 %t.34250, ptr %v.3425
-  %t.34260 = load i64, ptr %v.3394
-  %t.34261 = inttoptr i64 %t.34260 to ptr
-  %t.34262 = load i64, ptr %v.3425
-  %t.34263 = inttoptr i64 %t.34262 to ptr
-  %t.34264 = call ptr @ease_str_concat(ptr %t.34261, ptr %t.34263)
-  %t.34265 = ptrtoint ptr %t.34264 to i64
-  store i64 %t.34265, ptr %v.3426
-  %t.34270 = load i64, ptr %v.3426
-  store i64 %t.34270, ptr %v.3394
-  br label %L.431
-L.430:
-  br label %L.431
-L.431:
-  store i64 92, ptr %v.3431
-  %t.34320 = load i64, ptr %v.3412
-  %t.34321 = load i64, ptr %v.3431
-  %t.34322 = icmp eq i64 %t.34320, %t.34321
-  %t.34323 = zext i1 %t.34322 to i64
-  store i64 %t.34323, ptr %v.3432
-  %t.34330 = load i64, ptr %v.3432
-  %t.34331 = icmp eq i64 %t.34330, 0
-  br i1 %t.34331, label %L.432, label %L.fall.3433
-L.fall.3433:
-  %t.34340 = ptrtoint ptr @.str.102 to i64
-  store i64 %t.34340, ptr %v.3434
-  %t.34350 = load i64, ptr %v.3394
-  %t.34351 = inttoptr i64 %t.34350 to ptr
-  %t.34352 = load i64, ptr %v.3434
-  %t.34353 = inttoptr i64 %t.34352 to ptr
-  %t.34354 = call ptr @ease_str_concat(ptr %t.34351, ptr %t.34353)
-  %t.34355 = ptrtoint ptr %t.34354 to i64
-  store i64 %t.34355, ptr %v.3435
-  %t.34360 = load i64, ptr %v.3435
-  store i64 %t.34360, ptr %v.3394
+  %t.34480 = load i64, ptr %v.3446
+  %t.34481 = load i64, ptr %v.3442
+  %t.34482 = icmp slt i64 %t.34480, %t.34481
+  %t.34483 = zext i1 %t.34482 to i64
+  store i64 %t.34483, ptr %v.3448
+  %t.34490 = load i64, ptr %v.3448
+  %t.34491 = icmp eq i64 %t.34490, 0
+  br i1 %t.34491, label %L.429, label %L.fall.3449
+L.fall.3449:
+  %t.34500 = load i64, ptr %v.3440
+  %t.34501 = inttoptr i64 %t.34500 to ptr
+  %t.34502 = load i64, ptr %v.3446
+  %t.34503 = call i64 @ease_str_char_at(ptr %t.34501, i64 %t.34502)
+  store i64 %t.34503, ptr %v.3450
+  %t.34510 = load i64, ptr %v.3450
+  store i64 %t.34510, ptr %v.3451
+  store i64 92, ptr %v.3452
+  %t.34530 = load i64, ptr %v.3451
+  %t.34531 = load i64, ptr %v.3452
+  %t.34532 = icmp eq i64 %t.34530, %t.34531
+  %t.34533 = zext i1 %t.34532 to i64
+  store i64 %t.34533, ptr %v.3453
+  store i64 1, ptr %v.3454
+  %t.34550 = load i64, ptr %v.3446
+  %t.34551 = load i64, ptr %v.3454
+  %t.34552 = add i64 %t.34550, %t.34551
+  store i64 %t.34552, ptr %v.3455
+  %t.34560 = load i64, ptr %v.3455
+  %t.34561 = load i64, ptr %v.3442
+  %t.34562 = icmp slt i64 %t.34560, %t.34561
+  %t.34563 = zext i1 %t.34562 to i64
+  store i64 %t.34563, ptr %v.3456
+  %t.34570 = load i64, ptr %v.3453
+  %t.34571 = load i64, ptr %v.3456
+  %t.34572 = and i64 %t.34570, %t.34571
+  store i64 %t.34572, ptr %v.3457
+  %t.34580 = load i64, ptr %v.3457
+  %t.34581 = icmp eq i64 %t.34580, 0
+  br i1 %t.34581, label %L.430, label %L.fall.3458
+L.fall.3458:
+  store i64 1, ptr %v.3459
+  %t.34600 = load i64, ptr %v.3446
+  %t.34601 = load i64, ptr %v.3459
+  %t.34602 = add i64 %t.34600, %t.34601
+  store i64 %t.34602, ptr %v.3460
+  %t.34610 = load i64, ptr %v.3440
+  %t.34611 = inttoptr i64 %t.34610 to ptr
+  %t.34612 = load i64, ptr %v.3460
+  %t.34613 = call i64 @ease_str_char_at(ptr %t.34611, i64 %t.34612)
+  store i64 %t.34613, ptr %v.3461
+  %t.34620 = load i64, ptr %v.3461
+  store i64 %t.34620, ptr %v.3462
+  store i64 110, ptr %v.3463
+  %t.34640 = load i64, ptr %v.3462
+  %t.34641 = load i64, ptr %v.3463
+  %t.34642 = icmp eq i64 %t.34640, %t.34641
+  %t.34643 = zext i1 %t.34642 to i64
+  store i64 %t.34643, ptr %v.3464
+  %t.34650 = load i64, ptr %v.3464
+  %t.34651 = icmp eq i64 %t.34650, 0
+  br i1 %t.34651, label %L.432, label %L.fall.3465
+L.fall.3465:
+  %t.34660 = ptrtoint ptr @.str.98 to i64
+  store i64 %t.34660, ptr %v.3466
+  %t.34670 = load i64, ptr %v.3444
+  %t.34671 = inttoptr i64 %t.34670 to ptr
+  %t.34672 = load i64, ptr %v.3466
+  %t.34673 = inttoptr i64 %t.34672 to ptr
+  %t.34674 = call ptr @ease_str_concat(ptr %t.34671, ptr %t.34673)
+  %t.34675 = ptrtoint ptr %t.34674 to i64
+  store i64 %t.34675, ptr %v.3467
+  %t.34680 = load i64, ptr %v.3467
+  store i64 %t.34680, ptr %v.3444
   br label %L.433
 L.432:
   br label %L.433
 L.433:
-  store i64 34, ptr %v.3440
-  %t.34410 = load i64, ptr %v.3412
-  %t.34411 = load i64, ptr %v.3440
-  %t.34412 = icmp eq i64 %t.34410, %t.34411
-  %t.34413 = zext i1 %t.34412 to i64
-  store i64 %t.34413, ptr %v.3441
-  %t.34420 = load i64, ptr %v.3441
-  %t.34421 = icmp eq i64 %t.34420, 0
-  br i1 %t.34421, label %L.434, label %L.fall.3442
-L.fall.3442:
-  %t.34430 = ptrtoint ptr @.str.103 to i64
-  store i64 %t.34430, ptr %v.3443
-  %t.34440 = load i64, ptr %v.3394
-  %t.34441 = inttoptr i64 %t.34440 to ptr
-  %t.34442 = load i64, ptr %v.3443
-  %t.34443 = inttoptr i64 %t.34442 to ptr
-  %t.34444 = call ptr @ease_str_concat(ptr %t.34441, ptr %t.34443)
-  %t.34445 = ptrtoint ptr %t.34444 to i64
-  store i64 %t.34445, ptr %v.3444
-  %t.34450 = load i64, ptr %v.3444
-  store i64 %t.34450, ptr %v.3394
+  store i64 116, ptr %v.3472
+  %t.34730 = load i64, ptr %v.3462
+  %t.34731 = load i64, ptr %v.3472
+  %t.34732 = icmp eq i64 %t.34730, %t.34731
+  %t.34733 = zext i1 %t.34732 to i64
+  store i64 %t.34733, ptr %v.3473
+  %t.34740 = load i64, ptr %v.3473
+  %t.34741 = icmp eq i64 %t.34740, 0
+  br i1 %t.34741, label %L.434, label %L.fall.3474
+L.fall.3474:
+  %t.34750 = ptrtoint ptr @.str.99 to i64
+  store i64 %t.34750, ptr %v.3475
+  %t.34760 = load i64, ptr %v.3444
+  %t.34761 = inttoptr i64 %t.34760 to ptr
+  %t.34762 = load i64, ptr %v.3475
+  %t.34763 = inttoptr i64 %t.34762 to ptr
+  %t.34764 = call ptr @ease_str_concat(ptr %t.34761, ptr %t.34763)
+  %t.34765 = ptrtoint ptr %t.34764 to i64
+  store i64 %t.34765, ptr %v.3476
+  %t.34770 = load i64, ptr %v.3476
+  store i64 %t.34770, ptr %v.3444
   br label %L.435
 L.434:
   br label %L.435
 L.435:
-  store i64 48, ptr %v.3449
-  %t.34500 = load i64, ptr %v.3412
-  %t.34501 = load i64, ptr %v.3449
-  %t.34502 = icmp eq i64 %t.34500, %t.34501
-  %t.34503 = zext i1 %t.34502 to i64
-  store i64 %t.34503, ptr %v.3450
-  %t.34510 = load i64, ptr %v.3450
-  %t.34511 = icmp eq i64 %t.34510, 0
-  br i1 %t.34511, label %L.436, label %L.fall.3451
-L.fall.3451:
+  store i64 92, ptr %v.3481
+  %t.34820 = load i64, ptr %v.3462
+  %t.34821 = load i64, ptr %v.3481
+  %t.34822 = icmp eq i64 %t.34820, %t.34821
+  %t.34823 = zext i1 %t.34822 to i64
+  store i64 %t.34823, ptr %v.3482
+  %t.34830 = load i64, ptr %v.3482
+  %t.34831 = icmp eq i64 %t.34830, 0
+  br i1 %t.34831, label %L.436, label %L.fall.3483
+L.fall.3483:
+  %t.34840 = ptrtoint ptr @.str.100 to i64
+  store i64 %t.34840, ptr %v.3484
+  %t.34850 = load i64, ptr %v.3444
+  %t.34851 = inttoptr i64 %t.34850 to ptr
+  %t.34852 = load i64, ptr %v.3484
+  %t.34853 = inttoptr i64 %t.34852 to ptr
+  %t.34854 = call ptr @ease_str_concat(ptr %t.34851, ptr %t.34853)
+  %t.34855 = ptrtoint ptr %t.34854 to i64
+  store i64 %t.34855, ptr %v.3485
+  %t.34860 = load i64, ptr %v.3485
+  store i64 %t.34860, ptr %v.3444
   br label %L.437
 L.436:
   br label %L.437
 L.437:
-  store i64 2, ptr %v.3455
-  %t.34560 = load i64, ptr %v.3396
-  %t.34561 = load i64, ptr %v.3455
-  %t.34562 = add i64 %t.34560, %t.34561
-  store i64 %t.34562, ptr %v.3456
-  %t.34570 = load i64, ptr %v.3456
-  store i64 %t.34570, ptr %v.3396
-  br label %L.427
+  store i64 34, ptr %v.3490
+  %t.34910 = load i64, ptr %v.3462
+  %t.34911 = load i64, ptr %v.3490
+  %t.34912 = icmp eq i64 %t.34910, %t.34911
+  %t.34913 = zext i1 %t.34912 to i64
+  store i64 %t.34913, ptr %v.3491
+  %t.34920 = load i64, ptr %v.3491
+  %t.34921 = icmp eq i64 %t.34920, 0
+  br i1 %t.34921, label %L.438, label %L.fall.3492
+L.fall.3492:
+  %t.34930 = ptrtoint ptr @.str.101 to i64
+  store i64 %t.34930, ptr %v.3493
+  %t.34940 = load i64, ptr %v.3444
+  %t.34941 = inttoptr i64 %t.34940 to ptr
+  %t.34942 = load i64, ptr %v.3493
+  %t.34943 = inttoptr i64 %t.34942 to ptr
+  %t.34944 = call ptr @ease_str_concat(ptr %t.34941, ptr %t.34943)
+  %t.34945 = ptrtoint ptr %t.34944 to i64
+  store i64 %t.34945, ptr %v.3494
+  %t.34950 = load i64, ptr %v.3494
+  store i64 %t.34950, ptr %v.3444
+  br label %L.439
+L.438:
+  br label %L.439
+L.439:
+  store i64 48, ptr %v.3499
+  %t.35000 = load i64, ptr %v.3462
+  %t.35001 = load i64, ptr %v.3499
+  %t.35002 = icmp eq i64 %t.35000, %t.35001
+  %t.35003 = zext i1 %t.35002 to i64
+  store i64 %t.35003, ptr %v.3500
+  %t.35010 = load i64, ptr %v.3500
+  %t.35011 = icmp eq i64 %t.35010, 0
+  br i1 %t.35011, label %L.440, label %L.fall.3501
+L.fall.3501:
+  br label %L.441
+L.440:
+  br label %L.441
+L.441:
+  store i64 2, ptr %v.3505
+  %t.35060 = load i64, ptr %v.3446
+  %t.35061 = load i64, ptr %v.3505
+  %t.35062 = add i64 %t.35060, %t.35061
+  store i64 %t.35062, ptr %v.3506
+  %t.35070 = load i64, ptr %v.3506
+  store i64 %t.35070, ptr %v.3446
+  br label %L.431
+L.430:
+  store i64 1, ptr %v.3510
+  %t.35110 = load i64, ptr %v.3446
+  %t.35111 = load i64, ptr %v.3510
+  %t.35112 = add i64 %t.35110, %t.35111
+  store i64 %t.35112, ptr %v.3511
+  %t.35150 = load i64, ptr %v.3440
+  %t.35151 = load i64, ptr %v.3446
+  %t.35152 = load i64, ptr %v.3511
+  %t.35159 = call i64 @strings_str_substring(i64 %t.35150, i64 %t.35151, i64 %t.35152)
+  store i64 %t.35159, ptr %v.3515
+  %t.35160 = load i64, ptr %v.3444
+  %t.35161 = inttoptr i64 %t.35160 to ptr
+  %t.35162 = load i64, ptr %v.3515
+  %t.35163 = inttoptr i64 %t.35162 to ptr
+  %t.35164 = call ptr @ease_str_concat(ptr %t.35161, ptr %t.35163)
+  %t.35165 = ptrtoint ptr %t.35164 to i64
+  store i64 %t.35165, ptr %v.3516
+  %t.35170 = load i64, ptr %v.3516
+  store i64 %t.35170, ptr %v.3444
+  store i64 1, ptr %v.3518
+  %t.35190 = load i64, ptr %v.3446
+  %t.35191 = load i64, ptr %v.3518
+  %t.35192 = add i64 %t.35190, %t.35191
+  store i64 %t.35192, ptr %v.3519
+  %t.35200 = load i64, ptr %v.3519
+  store i64 %t.35200, ptr %v.3446
+  br label %L.431
+L.431:
+  br label %L.428
+L.429:
+  %t.35240 = load i64, ptr %v.3444
+  ret i64 %t.35240
 L.426:
-  store i64 1, ptr %v.3460
-  %t.34610 = load i64, ptr %v.3396
-  %t.34611 = load i64, ptr %v.3460
-  %t.34612 = add i64 %t.34610, %t.34611
-  store i64 %t.34612, ptr %v.3461
-  %t.34650 = load i64, ptr %v.3390
-  %t.34651 = load i64, ptr %v.3396
-  %t.34652 = load i64, ptr %v.3461
-  %t.34659 = call i64 @strings_str_substring(i64 %t.34650, i64 %t.34651, i64 %t.34652)
-  store i64 %t.34659, ptr %v.3465
-  %t.34660 = load i64, ptr %v.3394
-  %t.34661 = inttoptr i64 %t.34660 to ptr
-  %t.34662 = load i64, ptr %v.3465
-  %t.34663 = inttoptr i64 %t.34662 to ptr
-  %t.34664 = call ptr @ease_str_concat(ptr %t.34661, ptr %t.34663)
-  %t.34665 = ptrtoint ptr %t.34664 to i64
-  store i64 %t.34665, ptr %v.3466
-  %t.34670 = load i64, ptr %v.3466
-  store i64 %t.34670, ptr %v.3394
-  store i64 1, ptr %v.3468
-  %t.34690 = load i64, ptr %v.3396
-  %t.34691 = load i64, ptr %v.3468
-  %t.34692 = add i64 %t.34690, %t.34691
-  store i64 %t.34692, ptr %v.3469
-  %t.34700 = load i64, ptr %v.3469
-  store i64 %t.34700, ptr %v.3396
   br label %L.427
 L.427:
-  br label %L.424
-L.425:
-  %t.34740 = load i64, ptr %v.3394
-  ret i64 %t.34740
-L.422:
-  br label %L.423
-L.423:
-  store i64 0, ptr %v.3478
-  %t.34790 = load i64, ptr %v.3478
-  ret i64 %t.34790
+  store i64 0, ptr %v.3528
+  %t.35290 = load i64, ptr %v.3528
+  ret i64 %t.35290
 }
 
 define i64 @lexer_lex_int_value(i64 %param.0, i64 %param.1) {
   %v.90000 = alloca i64
   %v.90001 = alloca i64
-  %v.3481 = alloca i64
-  %v.3485 = alloca i64
-  %v.3486 = alloca i64
-  %v.3490 = alloca i64
-  %v.3491 = alloca i64
-  %v.3492 = alloca i64
-  %v.3493 = alloca i64
-  %v.3494 = alloca i64
-  %v.3495 = alloca i64
-  %v.3496 = alloca i64
-  %v.3497 = alloca i64
-  %v.3498 = alloca i64
-  %v.3499 = alloca i64
-  %v.3500 = alloca i64
-  %v.3501 = alloca i64
-  %v.3502 = alloca i64
-  %v.3503 = alloca i64
-  %v.3504 = alloca i64
-  %v.3505 = alloca i64
-  %v.3506 = alloca i64
-  %v.3507 = alloca i64
-  %v.3508 = alloca i64
-  %v.3509 = alloca i64
-  %v.3511 = alloca i64
-  %v.3514 = alloca i64
-  %v.3516 = alloca i64
-  %v.3517 = alloca i64
-  %v.3518 = alloca i64
-  %v.3519 = alloca i64
-  %v.3520 = alloca i64
-  %v.3521 = alloca i64
-  %v.3522 = alloca i64
-  %v.3523 = alloca i64
-  %v.3524 = alloca i64
-  %v.3526 = alloca i64
-  %v.3527 = alloca i64
-  %v.3532 = alloca i64
-  %v.3533 = alloca i64
-  %v.3534 = alloca i64
+  %v.3531 = alloca i64
   %v.3535 = alloca i64
   %v.3536 = alloca i64
-  %v.3538 = alloca i64
-  %v.3539 = alloca i64
   %v.3540 = alloca i64
   %v.3541 = alloca i64
+  %v.3542 = alloca i64
+  %v.3543 = alloca i64
+  %v.3544 = alloca i64
+  %v.3545 = alloca i64
   %v.3546 = alloca i64
   %v.3547 = alloca i64
   %v.3548 = alloca i64
   %v.3549 = alloca i64
   %v.3550 = alloca i64
+  %v.3551 = alloca i64
   %v.3552 = alloca i64
   %v.3553 = alloca i64
   %v.3554 = alloca i64
   %v.3555 = alloca i64
-  %v.3560 = alloca i64
+  %v.3556 = alloca i64
+  %v.3557 = alloca i64
+  %v.3558 = alloca i64
+  %v.3559 = alloca i64
   %v.3561 = alloca i64
-  %v.3562 = alloca i64
   %v.3564 = alloca i64
-  %v.3565 = alloca i64
+  %v.3566 = alloca i64
+  %v.3567 = alloca i64
+  %v.3568 = alloca i64
+  %v.3569 = alloca i64
+  %v.3570 = alloca i64
+  %v.3571 = alloca i64
   %v.3572 = alloca i64
+  %v.3573 = alloca i64
   %v.3574 = alloca i64
-  %v.3575 = alloca i64
   %v.3576 = alloca i64
   %v.3577 = alloca i64
-  %v.3578 = alloca i64
-  %v.3579 = alloca i64
-  %v.3580 = alloca i64
   %v.3582 = alloca i64
   %v.3583 = alloca i64
+  %v.3584 = alloca i64
+  %v.3585 = alloca i64
+  %v.3586 = alloca i64
+  %v.3588 = alloca i64
+  %v.3589 = alloca i64
+  %v.3590 = alloca i64
+  %v.3591 = alloca i64
+  %v.3596 = alloca i64
+  %v.3597 = alloca i64
+  %v.3598 = alloca i64
+  %v.3599 = alloca i64
+  %v.3600 = alloca i64
+  %v.3602 = alloca i64
+  %v.3603 = alloca i64
+  %v.3604 = alloca i64
+  %v.3605 = alloca i64
+  %v.3610 = alloca i64
+  %v.3611 = alloca i64
+  %v.3612 = alloca i64
+  %v.3614 = alloca i64
+  %v.3615 = alloca i64
+  %v.3622 = alloca i64
+  %v.3624 = alloca i64
+  %v.3625 = alloca i64
+  %v.3626 = alloca i64
+  %v.3627 = alloca i64
+  %v.3628 = alloca i64
+  %v.3629 = alloca i64
+  %v.3630 = alloca i64
+  %v.3632 = alloca i64
+  %v.3633 = alloca i64
   %v.0 = alloca i64
   store i64 %param.0, ptr %v.90000
   store i64 %param.1, ptr %v.90001
   br label %B.body
 B.body:
-  %t.34819 = call i64 @token_TK_INT()
-  store i64 %t.34819, ptr %v.3481
-  %t.34850 = load i64, ptr %v.90000
-  %t.34851 = load i64, ptr %v.90001
-  %t.34852 = load i64, ptr %v.3481
-  %t.34859 = call i64 @lexer_lex_end(i64 %t.34850, i64 %t.34851, i64 %t.34852)
-  store i64 %t.34859, ptr %v.3485
-  %t.34860 = load i64, ptr %v.3485
-  store i64 %t.34860, ptr %v.3486
-  %t.34900 = load i64, ptr %v.90000
-  %t.34901 = load i64, ptr %v.90001
-  %t.34902 = load i64, ptr %v.3486
-  %t.34909 = call i64 @strings_str_substring(i64 %t.34900, i64 %t.34901, i64 %t.34902)
-  store i64 %t.34909, ptr %v.3490
-  %t.34910 = load i64, ptr %v.3490
-  store i64 %t.34910, ptr %v.3491
-  store i64 0, ptr %v.3492
-  %t.34930 = load i64, ptr %v.3492
-  store i64 %t.34930, ptr %v.3493
-  store i64 0, ptr %v.3494
-  %t.34950 = load i64, ptr %v.3494
-  store i64 %t.34950, ptr %v.3495
-  %t.34960 = load i64, ptr %v.3491
-  %t.34961 = inttoptr i64 %t.34960 to ptr
-  %t.34962 = call i64 @ease_str_len(ptr %t.34961)
-  store i64 %t.34962, ptr %v.3496
-  %t.34970 = load i64, ptr %v.3496
-  store i64 %t.34970, ptr %v.3497
-  store i64 2, ptr %v.3498
-  %t.34990 = load i64, ptr %v.3497
-  %t.34991 = load i64, ptr %v.3498
-  %t.34992 = icmp sge i64 %t.34990, %t.34991
-  %t.34993 = zext i1 %t.34992 to i64
-  store i64 %t.34993, ptr %v.3499
-  store i64 0, ptr %v.3500
-  %t.35010 = load i64, ptr %v.3491
-  %t.35011 = inttoptr i64 %t.35010 to ptr
-  %t.35012 = load i64, ptr %v.3500
-  %t.35013 = call i64 @ease_str_char_at(ptr %t.35011, i64 %t.35012)
-  store i64 %t.35013, ptr %v.3501
-  store i64 48, ptr %v.3502
-  %t.35030 = load i64, ptr %v.3501
-  %t.35031 = load i64, ptr %v.3502
-  %t.35032 = icmp eq i64 %t.35030, %t.35031
-  %t.35033 = zext i1 %t.35032 to i64
-  store i64 %t.35033, ptr %v.3503
-  %t.35040 = load i64, ptr %v.3499
-  %t.35041 = load i64, ptr %v.3503
-  %t.35042 = and i64 %t.35040, %t.35041
-  store i64 %t.35042, ptr %v.3504
-  store i64 1, ptr %v.3505
-  %t.35060 = load i64, ptr %v.3491
-  %t.35061 = inttoptr i64 %t.35060 to ptr
-  %t.35062 = load i64, ptr %v.3505
-  %t.35063 = call i64 @ease_str_char_at(ptr %t.35061, i64 %t.35062)
-  store i64 %t.35063, ptr %v.3506
-  store i64 120, ptr %v.3507
-  %t.35080 = load i64, ptr %v.3506
-  %t.35081 = load i64, ptr %v.3507
-  %t.35082 = icmp eq i64 %t.35080, %t.35081
-  %t.35083 = zext i1 %t.35082 to i64
-  store i64 %t.35083, ptr %v.3508
-  %t.35090 = load i64, ptr %v.3504
-  %t.35091 = load i64, ptr %v.3508
-  %t.35092 = and i64 %t.35090, %t.35091
-  store i64 %t.35092, ptr %v.3509
-  %t.35100 = load i64, ptr %v.3509
-  %t.35101 = icmp eq i64 %t.35100, 0
-  br i1 %t.35101, label %L.438, label %L.fall.3510
-L.fall.3510:
-  store i64 2, ptr %v.3511
-  %t.35120 = load i64, ptr %v.3511
-  store i64 %t.35120, ptr %v.3495
-  br label %L.440
-L.440:
-  %t.35140 = load i64, ptr %v.3495
-  %t.35141 = load i64, ptr %v.3497
-  %t.35142 = icmp slt i64 %t.35140, %t.35141
-  %t.35143 = zext i1 %t.35142 to i64
-  store i64 %t.35143, ptr %v.3514
-  %t.35150 = load i64, ptr %v.3514
-  %t.35151 = icmp eq i64 %t.35150, 0
-  br i1 %t.35151, label %L.441, label %L.fall.3515
-L.fall.3515:
-  %t.35160 = load i64, ptr %v.3491
-  %t.35161 = inttoptr i64 %t.35160 to ptr
-  %t.35162 = load i64, ptr %v.3495
-  %t.35163 = call i64 @ease_str_char_at(ptr %t.35161, i64 %t.35162)
-  store i64 %t.35163, ptr %v.3516
-  %t.35170 = load i64, ptr %v.3516
-  store i64 %t.35170, ptr %v.3517
-  store i64 0, ptr %v.3518
-  %t.35190 = load i64, ptr %v.3518
-  store i64 %t.35190, ptr %v.3519
-  store i64 48, ptr %v.3520
-  %t.35210 = load i64, ptr %v.3517
-  %t.35211 = load i64, ptr %v.3520
-  %t.35212 = icmp sge i64 %t.35210, %t.35211
-  %t.35213 = zext i1 %t.35212 to i64
-  store i64 %t.35213, ptr %v.3521
-  store i64 57, ptr %v.3522
-  %t.35230 = load i64, ptr %v.3517
-  %t.35231 = load i64, ptr %v.3522
-  %t.35232 = icmp sle i64 %t.35230, %t.35231
-  %t.35233 = zext i1 %t.35232 to i64
-  store i64 %t.35233, ptr %v.3523
-  %t.35240 = load i64, ptr %v.3521
-  %t.35241 = load i64, ptr %v.3523
-  %t.35242 = and i64 %t.35240, %t.35241
-  store i64 %t.35242, ptr %v.3524
-  %t.35250 = load i64, ptr %v.3524
-  %t.35251 = icmp eq i64 %t.35250, 0
-  br i1 %t.35251, label %L.442, label %L.fall.3525
-L.fall.3525:
-  store i64 48, ptr %v.3526
-  %t.35270 = load i64, ptr %v.3517
-  %t.35271 = load i64, ptr %v.3526
-  %t.35272 = sub i64 %t.35270, %t.35271
-  store i64 %t.35272, ptr %v.3527
-  %t.35280 = load i64, ptr %v.3527
-  store i64 %t.35280, ptr %v.3519
-  br label %L.443
-L.442:
-  br label %L.443
-L.443:
-  store i64 97, ptr %v.3532
-  %t.35330 = load i64, ptr %v.3517
-  %t.35331 = load i64, ptr %v.3532
-  %t.35332 = icmp sge i64 %t.35330, %t.35331
-  %t.35333 = zext i1 %t.35332 to i64
-  store i64 %t.35333, ptr %v.3533
-  store i64 102, ptr %v.3534
-  %t.35350 = load i64, ptr %v.3517
-  %t.35351 = load i64, ptr %v.3534
-  %t.35352 = icmp sle i64 %t.35350, %t.35351
-  %t.35353 = zext i1 %t.35352 to i64
-  store i64 %t.35353, ptr %v.3535
-  %t.35360 = load i64, ptr %v.3533
-  %t.35361 = load i64, ptr %v.3535
-  %t.35362 = and i64 %t.35360, %t.35361
-  store i64 %t.35362, ptr %v.3536
-  %t.35370 = load i64, ptr %v.3536
-  %t.35371 = icmp eq i64 %t.35370, 0
-  br i1 %t.35371, label %L.444, label %L.fall.3537
-L.fall.3537:
-  store i64 97, ptr %v.3538
-  %t.35390 = load i64, ptr %v.3517
-  %t.35391 = load i64, ptr %v.3538
-  %t.35392 = sub i64 %t.35390, %t.35391
-  store i64 %t.35392, ptr %v.3539
-  store i64 10, ptr %v.3540
-  %t.35410 = load i64, ptr %v.3539
-  %t.35411 = load i64, ptr %v.3540
-  %t.35412 = add i64 %t.35410, %t.35411
-  store i64 %t.35412, ptr %v.3541
-  %t.35420 = load i64, ptr %v.3541
-  store i64 %t.35420, ptr %v.3519
-  br label %L.445
-L.444:
-  br label %L.445
-L.445:
-  store i64 65, ptr %v.3546
-  %t.35470 = load i64, ptr %v.3517
-  %t.35471 = load i64, ptr %v.3546
-  %t.35472 = icmp sge i64 %t.35470, %t.35471
-  %t.35473 = zext i1 %t.35472 to i64
-  store i64 %t.35473, ptr %v.3547
-  store i64 70, ptr %v.3548
-  %t.35490 = load i64, ptr %v.3517
+  %t.35319 = call i64 @token_TK_INT()
+  store i64 %t.35319, ptr %v.3531
+  %t.35350 = load i64, ptr %v.90000
+  %t.35351 = load i64, ptr %v.90001
+  %t.35352 = load i64, ptr %v.3531
+  %t.35359 = call i64 @lexer_lex_end(i64 %t.35350, i64 %t.35351, i64 %t.35352)
+  store i64 %t.35359, ptr %v.3535
+  %t.35360 = load i64, ptr %v.3535
+  store i64 %t.35360, ptr %v.3536
+  %t.35400 = load i64, ptr %v.90000
+  %t.35401 = load i64, ptr %v.90001
+  %t.35402 = load i64, ptr %v.3536
+  %t.35409 = call i64 @strings_str_substring(i64 %t.35400, i64 %t.35401, i64 %t.35402)
+  store i64 %t.35409, ptr %v.3540
+  %t.35410 = load i64, ptr %v.3540
+  store i64 %t.35410, ptr %v.3541
+  store i64 0, ptr %v.3542
+  %t.35430 = load i64, ptr %v.3542
+  store i64 %t.35430, ptr %v.3543
+  store i64 0, ptr %v.3544
+  %t.35450 = load i64, ptr %v.3544
+  store i64 %t.35450, ptr %v.3545
+  %t.35460 = load i64, ptr %v.3541
+  %t.35461 = inttoptr i64 %t.35460 to ptr
+  %t.35462 = call i64 @ease_str_len(ptr %t.35461)
+  store i64 %t.35462, ptr %v.3546
+  %t.35470 = load i64, ptr %v.3546
+  store i64 %t.35470, ptr %v.3547
+  store i64 2, ptr %v.3548
+  %t.35490 = load i64, ptr %v.3547
   %t.35491 = load i64, ptr %v.3548
-  %t.35492 = icmp sle i64 %t.35490, %t.35491
+  %t.35492 = icmp sge i64 %t.35490, %t.35491
   %t.35493 = zext i1 %t.35492 to i64
   store i64 %t.35493, ptr %v.3549
-  %t.35500 = load i64, ptr %v.3547
-  %t.35501 = load i64, ptr %v.3549
-  %t.35502 = and i64 %t.35500, %t.35501
-  store i64 %t.35502, ptr %v.3550
-  %t.35510 = load i64, ptr %v.3550
-  %t.35511 = icmp eq i64 %t.35510, 0
-  br i1 %t.35511, label %L.446, label %L.fall.3551
-L.fall.3551:
-  store i64 65, ptr %v.3552
-  %t.35530 = load i64, ptr %v.3517
+  store i64 0, ptr %v.3550
+  %t.35510 = load i64, ptr %v.3541
+  %t.35511 = inttoptr i64 %t.35510 to ptr
+  %t.35512 = load i64, ptr %v.3550
+  %t.35513 = call i64 @ease_str_char_at(ptr %t.35511, i64 %t.35512)
+  store i64 %t.35513, ptr %v.3551
+  store i64 48, ptr %v.3552
+  %t.35530 = load i64, ptr %v.3551
   %t.35531 = load i64, ptr %v.3552
-  %t.35532 = sub i64 %t.35530, %t.35531
-  store i64 %t.35532, ptr %v.3553
-  store i64 10, ptr %v.3554
-  %t.35550 = load i64, ptr %v.3553
-  %t.35551 = load i64, ptr %v.3554
-  %t.35552 = add i64 %t.35550, %t.35551
-  store i64 %t.35552, ptr %v.3555
-  %t.35560 = load i64, ptr %v.3555
-  store i64 %t.35560, ptr %v.3519
+  %t.35532 = icmp eq i64 %t.35530, %t.35531
+  %t.35533 = zext i1 %t.35532 to i64
+  store i64 %t.35533, ptr %v.3553
+  %t.35540 = load i64, ptr %v.3549
+  %t.35541 = load i64, ptr %v.3553
+  %t.35542 = and i64 %t.35540, %t.35541
+  store i64 %t.35542, ptr %v.3554
+  store i64 1, ptr %v.3555
+  %t.35560 = load i64, ptr %v.3541
+  %t.35561 = inttoptr i64 %t.35560 to ptr
+  %t.35562 = load i64, ptr %v.3555
+  %t.35563 = call i64 @ease_str_char_at(ptr %t.35561, i64 %t.35562)
+  store i64 %t.35563, ptr %v.3556
+  store i64 120, ptr %v.3557
+  %t.35580 = load i64, ptr %v.3556
+  %t.35581 = load i64, ptr %v.3557
+  %t.35582 = icmp eq i64 %t.35580, %t.35581
+  %t.35583 = zext i1 %t.35582 to i64
+  store i64 %t.35583, ptr %v.3558
+  %t.35590 = load i64, ptr %v.3554
+  %t.35591 = load i64, ptr %v.3558
+  %t.35592 = and i64 %t.35590, %t.35591
+  store i64 %t.35592, ptr %v.3559
+  %t.35600 = load i64, ptr %v.3559
+  %t.35601 = icmp eq i64 %t.35600, 0
+  br i1 %t.35601, label %L.442, label %L.fall.3560
+L.fall.3560:
+  store i64 2, ptr %v.3561
+  %t.35620 = load i64, ptr %v.3561
+  store i64 %t.35620, ptr %v.3545
+  br label %L.444
+L.444:
+  %t.35640 = load i64, ptr %v.3545
+  %t.35641 = load i64, ptr %v.3547
+  %t.35642 = icmp slt i64 %t.35640, %t.35641
+  %t.35643 = zext i1 %t.35642 to i64
+  store i64 %t.35643, ptr %v.3564
+  %t.35650 = load i64, ptr %v.3564
+  %t.35651 = icmp eq i64 %t.35650, 0
+  br i1 %t.35651, label %L.445, label %L.fall.3565
+L.fall.3565:
+  %t.35660 = load i64, ptr %v.3541
+  %t.35661 = inttoptr i64 %t.35660 to ptr
+  %t.35662 = load i64, ptr %v.3545
+  %t.35663 = call i64 @ease_str_char_at(ptr %t.35661, i64 %t.35662)
+  store i64 %t.35663, ptr %v.3566
+  %t.35670 = load i64, ptr %v.3566
+  store i64 %t.35670, ptr %v.3567
+  store i64 0, ptr %v.3568
+  %t.35690 = load i64, ptr %v.3568
+  store i64 %t.35690, ptr %v.3569
+  store i64 48, ptr %v.3570
+  %t.35710 = load i64, ptr %v.3567
+  %t.35711 = load i64, ptr %v.3570
+  %t.35712 = icmp sge i64 %t.35710, %t.35711
+  %t.35713 = zext i1 %t.35712 to i64
+  store i64 %t.35713, ptr %v.3571
+  store i64 57, ptr %v.3572
+  %t.35730 = load i64, ptr %v.3567
+  %t.35731 = load i64, ptr %v.3572
+  %t.35732 = icmp sle i64 %t.35730, %t.35731
+  %t.35733 = zext i1 %t.35732 to i64
+  store i64 %t.35733, ptr %v.3573
+  %t.35740 = load i64, ptr %v.3571
+  %t.35741 = load i64, ptr %v.3573
+  %t.35742 = and i64 %t.35740, %t.35741
+  store i64 %t.35742, ptr %v.3574
+  %t.35750 = load i64, ptr %v.3574
+  %t.35751 = icmp eq i64 %t.35750, 0
+  br i1 %t.35751, label %L.446, label %L.fall.3575
+L.fall.3575:
+  store i64 48, ptr %v.3576
+  %t.35770 = load i64, ptr %v.3567
+  %t.35771 = load i64, ptr %v.3576
+  %t.35772 = sub i64 %t.35770, %t.35771
+  store i64 %t.35772, ptr %v.3577
+  %t.35780 = load i64, ptr %v.3577
+  store i64 %t.35780, ptr %v.3569
   br label %L.447
 L.446:
   br label %L.447
 L.447:
-  store i64 16, ptr %v.3560
-  %t.35610 = load i64, ptr %v.3493
-  %t.35611 = load i64, ptr %v.3560
-  %t.35612 = mul i64 %t.35610, %t.35611
-  store i64 %t.35612, ptr %v.3561
-  %t.35620 = load i64, ptr %v.3561
-  %t.35621 = load i64, ptr %v.3519
-  %t.35622 = add i64 %t.35620, %t.35621
-  store i64 %t.35622, ptr %v.3562
-  %t.35630 = load i64, ptr %v.3562
-  store i64 %t.35630, ptr %v.3493
-  store i64 1, ptr %v.3564
-  %t.35650 = load i64, ptr %v.3495
-  %t.35651 = load i64, ptr %v.3564
-  %t.35652 = add i64 %t.35650, %t.35651
-  store i64 %t.35652, ptr %v.3565
-  %t.35660 = load i64, ptr %v.3565
-  store i64 %t.35660, ptr %v.3495
-  br label %L.440
-L.441:
-  br label %L.439
-L.438:
-  br label %L.448
-L.448:
-  %t.35720 = load i64, ptr %v.3495
-  %t.35721 = load i64, ptr %v.3497
-  %t.35722 = icmp slt i64 %t.35720, %t.35721
-  %t.35723 = zext i1 %t.35722 to i64
-  store i64 %t.35723, ptr %v.3572
-  %t.35730 = load i64, ptr %v.3572
-  %t.35731 = icmp eq i64 %t.35730, 0
-  br i1 %t.35731, label %L.449, label %L.fall.3573
-L.fall.3573:
-  %t.35740 = load i64, ptr %v.3491
-  %t.35741 = inttoptr i64 %t.35740 to ptr
-  %t.35742 = load i64, ptr %v.3495
-  %t.35743 = call i64 @ease_str_char_at(ptr %t.35741, i64 %t.35742)
-  store i64 %t.35743, ptr %v.3574
-  %t.35750 = load i64, ptr %v.3574
-  store i64 %t.35750, ptr %v.3575
-  store i64 10, ptr %v.3576
-  %t.35770 = load i64, ptr %v.3493
-  %t.35771 = load i64, ptr %v.3576
-  %t.35772 = mul i64 %t.35770, %t.35771
-  store i64 %t.35772, ptr %v.3577
-  store i64 48, ptr %v.3578
-  %t.35790 = load i64, ptr %v.3575
-  %t.35791 = load i64, ptr %v.3578
-  %t.35792 = sub i64 %t.35790, %t.35791
-  store i64 %t.35792, ptr %v.3579
-  %t.35800 = load i64, ptr %v.3577
-  %t.35801 = load i64, ptr %v.3579
-  %t.35802 = add i64 %t.35800, %t.35801
-  store i64 %t.35802, ptr %v.3580
-  %t.35810 = load i64, ptr %v.3580
-  store i64 %t.35810, ptr %v.3493
-  store i64 1, ptr %v.3582
-  %t.35830 = load i64, ptr %v.3495
+  store i64 97, ptr %v.3582
+  %t.35830 = load i64, ptr %v.3567
   %t.35831 = load i64, ptr %v.3582
-  %t.35832 = add i64 %t.35830, %t.35831
-  store i64 %t.35832, ptr %v.3583
-  %t.35840 = load i64, ptr %v.3583
-  store i64 %t.35840, ptr %v.3495
-  br label %L.448
+  %t.35832 = icmp sge i64 %t.35830, %t.35831
+  %t.35833 = zext i1 %t.35832 to i64
+  store i64 %t.35833, ptr %v.3583
+  store i64 102, ptr %v.3584
+  %t.35850 = load i64, ptr %v.3567
+  %t.35851 = load i64, ptr %v.3584
+  %t.35852 = icmp sle i64 %t.35850, %t.35851
+  %t.35853 = zext i1 %t.35852 to i64
+  store i64 %t.35853, ptr %v.3585
+  %t.35860 = load i64, ptr %v.3583
+  %t.35861 = load i64, ptr %v.3585
+  %t.35862 = and i64 %t.35860, %t.35861
+  store i64 %t.35862, ptr %v.3586
+  %t.35870 = load i64, ptr %v.3586
+  %t.35871 = icmp eq i64 %t.35870, 0
+  br i1 %t.35871, label %L.448, label %L.fall.3587
+L.fall.3587:
+  store i64 97, ptr %v.3588
+  %t.35890 = load i64, ptr %v.3567
+  %t.35891 = load i64, ptr %v.3588
+  %t.35892 = sub i64 %t.35890, %t.35891
+  store i64 %t.35892, ptr %v.3589
+  store i64 10, ptr %v.3590
+  %t.35910 = load i64, ptr %v.3589
+  %t.35911 = load i64, ptr %v.3590
+  %t.35912 = add i64 %t.35910, %t.35911
+  store i64 %t.35912, ptr %v.3591
+  %t.35920 = load i64, ptr %v.3591
+  store i64 %t.35920, ptr %v.3569
+  br label %L.449
+L.448:
+  br label %L.449
 L.449:
-  br label %L.439
-L.439:
-  %t.35880 = load i64, ptr %v.3493
-  ret i64 %t.35880
+  store i64 65, ptr %v.3596
+  %t.35970 = load i64, ptr %v.3567
+  %t.35971 = load i64, ptr %v.3596
+  %t.35972 = icmp sge i64 %t.35970, %t.35971
+  %t.35973 = zext i1 %t.35972 to i64
+  store i64 %t.35973, ptr %v.3597
+  store i64 70, ptr %v.3598
+  %t.35990 = load i64, ptr %v.3567
+  %t.35991 = load i64, ptr %v.3598
+  %t.35992 = icmp sle i64 %t.35990, %t.35991
+  %t.35993 = zext i1 %t.35992 to i64
+  store i64 %t.35993, ptr %v.3599
+  %t.36000 = load i64, ptr %v.3597
+  %t.36001 = load i64, ptr %v.3599
+  %t.36002 = and i64 %t.36000, %t.36001
+  store i64 %t.36002, ptr %v.3600
+  %t.36010 = load i64, ptr %v.3600
+  %t.36011 = icmp eq i64 %t.36010, 0
+  br i1 %t.36011, label %L.450, label %L.fall.3601
+L.fall.3601:
+  store i64 65, ptr %v.3602
+  %t.36030 = load i64, ptr %v.3567
+  %t.36031 = load i64, ptr %v.3602
+  %t.36032 = sub i64 %t.36030, %t.36031
+  store i64 %t.36032, ptr %v.3603
+  store i64 10, ptr %v.3604
+  %t.36050 = load i64, ptr %v.3603
+  %t.36051 = load i64, ptr %v.3604
+  %t.36052 = add i64 %t.36050, %t.36051
+  store i64 %t.36052, ptr %v.3605
+  %t.36060 = load i64, ptr %v.3605
+  store i64 %t.36060, ptr %v.3569
+  br label %L.451
+L.450:
+  br label %L.451
+L.451:
+  store i64 16, ptr %v.3610
+  %t.36110 = load i64, ptr %v.3543
+  %t.36111 = load i64, ptr %v.3610
+  %t.36112 = mul i64 %t.36110, %t.36111
+  store i64 %t.36112, ptr %v.3611
+  %t.36120 = load i64, ptr %v.3611
+  %t.36121 = load i64, ptr %v.3569
+  %t.36122 = add i64 %t.36120, %t.36121
+  store i64 %t.36122, ptr %v.3612
+  %t.36130 = load i64, ptr %v.3612
+  store i64 %t.36130, ptr %v.3543
+  store i64 1, ptr %v.3614
+  %t.36150 = load i64, ptr %v.3545
+  %t.36151 = load i64, ptr %v.3614
+  %t.36152 = add i64 %t.36150, %t.36151
+  store i64 %t.36152, ptr %v.3615
+  %t.36160 = load i64, ptr %v.3615
+  store i64 %t.36160, ptr %v.3545
+  br label %L.444
+L.445:
+  br label %L.443
+L.442:
+  br label %L.452
+L.452:
+  %t.36220 = load i64, ptr %v.3545
+  %t.36221 = load i64, ptr %v.3547
+  %t.36222 = icmp slt i64 %t.36220, %t.36221
+  %t.36223 = zext i1 %t.36222 to i64
+  store i64 %t.36223, ptr %v.3622
+  %t.36230 = load i64, ptr %v.3622
+  %t.36231 = icmp eq i64 %t.36230, 0
+  br i1 %t.36231, label %L.453, label %L.fall.3623
+L.fall.3623:
+  %t.36240 = load i64, ptr %v.3541
+  %t.36241 = inttoptr i64 %t.36240 to ptr
+  %t.36242 = load i64, ptr %v.3545
+  %t.36243 = call i64 @ease_str_char_at(ptr %t.36241, i64 %t.36242)
+  store i64 %t.36243, ptr %v.3624
+  %t.36250 = load i64, ptr %v.3624
+  store i64 %t.36250, ptr %v.3625
+  store i64 10, ptr %v.3626
+  %t.36270 = load i64, ptr %v.3543
+  %t.36271 = load i64, ptr %v.3626
+  %t.36272 = mul i64 %t.36270, %t.36271
+  store i64 %t.36272, ptr %v.3627
+  store i64 48, ptr %v.3628
+  %t.36290 = load i64, ptr %v.3625
+  %t.36291 = load i64, ptr %v.3628
+  %t.36292 = sub i64 %t.36290, %t.36291
+  store i64 %t.36292, ptr %v.3629
+  %t.36300 = load i64, ptr %v.3627
+  %t.36301 = load i64, ptr %v.3629
+  %t.36302 = add i64 %t.36300, %t.36301
+  store i64 %t.36302, ptr %v.3630
+  %t.36310 = load i64, ptr %v.3630
+  store i64 %t.36310, ptr %v.3543
+  store i64 1, ptr %v.3632
+  %t.36330 = load i64, ptr %v.3545
+  %t.36331 = load i64, ptr %v.3632
+  %t.36332 = add i64 %t.36330, %t.36331
+  store i64 %t.36332, ptr %v.3633
+  %t.36340 = load i64, ptr %v.3633
+  store i64 %t.36340, ptr %v.3545
+  br label %L.452
+L.453:
+  br label %L.443
+L.443:
+  %t.36380 = load i64, ptr %v.3543
+  ret i64 %t.36380
 }
 
 define i64 @ast_EXPR_INT() {
-  %v.3590 = alloca i64
+  %v.3640 = alloca i64
   %v.0 = alloca i64
   br label %B.body
 B.body:
-  store i64 1, ptr %v.3590
-  %t.35910 = load i64, ptr %v.3590
-  ret i64 %t.35910
+  store i64 1, ptr %v.3640
+  %t.36410 = load i64, ptr %v.3640
+  ret i64 %t.36410
 }
 
 define i64 @ast_EXPR_BOOL() {
-  %v.3593 = alloca i64
+  %v.3643 = alloca i64
   %v.0 = alloca i64
   br label %B.body
 B.body:
-  store i64 2, ptr %v.3593
-  %t.35940 = load i64, ptr %v.3593
-  ret i64 %t.35940
+  store i64 2, ptr %v.3643
+  %t.36440 = load i64, ptr %v.3643
+  ret i64 %t.36440
 }
 
 define i64 @ast_EXPR_IDENT() {
-  %v.3596 = alloca i64
+  %v.3646 = alloca i64
   %v.0 = alloca i64
   br label %B.body
 B.body:
-  store i64 3, ptr %v.3596
-  %t.35970 = load i64, ptr %v.3596
-  ret i64 %t.35970
+  store i64 3, ptr %v.3646
+  %t.36470 = load i64, ptr %v.3646
+  ret i64 %t.36470
 }
 
 define i64 @ast_EXPR_BINARY() {
-  %v.3599 = alloca i64
+  %v.3649 = alloca i64
   %v.0 = alloca i64
   br label %B.body
 B.body:
-  store i64 4, ptr %v.3599
-  %t.36000 = load i64, ptr %v.3599
-  ret i64 %t.36000
+  store i64 4, ptr %v.3649
+  %t.36500 = load i64, ptr %v.3649
+  ret i64 %t.36500
 }
 
 define i64 @ast_EXPR_UNARY() {
-  %v.3602 = alloca i64
+  %v.3652 = alloca i64
   %v.0 = alloca i64
   br label %B.body
 B.body:
-  store i64 5, ptr %v.3602
-  %t.36030 = load i64, ptr %v.3602
-  ret i64 %t.36030
+  store i64 5, ptr %v.3652
+  %t.36530 = load i64, ptr %v.3652
+  ret i64 %t.36530
 }
 
 define i64 @ast_EXPR_CALL() {
-  %v.3605 = alloca i64
+  %v.3655 = alloca i64
   %v.0 = alloca i64
   br label %B.body
 B.body:
-  store i64 6, ptr %v.3605
-  %t.36060 = load i64, ptr %v.3605
-  ret i64 %t.36060
+  store i64 6, ptr %v.3655
+  %t.36560 = load i64, ptr %v.3655
+  ret i64 %t.36560
 }
 
 define i64 @ast_EXPR_INDEX() {
-  %v.3608 = alloca i64
+  %v.3658 = alloca i64
   %v.0 = alloca i64
   br label %B.body
 B.body:
-  store i64 7, ptr %v.3608
-  %t.36090 = load i64, ptr %v.3608
-  ret i64 %t.36090
+  store i64 7, ptr %v.3658
+  %t.36590 = load i64, ptr %v.3658
+  ret i64 %t.36590
 }
 
 define i64 @ast_EXPR_FIELD() {
-  %v.3611 = alloca i64
+  %v.3661 = alloca i64
   %v.0 = alloca i64
   br label %B.body
 B.body:
-  store i64 8, ptr %v.3611
-  %t.36120 = load i64, ptr %v.3611
-  ret i64 %t.36120
+  store i64 8, ptr %v.3661
+  %t.36620 = load i64, ptr %v.3661
+  ret i64 %t.36620
 }
 
 define i64 @ast_EXPR_ARRAY_LIT() {
-  %v.3614 = alloca i64
+  %v.3664 = alloca i64
   %v.0 = alloca i64
   br label %B.body
 B.body:
-  store i64 9, ptr %v.3614
-  %t.36150 = load i64, ptr %v.3614
-  ret i64 %t.36150
+  store i64 9, ptr %v.3664
+  %t.36650 = load i64, ptr %v.3664
+  ret i64 %t.36650
 }
 
 define i64 @ast_EXPR_STRUCT_LIT() {
-  %v.3617 = alloca i64
+  %v.3667 = alloca i64
   %v.0 = alloca i64
   br label %B.body
 B.body:
-  store i64 10, ptr %v.3617
-  %t.36180 = load i64, ptr %v.3617
-  ret i64 %t.36180
+  store i64 10, ptr %v.3667
+  %t.36680 = load i64, ptr %v.3667
+  ret i64 %t.36680
 }
 
 define i64 @ast_EXPR_STRING() {
-  %v.3620 = alloca i64
+  %v.3670 = alloca i64
   %v.0 = alloca i64
   br label %B.body
 B.body:
-  store i64 11, ptr %v.3620
-  %t.36210 = load i64, ptr %v.3620
-  ret i64 %t.36210
+  store i64 11, ptr %v.3670
+  %t.36710 = load i64, ptr %v.3670
+  ret i64 %t.36710
 }
 
 define i64 @ast_STMT_LET() {
-  %v.3623 = alloca i64
+  %v.3673 = alloca i64
   %v.0 = alloca i64
   br label %B.body
 B.body:
-  store i64 20, ptr %v.3623
-  %t.36240 = load i64, ptr %v.3623
-  ret i64 %t.36240
+  store i64 20, ptr %v.3673
+  %t.36740 = load i64, ptr %v.3673
+  ret i64 %t.36740
 }
 
 define i64 @ast_STMT_RETURN() {
-  %v.3626 = alloca i64
+  %v.3676 = alloca i64
   %v.0 = alloca i64
   br label %B.body
 B.body:
-  store i64 21, ptr %v.3626
-  %t.36270 = load i64, ptr %v.3626
-  ret i64 %t.36270
+  store i64 21, ptr %v.3676
+  %t.36770 = load i64, ptr %v.3676
+  ret i64 %t.36770
 }
 
 define i64 @ast_STMT_IF() {
-  %v.3629 = alloca i64
+  %v.3679 = alloca i64
   %v.0 = alloca i64
   br label %B.body
 B.body:
-  store i64 22, ptr %v.3629
-  %t.36300 = load i64, ptr %v.3629
-  ret i64 %t.36300
+  store i64 22, ptr %v.3679
+  %t.36800 = load i64, ptr %v.3679
+  ret i64 %t.36800
 }
 
 define i64 @ast_STMT_FOR() {
-  %v.3632 = alloca i64
+  %v.3682 = alloca i64
   %v.0 = alloca i64
   br label %B.body
 B.body:
-  store i64 23, ptr %v.3632
-  %t.36330 = load i64, ptr %v.3632
-  ret i64 %t.36330
+  store i64 23, ptr %v.3682
+  %t.36830 = load i64, ptr %v.3682
+  ret i64 %t.36830
 }
 
 define i64 @ast_STMT_ASSIGN() {
-  %v.3635 = alloca i64
+  %v.3685 = alloca i64
   %v.0 = alloca i64
   br label %B.body
 B.body:
-  store i64 24, ptr %v.3635
-  %t.36360 = load i64, ptr %v.3635
-  ret i64 %t.36360
+  store i64 24, ptr %v.3685
+  %t.36860 = load i64, ptr %v.3685
+  ret i64 %t.36860
 }
 
 define i64 @ast_STMT_EXPR() {
-  %v.3638 = alloca i64
+  %v.3688 = alloca i64
   %v.0 = alloca i64
   br label %B.body
 B.body:
-  store i64 25, ptr %v.3638
-  %t.36390 = load i64, ptr %v.3638
-  ret i64 %t.36390
+  store i64 25, ptr %v.3688
+  %t.36890 = load i64, ptr %v.3688
+  ret i64 %t.36890
 }
 
 define i64 @ast_STMT_BLOCK() {
-  %v.3641 = alloca i64
+  %v.3691 = alloca i64
   %v.0 = alloca i64
   br label %B.body
 B.body:
-  store i64 26, ptr %v.3641
-  %t.36420 = load i64, ptr %v.3641
-  ret i64 %t.36420
+  store i64 26, ptr %v.3691
+  %t.36920 = load i64, ptr %v.3691
+  ret i64 %t.36920
 }
 
 define i64 @ast_STMT_BREAK() {
-  %v.3644 = alloca i64
+  %v.3694 = alloca i64
   %v.0 = alloca i64
   br label %B.body
 B.body:
-  store i64 27, ptr %v.3644
-  %t.36450 = load i64, ptr %v.3644
-  ret i64 %t.36450
+  store i64 27, ptr %v.3694
+  %t.36950 = load i64, ptr %v.3694
+  ret i64 %t.36950
 }
 
 define i64 @ast_DECL_FUNC() {
-  %v.3647 = alloca i64
+  %v.3697 = alloca i64
   %v.0 = alloca i64
   br label %B.body
 B.body:
-  store i64 40, ptr %v.3647
-  %t.36480 = load i64, ptr %v.3647
-  ret i64 %t.36480
+  store i64 40, ptr %v.3697
+  %t.36980 = load i64, ptr %v.3697
+  ret i64 %t.36980
 }
 
 define i64 @ast_DECL_STRUCT() {
-  %v.3650 = alloca i64
+  %v.3700 = alloca i64
   %v.0 = alloca i64
   br label %B.body
 B.body:
-  store i64 41, ptr %v.3650
-  %t.36510 = load i64, ptr %v.3650
-  ret i64 %t.36510
+  store i64 41, ptr %v.3700
+  %t.37010 = load i64, ptr %v.3700
+  ret i64 %t.37010
 }
 
 define i64 @ast_DECL_PARAM() {
-  %v.3653 = alloca i64
+  %v.3703 = alloca i64
   %v.0 = alloca i64
   br label %B.body
 B.body:
-  store i64 42, ptr %v.3653
-  %t.36540 = load i64, ptr %v.3653
-  ret i64 %t.36540
+  store i64 42, ptr %v.3703
+  %t.37040 = load i64, ptr %v.3703
+  ret i64 %t.37040
 }
 
 define i64 @ast_DECL_FIELD() {
-  %v.3656 = alloca i64
+  %v.3706 = alloca i64
   %v.0 = alloca i64
   br label %B.body
 B.body:
-  store i64 43, ptr %v.3656
-  %t.36570 = load i64, ptr %v.3656
-  ret i64 %t.36570
+  store i64 43, ptr %v.3706
+  %t.37070 = load i64, ptr %v.3706
+  ret i64 %t.37070
 }
 
 define i64 @ast_DECL_IMPORT() {
-  %v.3659 = alloca i64
+  %v.3709 = alloca i64
   %v.0 = alloca i64
   br label %B.body
 B.body:
-  store i64 44, ptr %v.3659
-  %t.36600 = load i64, ptr %v.3659
-  ret i64 %t.36600
+  store i64 44, ptr %v.3709
+  %t.37100 = load i64, ptr %v.3709
+  ret i64 %t.37100
 }
 
 define i64 @ast_TYPE_UNKNOWN() {
-  %v.3662 = alloca i64
+  %v.3712 = alloca i64
   %v.0 = alloca i64
   br label %B.body
 B.body:
-  store i64 0, ptr %v.3662
-  %t.36630 = load i64, ptr %v.3662
-  ret i64 %t.36630
+  store i64 0, ptr %v.3712
+  %t.37130 = load i64, ptr %v.3712
+  ret i64 %t.37130
 }
 
 define i64 @ast_TYPE_INT() {
-  %v.3665 = alloca i64
+  %v.3715 = alloca i64
   %v.0 = alloca i64
   br label %B.body
 B.body:
-  store i64 1, ptr %v.3665
-  %t.36660 = load i64, ptr %v.3665
-  ret i64 %t.36660
+  store i64 1, ptr %v.3715
+  %t.37160 = load i64, ptr %v.3715
+  ret i64 %t.37160
 }
 
 define i64 @ast_TYPE_BOOL() {
-  %v.3668 = alloca i64
+  %v.3718 = alloca i64
   %v.0 = alloca i64
   br label %B.body
 B.body:
-  store i64 2, ptr %v.3668
-  %t.36690 = load i64, ptr %v.3668
-  ret i64 %t.36690
+  store i64 2, ptr %v.3718
+  %t.37190 = load i64, ptr %v.3718
+  ret i64 %t.37190
 }
 
 define i64 @ast_TYPE_STRING() {
-  %v.3671 = alloca i64
+  %v.3721 = alloca i64
   %v.0 = alloca i64
   br label %B.body
 B.body:
-  store i64 3, ptr %v.3671
-  %t.36720 = load i64, ptr %v.3671
-  ret i64 %t.36720
+  store i64 3, ptr %v.3721
+  %t.37220 = load i64, ptr %v.3721
+  ret i64 %t.37220
 }
 
 define i64 @ast_new_int_node(i64 %param.0, i64 %param.1) {
   %v.90000 = alloca i64
   %v.90001 = alloca i64
-  %v.3674 = alloca i64
-  %v.3675 = alloca i64
-  %v.3676 = alloca i64
-  %v.3678 = alloca i64
-  %v.3680 = alloca i64
-  %v.3681 = alloca i64
-  %v.3683 = alloca i64
-  %v.3684 = alloca i64
-  %v.3685 = alloca i64
-  %v.3686 = alloca i64
-  %v.3688 = alloca i64
-  %v.3689 = alloca i64
-  %v.3690 = alloca i64
-  %v.3691 = alloca i64
-  %v.3693 = alloca i64
-  %v.3694 = alloca i64
-  %v.3695 = alloca i64
-  %v.3696 = alloca i64
-  %v.3698 = alloca i64
-  %v.3699 = alloca i64
-  %v.3701 = alloca i64
-  %v.3703 = alloca i64
-  %v.3704 = alloca i64
-  %v.3705 = alloca i64
+  %v.3724 = alloca i64
+  %v.3725 = alloca i64
+  %v.3726 = alloca i64
+  %v.3728 = alloca i64
+  %v.3730 = alloca i64
+  %v.3731 = alloca i64
+  %v.3733 = alloca i64
+  %v.3734 = alloca i64
+  %v.3735 = alloca i64
+  %v.3736 = alloca i64
+  %v.3738 = alloca i64
+  %v.3739 = alloca i64
+  %v.3740 = alloca i64
+  %v.3741 = alloca i64
+  %v.3743 = alloca i64
+  %v.3744 = alloca i64
+  %v.3745 = alloca i64
+  %v.3746 = alloca i64
+  %v.3748 = alloca i64
+  %v.3749 = alloca i64
+  %v.3751 = alloca i64
+  %v.3753 = alloca i64
+  %v.3754 = alloca i64
+  %v.3755 = alloca i64
   %v.0 = alloca i64
   store i64 %param.0, ptr %v.90000
   store i64 %param.1, ptr %v.90001
   br label %B.body
 B.body:
-  %t.36740 = call ptr @malloc(i64 56)
-  %t.36741 = call ptr @memset(ptr %t.36740, i32 0, i64 56)
-  %t.36742 = ptrtoint ptr %t.36740 to i64
-  store i64 %t.36742, ptr %v.3674
-  %t.36759 = call i64 @ast_EXPR_INT()
-  store i64 %t.36759, ptr %v.3675
-  %t.36760 = load i64, ptr %v.3674
-  store i64 %t.36760, ptr %v.3676
-  %t.36770 = load i64, ptr %v.3676
-  %t.36771 = load i64, ptr %v.3675
-  %t.36772 = inttoptr i64 %t.36770 to ptr
-  store i64 %t.36771, ptr %t.36772
-  %t.36780 = load i64, ptr %v.3674
-  %t.36781 = add i64 %t.36780, 8
-  store i64 %t.36781, ptr %v.3678
-  %t.36790 = load i64, ptr %v.3678
-  %t.36791 = load i64, ptr %v.90000
-  %t.36792 = inttoptr i64 %t.36790 to ptr
-  store i64 %t.36791, ptr %t.36792
-  store i64 0, ptr %v.3680
-  %t.36810 = load i64, ptr %v.3674
-  %t.36811 = add i64 %t.36810, 16
-  store i64 %t.36811, ptr %v.3681
-  %t.36820 = load i64, ptr %v.3681
-  %t.36821 = load i64, ptr %v.3680
-  %t.36822 = inttoptr i64 %t.36820 to ptr
-  store i64 %t.36821, ptr %t.36822
-  store i64 1, ptr %v.3683
-  store i64 0, ptr %v.3684
-  %t.36850 = load i64, ptr %v.3684
-  %t.36851 = load i64, ptr %v.3683
-  %t.36852 = sub i64 %t.36850, %t.36851
-  store i64 %t.36852, ptr %v.3685
-  %t.36860 = load i64, ptr %v.3674
-  %t.36861 = add i64 %t.36860, 24
-  store i64 %t.36861, ptr %v.3686
-  %t.36870 = load i64, ptr %v.3686
-  %t.36871 = load i64, ptr %v.3685
-  %t.36872 = inttoptr i64 %t.36870 to ptr
-  store i64 %t.36871, ptr %t.36872
-  store i64 1, ptr %v.3688
-  store i64 0, ptr %v.3689
-  %t.36900 = load i64, ptr %v.3689
-  %t.36901 = load i64, ptr %v.3688
-  %t.36902 = sub i64 %t.36900, %t.36901
-  store i64 %t.36902, ptr %v.3690
-  %t.36910 = load i64, ptr %v.3674
-  %t.36911 = add i64 %t.36910, 32
-  store i64 %t.36911, ptr %v.3691
-  %t.36920 = load i64, ptr %v.3691
-  %t.36921 = load i64, ptr %v.3690
-  %t.36922 = inttoptr i64 %t.36920 to ptr
-  store i64 %t.36921, ptr %t.36922
-  store i64 1, ptr %v.3693
-  store i64 0, ptr %v.3694
-  %t.36950 = load i64, ptr %v.3694
-  %t.36951 = load i64, ptr %v.3693
-  %t.36952 = sub i64 %t.36950, %t.36951
-  store i64 %t.36952, ptr %v.3695
-  %t.36960 = load i64, ptr %v.3674
-  %t.36961 = add i64 %t.36960, 40
-  store i64 %t.36961, ptr %v.3696
-  %t.36970 = load i64, ptr %v.3696
-  %t.36971 = load i64, ptr %v.3695
-  %t.36972 = inttoptr i64 %t.36970 to ptr
-  store i64 %t.36971, ptr %t.36972
-  %t.36989 = call i64 @ast_TYPE_INT()
-  store i64 %t.36989, ptr %v.3698
-  %t.36990 = load i64, ptr %v.3674
-  %t.36991 = add i64 %t.36990, 48
-  store i64 %t.36991, ptr %v.3699
-  %t.37000 = load i64, ptr %v.3699
-  %t.37001 = load i64, ptr %v.3698
-  %t.37002 = inttoptr i64 %t.37000 to ptr
-  store i64 %t.37001, ptr %t.37002
-  %t.37010 = load i64, ptr %v.3674
-  store i64 %t.37010, ptr %v.3701
-  %t.37020 = load i64, ptr %v.90001
-  %t.37021 = inttoptr i64 %t.37020 to ptr
-  %t.37022 = load i64, ptr %v.3701
-  %t.37023 = alloca i64
-  store i64 %t.37022, ptr %t.37023
-  call void @ease_array_push(ptr %t.37021, ptr %t.37023, i64 8)
-  %t.37030 = load i64, ptr %v.90001
-  %t.37031 = add i64 %t.37030, 8
-  %t.37032 = inttoptr i64 %t.37031 to ptr
-  %t.37033 = load i64, ptr %t.37032
-  store i64 %t.37033, ptr %v.3703
-  store i64 1, ptr %v.3704
-  %t.37050 = load i64, ptr %v.3703
-  %t.37051 = load i64, ptr %v.3704
-  %t.37052 = sub i64 %t.37050, %t.37051
-  store i64 %t.37052, ptr %v.3705
-  %t.37060 = load i64, ptr %v.3705
-  ret i64 %t.37060
+  %t.37240 = call ptr @malloc(i64 56)
+  %t.37241 = call ptr @memset(ptr %t.37240, i32 0, i64 56)
+  %t.37242 = ptrtoint ptr %t.37240 to i64
+  store i64 %t.37242, ptr %v.3724
+  %t.37259 = call i64 @ast_EXPR_INT()
+  store i64 %t.37259, ptr %v.3725
+  %t.37260 = load i64, ptr %v.3724
+  store i64 %t.37260, ptr %v.3726
+  %t.37270 = load i64, ptr %v.3726
+  %t.37271 = load i64, ptr %v.3725
+  %t.37272 = inttoptr i64 %t.37270 to ptr
+  store i64 %t.37271, ptr %t.37272
+  %t.37280 = load i64, ptr %v.3724
+  %t.37281 = add i64 %t.37280, 8
+  store i64 %t.37281, ptr %v.3728
+  %t.37290 = load i64, ptr %v.3728
+  %t.37291 = load i64, ptr %v.90000
+  %t.37292 = inttoptr i64 %t.37290 to ptr
+  store i64 %t.37291, ptr %t.37292
+  store i64 0, ptr %v.3730
+  %t.37310 = load i64, ptr %v.3724
+  %t.37311 = add i64 %t.37310, 16
+  store i64 %t.37311, ptr %v.3731
+  %t.37320 = load i64, ptr %v.3731
+  %t.37321 = load i64, ptr %v.3730
+  %t.37322 = inttoptr i64 %t.37320 to ptr
+  store i64 %t.37321, ptr %t.37322
+  store i64 1, ptr %v.3733
+  store i64 0, ptr %v.3734
+  %t.37350 = load i64, ptr %v.3734
+  %t.37351 = load i64, ptr %v.3733
+  %t.37352 = sub i64 %t.37350, %t.37351
+  store i64 %t.37352, ptr %v.3735
+  %t.37360 = load i64, ptr %v.3724
+  %t.37361 = add i64 %t.37360, 24
+  store i64 %t.37361, ptr %v.3736
+  %t.37370 = load i64, ptr %v.3736
+  %t.37371 = load i64, ptr %v.3735
+  %t.37372 = inttoptr i64 %t.37370 to ptr
+  store i64 %t.37371, ptr %t.37372
+  store i64 1, ptr %v.3738
+  store i64 0, ptr %v.3739
+  %t.37400 = load i64, ptr %v.3739
+  %t.37401 = load i64, ptr %v.3738
+  %t.37402 = sub i64 %t.37400, %t.37401
+  store i64 %t.37402, ptr %v.3740
+  %t.37410 = load i64, ptr %v.3724
+  %t.37411 = add i64 %t.37410, 32
+  store i64 %t.37411, ptr %v.3741
+  %t.37420 = load i64, ptr %v.3741
+  %t.37421 = load i64, ptr %v.3740
+  %t.37422 = inttoptr i64 %t.37420 to ptr
+  store i64 %t.37421, ptr %t.37422
+  store i64 1, ptr %v.3743
+  store i64 0, ptr %v.3744
+  %t.37450 = load i64, ptr %v.3744
+  %t.37451 = load i64, ptr %v.3743
+  %t.37452 = sub i64 %t.37450, %t.37451
+  store i64 %t.37452, ptr %v.3745
+  %t.37460 = load i64, ptr %v.3724
+  %t.37461 = add i64 %t.37460, 40
+  store i64 %t.37461, ptr %v.3746
+  %t.37470 = load i64, ptr %v.3746
+  %t.37471 = load i64, ptr %v.3745
+  %t.37472 = inttoptr i64 %t.37470 to ptr
+  store i64 %t.37471, ptr %t.37472
+  %t.37489 = call i64 @ast_TYPE_INT()
+  store i64 %t.37489, ptr %v.3748
+  %t.37490 = load i64, ptr %v.3724
+  %t.37491 = add i64 %t.37490, 48
+  store i64 %t.37491, ptr %v.3749
+  %t.37500 = load i64, ptr %v.3749
+  %t.37501 = load i64, ptr %v.3748
+  %t.37502 = inttoptr i64 %t.37500 to ptr
+  store i64 %t.37501, ptr %t.37502
+  %t.37510 = load i64, ptr %v.3724
+  store i64 %t.37510, ptr %v.3751
+  %t.37520 = load i64, ptr %v.90001
+  %t.37521 = inttoptr i64 %t.37520 to ptr
+  %t.37522 = load i64, ptr %v.3751
+  %t.37523 = alloca i64
+  store i64 %t.37522, ptr %t.37523
+  call void @ease_array_push(ptr %t.37521, ptr %t.37523, i64 8)
+  %t.37530 = load i64, ptr %v.90001
+  %t.37531 = add i64 %t.37530, 8
+  %t.37532 = inttoptr i64 %t.37531 to ptr
+  %t.37533 = load i64, ptr %t.37532
+  store i64 %t.37533, ptr %v.3753
+  store i64 1, ptr %v.3754
+  %t.37550 = load i64, ptr %v.3753
+  %t.37551 = load i64, ptr %v.3754
+  %t.37552 = sub i64 %t.37550, %t.37551
+  store i64 %t.37552, ptr %v.3755
+  %t.37560 = load i64, ptr %v.3755
+  ret i64 %t.37560
 }
 
 define i64 @ast_new_bool_node(i64 %param.0, i64 %param.1) {
   %v.90000 = alloca i64
   %v.90001 = alloca i64
-  %v.3708 = alloca i64
-  %v.3709 = alloca i64
-  %v.3710 = alloca i64
-  %v.3712 = alloca i64
-  %v.3714 = alloca i64
-  %v.3715 = alloca i64
-  %v.3717 = alloca i64
-  %v.3718 = alloca i64
-  %v.3719 = alloca i64
-  %v.3720 = alloca i64
-  %v.3722 = alloca i64
-  %v.3723 = alloca i64
-  %v.3724 = alloca i64
-  %v.3725 = alloca i64
-  %v.3727 = alloca i64
-  %v.3728 = alloca i64
-  %v.3729 = alloca i64
-  %v.3730 = alloca i64
-  %v.3732 = alloca i64
-  %v.3733 = alloca i64
-  %v.3735 = alloca i64
-  %v.3737 = alloca i64
-  %v.3738 = alloca i64
-  %v.3739 = alloca i64
+  %v.3758 = alloca i64
+  %v.3759 = alloca i64
+  %v.3760 = alloca i64
+  %v.3762 = alloca i64
+  %v.3764 = alloca i64
+  %v.3765 = alloca i64
+  %v.3767 = alloca i64
+  %v.3768 = alloca i64
+  %v.3769 = alloca i64
+  %v.3770 = alloca i64
+  %v.3772 = alloca i64
+  %v.3773 = alloca i64
+  %v.3774 = alloca i64
+  %v.3775 = alloca i64
+  %v.3777 = alloca i64
+  %v.3778 = alloca i64
+  %v.3779 = alloca i64
+  %v.3780 = alloca i64
+  %v.3782 = alloca i64
+  %v.3783 = alloca i64
+  %v.3785 = alloca i64
+  %v.3787 = alloca i64
+  %v.3788 = alloca i64
+  %v.3789 = alloca i64
   %v.0 = alloca i64
   store i64 %param.0, ptr %v.90000
   store i64 %param.1, ptr %v.90001
   br label %B.body
 B.body:
-  %t.37080 = call ptr @malloc(i64 56)
-  %t.37081 = call ptr @memset(ptr %t.37080, i32 0, i64 56)
-  %t.37082 = ptrtoint ptr %t.37080 to i64
-  store i64 %t.37082, ptr %v.3708
-  %t.37099 = call i64 @ast_EXPR_BOOL()
-  store i64 %t.37099, ptr %v.3709
-  %t.37100 = load i64, ptr %v.3708
-  store i64 %t.37100, ptr %v.3710
-  %t.37110 = load i64, ptr %v.3710
-  %t.37111 = load i64, ptr %v.3709
-  %t.37112 = inttoptr i64 %t.37110 to ptr
-  store i64 %t.37111, ptr %t.37112
-  %t.37120 = load i64, ptr %v.3708
-  %t.37121 = add i64 %t.37120, 8
-  store i64 %t.37121, ptr %v.3712
-  %t.37130 = load i64, ptr %v.3712
-  %t.37131 = load i64, ptr %v.90000
-  %t.37132 = inttoptr i64 %t.37130 to ptr
-  store i64 %t.37131, ptr %t.37132
-  store i64 0, ptr %v.3714
-  %t.37150 = load i64, ptr %v.3708
-  %t.37151 = add i64 %t.37150, 16
-  store i64 %t.37151, ptr %v.3715
-  %t.37160 = load i64, ptr %v.3715
-  %t.37161 = load i64, ptr %v.3714
-  %t.37162 = inttoptr i64 %t.37160 to ptr
-  store i64 %t.37161, ptr %t.37162
-  store i64 1, ptr %v.3717
-  store i64 0, ptr %v.3718
-  %t.37190 = load i64, ptr %v.3718
-  %t.37191 = load i64, ptr %v.3717
-  %t.37192 = sub i64 %t.37190, %t.37191
-  store i64 %t.37192, ptr %v.3719
-  %t.37200 = load i64, ptr %v.3708
-  %t.37201 = add i64 %t.37200, 24
-  store i64 %t.37201, ptr %v.3720
-  %t.37210 = load i64, ptr %v.3720
-  %t.37211 = load i64, ptr %v.3719
-  %t.37212 = inttoptr i64 %t.37210 to ptr
-  store i64 %t.37211, ptr %t.37212
-  store i64 1, ptr %v.3722
-  store i64 0, ptr %v.3723
-  %t.37240 = load i64, ptr %v.3723
-  %t.37241 = load i64, ptr %v.3722
-  %t.37242 = sub i64 %t.37240, %t.37241
-  store i64 %t.37242, ptr %v.3724
-  %t.37250 = load i64, ptr %v.3708
-  %t.37251 = add i64 %t.37250, 32
-  store i64 %t.37251, ptr %v.3725
-  %t.37260 = load i64, ptr %v.3725
-  %t.37261 = load i64, ptr %v.3724
-  %t.37262 = inttoptr i64 %t.37260 to ptr
-  store i64 %t.37261, ptr %t.37262
-  store i64 1, ptr %v.3727
-  store i64 0, ptr %v.3728
-  %t.37290 = load i64, ptr %v.3728
-  %t.37291 = load i64, ptr %v.3727
-  %t.37292 = sub i64 %t.37290, %t.37291
-  store i64 %t.37292, ptr %v.3729
-  %t.37300 = load i64, ptr %v.3708
-  %t.37301 = add i64 %t.37300, 40
-  store i64 %t.37301, ptr %v.3730
-  %t.37310 = load i64, ptr %v.3730
-  %t.37311 = load i64, ptr %v.3729
-  %t.37312 = inttoptr i64 %t.37310 to ptr
-  store i64 %t.37311, ptr %t.37312
-  %t.37329 = call i64 @ast_TYPE_BOOL()
-  store i64 %t.37329, ptr %v.3732
-  %t.37330 = load i64, ptr %v.3708
-  %t.37331 = add i64 %t.37330, 48
-  store i64 %t.37331, ptr %v.3733
-  %t.37340 = load i64, ptr %v.3733
-  %t.37341 = load i64, ptr %v.3732
-  %t.37342 = inttoptr i64 %t.37340 to ptr
-  store i64 %t.37341, ptr %t.37342
-  %t.37350 = load i64, ptr %v.3708
-  store i64 %t.37350, ptr %v.3735
-  %t.37360 = load i64, ptr %v.90001
-  %t.37361 = inttoptr i64 %t.37360 to ptr
-  %t.37362 = load i64, ptr %v.3735
-  %t.37363 = alloca i64
-  store i64 %t.37362, ptr %t.37363
-  call void @ease_array_push(ptr %t.37361, ptr %t.37363, i64 8)
-  %t.37370 = load i64, ptr %v.90001
-  %t.37371 = add i64 %t.37370, 8
-  %t.37372 = inttoptr i64 %t.37371 to ptr
-  %t.37373 = load i64, ptr %t.37372
-  store i64 %t.37373, ptr %v.3737
-  store i64 1, ptr %v.3738
-  %t.37390 = load i64, ptr %v.3737
-  %t.37391 = load i64, ptr %v.3738
-  %t.37392 = sub i64 %t.37390, %t.37391
-  store i64 %t.37392, ptr %v.3739
-  %t.37400 = load i64, ptr %v.3739
-  ret i64 %t.37400
+  %t.37580 = call ptr @malloc(i64 56)
+  %t.37581 = call ptr @memset(ptr %t.37580, i32 0, i64 56)
+  %t.37582 = ptrtoint ptr %t.37580 to i64
+  store i64 %t.37582, ptr %v.3758
+  %t.37599 = call i64 @ast_EXPR_BOOL()
+  store i64 %t.37599, ptr %v.3759
+  %t.37600 = load i64, ptr %v.3758
+  store i64 %t.37600, ptr %v.3760
+  %t.37610 = load i64, ptr %v.3760
+  %t.37611 = load i64, ptr %v.3759
+  %t.37612 = inttoptr i64 %t.37610 to ptr
+  store i64 %t.37611, ptr %t.37612
+  %t.37620 = load i64, ptr %v.3758
+  %t.37621 = add i64 %t.37620, 8
+  store i64 %t.37621, ptr %v.3762
+  %t.37630 = load i64, ptr %v.3762
+  %t.37631 = load i64, ptr %v.90000
+  %t.37632 = inttoptr i64 %t.37630 to ptr
+  store i64 %t.37631, ptr %t.37632
+  store i64 0, ptr %v.3764
+  %t.37650 = load i64, ptr %v.3758
+  %t.37651 = add i64 %t.37650, 16
+  store i64 %t.37651, ptr %v.3765
+  %t.37660 = load i64, ptr %v.3765
+  %t.37661 = load i64, ptr %v.3764
+  %t.37662 = inttoptr i64 %t.37660 to ptr
+  store i64 %t.37661, ptr %t.37662
+  store i64 1, ptr %v.3767
+  store i64 0, ptr %v.3768
+  %t.37690 = load i64, ptr %v.3768
+  %t.37691 = load i64, ptr %v.3767
+  %t.37692 = sub i64 %t.37690, %t.37691
+  store i64 %t.37692, ptr %v.3769
+  %t.37700 = load i64, ptr %v.3758
+  %t.37701 = add i64 %t.37700, 24
+  store i64 %t.37701, ptr %v.3770
+  %t.37710 = load i64, ptr %v.3770
+  %t.37711 = load i64, ptr %v.3769
+  %t.37712 = inttoptr i64 %t.37710 to ptr
+  store i64 %t.37711, ptr %t.37712
+  store i64 1, ptr %v.3772
+  store i64 0, ptr %v.3773
+  %t.37740 = load i64, ptr %v.3773
+  %t.37741 = load i64, ptr %v.3772
+  %t.37742 = sub i64 %t.37740, %t.37741
+  store i64 %t.37742, ptr %v.3774
+  %t.37750 = load i64, ptr %v.3758
+  %t.37751 = add i64 %t.37750, 32
+  store i64 %t.37751, ptr %v.3775
+  %t.37760 = load i64, ptr %v.3775
+  %t.37761 = load i64, ptr %v.3774
+  %t.37762 = inttoptr i64 %t.37760 to ptr
+  store i64 %t.37761, ptr %t.37762
+  store i64 1, ptr %v.3777
+  store i64 0, ptr %v.3778
+  %t.37790 = load i64, ptr %v.3778
+  %t.37791 = load i64, ptr %v.3777
+  %t.37792 = sub i64 %t.37790, %t.37791
+  store i64 %t.37792, ptr %v.3779
+  %t.37800 = load i64, ptr %v.3758
+  %t.37801 = add i64 %t.37800, 40
+  store i64 %t.37801, ptr %v.3780
+  %t.37810 = load i64, ptr %v.3780
+  %t.37811 = load i64, ptr %v.3779
+  %t.37812 = inttoptr i64 %t.37810 to ptr
+  store i64 %t.37811, ptr %t.37812
+  %t.37829 = call i64 @ast_TYPE_BOOL()
+  store i64 %t.37829, ptr %v.3782
+  %t.37830 = load i64, ptr %v.3758
+  %t.37831 = add i64 %t.37830, 48
+  store i64 %t.37831, ptr %v.3783
+  %t.37840 = load i64, ptr %v.3783
+  %t.37841 = load i64, ptr %v.3782
+  %t.37842 = inttoptr i64 %t.37840 to ptr
+  store i64 %t.37841, ptr %t.37842
+  %t.37850 = load i64, ptr %v.3758
+  store i64 %t.37850, ptr %v.3785
+  %t.37860 = load i64, ptr %v.90001
+  %t.37861 = inttoptr i64 %t.37860 to ptr
+  %t.37862 = load i64, ptr %v.3785
+  %t.37863 = alloca i64
+  store i64 %t.37862, ptr %t.37863
+  call void @ease_array_push(ptr %t.37861, ptr %t.37863, i64 8)
+  %t.37870 = load i64, ptr %v.90001
+  %t.37871 = add i64 %t.37870, 8
+  %t.37872 = inttoptr i64 %t.37871 to ptr
+  %t.37873 = load i64, ptr %t.37872
+  store i64 %t.37873, ptr %v.3787
+  store i64 1, ptr %v.3788
+  %t.37890 = load i64, ptr %v.3787
+  %t.37891 = load i64, ptr %v.3788
+  %t.37892 = sub i64 %t.37890, %t.37891
+  store i64 %t.37892, ptr %v.3789
+  %t.37900 = load i64, ptr %v.3789
+  ret i64 %t.37900
 }
 
 define i64 @ast_new_ident_node(i64 %param.0, i64 %param.1) {
   %v.90000 = alloca i64
   %v.90001 = alloca i64
-  %v.3742 = alloca i64
-  %v.3743 = alloca i64
-  %v.3744 = alloca i64
-  %v.3746 = alloca i64
-  %v.3747 = alloca i64
-  %v.3749 = alloca i64
-  %v.3751 = alloca i64
-  %v.3752 = alloca i64
-  %v.3753 = alloca i64
-  %v.3754 = alloca i64
-  %v.3756 = alloca i64
-  %v.3757 = alloca i64
-  %v.3758 = alloca i64
-  %v.3759 = alloca i64
-  %v.3761 = alloca i64
-  %v.3762 = alloca i64
-  %v.3763 = alloca i64
-  %v.3764 = alloca i64
-  %v.3766 = alloca i64
-  %v.3767 = alloca i64
-  %v.3769 = alloca i64
-  %v.3771 = alloca i64
-  %v.3772 = alloca i64
-  %v.3773 = alloca i64
+  %v.3792 = alloca i64
+  %v.3793 = alloca i64
+  %v.3794 = alloca i64
+  %v.3796 = alloca i64
+  %v.3797 = alloca i64
+  %v.3799 = alloca i64
+  %v.3801 = alloca i64
+  %v.3802 = alloca i64
+  %v.3803 = alloca i64
+  %v.3804 = alloca i64
+  %v.3806 = alloca i64
+  %v.3807 = alloca i64
+  %v.3808 = alloca i64
+  %v.3809 = alloca i64
+  %v.3811 = alloca i64
+  %v.3812 = alloca i64
+  %v.3813 = alloca i64
+  %v.3814 = alloca i64
+  %v.3816 = alloca i64
+  %v.3817 = alloca i64
+  %v.3819 = alloca i64
+  %v.3821 = alloca i64
+  %v.3822 = alloca i64
+  %v.3823 = alloca i64
   %v.0 = alloca i64
   store i64 %param.0, ptr %v.90000
   store i64 %param.1, ptr %v.90001
   br label %B.body
 B.body:
-  %t.37420 = call ptr @malloc(i64 56)
-  %t.37421 = call ptr @memset(ptr %t.37420, i32 0, i64 56)
-  %t.37422 = ptrtoint ptr %t.37420 to i64
-  store i64 %t.37422, ptr %v.3742
-  %t.37439 = call i64 @ast_EXPR_IDENT()
-  store i64 %t.37439, ptr %v.3743
-  %t.37440 = load i64, ptr %v.3742
-  store i64 %t.37440, ptr %v.3744
-  %t.37450 = load i64, ptr %v.3744
-  %t.37451 = load i64, ptr %v.3743
-  %t.37452 = inttoptr i64 %t.37450 to ptr
-  store i64 %t.37451, ptr %t.37452
-  store i64 0, ptr %v.3746
-  %t.37470 = load i64, ptr %v.3742
-  %t.37471 = add i64 %t.37470, 8
-  store i64 %t.37471, ptr %v.3747
-  %t.37480 = load i64, ptr %v.3747
-  %t.37481 = load i64, ptr %v.3746
-  %t.37482 = inttoptr i64 %t.37480 to ptr
-  store i64 %t.37481, ptr %t.37482
-  %t.37490 = load i64, ptr %v.3742
-  %t.37491 = add i64 %t.37490, 16
-  store i64 %t.37491, ptr %v.3749
-  %t.37500 = load i64, ptr %v.3749
-  %t.37501 = load i64, ptr %v.90000
-  %t.37502 = inttoptr i64 %t.37500 to ptr
-  store i64 %t.37501, ptr %t.37502
-  store i64 1, ptr %v.3751
-  store i64 0, ptr %v.3752
-  %t.37530 = load i64, ptr %v.3752
-  %t.37531 = load i64, ptr %v.3751
-  %t.37532 = sub i64 %t.37530, %t.37531
-  store i64 %t.37532, ptr %v.3753
-  %t.37540 = load i64, ptr %v.3742
-  %t.37541 = add i64 %t.37540, 24
-  store i64 %t.37541, ptr %v.3754
-  %t.37550 = load i64, ptr %v.3754
-  %t.37551 = load i64, ptr %v.3753
-  %t.37552 = inttoptr i64 %t.37550 to ptr
-  store i64 %t.37551, ptr %t.37552
-  store i64 1, ptr %v.3756
-  store i64 0, ptr %v.3757
-  %t.37580 = load i64, ptr %v.3757
-  %t.37581 = load i64, ptr %v.3756
-  %t.37582 = sub i64 %t.37580, %t.37581
-  store i64 %t.37582, ptr %v.3758
-  %t.37590 = load i64, ptr %v.3742
-  %t.37591 = add i64 %t.37590, 32
-  store i64 %t.37591, ptr %v.3759
-  %t.37600 = load i64, ptr %v.3759
-  %t.37601 = load i64, ptr %v.3758
-  %t.37602 = inttoptr i64 %t.37600 to ptr
-  store i64 %t.37601, ptr %t.37602
-  store i64 1, ptr %v.3761
-  store i64 0, ptr %v.3762
-  %t.37630 = load i64, ptr %v.3762
-  %t.37631 = load i64, ptr %v.3761
-  %t.37632 = sub i64 %t.37630, %t.37631
-  store i64 %t.37632, ptr %v.3763
-  %t.37640 = load i64, ptr %v.3742
-  %t.37641 = add i64 %t.37640, 40
-  store i64 %t.37641, ptr %v.3764
-  %t.37650 = load i64, ptr %v.3764
-  %t.37651 = load i64, ptr %v.3763
-  %t.37652 = inttoptr i64 %t.37650 to ptr
-  store i64 %t.37651, ptr %t.37652
-  %t.37669 = call i64 @ast_TYPE_UNKNOWN()
-  store i64 %t.37669, ptr %v.3766
-  %t.37670 = load i64, ptr %v.3742
-  %t.37671 = add i64 %t.37670, 48
-  store i64 %t.37671, ptr %v.3767
-  %t.37680 = load i64, ptr %v.3767
-  %t.37681 = load i64, ptr %v.3766
-  %t.37682 = inttoptr i64 %t.37680 to ptr
-  store i64 %t.37681, ptr %t.37682
-  %t.37690 = load i64, ptr %v.3742
-  store i64 %t.37690, ptr %v.3769
-  %t.37700 = load i64, ptr %v.90001
-  %t.37701 = inttoptr i64 %t.37700 to ptr
-  %t.37702 = load i64, ptr %v.3769
-  %t.37703 = alloca i64
-  store i64 %t.37702, ptr %t.37703
-  call void @ease_array_push(ptr %t.37701, ptr %t.37703, i64 8)
-  %t.37710 = load i64, ptr %v.90001
-  %t.37711 = add i64 %t.37710, 8
-  %t.37712 = inttoptr i64 %t.37711 to ptr
-  %t.37713 = load i64, ptr %t.37712
-  store i64 %t.37713, ptr %v.3771
-  store i64 1, ptr %v.3772
-  %t.37730 = load i64, ptr %v.3771
-  %t.37731 = load i64, ptr %v.3772
-  %t.37732 = sub i64 %t.37730, %t.37731
-  store i64 %t.37732, ptr %v.3773
-  %t.37740 = load i64, ptr %v.3773
-  ret i64 %t.37740
+  %t.37920 = call ptr @malloc(i64 56)
+  %t.37921 = call ptr @memset(ptr %t.37920, i32 0, i64 56)
+  %t.37922 = ptrtoint ptr %t.37920 to i64
+  store i64 %t.37922, ptr %v.3792
+  %t.37939 = call i64 @ast_EXPR_IDENT()
+  store i64 %t.37939, ptr %v.3793
+  %t.37940 = load i64, ptr %v.3792
+  store i64 %t.37940, ptr %v.3794
+  %t.37950 = load i64, ptr %v.3794
+  %t.37951 = load i64, ptr %v.3793
+  %t.37952 = inttoptr i64 %t.37950 to ptr
+  store i64 %t.37951, ptr %t.37952
+  store i64 0, ptr %v.3796
+  %t.37970 = load i64, ptr %v.3792
+  %t.37971 = add i64 %t.37970, 8
+  store i64 %t.37971, ptr %v.3797
+  %t.37980 = load i64, ptr %v.3797
+  %t.37981 = load i64, ptr %v.3796
+  %t.37982 = inttoptr i64 %t.37980 to ptr
+  store i64 %t.37981, ptr %t.37982
+  %t.37990 = load i64, ptr %v.3792
+  %t.37991 = add i64 %t.37990, 16
+  store i64 %t.37991, ptr %v.3799
+  %t.38000 = load i64, ptr %v.3799
+  %t.38001 = load i64, ptr %v.90000
+  %t.38002 = inttoptr i64 %t.38000 to ptr
+  store i64 %t.38001, ptr %t.38002
+  store i64 1, ptr %v.3801
+  store i64 0, ptr %v.3802
+  %t.38030 = load i64, ptr %v.3802
+  %t.38031 = load i64, ptr %v.3801
+  %t.38032 = sub i64 %t.38030, %t.38031
+  store i64 %t.38032, ptr %v.3803
+  %t.38040 = load i64, ptr %v.3792
+  %t.38041 = add i64 %t.38040, 24
+  store i64 %t.38041, ptr %v.3804
+  %t.38050 = load i64, ptr %v.3804
+  %t.38051 = load i64, ptr %v.3803
+  %t.38052 = inttoptr i64 %t.38050 to ptr
+  store i64 %t.38051, ptr %t.38052
+  store i64 1, ptr %v.3806
+  store i64 0, ptr %v.3807
+  %t.38080 = load i64, ptr %v.3807
+  %t.38081 = load i64, ptr %v.3806
+  %t.38082 = sub i64 %t.38080, %t.38081
+  store i64 %t.38082, ptr %v.3808
+  %t.38090 = load i64, ptr %v.3792
+  %t.38091 = add i64 %t.38090, 32
+  store i64 %t.38091, ptr %v.3809
+  %t.38100 = load i64, ptr %v.3809
+  %t.38101 = load i64, ptr %v.3808
+  %t.38102 = inttoptr i64 %t.38100 to ptr
+  store i64 %t.38101, ptr %t.38102
+  store i64 1, ptr %v.3811
+  store i64 0, ptr %v.3812
+  %t.38130 = load i64, ptr %v.3812
+  %t.38131 = load i64, ptr %v.3811
+  %t.38132 = sub i64 %t.38130, %t.38131
+  store i64 %t.38132, ptr %v.3813
+  %t.38140 = load i64, ptr %v.3792
+  %t.38141 = add i64 %t.38140, 40
+  store i64 %t.38141, ptr %v.3814
+  %t.38150 = load i64, ptr %v.3814
+  %t.38151 = load i64, ptr %v.3813
+  %t.38152 = inttoptr i64 %t.38150 to ptr
+  store i64 %t.38151, ptr %t.38152
+  %t.38169 = call i64 @ast_TYPE_UNKNOWN()
+  store i64 %t.38169, ptr %v.3816
+  %t.38170 = load i64, ptr %v.3792
+  %t.38171 = add i64 %t.38170, 48
+  store i64 %t.38171, ptr %v.3817
+  %t.38180 = load i64, ptr %v.3817
+  %t.38181 = load i64, ptr %v.3816
+  %t.38182 = inttoptr i64 %t.38180 to ptr
+  store i64 %t.38181, ptr %t.38182
+  %t.38190 = load i64, ptr %v.3792
+  store i64 %t.38190, ptr %v.3819
+  %t.38200 = load i64, ptr %v.90001
+  %t.38201 = inttoptr i64 %t.38200 to ptr
+  %t.38202 = load i64, ptr %v.3819
+  %t.38203 = alloca i64
+  store i64 %t.38202, ptr %t.38203
+  call void @ease_array_push(ptr %t.38201, ptr %t.38203, i64 8)
+  %t.38210 = load i64, ptr %v.90001
+  %t.38211 = add i64 %t.38210, 8
+  %t.38212 = inttoptr i64 %t.38211 to ptr
+  %t.38213 = load i64, ptr %t.38212
+  store i64 %t.38213, ptr %v.3821
+  store i64 1, ptr %v.3822
+  %t.38230 = load i64, ptr %v.3821
+  %t.38231 = load i64, ptr %v.3822
+  %t.38232 = sub i64 %t.38230, %t.38231
+  store i64 %t.38232, ptr %v.3823
+  %t.38240 = load i64, ptr %v.3823
+  ret i64 %t.38240
 }
 
 define i64 @ast_new_binary_node(i64 %param.0, i64 %param.1, i64 %param.2, i64 %param.3) {
@@ -12893,24 +12982,24 @@ define i64 @ast_new_binary_node(i64 %param.0, i64 %param.1, i64 %param.2, i64 %p
   %v.90001 = alloca i64
   %v.90002 = alloca i64
   %v.90003 = alloca i64
-  %v.3776 = alloca i64
-  %v.3777 = alloca i64
-  %v.3778 = alloca i64
-  %v.3780 = alloca i64
-  %v.3782 = alloca i64
-  %v.3783 = alloca i64
-  %v.3785 = alloca i64
-  %v.3787 = alloca i64
-  %v.3789 = alloca i64
-  %v.3790 = alloca i64
-  %v.3791 = alloca i64
-  %v.3792 = alloca i64
-  %v.3794 = alloca i64
-  %v.3795 = alloca i64
-  %v.3797 = alloca i64
-  %v.3799 = alloca i64
-  %v.3800 = alloca i64
-  %v.3801 = alloca i64
+  %v.3826 = alloca i64
+  %v.3827 = alloca i64
+  %v.3828 = alloca i64
+  %v.3830 = alloca i64
+  %v.3832 = alloca i64
+  %v.3833 = alloca i64
+  %v.3835 = alloca i64
+  %v.3837 = alloca i64
+  %v.3839 = alloca i64
+  %v.3840 = alloca i64
+  %v.3841 = alloca i64
+  %v.3842 = alloca i64
+  %v.3844 = alloca i64
+  %v.3845 = alloca i64
+  %v.3847 = alloca i64
+  %v.3849 = alloca i64
+  %v.3850 = alloca i64
+  %v.3851 = alloca i64
   %v.0 = alloca i64
   store i64 %param.0, ptr %v.90000
   store i64 %param.1, ptr %v.90001
@@ -12918,472 +13007,452 @@ define i64 @ast_new_binary_node(i64 %param.0, i64 %param.1, i64 %param.2, i64 %p
   store i64 %param.3, ptr %v.90003
   br label %B.body
 B.body:
-  %t.37760 = call ptr @malloc(i64 56)
-  %t.37761 = call ptr @memset(ptr %t.37760, i32 0, i64 56)
-  %t.37762 = ptrtoint ptr %t.37760 to i64
-  store i64 %t.37762, ptr %v.3776
-  %t.37779 = call i64 @ast_EXPR_BINARY()
-  store i64 %t.37779, ptr %v.3777
-  %t.37780 = load i64, ptr %v.3776
-  store i64 %t.37780, ptr %v.3778
-  %t.37790 = load i64, ptr %v.3778
-  %t.37791 = load i64, ptr %v.3777
-  %t.37792 = inttoptr i64 %t.37790 to ptr
-  store i64 %t.37791, ptr %t.37792
-  %t.37800 = load i64, ptr %v.3776
-  %t.37801 = add i64 %t.37800, 8
-  store i64 %t.37801, ptr %v.3780
-  %t.37810 = load i64, ptr %v.3780
-  %t.37811 = load i64, ptr %v.90000
-  %t.37812 = inttoptr i64 %t.37810 to ptr
-  store i64 %t.37811, ptr %t.37812
-  store i64 0, ptr %v.3782
-  %t.37830 = load i64, ptr %v.3776
-  %t.37831 = add i64 %t.37830, 16
-  store i64 %t.37831, ptr %v.3783
-  %t.37840 = load i64, ptr %v.3783
-  %t.37841 = load i64, ptr %v.3782
-  %t.37842 = inttoptr i64 %t.37840 to ptr
-  store i64 %t.37841, ptr %t.37842
-  %t.37850 = load i64, ptr %v.3776
-  %t.37851 = add i64 %t.37850, 24
-  store i64 %t.37851, ptr %v.3785
-  %t.37860 = load i64, ptr %v.3785
-  %t.37861 = load i64, ptr %v.90001
-  %t.37862 = inttoptr i64 %t.37860 to ptr
-  store i64 %t.37861, ptr %t.37862
-  %t.37870 = load i64, ptr %v.3776
-  %t.37871 = add i64 %t.37870, 32
-  store i64 %t.37871, ptr %v.3787
-  %t.37880 = load i64, ptr %v.3787
-  %t.37881 = load i64, ptr %v.90002
-  %t.37882 = inttoptr i64 %t.37880 to ptr
-  store i64 %t.37881, ptr %t.37882
-  store i64 1, ptr %v.3789
-  store i64 0, ptr %v.3790
-  %t.37910 = load i64, ptr %v.3790
-  %t.37911 = load i64, ptr %v.3789
-  %t.37912 = sub i64 %t.37910, %t.37911
-  store i64 %t.37912, ptr %v.3791
-  %t.37920 = load i64, ptr %v.3776
-  %t.37921 = add i64 %t.37920, 40
-  store i64 %t.37921, ptr %v.3792
-  %t.37930 = load i64, ptr %v.3792
-  %t.37931 = load i64, ptr %v.3791
-  %t.37932 = inttoptr i64 %t.37930 to ptr
-  store i64 %t.37931, ptr %t.37932
-  %t.37949 = call i64 @ast_TYPE_UNKNOWN()
-  store i64 %t.37949, ptr %v.3794
-  %t.37950 = load i64, ptr %v.3776
-  %t.37951 = add i64 %t.37950, 48
-  store i64 %t.37951, ptr %v.3795
-  %t.37960 = load i64, ptr %v.3795
-  %t.37961 = load i64, ptr %v.3794
-  %t.37962 = inttoptr i64 %t.37960 to ptr
-  store i64 %t.37961, ptr %t.37962
-  %t.37970 = load i64, ptr %v.3776
-  store i64 %t.37970, ptr %v.3797
-  %t.37980 = load i64, ptr %v.90003
-  %t.37981 = inttoptr i64 %t.37980 to ptr
-  %t.37982 = load i64, ptr %v.3797
-  %t.37983 = alloca i64
-  store i64 %t.37982, ptr %t.37983
-  call void @ease_array_push(ptr %t.37981, ptr %t.37983, i64 8)
-  %t.37990 = load i64, ptr %v.90003
-  %t.37991 = add i64 %t.37990, 8
-  %t.37992 = inttoptr i64 %t.37991 to ptr
-  %t.37993 = load i64, ptr %t.37992
-  store i64 %t.37993, ptr %v.3799
-  store i64 1, ptr %v.3800
-  %t.38010 = load i64, ptr %v.3799
-  %t.38011 = load i64, ptr %v.3800
-  %t.38012 = sub i64 %t.38010, %t.38011
-  store i64 %t.38012, ptr %v.3801
-  %t.38020 = load i64, ptr %v.3801
-  ret i64 %t.38020
+  %t.38260 = call ptr @malloc(i64 56)
+  %t.38261 = call ptr @memset(ptr %t.38260, i32 0, i64 56)
+  %t.38262 = ptrtoint ptr %t.38260 to i64
+  store i64 %t.38262, ptr %v.3826
+  %t.38279 = call i64 @ast_EXPR_BINARY()
+  store i64 %t.38279, ptr %v.3827
+  %t.38280 = load i64, ptr %v.3826
+  store i64 %t.38280, ptr %v.3828
+  %t.38290 = load i64, ptr %v.3828
+  %t.38291 = load i64, ptr %v.3827
+  %t.38292 = inttoptr i64 %t.38290 to ptr
+  store i64 %t.38291, ptr %t.38292
+  %t.38300 = load i64, ptr %v.3826
+  %t.38301 = add i64 %t.38300, 8
+  store i64 %t.38301, ptr %v.3830
+  %t.38310 = load i64, ptr %v.3830
+  %t.38311 = load i64, ptr %v.90000
+  %t.38312 = inttoptr i64 %t.38310 to ptr
+  store i64 %t.38311, ptr %t.38312
+  store i64 0, ptr %v.3832
+  %t.38330 = load i64, ptr %v.3826
+  %t.38331 = add i64 %t.38330, 16
+  store i64 %t.38331, ptr %v.3833
+  %t.38340 = load i64, ptr %v.3833
+  %t.38341 = load i64, ptr %v.3832
+  %t.38342 = inttoptr i64 %t.38340 to ptr
+  store i64 %t.38341, ptr %t.38342
+  %t.38350 = load i64, ptr %v.3826
+  %t.38351 = add i64 %t.38350, 24
+  store i64 %t.38351, ptr %v.3835
+  %t.38360 = load i64, ptr %v.3835
+  %t.38361 = load i64, ptr %v.90001
+  %t.38362 = inttoptr i64 %t.38360 to ptr
+  store i64 %t.38361, ptr %t.38362
+  %t.38370 = load i64, ptr %v.3826
+  %t.38371 = add i64 %t.38370, 32
+  store i64 %t.38371, ptr %v.3837
+  %t.38380 = load i64, ptr %v.3837
+  %t.38381 = load i64, ptr %v.90002
+  %t.38382 = inttoptr i64 %t.38380 to ptr
+  store i64 %t.38381, ptr %t.38382
+  store i64 1, ptr %v.3839
+  store i64 0, ptr %v.3840
+  %t.38410 = load i64, ptr %v.3840
+  %t.38411 = load i64, ptr %v.3839
+  %t.38412 = sub i64 %t.38410, %t.38411
+  store i64 %t.38412, ptr %v.3841
+  %t.38420 = load i64, ptr %v.3826
+  %t.38421 = add i64 %t.38420, 40
+  store i64 %t.38421, ptr %v.3842
+  %t.38430 = load i64, ptr %v.3842
+  %t.38431 = load i64, ptr %v.3841
+  %t.38432 = inttoptr i64 %t.38430 to ptr
+  store i64 %t.38431, ptr %t.38432
+  %t.38449 = call i64 @ast_TYPE_UNKNOWN()
+  store i64 %t.38449, ptr %v.3844
+  %t.38450 = load i64, ptr %v.3826
+  %t.38451 = add i64 %t.38450, 48
+  store i64 %t.38451, ptr %v.3845
+  %t.38460 = load i64, ptr %v.3845
+  %t.38461 = load i64, ptr %v.3844
+  %t.38462 = inttoptr i64 %t.38460 to ptr
+  store i64 %t.38461, ptr %t.38462
+  %t.38470 = load i64, ptr %v.3826
+  store i64 %t.38470, ptr %v.3847
+  %t.38480 = load i64, ptr %v.90003
+  %t.38481 = inttoptr i64 %t.38480 to ptr
+  %t.38482 = load i64, ptr %v.3847
+  %t.38483 = alloca i64
+  store i64 %t.38482, ptr %t.38483
+  call void @ease_array_push(ptr %t.38481, ptr %t.38483, i64 8)
+  %t.38490 = load i64, ptr %v.90003
+  %t.38491 = add i64 %t.38490, 8
+  %t.38492 = inttoptr i64 %t.38491 to ptr
+  %t.38493 = load i64, ptr %t.38492
+  store i64 %t.38493, ptr %v.3849
+  store i64 1, ptr %v.3850
+  %t.38510 = load i64, ptr %v.3849
+  %t.38511 = load i64, ptr %v.3850
+  %t.38512 = sub i64 %t.38510, %t.38511
+  store i64 %t.38512, ptr %v.3851
+  %t.38520 = load i64, ptr %v.3851
+  ret i64 %t.38520
 }
 
 define i64 @ast_new_unary_node(i64 %param.0, i64 %param.1, i64 %param.2) {
   %v.90000 = alloca i64
   %v.90001 = alloca i64
   %v.90002 = alloca i64
-  %v.3804 = alloca i64
-  %v.3805 = alloca i64
-  %v.3806 = alloca i64
-  %v.3808 = alloca i64
-  %v.3810 = alloca i64
-  %v.3811 = alloca i64
-  %v.3813 = alloca i64
-  %v.3815 = alloca i64
-  %v.3816 = alloca i64
-  %v.3817 = alloca i64
-  %v.3818 = alloca i64
-  %v.3820 = alloca i64
-  %v.3821 = alloca i64
-  %v.3822 = alloca i64
-  %v.3823 = alloca i64
-  %v.3825 = alloca i64
-  %v.3826 = alloca i64
-  %v.3828 = alloca i64
-  %v.3830 = alloca i64
-  %v.3831 = alloca i64
-  %v.3832 = alloca i64
+  %v.3854 = alloca i64
+  %v.3855 = alloca i64
+  %v.3856 = alloca i64
+  %v.3858 = alloca i64
+  %v.3860 = alloca i64
+  %v.3861 = alloca i64
+  %v.3863 = alloca i64
+  %v.3865 = alloca i64
+  %v.3866 = alloca i64
+  %v.3867 = alloca i64
+  %v.3868 = alloca i64
+  %v.3870 = alloca i64
+  %v.3871 = alloca i64
+  %v.3872 = alloca i64
+  %v.3873 = alloca i64
+  %v.3875 = alloca i64
+  %v.3876 = alloca i64
+  %v.3878 = alloca i64
+  %v.3880 = alloca i64
+  %v.3881 = alloca i64
+  %v.3882 = alloca i64
   %v.0 = alloca i64
   store i64 %param.0, ptr %v.90000
   store i64 %param.1, ptr %v.90001
   store i64 %param.2, ptr %v.90002
   br label %B.body
 B.body:
-  %t.38040 = call ptr @malloc(i64 56)
-  %t.38041 = call ptr @memset(ptr %t.38040, i32 0, i64 56)
-  %t.38042 = ptrtoint ptr %t.38040 to i64
-  store i64 %t.38042, ptr %v.3804
-  %t.38059 = call i64 @ast_EXPR_UNARY()
-  store i64 %t.38059, ptr %v.3805
-  %t.38060 = load i64, ptr %v.3804
-  store i64 %t.38060, ptr %v.3806
-  %t.38070 = load i64, ptr %v.3806
-  %t.38071 = load i64, ptr %v.3805
-  %t.38072 = inttoptr i64 %t.38070 to ptr
-  store i64 %t.38071, ptr %t.38072
-  %t.38080 = load i64, ptr %v.3804
-  %t.38081 = add i64 %t.38080, 8
-  store i64 %t.38081, ptr %v.3808
-  %t.38090 = load i64, ptr %v.3808
-  %t.38091 = load i64, ptr %v.90000
-  %t.38092 = inttoptr i64 %t.38090 to ptr
-  store i64 %t.38091, ptr %t.38092
-  store i64 0, ptr %v.3810
-  %t.38110 = load i64, ptr %v.3804
-  %t.38111 = add i64 %t.38110, 16
-  store i64 %t.38111, ptr %v.3811
-  %t.38120 = load i64, ptr %v.3811
-  %t.38121 = load i64, ptr %v.3810
-  %t.38122 = inttoptr i64 %t.38120 to ptr
-  store i64 %t.38121, ptr %t.38122
-  %t.38130 = load i64, ptr %v.3804
-  %t.38131 = add i64 %t.38130, 24
-  store i64 %t.38131, ptr %v.3813
-  %t.38140 = load i64, ptr %v.3813
-  %t.38141 = load i64, ptr %v.90001
-  %t.38142 = inttoptr i64 %t.38140 to ptr
-  store i64 %t.38141, ptr %t.38142
-  store i64 1, ptr %v.3815
-  store i64 0, ptr %v.3816
-  %t.38170 = load i64, ptr %v.3816
-  %t.38171 = load i64, ptr %v.3815
-  %t.38172 = sub i64 %t.38170, %t.38171
-  store i64 %t.38172, ptr %v.3817
-  %t.38180 = load i64, ptr %v.3804
-  %t.38181 = add i64 %t.38180, 32
-  store i64 %t.38181, ptr %v.3818
-  %t.38190 = load i64, ptr %v.3818
-  %t.38191 = load i64, ptr %v.3817
-  %t.38192 = inttoptr i64 %t.38190 to ptr
-  store i64 %t.38191, ptr %t.38192
-  store i64 1, ptr %v.3820
-  store i64 0, ptr %v.3821
-  %t.38220 = load i64, ptr %v.3821
-  %t.38221 = load i64, ptr %v.3820
-  %t.38222 = sub i64 %t.38220, %t.38221
-  store i64 %t.38222, ptr %v.3822
-  %t.38230 = load i64, ptr %v.3804
-  %t.38231 = add i64 %t.38230, 40
-  store i64 %t.38231, ptr %v.3823
-  %t.38240 = load i64, ptr %v.3823
-  %t.38241 = load i64, ptr %v.3822
-  %t.38242 = inttoptr i64 %t.38240 to ptr
-  store i64 %t.38241, ptr %t.38242
-  %t.38259 = call i64 @ast_TYPE_UNKNOWN()
-  store i64 %t.38259, ptr %v.3825
-  %t.38260 = load i64, ptr %v.3804
-  %t.38261 = add i64 %t.38260, 48
-  store i64 %t.38261, ptr %v.3826
-  %t.38270 = load i64, ptr %v.3826
-  %t.38271 = load i64, ptr %v.3825
-  %t.38272 = inttoptr i64 %t.38270 to ptr
-  store i64 %t.38271, ptr %t.38272
-  %t.38280 = load i64, ptr %v.3804
-  store i64 %t.38280, ptr %v.3828
-  %t.38290 = load i64, ptr %v.90002
-  %t.38291 = inttoptr i64 %t.38290 to ptr
-  %t.38292 = load i64, ptr %v.3828
-  %t.38293 = alloca i64
-  store i64 %t.38292, ptr %t.38293
-  call void @ease_array_push(ptr %t.38291, ptr %t.38293, i64 8)
-  %t.38300 = load i64, ptr %v.90002
-  %t.38301 = add i64 %t.38300, 8
-  %t.38302 = inttoptr i64 %t.38301 to ptr
-  %t.38303 = load i64, ptr %t.38302
-  store i64 %t.38303, ptr %v.3830
-  store i64 1, ptr %v.3831
-  %t.38320 = load i64, ptr %v.3830
-  %t.38321 = load i64, ptr %v.3831
-  %t.38322 = sub i64 %t.38320, %t.38321
-  store i64 %t.38322, ptr %v.3832
-  %t.38330 = load i64, ptr %v.3832
-  ret i64 %t.38330
+  %t.38540 = call ptr @malloc(i64 56)
+  %t.38541 = call ptr @memset(ptr %t.38540, i32 0, i64 56)
+  %t.38542 = ptrtoint ptr %t.38540 to i64
+  store i64 %t.38542, ptr %v.3854
+  %t.38559 = call i64 @ast_EXPR_UNARY()
+  store i64 %t.38559, ptr %v.3855
+  %t.38560 = load i64, ptr %v.3854
+  store i64 %t.38560, ptr %v.3856
+  %t.38570 = load i64, ptr %v.3856
+  %t.38571 = load i64, ptr %v.3855
+  %t.38572 = inttoptr i64 %t.38570 to ptr
+  store i64 %t.38571, ptr %t.38572
+  %t.38580 = load i64, ptr %v.3854
+  %t.38581 = add i64 %t.38580, 8
+  store i64 %t.38581, ptr %v.3858
+  %t.38590 = load i64, ptr %v.3858
+  %t.38591 = load i64, ptr %v.90000
+  %t.38592 = inttoptr i64 %t.38590 to ptr
+  store i64 %t.38591, ptr %t.38592
+  store i64 0, ptr %v.3860
+  %t.38610 = load i64, ptr %v.3854
+  %t.38611 = add i64 %t.38610, 16
+  store i64 %t.38611, ptr %v.3861
+  %t.38620 = load i64, ptr %v.3861
+  %t.38621 = load i64, ptr %v.3860
+  %t.38622 = inttoptr i64 %t.38620 to ptr
+  store i64 %t.38621, ptr %t.38622
+  %t.38630 = load i64, ptr %v.3854
+  %t.38631 = add i64 %t.38630, 24
+  store i64 %t.38631, ptr %v.3863
+  %t.38640 = load i64, ptr %v.3863
+  %t.38641 = load i64, ptr %v.90001
+  %t.38642 = inttoptr i64 %t.38640 to ptr
+  store i64 %t.38641, ptr %t.38642
+  store i64 1, ptr %v.3865
+  store i64 0, ptr %v.3866
+  %t.38670 = load i64, ptr %v.3866
+  %t.38671 = load i64, ptr %v.3865
+  %t.38672 = sub i64 %t.38670, %t.38671
+  store i64 %t.38672, ptr %v.3867
+  %t.38680 = load i64, ptr %v.3854
+  %t.38681 = add i64 %t.38680, 32
+  store i64 %t.38681, ptr %v.3868
+  %t.38690 = load i64, ptr %v.3868
+  %t.38691 = load i64, ptr %v.3867
+  %t.38692 = inttoptr i64 %t.38690 to ptr
+  store i64 %t.38691, ptr %t.38692
+  store i64 1, ptr %v.3870
+  store i64 0, ptr %v.3871
+  %t.38720 = load i64, ptr %v.3871
+  %t.38721 = load i64, ptr %v.3870
+  %t.38722 = sub i64 %t.38720, %t.38721
+  store i64 %t.38722, ptr %v.3872
+  %t.38730 = load i64, ptr %v.3854
+  %t.38731 = add i64 %t.38730, 40
+  store i64 %t.38731, ptr %v.3873
+  %t.38740 = load i64, ptr %v.3873
+  %t.38741 = load i64, ptr %v.3872
+  %t.38742 = inttoptr i64 %t.38740 to ptr
+  store i64 %t.38741, ptr %t.38742
+  %t.38759 = call i64 @ast_TYPE_UNKNOWN()
+  store i64 %t.38759, ptr %v.3875
+  %t.38760 = load i64, ptr %v.3854
+  %t.38761 = add i64 %t.38760, 48
+  store i64 %t.38761, ptr %v.3876
+  %t.38770 = load i64, ptr %v.3876
+  %t.38771 = load i64, ptr %v.3875
+  %t.38772 = inttoptr i64 %t.38770 to ptr
+  store i64 %t.38771, ptr %t.38772
+  %t.38780 = load i64, ptr %v.3854
+  store i64 %t.38780, ptr %v.3878
+  %t.38790 = load i64, ptr %v.90002
+  %t.38791 = inttoptr i64 %t.38790 to ptr
+  %t.38792 = load i64, ptr %v.3878
+  %t.38793 = alloca i64
+  store i64 %t.38792, ptr %t.38793
+  call void @ease_array_push(ptr %t.38791, ptr %t.38793, i64 8)
+  %t.38800 = load i64, ptr %v.90002
+  %t.38801 = add i64 %t.38800, 8
+  %t.38802 = inttoptr i64 %t.38801 to ptr
+  %t.38803 = load i64, ptr %t.38802
+  store i64 %t.38803, ptr %v.3880
+  store i64 1, ptr %v.3881
+  %t.38820 = load i64, ptr %v.3880
+  %t.38821 = load i64, ptr %v.3881
+  %t.38822 = sub i64 %t.38820, %t.38821
+  store i64 %t.38822, ptr %v.3882
+  %t.38830 = load i64, ptr %v.3882
+  ret i64 %t.38830
 }
 
 define i64 @parser_parse_primary(i64 %param.0, i64 %param.1, i64 %param.2) {
   %v.90000 = alloca i64
   %v.90001 = alloca i64
   %v.90002 = alloca i64
-  %v.3837 = alloca i64
-  %v.3838 = alloca i64
-  %v.3839 = alloca i64
-  %v.3840 = alloca i64
-  %v.3844 = alloca i64
-  %v.3845 = alloca i64
-  %v.3848 = alloca i64
-  %v.0 = alloca i64
-  %v.3853 = alloca i64
-  %v.3854 = alloca i64
-  %v.3856 = alloca i64
-  %v.3859 = alloca i64
-  %v.3864 = alloca i64
-  %v.3865 = alloca i64
-  %v.3867 = alloca i64
-  %v.3870 = alloca i64
-  %v.3875 = alloca i64
-  %v.3876 = alloca i64
-  %v.3881 = alloca i64
-  %v.3882 = alloca i64
-  %v.3885 = alloca i64
+  %v.3887 = alloca i64
+  %v.3888 = alloca i64
+  %v.3889 = alloca i64
   %v.3890 = alloca i64
-  %v.3891 = alloca i64
-  %v.3896 = alloca i64
-  %v.3897 = alloca i64
-  %v.3900 = alloca i64
-  %v.3902 = alloca i64
+  %v.3894 = alloca i64
+  %v.3895 = alloca i64
+  %v.3898 = alloca i64
+  %v.0 = alloca i64
   %v.3903 = alloca i64
   %v.3904 = alloca i64
+  %v.3906 = alloca i64
   %v.3909 = alloca i64
-  %v.3910 = alloca i64
-  %v.3911 = alloca i64
+  %v.3914 = alloca i64
+  %v.3915 = alloca i64
+  %v.3917 = alloca i64
+  %v.3920 = alloca i64
+  %v.3925 = alloca i64
+  %v.3926 = alloca i64
+  %v.3931 = alloca i64
+  %v.3932 = alloca i64
+  %v.3935 = alloca i64
+  %v.3940 = alloca i64
+  %v.3941 = alloca i64
+  %v.3946 = alloca i64
+  %v.3947 = alloca i64
+  %v.3950 = alloca i64
+  %v.3952 = alloca i64
+  %v.3953 = alloca i64
+  %v.3954 = alloca i64
+  %v.3959 = alloca i64
+  %v.3960 = alloca i64
+  %v.3961 = alloca i64
   store i64 %param.0, ptr %v.90000
   store i64 %param.1, ptr %v.90001
   store i64 %param.2, ptr %v.90002
   br label %B.body
 B.body:
-  %t.38370 = load i64, ptr %v.90000
-  %t.38371 = load i64, ptr %v.90001
-  %t.38379 = call i64 @lexer_lex_kind(i64 %t.38370, i64 %t.38371)
-  store i64 %t.38379, ptr %v.3837
-  %t.38380 = load i64, ptr %v.3837
-  store i64 %t.38380, ptr %v.3838
-  %t.38399 = call i64 @token_TK_INT()
-  store i64 %t.38399, ptr %v.3839
-  %t.38400 = load i64, ptr %v.3838
-  %t.38401 = load i64, ptr %v.3839
-  %t.38402 = icmp eq i64 %t.38400, %t.38401
-  %t.38403 = zext i1 %t.38402 to i64
-  store i64 %t.38403, ptr %v.3840
-  %t.38410 = load i64, ptr %v.3840
-  %t.38411 = icmp eq i64 %t.38410, 0
-  br i1 %t.38411, label %L.450, label %L.fall.3841
-L.fall.3841:
-  %t.38440 = load i64, ptr %v.90000
-  %t.38441 = load i64, ptr %v.90001
-  %t.38449 = call i64 @lexer_lex_int_value(i64 %t.38440, i64 %t.38441)
-  store i64 %t.38449, ptr %v.3844
-  %t.38450 = load i64, ptr %v.3844
-  store i64 %t.38450, ptr %v.3845
-  %t.38480 = load i64, ptr %v.3845
-  %t.38481 = load i64, ptr %v.90002
-  %t.38489 = call i64 @ast_new_int_node(i64 %t.38480, i64 %t.38481)
-  store i64 %t.38489, ptr %v.3848
-  %t.38490 = load i64, ptr %v.3848
-  ret i64 %t.38490
-L.450:
-  br label %L.451
-L.451:
-  %t.38539 = call i64 @token_TK_TRUE()
-  store i64 %t.38539, ptr %v.3853
-  %t.38540 = load i64, ptr %v.3838
-  %t.38541 = load i64, ptr %v.3853
-  %t.38542 = icmp eq i64 %t.38540, %t.38541
-  %t.38543 = zext i1 %t.38542 to i64
-  store i64 %t.38543, ptr %v.3854
-  %t.38550 = load i64, ptr %v.3854
-  %t.38551 = icmp eq i64 %t.38550, 0
-  br i1 %t.38551, label %L.452, label %L.fall.3855
-L.fall.3855:
-  store i64 1, ptr %v.3856
-  %t.38590 = load i64, ptr %v.3856
-  %t.38591 = load i64, ptr %v.90002
-  %t.38599 = call i64 @ast_new_bool_node(i64 %t.38590, i64 %t.38591)
-  store i64 %t.38599, ptr %v.3859
-  %t.38600 = load i64, ptr %v.3859
-  ret i64 %t.38600
-L.452:
-  br label %L.453
-L.453:
-  %t.38649 = call i64 @token_TK_FALSE()
-  store i64 %t.38649, ptr %v.3864
-  %t.38650 = load i64, ptr %v.3838
-  %t.38651 = load i64, ptr %v.3864
-  %t.38652 = icmp eq i64 %t.38650, %t.38651
-  %t.38653 = zext i1 %t.38652 to i64
-  store i64 %t.38653, ptr %v.3865
-  %t.38660 = load i64, ptr %v.3865
-  %t.38661 = icmp eq i64 %t.38660, 0
-  br i1 %t.38661, label %L.454, label %L.fall.3866
-L.fall.3866:
-  store i64 0, ptr %v.3867
-  %t.38700 = load i64, ptr %v.3867
-  %t.38701 = load i64, ptr %v.90002
-  %t.38709 = call i64 @ast_new_bool_node(i64 %t.38700, i64 %t.38701)
-  store i64 %t.38709, ptr %v.3870
-  %t.38710 = load i64, ptr %v.3870
-  ret i64 %t.38710
+  %t.38870 = load i64, ptr %v.90000
+  %t.38871 = load i64, ptr %v.90001
+  %t.38879 = call i64 @lexer_lex_kind(i64 %t.38870, i64 %t.38871)
+  store i64 %t.38879, ptr %v.3887
+  %t.38880 = load i64, ptr %v.3887
+  store i64 %t.38880, ptr %v.3888
+  %t.38899 = call i64 @token_TK_INT()
+  store i64 %t.38899, ptr %v.3889
+  %t.38900 = load i64, ptr %v.3888
+  %t.38901 = load i64, ptr %v.3889
+  %t.38902 = icmp eq i64 %t.38900, %t.38901
+  %t.38903 = zext i1 %t.38902 to i64
+  store i64 %t.38903, ptr %v.3890
+  %t.38910 = load i64, ptr %v.3890
+  %t.38911 = icmp eq i64 %t.38910, 0
+  br i1 %t.38911, label %L.454, label %L.fall.3891
+L.fall.3891:
+  %t.38940 = load i64, ptr %v.90000
+  %t.38941 = load i64, ptr %v.90001
+  %t.38949 = call i64 @lexer_lex_int_value(i64 %t.38940, i64 %t.38941)
+  store i64 %t.38949, ptr %v.3894
+  %t.38950 = load i64, ptr %v.3894
+  store i64 %t.38950, ptr %v.3895
+  %t.38980 = load i64, ptr %v.3895
+  %t.38981 = load i64, ptr %v.90002
+  %t.38989 = call i64 @ast_new_int_node(i64 %t.38980, i64 %t.38981)
+  store i64 %t.38989, ptr %v.3898
+  %t.38990 = load i64, ptr %v.3898
+  ret i64 %t.38990
 L.454:
   br label %L.455
 L.455:
-  %t.38759 = call i64 @token_TK_IDENT()
-  store i64 %t.38759, ptr %v.3875
-  %t.38760 = load i64, ptr %v.3838
-  %t.38761 = load i64, ptr %v.3875
-  %t.38762 = icmp eq i64 %t.38760, %t.38761
-  %t.38763 = zext i1 %t.38762 to i64
-  store i64 %t.38763, ptr %v.3876
-  %t.38770 = load i64, ptr %v.3876
-  %t.38771 = icmp eq i64 %t.38770, 0
-  br i1 %t.38771, label %L.456, label %L.fall.3877
-L.fall.3877:
-  %t.38810 = load i64, ptr %v.90000
-  %t.38811 = load i64, ptr %v.90001
-  %t.38812 = load i64, ptr %v.3838
-  %t.38819 = call i64 @lexer_lex_string_value(i64 %t.38810, i64 %t.38811, i64 %t.38812)
-  store i64 %t.38819, ptr %v.3881
-  %t.38820 = load i64, ptr %v.3881
-  store i64 %t.38820, ptr %v.3882
-  %t.38850 = load i64, ptr %v.3882
-  %t.38851 = load i64, ptr %v.90002
-  %t.38859 = call i64 @ast_new_ident_node(i64 %t.38850, i64 %t.38851)
-  store i64 %t.38859, ptr %v.3885
-  %t.38860 = load i64, ptr %v.3885
-  ret i64 %t.38860
+  %t.39039 = call i64 @token_TK_TRUE()
+  store i64 %t.39039, ptr %v.3903
+  %t.39040 = load i64, ptr %v.3888
+  %t.39041 = load i64, ptr %v.3903
+  %t.39042 = icmp eq i64 %t.39040, %t.39041
+  %t.39043 = zext i1 %t.39042 to i64
+  store i64 %t.39043, ptr %v.3904
+  %t.39050 = load i64, ptr %v.3904
+  %t.39051 = icmp eq i64 %t.39050, 0
+  br i1 %t.39051, label %L.456, label %L.fall.3905
+L.fall.3905:
+  store i64 1, ptr %v.3906
+  %t.39090 = load i64, ptr %v.3906
+  %t.39091 = load i64, ptr %v.90002
+  %t.39099 = call i64 @ast_new_bool_node(i64 %t.39090, i64 %t.39091)
+  store i64 %t.39099, ptr %v.3909
+  %t.39100 = load i64, ptr %v.3909
+  ret i64 %t.39100
 L.456:
   br label %L.457
 L.457:
-  %t.38909 = call i64 @token_TK_LPAREN()
-  store i64 %t.38909, ptr %v.3890
-  %t.38910 = load i64, ptr %v.3838
-  %t.38911 = load i64, ptr %v.3890
-  %t.38912 = icmp eq i64 %t.38910, %t.38911
-  %t.38913 = zext i1 %t.38912 to i64
-  store i64 %t.38913, ptr %v.3891
-  %t.38920 = load i64, ptr %v.3891
-  %t.38921 = icmp eq i64 %t.38920, 0
-  br i1 %t.38921, label %L.458, label %L.fall.3892
-L.fall.3892:
-  %t.38960 = load i64, ptr %v.90000
-  %t.38961 = load i64, ptr %v.90001
-  %t.38962 = load i64, ptr %v.3838
-  %t.38969 = call i64 @lexer_lex_end(i64 %t.38960, i64 %t.38961, i64 %t.38962)
-  store i64 %t.38969, ptr %v.3896
-  %t.38970 = load i64, ptr %v.3896
-  store i64 %t.38970, ptr %v.3897
-  %t.39000 = load i64, ptr %v.90000
-  %t.39001 = load i64, ptr %v.3897
-  %t.39009 = call i64 @lexer_lex_skip(i64 %t.39000, i64 %t.39001)
-  store i64 %t.39009, ptr %v.3900
-  %t.39010 = load i64, ptr %v.3900
-  store i64 %t.39010, ptr %v.3897
-  store i64 1, ptr %v.3902
-  store i64 0, ptr %v.3903
-  %t.39040 = load i64, ptr %v.3903
-  %t.39041 = load i64, ptr %v.3902
-  %t.39042 = sub i64 %t.39040, %t.39041
-  store i64 %t.39042, ptr %v.3904
-  %t.39050 = load i64, ptr %v.3904
-  ret i64 %t.39050
+  %t.39149 = call i64 @token_TK_FALSE()
+  store i64 %t.39149, ptr %v.3914
+  %t.39150 = load i64, ptr %v.3888
+  %t.39151 = load i64, ptr %v.3914
+  %t.39152 = icmp eq i64 %t.39150, %t.39151
+  %t.39153 = zext i1 %t.39152 to i64
+  store i64 %t.39153, ptr %v.3915
+  %t.39160 = load i64, ptr %v.3915
+  %t.39161 = icmp eq i64 %t.39160, 0
+  br i1 %t.39161, label %L.458, label %L.fall.3916
+L.fall.3916:
+  store i64 0, ptr %v.3917
+  %t.39200 = load i64, ptr %v.3917
+  %t.39201 = load i64, ptr %v.90002
+  %t.39209 = call i64 @ast_new_bool_node(i64 %t.39200, i64 %t.39201)
+  store i64 %t.39209, ptr %v.3920
+  %t.39210 = load i64, ptr %v.3920
+  ret i64 %t.39210
 L.458:
   br label %L.459
 L.459:
-  store i64 1, ptr %v.3909
-  store i64 0, ptr %v.3910
-  %t.39110 = load i64, ptr %v.3910
-  %t.39111 = load i64, ptr %v.3909
-  %t.39112 = sub i64 %t.39110, %t.39111
-  store i64 %t.39112, ptr %v.3911
-  %t.39120 = load i64, ptr %v.3911
-  ret i64 %t.39120
+  %t.39259 = call i64 @token_TK_IDENT()
+  store i64 %t.39259, ptr %v.3925
+  %t.39260 = load i64, ptr %v.3888
+  %t.39261 = load i64, ptr %v.3925
+  %t.39262 = icmp eq i64 %t.39260, %t.39261
+  %t.39263 = zext i1 %t.39262 to i64
+  store i64 %t.39263, ptr %v.3926
+  %t.39270 = load i64, ptr %v.3926
+  %t.39271 = icmp eq i64 %t.39270, 0
+  br i1 %t.39271, label %L.460, label %L.fall.3927
+L.fall.3927:
+  %t.39310 = load i64, ptr %v.90000
+  %t.39311 = load i64, ptr %v.90001
+  %t.39312 = load i64, ptr %v.3888
+  %t.39319 = call i64 @lexer_lex_string_value(i64 %t.39310, i64 %t.39311, i64 %t.39312)
+  store i64 %t.39319, ptr %v.3931
+  %t.39320 = load i64, ptr %v.3931
+  store i64 %t.39320, ptr %v.3932
+  %t.39350 = load i64, ptr %v.3932
+  %t.39351 = load i64, ptr %v.90002
+  %t.39359 = call i64 @ast_new_ident_node(i64 %t.39350, i64 %t.39351)
+  store i64 %t.39359, ptr %v.3935
+  %t.39360 = load i64, ptr %v.3935
+  ret i64 %t.39360
+L.460:
+  br label %L.461
+L.461:
+  %t.39409 = call i64 @token_TK_LPAREN()
+  store i64 %t.39409, ptr %v.3940
+  %t.39410 = load i64, ptr %v.3888
+  %t.39411 = load i64, ptr %v.3940
+  %t.39412 = icmp eq i64 %t.39410, %t.39411
+  %t.39413 = zext i1 %t.39412 to i64
+  store i64 %t.39413, ptr %v.3941
+  %t.39420 = load i64, ptr %v.3941
+  %t.39421 = icmp eq i64 %t.39420, 0
+  br i1 %t.39421, label %L.462, label %L.fall.3942
+L.fall.3942:
+  %t.39460 = load i64, ptr %v.90000
+  %t.39461 = load i64, ptr %v.90001
+  %t.39462 = load i64, ptr %v.3888
+  %t.39469 = call i64 @lexer_lex_end(i64 %t.39460, i64 %t.39461, i64 %t.39462)
+  store i64 %t.39469, ptr %v.3946
+  %t.39470 = load i64, ptr %v.3946
+  store i64 %t.39470, ptr %v.3947
+  %t.39500 = load i64, ptr %v.90000
+  %t.39501 = load i64, ptr %v.3947
+  %t.39509 = call i64 @lexer_lex_skip(i64 %t.39500, i64 %t.39501)
+  store i64 %t.39509, ptr %v.3950
+  %t.39510 = load i64, ptr %v.3950
+  store i64 %t.39510, ptr %v.3947
+  store i64 1, ptr %v.3952
+  store i64 0, ptr %v.3953
+  %t.39540 = load i64, ptr %v.3953
+  %t.39541 = load i64, ptr %v.3952
+  %t.39542 = sub i64 %t.39540, %t.39541
+  store i64 %t.39542, ptr %v.3954
+  %t.39550 = load i64, ptr %v.3954
+  ret i64 %t.39550
+L.462:
+  br label %L.463
+L.463:
+  store i64 1, ptr %v.3959
+  store i64 0, ptr %v.3960
+  %t.39610 = load i64, ptr %v.3960
+  %t.39611 = load i64, ptr %v.3959
+  %t.39612 = sub i64 %t.39610, %t.39611
+  store i64 %t.39612, ptr %v.3961
+  %t.39620 = load i64, ptr %v.3961
+  ret i64 %t.39620
 }
 
-define i64 @parser_parse_let_stmt(i64 %param.0, i64 %param.1, i64 %param.2) {
+define i64 @parser_parse_colonequal_stmt(i64 %param.0, i64 %param.1, i64 %param.2) {
   %v.90000 = alloca i64
   %v.90001 = alloca i64
   %v.90002 = alloca i64
-  %v.3914 = alloca i64
-  %v.3917 = alloca i64
-  %v.3918 = alloca i64
-  %v.3919 = alloca i64
-  %v.3920 = alloca i64
-  %v.3922 = alloca i64
-  %v.3923 = alloca i64
-  %v.3924 = alloca i64
-  %v.3925 = alloca i64
-  %v.3926 = alloca i64
-  %v.3928 = alloca i64
-  %v.0 = alloca i64
-  %v.3937 = alloca i64
-  %v.3941 = alloca i64
-  %v.3943 = alloca i64
-  %v.3944 = alloca i64
-  %v.3947 = alloca i64
-  %v.3948 = alloca i64
-  %v.3949 = alloca i64
-  %v.3950 = alloca i64
-  %v.3952 = alloca i64
-  %v.3957 = alloca i64
-  %v.3961 = alloca i64
+  %v.3964 = alloca i64
+  %v.3967 = alloca i64
   %v.3968 = alloca i64
   %v.3969 = alloca i64
   %v.3970 = alloca i64
-  %v.3971 = alloca i64
+  %v.3972 = alloca i64
   %v.3973 = alloca i64
   %v.3974 = alloca i64
   %v.3975 = alloca i64
   %v.3976 = alloca i64
-  %v.3977 = alloca i64
-  %v.3979 = alloca i64
+  %v.3978 = alloca i64
+  %v.0 = alloca i64
+  %v.3987 = alloca i64
   %v.3988 = alloca i64
-  %v.3989 = alloca i64
+  %v.3991 = alloca i64
   %v.3992 = alloca i64
-  %v.3993 = alloca i64
-  %v.3997 = alloca i64
-  %v.4001 = alloca i64
+  %v.3996 = alloca i64
+  %v.4000 = alloca i64
+  %v.4004 = alloca i64
   %v.4005 = alloca i64
   %v.4006 = alloca i64
   %v.4007 = alloca i64
-  %v.4008 = alloca i64
+  %v.4009 = alloca i64
   %v.4010 = alloca i64
   %v.4011 = alloca i64
   %v.4012 = alloca i64
   %v.4013 = alloca i64
-  %v.4014 = alloca i64
-  %v.4016 = alloca i64
-  %v.4025 = alloca i64
-  %v.4029 = alloca i64
+  %v.4015 = alloca i64
+  %v.4024 = alloca i64
+  %v.4028 = alloca i64
+  %v.4033 = alloca i64
   %v.4034 = alloca i64
   %v.4035 = alloca i64
   %v.4036 = alloca i64
   %v.4037 = alloca i64
-  %v.4038 = alloca i64
+  %v.4039 = alloca i64
   %v.4040 = alloca i64
   %v.4041 = alloca i64
   %v.4042 = alloca i64
   %v.4043 = alloca i64
-  %v.4044 = alloca i64
-  %v.4046 = alloca i64
+  %v.4045 = alloca i64
+  %v.4051 = alloca i64
   %v.4052 = alloca i64
   %v.4053 = alloca i64
-  %v.4054 = alloca i64
+  %v.4055 = alloca i64
   %v.4056 = alloca i64
   %v.4057 = alloca i64
-  %v.4058 = alloca i64
+  %v.4059 = alloca i64
   %v.4060 = alloca i64
   %v.4062 = alloca i64
   %v.4064 = alloca i64
@@ -13406,335 +13475,238 @@ define i64 @parser_parse_let_stmt(i64 %param.0, i64 %param.1, i64 %param.2) {
   store i64 %param.2, ptr %v.90002
   br label %B.body
 B.body:
-  %t.39140 = load i64, ptr %v.90001
-  store i64 %t.39140, ptr %v.3914
-  %t.39170 = load i64, ptr %v.90000
-  %t.39171 = load i64, ptr %v.3914
-  %t.39179 = call i64 @lexer_lex_kind(i64 %t.39170, i64 %t.39171)
-  store i64 %t.39179, ptr %v.3917
-  %t.39180 = load i64, ptr %v.3917
-  store i64 %t.39180, ptr %v.3918
-  %t.39199 = call i64 @token_TK_LET()
-  store i64 %t.39199, ptr %v.3919
-  %t.39200 = load i64, ptr %v.3918
-  %t.39201 = load i64, ptr %v.3919
-  %t.39202 = icmp ne i64 %t.39200, %t.39201
-  %t.39203 = zext i1 %t.39202 to i64
-  store i64 %t.39203, ptr %v.3920
-  %t.39210 = load i64, ptr %v.3920
-  %t.39211 = icmp eq i64 %t.39210, 0
-  br i1 %t.39211, label %L.460, label %L.fall.3921
-L.fall.3921:
-  %t.39220 = call ptr @malloc(i64 16)
-  %t.39221 = call ptr @memset(ptr %t.39220, i32 0, i64 16)
-  %t.39222 = ptrtoint ptr %t.39220 to i64
-  store i64 %t.39222, ptr %v.3922
-  store i64 1, ptr %v.3923
-  store i64 0, ptr %v.3924
-  %t.39250 = load i64, ptr %v.3924
-  %t.39251 = load i64, ptr %v.3923
-  %t.39252 = sub i64 %t.39250, %t.39251
-  store i64 %t.39252, ptr %v.3925
-  %t.39260 = load i64, ptr %v.3922
-  store i64 %t.39260, ptr %v.3926
-  %t.39270 = load i64, ptr %v.3926
-  %t.39271 = load i64, ptr %v.3925
-  %t.39272 = inttoptr i64 %t.39270 to ptr
-  store i64 %t.39271, ptr %t.39272
-  %t.39280 = load i64, ptr %v.3922
-  %t.39281 = add i64 %t.39280, 8
-  store i64 %t.39281, ptr %v.3928
-  %t.39290 = load i64, ptr %v.3928
-  %t.39291 = load i64, ptr %v.3914
-  %t.39292 = inttoptr i64 %t.39290 to ptr
-  store i64 %t.39291, ptr %t.39292
-  %t.39300 = load i64, ptr %v.3922
-  ret i64 %t.39300
-L.460:
-  br label %L.461
-L.461:
-  %t.39370 = load i64, ptr %v.90000
-  %t.39371 = load i64, ptr %v.3914
-  %t.39372 = load i64, ptr %v.3918
-  %t.39379 = call i64 @lexer_lex_end(i64 %t.39370, i64 %t.39371, i64 %t.39372)
-  store i64 %t.39379, ptr %v.3937
-  %t.39380 = load i64, ptr %v.3937
-  store i64 %t.39380, ptr %v.3914
-  %t.39410 = load i64, ptr %v.90000
-  %t.39411 = load i64, ptr %v.3914
-  %t.39419 = call i64 @lexer_lex_skip(i64 %t.39410, i64 %t.39411)
-  store i64 %t.39419, ptr %v.3941
-  %t.39420 = load i64, ptr %v.3941
-  store i64 %t.39420, ptr %v.3914
-  store i64 0, ptr %v.3943
-  %t.39440 = load i64, ptr %v.3943
-  store i64 %t.39440, ptr %v.3944
-  %t.39470 = load i64, ptr %v.90000
-  %t.39471 = load i64, ptr %v.3914
-  %t.39479 = call i64 @lexer_lex_kind(i64 %t.39470, i64 %t.39471)
-  store i64 %t.39479, ptr %v.3947
-  %t.39480 = load i64, ptr %v.3947
-  store i64 %t.39480, ptr %v.3948
-  %t.39499 = call i64 @token_TK_MUT()
-  store i64 %t.39499, ptr %v.3949
-  %t.39500 = load i64, ptr %v.3948
-  %t.39501 = load i64, ptr %v.3949
-  %t.39502 = icmp eq i64 %t.39500, %t.39501
-  %t.39503 = zext i1 %t.39502 to i64
-  store i64 %t.39503, ptr %v.3950
-  %t.39510 = load i64, ptr %v.3950
-  %t.39511 = icmp eq i64 %t.39510, 0
-  br i1 %t.39511, label %L.462, label %L.fall.3951
-L.fall.3951:
-  store i64 1, ptr %v.3952
-  %t.39530 = load i64, ptr %v.3952
-  store i64 %t.39530, ptr %v.3944
-  %t.39570 = load i64, ptr %v.90000
-  %t.39571 = load i64, ptr %v.3914
-  %t.39572 = load i64, ptr %v.3948
-  %t.39579 = call i64 @lexer_lex_end(i64 %t.39570, i64 %t.39571, i64 %t.39572)
-  store i64 %t.39579, ptr %v.3957
-  %t.39580 = load i64, ptr %v.3957
-  store i64 %t.39580, ptr %v.3914
-  %t.39610 = load i64, ptr %v.90000
-  %t.39611 = load i64, ptr %v.3914
-  %t.39619 = call i64 @lexer_lex_skip(i64 %t.39610, i64 %t.39611)
-  store i64 %t.39619, ptr %v.3961
-  %t.39620 = load i64, ptr %v.3961
-  store i64 %t.39620, ptr %v.3914
-  br label %L.463
-L.462:
-  br label %L.463
-L.463:
-  %t.39680 = load i64, ptr %v.90000
-  %t.39681 = load i64, ptr %v.3914
-  %t.39689 = call i64 @lexer_lex_kind(i64 %t.39680, i64 %t.39681)
-  store i64 %t.39689, ptr %v.3968
-  %t.39690 = load i64, ptr %v.3968
-  store i64 %t.39690, ptr %v.3969
-  %t.39709 = call i64 @token_TK_IDENT()
-  store i64 %t.39709, ptr %v.3970
-  %t.39710 = load i64, ptr %v.3969
-  %t.39711 = load i64, ptr %v.3970
-  %t.39712 = icmp ne i64 %t.39710, %t.39711
-  %t.39713 = zext i1 %t.39712 to i64
-  store i64 %t.39713, ptr %v.3971
-  %t.39720 = load i64, ptr %v.3971
-  %t.39721 = icmp eq i64 %t.39720, 0
-  br i1 %t.39721, label %L.464, label %L.fall.3972
-L.fall.3972:
-  %t.39730 = call ptr @malloc(i64 16)
-  %t.39731 = call ptr @memset(ptr %t.39730, i32 0, i64 16)
-  %t.39732 = ptrtoint ptr %t.39730 to i64
-  store i64 %t.39732, ptr %v.3973
-  store i64 1, ptr %v.3974
-  store i64 0, ptr %v.3975
-  %t.39760 = load i64, ptr %v.3975
-  %t.39761 = load i64, ptr %v.3974
-  %t.39762 = sub i64 %t.39760, %t.39761
-  store i64 %t.39762, ptr %v.3976
-  %t.39770 = load i64, ptr %v.3973
-  store i64 %t.39770, ptr %v.3977
-  %t.39780 = load i64, ptr %v.3977
-  %t.39781 = load i64, ptr %v.3976
-  %t.39782 = inttoptr i64 %t.39780 to ptr
-  store i64 %t.39781, ptr %t.39782
-  %t.39790 = load i64, ptr %v.3973
-  %t.39791 = add i64 %t.39790, 8
-  store i64 %t.39791, ptr %v.3979
-  %t.39800 = load i64, ptr %v.3979
-  %t.39801 = load i64, ptr %v.3914
-  %t.39802 = inttoptr i64 %t.39800 to ptr
-  store i64 %t.39801, ptr %t.39802
-  %t.39810 = load i64, ptr %v.3973
-  ret i64 %t.39810
+  %t.39640 = load i64, ptr %v.90001
+  store i64 %t.39640, ptr %v.3964
+  %t.39670 = load i64, ptr %v.90000
+  %t.39671 = load i64, ptr %v.3964
+  %t.39679 = call i64 @lexer_lex_kind(i64 %t.39670, i64 %t.39671)
+  store i64 %t.39679, ptr %v.3967
+  %t.39680 = load i64, ptr %v.3967
+  store i64 %t.39680, ptr %v.3968
+  %t.39699 = call i64 @token_TK_IDENT()
+  store i64 %t.39699, ptr %v.3969
+  %t.39700 = load i64, ptr %v.3968
+  %t.39701 = load i64, ptr %v.3969
+  %t.39702 = icmp ne i64 %t.39700, %t.39701
+  %t.39703 = zext i1 %t.39702 to i64
+  store i64 %t.39703, ptr %v.3970
+  %t.39710 = load i64, ptr %v.3970
+  %t.39711 = icmp eq i64 %t.39710, 0
+  br i1 %t.39711, label %L.464, label %L.fall.3971
+L.fall.3971:
+  %t.39720 = call ptr @malloc(i64 16)
+  %t.39721 = call ptr @memset(ptr %t.39720, i32 0, i64 16)
+  %t.39722 = ptrtoint ptr %t.39720 to i64
+  store i64 %t.39722, ptr %v.3972
+  store i64 1, ptr %v.3973
+  store i64 0, ptr %v.3974
+  %t.39750 = load i64, ptr %v.3974
+  %t.39751 = load i64, ptr %v.3973
+  %t.39752 = sub i64 %t.39750, %t.39751
+  store i64 %t.39752, ptr %v.3975
+  %t.39760 = load i64, ptr %v.3972
+  store i64 %t.39760, ptr %v.3976
+  %t.39770 = load i64, ptr %v.3976
+  %t.39771 = load i64, ptr %v.3975
+  %t.39772 = inttoptr i64 %t.39770 to ptr
+  store i64 %t.39771, ptr %t.39772
+  %t.39780 = load i64, ptr %v.3972
+  %t.39781 = add i64 %t.39780, 8
+  store i64 %t.39781, ptr %v.3978
+  %t.39790 = load i64, ptr %v.3978
+  %t.39791 = load i64, ptr %v.3964
+  %t.39792 = inttoptr i64 %t.39790 to ptr
+  store i64 %t.39791, ptr %t.39792
+  %t.39800 = load i64, ptr %v.3972
+  ret i64 %t.39800
 L.464:
   br label %L.465
 L.465:
-  %t.39880 = load i64, ptr %v.90000
-  %t.39881 = load i64, ptr %v.3914
-  %t.39882 = load i64, ptr %v.3969
-  %t.39889 = call i64 @lexer_lex_string_value(i64 %t.39880, i64 %t.39881, i64 %t.39882)
-  store i64 %t.39889, ptr %v.3988
-  %t.39890 = load i64, ptr %v.3988
-  store i64 %t.39890, ptr %v.3989
-  %t.39920 = load i64, ptr %v.3989
-  %t.39921 = load i64, ptr %v.90002
-  %t.39929 = call i64 @ast_new_ident_node(i64 %t.39920, i64 %t.39921)
-  store i64 %t.39929, ptr %v.3992
-  %t.39930 = load i64, ptr %v.3992
-  store i64 %t.39930, ptr %v.3993
-  %t.39970 = load i64, ptr %v.90000
-  %t.39971 = load i64, ptr %v.3914
-  %t.39972 = load i64, ptr %v.3969
-  %t.39979 = call i64 @lexer_lex_end(i64 %t.39970, i64 %t.39971, i64 %t.39972)
-  store i64 %t.39979, ptr %v.3997
-  %t.39980 = load i64, ptr %v.3997
-  store i64 %t.39980, ptr %v.3914
-  %t.40010 = load i64, ptr %v.90000
-  %t.40011 = load i64, ptr %v.3914
-  %t.40019 = call i64 @lexer_lex_skip(i64 %t.40010, i64 %t.40011)
-  store i64 %t.40019, ptr %v.4001
-  %t.40020 = load i64, ptr %v.4001
-  store i64 %t.40020, ptr %v.3914
-  %t.40050 = load i64, ptr %v.90000
-  %t.40051 = load i64, ptr %v.3914
-  %t.40059 = call i64 @lexer_lex_kind(i64 %t.40050, i64 %t.40051)
-  store i64 %t.40059, ptr %v.4005
-  %t.40060 = load i64, ptr %v.4005
-  store i64 %t.40060, ptr %v.4006
-  %t.40079 = call i64 @token_TK_ASSIGN()
-  store i64 %t.40079, ptr %v.4007
-  %t.40080 = load i64, ptr %v.4006
-  %t.40081 = load i64, ptr %v.4007
-  %t.40082 = icmp ne i64 %t.40080, %t.40081
-  %t.40083 = zext i1 %t.40082 to i64
-  store i64 %t.40083, ptr %v.4008
-  %t.40090 = load i64, ptr %v.4008
-  %t.40091 = icmp eq i64 %t.40090, 0
-  br i1 %t.40091, label %L.466, label %L.fall.4009
-L.fall.4009:
-  %t.40100 = call ptr @malloc(i64 16)
-  %t.40101 = call ptr @memset(ptr %t.40100, i32 0, i64 16)
-  %t.40102 = ptrtoint ptr %t.40100 to i64
-  store i64 %t.40102, ptr %v.4010
-  store i64 1, ptr %v.4011
-  store i64 0, ptr %v.4012
-  %t.40130 = load i64, ptr %v.4012
-  %t.40131 = load i64, ptr %v.4011
-  %t.40132 = sub i64 %t.40130, %t.40131
-  store i64 %t.40132, ptr %v.4013
-  %t.40140 = load i64, ptr %v.4010
-  store i64 %t.40140, ptr %v.4014
-  %t.40150 = load i64, ptr %v.4014
-  %t.40151 = load i64, ptr %v.4013
-  %t.40152 = inttoptr i64 %t.40150 to ptr
-  store i64 %t.40151, ptr %t.40152
-  %t.40160 = load i64, ptr %v.4010
-  %t.40161 = add i64 %t.40160, 8
-  store i64 %t.40161, ptr %v.4016
-  %t.40170 = load i64, ptr %v.4016
-  %t.40171 = load i64, ptr %v.3914
-  %t.40172 = inttoptr i64 %t.40170 to ptr
-  store i64 %t.40171, ptr %t.40172
-  %t.40180 = load i64, ptr %v.4010
-  ret i64 %t.40180
+  %t.39870 = load i64, ptr %v.90000
+  %t.39871 = load i64, ptr %v.3964
+  %t.39872 = load i64, ptr %v.3968
+  %t.39879 = call i64 @lexer_lex_string_value(i64 %t.39870, i64 %t.39871, i64 %t.39872)
+  store i64 %t.39879, ptr %v.3987
+  %t.39880 = load i64, ptr %v.3987
+  store i64 %t.39880, ptr %v.3988
+  %t.39910 = load i64, ptr %v.3988
+  %t.39911 = load i64, ptr %v.90002
+  %t.39919 = call i64 @ast_new_ident_node(i64 %t.39910, i64 %t.39911)
+  store i64 %t.39919, ptr %v.3991
+  %t.39920 = load i64, ptr %v.3991
+  store i64 %t.39920, ptr %v.3992
+  %t.39960 = load i64, ptr %v.90000
+  %t.39961 = load i64, ptr %v.3964
+  %t.39962 = load i64, ptr %v.3968
+  %t.39969 = call i64 @lexer_lex_end(i64 %t.39960, i64 %t.39961, i64 %t.39962)
+  store i64 %t.39969, ptr %v.3996
+  %t.39970 = load i64, ptr %v.3996
+  store i64 %t.39970, ptr %v.3964
+  %t.40000 = load i64, ptr %v.90000
+  %t.40001 = load i64, ptr %v.3964
+  %t.40009 = call i64 @lexer_lex_skip(i64 %t.40000, i64 %t.40001)
+  store i64 %t.40009, ptr %v.4000
+  %t.40010 = load i64, ptr %v.4000
+  store i64 %t.40010, ptr %v.3964
+  %t.40040 = load i64, ptr %v.90000
+  %t.40041 = load i64, ptr %v.3964
+  %t.40049 = call i64 @lexer_lex_kind(i64 %t.40040, i64 %t.40041)
+  store i64 %t.40049, ptr %v.4004
+  %t.40050 = load i64, ptr %v.4004
+  store i64 %t.40050, ptr %v.4005
+  %t.40069 = call i64 @token_TK_COLONEQUAL()
+  store i64 %t.40069, ptr %v.4006
+  %t.40070 = load i64, ptr %v.4005
+  %t.40071 = load i64, ptr %v.4006
+  %t.40072 = icmp ne i64 %t.40070, %t.40071
+  %t.40073 = zext i1 %t.40072 to i64
+  store i64 %t.40073, ptr %v.4007
+  %t.40080 = load i64, ptr %v.4007
+  %t.40081 = icmp eq i64 %t.40080, 0
+  br i1 %t.40081, label %L.466, label %L.fall.4008
+L.fall.4008:
+  %t.40090 = call ptr @malloc(i64 16)
+  %t.40091 = call ptr @memset(ptr %t.40090, i32 0, i64 16)
+  %t.40092 = ptrtoint ptr %t.40090 to i64
+  store i64 %t.40092, ptr %v.4009
+  store i64 1, ptr %v.4010
+  store i64 0, ptr %v.4011
+  %t.40120 = load i64, ptr %v.4011
+  %t.40121 = load i64, ptr %v.4010
+  %t.40122 = sub i64 %t.40120, %t.40121
+  store i64 %t.40122, ptr %v.4012
+  %t.40130 = load i64, ptr %v.4009
+  store i64 %t.40130, ptr %v.4013
+  %t.40140 = load i64, ptr %v.4013
+  %t.40141 = load i64, ptr %v.4012
+  %t.40142 = inttoptr i64 %t.40140 to ptr
+  store i64 %t.40141, ptr %t.40142
+  %t.40150 = load i64, ptr %v.4009
+  %t.40151 = add i64 %t.40150, 8
+  store i64 %t.40151, ptr %v.4015
+  %t.40160 = load i64, ptr %v.4015
+  %t.40161 = load i64, ptr %v.3964
+  %t.40162 = inttoptr i64 %t.40160 to ptr
+  store i64 %t.40161, ptr %t.40162
+  %t.40170 = load i64, ptr %v.4009
+  ret i64 %t.40170
 L.466:
   br label %L.467
 L.467:
-  %t.40250 = load i64, ptr %v.90000
-  %t.40251 = load i64, ptr %v.3914
-  %t.40252 = load i64, ptr %v.4006
-  %t.40259 = call i64 @lexer_lex_end(i64 %t.40250, i64 %t.40251, i64 %t.40252)
-  store i64 %t.40259, ptr %v.4025
-  %t.40260 = load i64, ptr %v.4025
-  store i64 %t.40260, ptr %v.3914
-  %t.40290 = load i64, ptr %v.90000
-  %t.40291 = load i64, ptr %v.3914
-  %t.40299 = call i64 @lexer_lex_skip(i64 %t.40290, i64 %t.40291)
-  store i64 %t.40299, ptr %v.4029
-  %t.40300 = load i64, ptr %v.4029
-  store i64 %t.40300, ptr %v.3914
-  %t.40340 = load i64, ptr %v.90000
-  %t.40341 = load i64, ptr %v.3914
-  %t.40342 = load i64, ptr %v.90002
-  %t.40349 = call i64 @parser_parse_expr_with_pos(i64 %t.40340, i64 %t.40341, i64 %t.40342)
-  store i64 %t.40349, ptr %v.4034
+  %t.40240 = load i64, ptr %v.90000
+  %t.40241 = load i64, ptr %v.3964
+  %t.40242 = load i64, ptr %v.4005
+  %t.40249 = call i64 @lexer_lex_end(i64 %t.40240, i64 %t.40241, i64 %t.40242)
+  store i64 %t.40249, ptr %v.4024
+  %t.40250 = load i64, ptr %v.4024
+  store i64 %t.40250, ptr %v.3964
+  %t.40280 = load i64, ptr %v.90000
+  %t.40281 = load i64, ptr %v.3964
+  %t.40289 = call i64 @lexer_lex_skip(i64 %t.40280, i64 %t.40281)
+  store i64 %t.40289, ptr %v.4028
+  %t.40290 = load i64, ptr %v.4028
+  store i64 %t.40290, ptr %v.3964
+  %t.40330 = load i64, ptr %v.90000
+  %t.40331 = load i64, ptr %v.3964
+  %t.40332 = load i64, ptr %v.90002
+  %t.40339 = call i64 @parser_parse_expr_with_pos(i64 %t.40330, i64 %t.40331, i64 %t.40332)
+  store i64 %t.40339, ptr %v.4033
+  %t.40340 = load i64, ptr %v.4033
+  store i64 %t.40340, ptr %v.4034
   %t.40350 = load i64, ptr %v.4034
-  store i64 %t.40350, ptr %v.4035
-  %t.40360 = load i64, ptr %v.4035
-  %t.40366 = inttoptr i64 %t.40360 to ptr
-  %t.40367 = load i64, ptr %t.40366
-  store i64 %t.40367, ptr %v.4036
-  store i64 0, ptr %v.4037
-  %t.40380 = load i64, ptr %v.4036
-  %t.40381 = load i64, ptr %v.4037
-  %t.40382 = icmp slt i64 %t.40380, %t.40381
-  %t.40383 = zext i1 %t.40382 to i64
-  store i64 %t.40383, ptr %v.4038
-  %t.40390 = load i64, ptr %v.4038
-  %t.40391 = icmp eq i64 %t.40390, 0
-  br i1 %t.40391, label %L.468, label %L.fall.4039
-L.fall.4039:
-  %t.40400 = call ptr @malloc(i64 16)
-  %t.40401 = call ptr @memset(ptr %t.40400, i32 0, i64 16)
-  %t.40402 = ptrtoint ptr %t.40400 to i64
-  store i64 %t.40402, ptr %v.4040
-  store i64 1, ptr %v.4041
-  store i64 0, ptr %v.4042
-  %t.40430 = load i64, ptr %v.4042
-  %t.40431 = load i64, ptr %v.4041
-  %t.40432 = sub i64 %t.40430, %t.40431
-  store i64 %t.40432, ptr %v.4043
-  %t.40440 = load i64, ptr %v.4040
-  store i64 %t.40440, ptr %v.4044
-  %t.40450 = load i64, ptr %v.4044
-  %t.40451 = load i64, ptr %v.4043
-  %t.40452 = inttoptr i64 %t.40450 to ptr
-  store i64 %t.40451, ptr %t.40452
-  %t.40460 = load i64, ptr %v.4040
-  %t.40461 = add i64 %t.40460, 8
-  store i64 %t.40461, ptr %v.4046
-  %t.40470 = load i64, ptr %v.4046
-  %t.40471 = load i64, ptr %v.3914
-  %t.40472 = inttoptr i64 %t.40470 to ptr
-  store i64 %t.40471, ptr %t.40472
-  %t.40480 = load i64, ptr %v.4040
-  ret i64 %t.40480
+  %t.40356 = inttoptr i64 %t.40350 to ptr
+  %t.40357 = load i64, ptr %t.40356
+  store i64 %t.40357, ptr %v.4035
+  store i64 0, ptr %v.4036
+  %t.40370 = load i64, ptr %v.4035
+  %t.40371 = load i64, ptr %v.4036
+  %t.40372 = icmp slt i64 %t.40370, %t.40371
+  %t.40373 = zext i1 %t.40372 to i64
+  store i64 %t.40373, ptr %v.4037
+  %t.40380 = load i64, ptr %v.4037
+  %t.40381 = icmp eq i64 %t.40380, 0
+  br i1 %t.40381, label %L.468, label %L.fall.4038
+L.fall.4038:
+  %t.40390 = call ptr @malloc(i64 16)
+  %t.40391 = call ptr @memset(ptr %t.40390, i32 0, i64 16)
+  %t.40392 = ptrtoint ptr %t.40390 to i64
+  store i64 %t.40392, ptr %v.4039
+  store i64 1, ptr %v.4040
+  store i64 0, ptr %v.4041
+  %t.40420 = load i64, ptr %v.4041
+  %t.40421 = load i64, ptr %v.4040
+  %t.40422 = sub i64 %t.40420, %t.40421
+  store i64 %t.40422, ptr %v.4042
+  %t.40430 = load i64, ptr %v.4039
+  store i64 %t.40430, ptr %v.4043
+  %t.40440 = load i64, ptr %v.4043
+  %t.40441 = load i64, ptr %v.4042
+  %t.40442 = inttoptr i64 %t.40440 to ptr
+  store i64 %t.40441, ptr %t.40442
+  %t.40450 = load i64, ptr %v.4039
+  %t.40451 = add i64 %t.40450, 8
+  store i64 %t.40451, ptr %v.4045
+  %t.40460 = load i64, ptr %v.4045
+  %t.40461 = load i64, ptr %v.3964
+  %t.40462 = inttoptr i64 %t.40460 to ptr
+  store i64 %t.40461, ptr %t.40462
+  %t.40470 = load i64, ptr %v.4039
+  ret i64 %t.40470
 L.468:
   br label %L.469
 L.469:
-  %t.40520 = load i64, ptr %v.4035
-  %t.40526 = inttoptr i64 %t.40520 to ptr
-  %t.40527 = load i64, ptr %t.40526
-  store i64 %t.40527, ptr %v.4052
-  %t.40530 = load i64, ptr %v.4052
-  store i64 %t.40530, ptr %v.4053
-  %t.40540 = load i64, ptr %v.4035
-  %t.40542 = add i64 %t.40540, 8
-  %t.40546 = inttoptr i64 %t.40542 to ptr
-  %t.40547 = load i64, ptr %t.40546
-  store i64 %t.40547, ptr %v.4054
-  %t.40550 = load i64, ptr %v.4054
-  store i64 %t.40550, ptr %v.3914
-  %t.40560 = call ptr @malloc(i64 56)
-  %t.40561 = call ptr @memset(ptr %t.40560, i32 0, i64 56)
-  %t.40562 = ptrtoint ptr %t.40560 to i64
-  store i64 %t.40562, ptr %v.4056
-  %t.40579 = call i64 @ast_STMT_LET()
-  store i64 %t.40579, ptr %v.4057
-  %t.40580 = load i64, ptr %v.4056
-  store i64 %t.40580, ptr %v.4058
-  %t.40590 = load i64, ptr %v.4058
-  %t.40591 = load i64, ptr %v.4057
-  %t.40592 = inttoptr i64 %t.40590 to ptr
-  store i64 %t.40591, ptr %t.40592
-  %t.40600 = load i64, ptr %v.4056
+  %t.40510 = load i64, ptr %v.4034
+  %t.40516 = inttoptr i64 %t.40510 to ptr
+  %t.40517 = load i64, ptr %t.40516
+  store i64 %t.40517, ptr %v.4051
+  %t.40520 = load i64, ptr %v.4051
+  store i64 %t.40520, ptr %v.4052
+  %t.40530 = load i64, ptr %v.4034
+  %t.40532 = add i64 %t.40530, 8
+  %t.40536 = inttoptr i64 %t.40532 to ptr
+  %t.40537 = load i64, ptr %t.40536
+  store i64 %t.40537, ptr %v.4053
+  %t.40540 = load i64, ptr %v.4053
+  store i64 %t.40540, ptr %v.3964
+  %t.40550 = call ptr @malloc(i64 56)
+  %t.40551 = call ptr @memset(ptr %t.40550, i32 0, i64 56)
+  %t.40552 = ptrtoint ptr %t.40550 to i64
+  store i64 %t.40552, ptr %v.4055
+  %t.40569 = call i64 @ast_STMT_LET()
+  store i64 %t.40569, ptr %v.4056
+  %t.40570 = load i64, ptr %v.4055
+  store i64 %t.40570, ptr %v.4057
+  %t.40580 = load i64, ptr %v.4057
+  %t.40581 = load i64, ptr %v.4056
+  %t.40582 = inttoptr i64 %t.40580 to ptr
+  store i64 %t.40581, ptr %t.40582
+  store i64 1, ptr %v.4059
+  %t.40600 = load i64, ptr %v.4055
   %t.40601 = add i64 %t.40600, 8
   store i64 %t.40601, ptr %v.4060
   %t.40610 = load i64, ptr %v.4060
-  %t.40611 = load i64, ptr %v.3944
+  %t.40611 = load i64, ptr %v.4059
   %t.40612 = inttoptr i64 %t.40610 to ptr
   store i64 %t.40611, ptr %t.40612
-  %t.40620 = load i64, ptr %v.4056
+  %t.40620 = load i64, ptr %v.4055
   %t.40621 = add i64 %t.40620, 16
   store i64 %t.40621, ptr %v.4062
   %t.40630 = load i64, ptr %v.4062
-  %t.40631 = load i64, ptr %v.3989
+  %t.40631 = load i64, ptr %v.3988
   %t.40632 = inttoptr i64 %t.40630 to ptr
   store i64 %t.40631, ptr %t.40632
-  %t.40640 = load i64, ptr %v.4056
+  %t.40640 = load i64, ptr %v.4055
   %t.40641 = add i64 %t.40640, 24
   store i64 %t.40641, ptr %v.4064
   %t.40650 = load i64, ptr %v.4064
-  %t.40651 = load i64, ptr %v.3993
+  %t.40651 = load i64, ptr %v.3992
   %t.40652 = inttoptr i64 %t.40650 to ptr
   store i64 %t.40651, ptr %t.40652
-  %t.40660 = load i64, ptr %v.4056
+  %t.40660 = load i64, ptr %v.4055
   %t.40661 = add i64 %t.40660, 32
   store i64 %t.40661, ptr %v.4066
   %t.40670 = load i64, ptr %v.4066
-  %t.40671 = load i64, ptr %v.4053
+  %t.40671 = load i64, ptr %v.4052
   %t.40672 = inttoptr i64 %t.40670 to ptr
   store i64 %t.40671, ptr %t.40672
   store i64 1, ptr %v.4068
@@ -13743,7 +13715,7 @@ L.469:
   %t.40701 = load i64, ptr %v.4068
   %t.40702 = sub i64 %t.40700, %t.40701
   store i64 %t.40702, ptr %v.4070
-  %t.40710 = load i64, ptr %v.4056
+  %t.40710 = load i64, ptr %v.4055
   %t.40711 = add i64 %t.40710, 40
   store i64 %t.40711, ptr %v.4071
   %t.40720 = load i64, ptr %v.4071
@@ -13752,14 +13724,14 @@ L.469:
   store i64 %t.40721, ptr %t.40722
   %t.40739 = call i64 @ast_TYPE_UNKNOWN()
   store i64 %t.40739, ptr %v.4073
-  %t.40740 = load i64, ptr %v.4056
+  %t.40740 = load i64, ptr %v.4055
   %t.40741 = add i64 %t.40740, 48
   store i64 %t.40741, ptr %v.4074
   %t.40750 = load i64, ptr %v.4074
   %t.40751 = load i64, ptr %v.4073
   %t.40752 = inttoptr i64 %t.40750 to ptr
   store i64 %t.40751, ptr %t.40752
-  %t.40760 = load i64, ptr %v.4056
+  %t.40760 = load i64, ptr %v.4055
   store i64 %t.40760, ptr %v.4076
   %t.40770 = load i64, ptr %v.90002
   %t.40771 = inttoptr i64 %t.40770 to ptr
@@ -13791,7 +13763,7 @@ L.469:
   %t.40841 = add i64 %t.40840, 8
   store i64 %t.40841, ptr %v.4084
   %t.40850 = load i64, ptr %v.4084
-  %t.40851 = load i64, ptr %v.3914
+  %t.40851 = load i64, ptr %v.3964
   %t.40852 = inttoptr i64 %t.40850 to ptr
   store i64 %t.40851, ptr %t.40852
   %t.40860 = load i64, ptr %v.4078
@@ -15594,47 +15566,47 @@ define i64 @parser_parse_stmt(i64 %param.0, i64 %param.1, i64 %param.2) {
   %v.4737 = alloca i64
   %v.4738 = alloca i64
   %v.4743 = alloca i64
-  %v.4748 = alloca i64
+  %v.4745 = alloca i64
+  %v.4746 = alloca i64
+  %v.4747 = alloca i64
   %v.4749 = alloca i64
-  %v.4754 = alloca i64
+  %v.4750 = alloca i64
+  %v.4752 = alloca i64
+  %v.4753 = alloca i64
+  %v.4755 = alloca i64
   %v.4756 = alloca i64
   %v.4757 = alloca i64
   %v.4758 = alloca i64
   %v.4760 = alloca i64
   %v.4761 = alloca i64
+  %v.4762 = alloca i64
   %v.4763 = alloca i64
-  %v.4764 = alloca i64
+  %v.4765 = alloca i64
   %v.4766 = alloca i64
   %v.4767 = alloca i64
   %v.4768 = alloca i64
-  %v.4769 = alloca i64
+  %v.4770 = alloca i64
   %v.4771 = alloca i64
-  %v.4772 = alloca i64
   %v.4773 = alloca i64
-  %v.4774 = alloca i64
+  %v.4775 = alloca i64
   %v.4776 = alloca i64
   %v.4777 = alloca i64
   %v.4778 = alloca i64
   %v.4779 = alloca i64
   %v.4781 = alloca i64
-  %v.4782 = alloca i64
-  %v.4784 = alloca i64
-  %v.4786 = alloca i64
   %v.4787 = alloca i64
   %v.4788 = alloca i64
-  %v.4789 = alloca i64
-  %v.4790 = alloca i64
-  %v.4792 = alloca i64
+  %v.4793 = alloca i64
   %v.4798 = alloca i64
   %v.4799 = alloca i64
-  %v.4804 = alloca i64
+  %v.4801 = alloca i64
+  %v.4805 = alloca i64
   %v.4809 = alloca i64
-  %v.4810 = alloca i64
-  %v.4812 = alloca i64
+  %v.4813 = alloca i64
+  %v.4814 = alloca i64
+  %v.4815 = alloca i64
   %v.4816 = alloca i64
-  %v.4820 = alloca i64
-  %v.4824 = alloca i64
-  %v.4825 = alloca i64
+  %v.4821 = alloca i64
   %v.4826 = alloca i64
   %v.4827 = alloca i64
   %v.4832 = alloca i64
@@ -15695,7 +15667,7 @@ B.body:
   store i64 %t.47029, ptr %v.4702
   %t.47030 = load i64, ptr %v.4702
   store i64 %t.47030, ptr %v.4703
-  %t.47049 = call i64 @token_TK_LET()
+  %t.47049 = call i64 @token_TK_IF()
   store i64 %t.47049, ptr %v.4704
   %t.47050 = load i64, ptr %v.4703
   %t.47051 = load i64, ptr %v.4704
@@ -15709,14 +15681,14 @@ L.fall.4706:
   %t.47100 = load i64, ptr %v.90000
   %t.47101 = load i64, ptr %v.4695
   %t.47102 = load i64, ptr %v.90002
-  %t.47109 = call i64 @parser_parse_let_stmt(i64 %t.47100, i64 %t.47101, i64 %t.47102)
+  %t.47109 = call i64 @parser_parse_if_stmt(i64 %t.47100, i64 %t.47101, i64 %t.47102)
   store i64 %t.47109, ptr %v.4710
   %t.47110 = load i64, ptr %v.4710
   ret i64 %t.47110
 L.510:
   br label %L.511
 L.511:
-  %t.47159 = call i64 @token_TK_IF()
+  %t.47159 = call i64 @token_TK_FOR()
   store i64 %t.47159, ptr %v.4715
   %t.47160 = load i64, ptr %v.4703
   %t.47161 = load i64, ptr %v.4715
@@ -15730,14 +15702,14 @@ L.fall.4717:
   %t.47210 = load i64, ptr %v.90000
   %t.47211 = load i64, ptr %v.4695
   %t.47212 = load i64, ptr %v.90002
-  %t.47219 = call i64 @parser_parse_if_stmt(i64 %t.47210, i64 %t.47211, i64 %t.47212)
+  %t.47219 = call i64 @parser_parse_for_stmt(i64 %t.47210, i64 %t.47211, i64 %t.47212)
   store i64 %t.47219, ptr %v.4721
   %t.47220 = load i64, ptr %v.4721
   ret i64 %t.47220
 L.512:
   br label %L.513
 L.513:
-  %t.47269 = call i64 @token_TK_FOR()
+  %t.47269 = call i64 @token_TK_RETURN()
   store i64 %t.47269, ptr %v.4726
   %t.47270 = load i64, ptr %v.4703
   %t.47271 = load i64, ptr %v.4726
@@ -15751,14 +15723,14 @@ L.fall.4728:
   %t.47320 = load i64, ptr %v.90000
   %t.47321 = load i64, ptr %v.4695
   %t.47322 = load i64, ptr %v.90002
-  %t.47329 = call i64 @parser_parse_for_stmt(i64 %t.47320, i64 %t.47321, i64 %t.47322)
+  %t.47329 = call i64 @parser_parse_return_stmt(i64 %t.47320, i64 %t.47321, i64 %t.47322)
   store i64 %t.47329, ptr %v.4732
   %t.47330 = load i64, ptr %v.4732
   ret i64 %t.47330
 L.514:
   br label %L.515
 L.515:
-  %t.47379 = call i64 @token_TK_RETURN()
+  %t.47379 = call i64 @token_TK_BREAK()
   store i64 %t.47379, ptr %v.4737
   %t.47380 = load i64, ptr %v.4703
   %t.47381 = load i64, ptr %v.4737
@@ -15771,149 +15743,149 @@ L.515:
 L.fall.4739:
   %t.47430 = load i64, ptr %v.90000
   %t.47431 = load i64, ptr %v.4695
-  %t.47432 = load i64, ptr %v.90002
-  %t.47439 = call i64 @parser_parse_return_stmt(i64 %t.47430, i64 %t.47431, i64 %t.47432)
+  %t.47432 = load i64, ptr %v.4703
+  %t.47439 = call i64 @lexer_lex_end(i64 %t.47430, i64 %t.47431, i64 %t.47432)
   store i64 %t.47439, ptr %v.4743
   %t.47440 = load i64, ptr %v.4743
-  ret i64 %t.47440
-L.516:
-  br label %L.517
-L.517:
-  %t.47489 = call i64 @token_TK_BREAK()
-  store i64 %t.47489, ptr %v.4748
-  %t.47490 = load i64, ptr %v.4703
-  %t.47491 = load i64, ptr %v.4748
-  %t.47492 = icmp eq i64 %t.47490, %t.47491
-  %t.47493 = zext i1 %t.47492 to i64
-  store i64 %t.47493, ptr %v.4749
-  %t.47500 = load i64, ptr %v.4749
-  %t.47501 = icmp eq i64 %t.47500, 0
-  br i1 %t.47501, label %L.518, label %L.fall.4750
-L.fall.4750:
-  %t.47540 = load i64, ptr %v.90000
-  %t.47541 = load i64, ptr %v.4695
-  %t.47542 = load i64, ptr %v.4703
-  %t.47549 = call i64 @lexer_lex_end(i64 %t.47540, i64 %t.47541, i64 %t.47542)
-  store i64 %t.47549, ptr %v.4754
-  %t.47550 = load i64, ptr %v.4754
-  store i64 %t.47550, ptr %v.4695
-  %t.47560 = call ptr @malloc(i64 56)
-  %t.47561 = call ptr @memset(ptr %t.47560, i32 0, i64 56)
-  %t.47562 = ptrtoint ptr %t.47560 to i64
-  store i64 %t.47562, ptr %v.4756
-  %t.47579 = call i64 @ast_STMT_BREAK()
-  store i64 %t.47579, ptr %v.4757
-  %t.47580 = load i64, ptr %v.4756
-  store i64 %t.47580, ptr %v.4758
+  store i64 %t.47440, ptr %v.4695
+  %t.47450 = call ptr @malloc(i64 56)
+  %t.47451 = call ptr @memset(ptr %t.47450, i32 0, i64 56)
+  %t.47452 = ptrtoint ptr %t.47450 to i64
+  store i64 %t.47452, ptr %v.4745
+  %t.47469 = call i64 @ast_STMT_BREAK()
+  store i64 %t.47469, ptr %v.4746
+  %t.47470 = load i64, ptr %v.4745
+  store i64 %t.47470, ptr %v.4747
+  %t.47480 = load i64, ptr %v.4747
+  %t.47481 = load i64, ptr %v.4746
+  %t.47482 = inttoptr i64 %t.47480 to ptr
+  store i64 %t.47481, ptr %t.47482
+  store i64 0, ptr %v.4749
+  %t.47500 = load i64, ptr %v.4745
+  %t.47501 = add i64 %t.47500, 8
+  store i64 %t.47501, ptr %v.4750
+  %t.47510 = load i64, ptr %v.4750
+  %t.47511 = load i64, ptr %v.4749
+  %t.47512 = inttoptr i64 %t.47510 to ptr
+  store i64 %t.47511, ptr %t.47512
+  store i64 0, ptr %v.4752
+  %t.47530 = load i64, ptr %v.4745
+  %t.47531 = add i64 %t.47530, 16
+  store i64 %t.47531, ptr %v.4753
+  %t.47540 = load i64, ptr %v.4753
+  %t.47541 = load i64, ptr %v.4752
+  %t.47542 = inttoptr i64 %t.47540 to ptr
+  store i64 %t.47541, ptr %t.47542
+  store i64 1, ptr %v.4755
+  store i64 0, ptr %v.4756
+  %t.47570 = load i64, ptr %v.4756
+  %t.47571 = load i64, ptr %v.4755
+  %t.47572 = sub i64 %t.47570, %t.47571
+  store i64 %t.47572, ptr %v.4757
+  %t.47580 = load i64, ptr %v.4745
+  %t.47581 = add i64 %t.47580, 24
+  store i64 %t.47581, ptr %v.4758
   %t.47590 = load i64, ptr %v.4758
   %t.47591 = load i64, ptr %v.4757
   %t.47592 = inttoptr i64 %t.47590 to ptr
   store i64 %t.47591, ptr %t.47592
-  store i64 0, ptr %v.4760
-  %t.47610 = load i64, ptr %v.4756
-  %t.47611 = add i64 %t.47610, 8
-  store i64 %t.47611, ptr %v.4761
+  store i64 1, ptr %v.4760
+  store i64 0, ptr %v.4761
   %t.47620 = load i64, ptr %v.4761
   %t.47621 = load i64, ptr %v.4760
-  %t.47622 = inttoptr i64 %t.47620 to ptr
-  store i64 %t.47621, ptr %t.47622
-  store i64 0, ptr %v.4763
-  %t.47640 = load i64, ptr %v.4756
-  %t.47641 = add i64 %t.47640, 16
-  store i64 %t.47641, ptr %v.4764
-  %t.47650 = load i64, ptr %v.4764
-  %t.47651 = load i64, ptr %v.4763
-  %t.47652 = inttoptr i64 %t.47650 to ptr
-  store i64 %t.47651, ptr %t.47652
-  store i64 1, ptr %v.4766
-  store i64 0, ptr %v.4767
-  %t.47680 = load i64, ptr %v.4767
-  %t.47681 = load i64, ptr %v.4766
-  %t.47682 = sub i64 %t.47680, %t.47681
-  store i64 %t.47682, ptr %v.4768
-  %t.47690 = load i64, ptr %v.4756
-  %t.47691 = add i64 %t.47690, 24
-  store i64 %t.47691, ptr %v.4769
-  %t.47700 = load i64, ptr %v.4769
-  %t.47701 = load i64, ptr %v.4768
-  %t.47702 = inttoptr i64 %t.47700 to ptr
-  store i64 %t.47701, ptr %t.47702
-  store i64 1, ptr %v.4771
-  store i64 0, ptr %v.4772
-  %t.47730 = load i64, ptr %v.4772
-  %t.47731 = load i64, ptr %v.4771
-  %t.47732 = sub i64 %t.47730, %t.47731
-  store i64 %t.47732, ptr %v.4773
-  %t.47740 = load i64, ptr %v.4756
-  %t.47741 = add i64 %t.47740, 32
-  store i64 %t.47741, ptr %v.4774
-  %t.47750 = load i64, ptr %v.4774
-  %t.47751 = load i64, ptr %v.4773
-  %t.47752 = inttoptr i64 %t.47750 to ptr
-  store i64 %t.47751, ptr %t.47752
-  store i64 1, ptr %v.4776
-  store i64 0, ptr %v.4777
-  %t.47780 = load i64, ptr %v.4777
-  %t.47781 = load i64, ptr %v.4776
+  %t.47622 = sub i64 %t.47620, %t.47621
+  store i64 %t.47622, ptr %v.4762
+  %t.47630 = load i64, ptr %v.4745
+  %t.47631 = add i64 %t.47630, 32
+  store i64 %t.47631, ptr %v.4763
+  %t.47640 = load i64, ptr %v.4763
+  %t.47641 = load i64, ptr %v.4762
+  %t.47642 = inttoptr i64 %t.47640 to ptr
+  store i64 %t.47641, ptr %t.47642
+  store i64 1, ptr %v.4765
+  store i64 0, ptr %v.4766
+  %t.47670 = load i64, ptr %v.4766
+  %t.47671 = load i64, ptr %v.4765
+  %t.47672 = sub i64 %t.47670, %t.47671
+  store i64 %t.47672, ptr %v.4767
+  %t.47680 = load i64, ptr %v.4745
+  %t.47681 = add i64 %t.47680, 40
+  store i64 %t.47681, ptr %v.4768
+  %t.47690 = load i64, ptr %v.4768
+  %t.47691 = load i64, ptr %v.4767
+  %t.47692 = inttoptr i64 %t.47690 to ptr
+  store i64 %t.47691, ptr %t.47692
+  %t.47709 = call i64 @ast_TYPE_UNKNOWN()
+  store i64 %t.47709, ptr %v.4770
+  %t.47710 = load i64, ptr %v.4745
+  %t.47711 = add i64 %t.47710, 48
+  store i64 %t.47711, ptr %v.4771
+  %t.47720 = load i64, ptr %v.4771
+  %t.47721 = load i64, ptr %v.4770
+  %t.47722 = inttoptr i64 %t.47720 to ptr
+  store i64 %t.47721, ptr %t.47722
+  %t.47730 = load i64, ptr %v.4745
+  store i64 %t.47730, ptr %v.4773
+  %t.47740 = load i64, ptr %v.90002
+  %t.47741 = inttoptr i64 %t.47740 to ptr
+  %t.47742 = load i64, ptr %v.4773
+  %t.47743 = alloca i64
+  store i64 %t.47742, ptr %t.47743
+  call void @ease_array_push(ptr %t.47741, ptr %t.47743, i64 8)
+  %t.47750 = call ptr @malloc(i64 16)
+  %t.47751 = call ptr @memset(ptr %t.47750, i32 0, i64 16)
+  %t.47752 = ptrtoint ptr %t.47750 to i64
+  store i64 %t.47752, ptr %v.4775
+  %t.47760 = load i64, ptr %v.90002
+  %t.47761 = add i64 %t.47760, 8
+  %t.47762 = inttoptr i64 %t.47761 to ptr
+  %t.47763 = load i64, ptr %t.47762
+  store i64 %t.47763, ptr %v.4776
+  store i64 1, ptr %v.4777
+  %t.47780 = load i64, ptr %v.4776
+  %t.47781 = load i64, ptr %v.4777
   %t.47782 = sub i64 %t.47780, %t.47781
   store i64 %t.47782, ptr %v.4778
-  %t.47790 = load i64, ptr %v.4756
-  %t.47791 = add i64 %t.47790, 40
-  store i64 %t.47791, ptr %v.4779
+  %t.47790 = load i64, ptr %v.4775
+  store i64 %t.47790, ptr %v.4779
   %t.47800 = load i64, ptr %v.4779
   %t.47801 = load i64, ptr %v.4778
   %t.47802 = inttoptr i64 %t.47800 to ptr
   store i64 %t.47801, ptr %t.47802
-  %t.47819 = call i64 @ast_TYPE_UNKNOWN()
-  store i64 %t.47819, ptr %v.4781
-  %t.47820 = load i64, ptr %v.4756
-  %t.47821 = add i64 %t.47820, 48
-  store i64 %t.47821, ptr %v.4782
-  %t.47830 = load i64, ptr %v.4782
-  %t.47831 = load i64, ptr %v.4781
-  %t.47832 = inttoptr i64 %t.47830 to ptr
-  store i64 %t.47831, ptr %t.47832
-  %t.47840 = load i64, ptr %v.4756
-  store i64 %t.47840, ptr %v.4784
-  %t.47850 = load i64, ptr %v.90002
-  %t.47851 = inttoptr i64 %t.47850 to ptr
-  %t.47852 = load i64, ptr %v.4784
-  %t.47853 = alloca i64
-  store i64 %t.47852, ptr %t.47853
-  call void @ease_array_push(ptr %t.47851, ptr %t.47853, i64 8)
-  %t.47860 = call ptr @malloc(i64 16)
-  %t.47861 = call ptr @memset(ptr %t.47860, i32 0, i64 16)
-  %t.47862 = ptrtoint ptr %t.47860 to i64
-  store i64 %t.47862, ptr %v.4786
-  %t.47870 = load i64, ptr %v.90002
-  %t.47871 = add i64 %t.47870, 8
-  %t.47872 = inttoptr i64 %t.47871 to ptr
-  %t.47873 = load i64, ptr %t.47872
-  store i64 %t.47873, ptr %v.4787
-  store i64 1, ptr %v.4788
-  %t.47890 = load i64, ptr %v.4787
-  %t.47891 = load i64, ptr %v.4788
-  %t.47892 = sub i64 %t.47890, %t.47891
-  store i64 %t.47892, ptr %v.4789
-  %t.47900 = load i64, ptr %v.4786
-  store i64 %t.47900, ptr %v.4790
-  %t.47910 = load i64, ptr %v.4790
-  %t.47911 = load i64, ptr %v.4789
-  %t.47912 = inttoptr i64 %t.47910 to ptr
-  store i64 %t.47911, ptr %t.47912
-  %t.47920 = load i64, ptr %v.4786
-  %t.47921 = add i64 %t.47920, 8
-  store i64 %t.47921, ptr %v.4792
-  %t.47930 = load i64, ptr %v.4792
+  %t.47810 = load i64, ptr %v.4775
+  %t.47811 = add i64 %t.47810, 8
+  store i64 %t.47811, ptr %v.4781
+  %t.47820 = load i64, ptr %v.4781
+  %t.47821 = load i64, ptr %v.4695
+  %t.47822 = inttoptr i64 %t.47820 to ptr
+  store i64 %t.47821, ptr %t.47822
+  %t.47830 = load i64, ptr %v.4775
+  ret i64 %t.47830
+L.516:
+  br label %L.517
+L.517:
+  %t.47879 = call i64 @token_TK_LBRACE()
+  store i64 %t.47879, ptr %v.4787
+  %t.47880 = load i64, ptr %v.4703
+  %t.47881 = load i64, ptr %v.4787
+  %t.47882 = icmp eq i64 %t.47880, %t.47881
+  %t.47883 = zext i1 %t.47882 to i64
+  store i64 %t.47883, ptr %v.4788
+  %t.47890 = load i64, ptr %v.4788
+  %t.47891 = icmp eq i64 %t.47890, 0
+  br i1 %t.47891, label %L.518, label %L.fall.4789
+L.fall.4789:
+  %t.47930 = load i64, ptr %v.90000
   %t.47931 = load i64, ptr %v.4695
-  %t.47932 = inttoptr i64 %t.47930 to ptr
-  store i64 %t.47931, ptr %t.47932
-  %t.47940 = load i64, ptr %v.4786
+  %t.47932 = load i64, ptr %v.90002
+  %t.47939 = call i64 @parser_parse_block(i64 %t.47930, i64 %t.47931, i64 %t.47932)
+  store i64 %t.47939, ptr %v.4793
+  %t.47940 = load i64, ptr %v.4793
   ret i64 %t.47940
 L.518:
   br label %L.519
 L.519:
-  %t.47989 = call i64 @token_TK_LBRACE()
+  %t.47989 = call i64 @token_TK_IDENT()
   store i64 %t.47989, ptr %v.4798
   %t.47990 = load i64, ptr %v.4703
   %t.47991 = load i64, ptr %v.4798
@@ -15924,51 +15896,51 @@ L.519:
   %t.48001 = icmp eq i64 %t.48000, 0
   br i1 %t.48001, label %L.520, label %L.fall.4800
 L.fall.4800:
-  %t.48040 = load i64, ptr %v.90000
-  %t.48041 = load i64, ptr %v.4695
-  %t.48042 = load i64, ptr %v.90002
-  %t.48049 = call i64 @parser_parse_block(i64 %t.48040, i64 %t.48041, i64 %t.48042)
-  store i64 %t.48049, ptr %v.4804
-  %t.48050 = load i64, ptr %v.4804
-  ret i64 %t.48050
-L.520:
-  br label %L.521
-L.521:
-  %t.48099 = call i64 @token_TK_IDENT()
+  %t.48010 = load i64, ptr %v.4695
+  store i64 %t.48010, ptr %v.4801
+  %t.48050 = load i64, ptr %v.90000
+  %t.48051 = load i64, ptr %v.4695
+  %t.48052 = load i64, ptr %v.4703
+  %t.48059 = call i64 @lexer_lex_end(i64 %t.48050, i64 %t.48051, i64 %t.48052)
+  store i64 %t.48059, ptr %v.4805
+  %t.48060 = load i64, ptr %v.4805
+  store i64 %t.48060, ptr %v.4695
+  %t.48090 = load i64, ptr %v.90000
+  %t.48091 = load i64, ptr %v.4695
+  %t.48099 = call i64 @lexer_lex_skip(i64 %t.48090, i64 %t.48091)
   store i64 %t.48099, ptr %v.4809
-  %t.48100 = load i64, ptr %v.4703
-  %t.48101 = load i64, ptr %v.4809
-  %t.48102 = icmp eq i64 %t.48100, %t.48101
-  %t.48103 = zext i1 %t.48102 to i64
-  store i64 %t.48103, ptr %v.4810
-  %t.48110 = load i64, ptr %v.4810
-  %t.48111 = icmp eq i64 %t.48110, 0
-  br i1 %t.48111, label %L.522, label %L.fall.4811
-L.fall.4811:
-  %t.48120 = load i64, ptr %v.4695
-  store i64 %t.48120, ptr %v.4812
-  %t.48160 = load i64, ptr %v.90000
-  %t.48161 = load i64, ptr %v.4695
-  %t.48162 = load i64, ptr %v.4703
-  %t.48169 = call i64 @lexer_lex_end(i64 %t.48160, i64 %t.48161, i64 %t.48162)
-  store i64 %t.48169, ptr %v.4816
+  %t.48100 = load i64, ptr %v.4809
+  store i64 %t.48100, ptr %v.4695
+  %t.48130 = load i64, ptr %v.90000
+  %t.48131 = load i64, ptr %v.4695
+  %t.48139 = call i64 @lexer_lex_kind(i64 %t.48130, i64 %t.48131)
+  store i64 %t.48139, ptr %v.4813
+  %t.48140 = load i64, ptr %v.4813
+  store i64 %t.48140, ptr %v.4814
+  %t.48159 = call i64 @token_TK_COLONEQUAL()
+  store i64 %t.48159, ptr %v.4815
+  %t.48160 = load i64, ptr %v.4814
+  %t.48161 = load i64, ptr %v.4815
+  %t.48162 = icmp eq i64 %t.48160, %t.48161
+  %t.48163 = zext i1 %t.48162 to i64
+  store i64 %t.48163, ptr %v.4816
   %t.48170 = load i64, ptr %v.4816
-  store i64 %t.48170, ptr %v.4695
-  %t.48200 = load i64, ptr %v.90000
-  %t.48201 = load i64, ptr %v.4695
-  %t.48209 = call i64 @lexer_lex_skip(i64 %t.48200, i64 %t.48201)
-  store i64 %t.48209, ptr %v.4820
-  %t.48210 = load i64, ptr %v.4820
-  store i64 %t.48210, ptr %v.4695
-  %t.48240 = load i64, ptr %v.90000
-  %t.48241 = load i64, ptr %v.4695
-  %t.48249 = call i64 @lexer_lex_kind(i64 %t.48240, i64 %t.48241)
-  store i64 %t.48249, ptr %v.4824
-  %t.48250 = load i64, ptr %v.4824
-  store i64 %t.48250, ptr %v.4825
+  %t.48171 = icmp eq i64 %t.48170, 0
+  br i1 %t.48171, label %L.522, label %L.fall.4817
+L.fall.4817:
+  %t.48210 = load i64, ptr %v.90000
+  %t.48211 = load i64, ptr %v.4801
+  %t.48212 = load i64, ptr %v.90002
+  %t.48219 = call i64 @parser_parse_colonequal_stmt(i64 %t.48210, i64 %t.48211, i64 %t.48212)
+  store i64 %t.48219, ptr %v.4821
+  %t.48220 = load i64, ptr %v.4821
+  ret i64 %t.48220
+L.522:
+  br label %L.523
+L.523:
   %t.48269 = call i64 @token_TK_ASSIGN()
   store i64 %t.48269, ptr %v.4826
-  %t.48270 = load i64, ptr %v.4825
+  %t.48270 = load i64, ptr %v.4814
   %t.48271 = load i64, ptr %v.4826
   %t.48272 = icmp eq i64 %t.48270, %t.48271
   %t.48273 = zext i1 %t.48272 to i64
@@ -15978,7 +15950,7 @@ L.fall.4811:
   br i1 %t.48281, label %L.524, label %L.fall.4828
 L.fall.4828:
   %t.48320 = load i64, ptr %v.90000
-  %t.48321 = load i64, ptr %v.4812
+  %t.48321 = load i64, ptr %v.4801
   %t.48322 = load i64, ptr %v.90002
   %t.48329 = call i64 @parser_parse_assign_stmt(i64 %t.48320, i64 %t.48321, i64 %t.48322)
   store i64 %t.48329, ptr %v.4832
@@ -15987,12 +15959,12 @@ L.fall.4828:
 L.524:
   br label %L.525
 L.525:
-  %t.48370 = load i64, ptr %v.4812
+  %t.48370 = load i64, ptr %v.4801
   store i64 %t.48370, ptr %v.4695
-  br label %L.523
-L.522:
-  br label %L.523
-L.523:
+  br label %L.521
+L.520:
+  br label %L.521
+L.521:
   %t.48440 = load i64, ptr %v.90000
   %t.48441 = load i64, ptr %v.4695
   %t.48442 = load i64, ptr %v.90002
@@ -16426,7 +16398,7 @@ L.531:
   %t.49751 = icmp eq i64 %t.49750, 0
   br i1 %t.49751, label %L.532, label %L.fall.4975
 L.fall.4975:
-  %t.49760 = ptrtoint ptr @.str.104 to i64
+  %t.49760 = ptrtoint ptr @.str.102 to i64
   store i64 %t.49760, ptr %v.4976
   %t.49770 = load i64, ptr %v.4976
   store i64 %t.49770, ptr %v.4968
@@ -16587,7 +16559,7 @@ L.533:
   store i64 0, ptr %v.5059
   %t.50600 = load i64, ptr %v.5059
   store i64 %t.50600, ptr %v.5060
-  %t.50610 = ptrtoint ptr @.str.105 to i64
+  %t.50610 = ptrtoint ptr @.str.103 to i64
   store i64 %t.50610, ptr %v.5061
   %t.50620 = load i64, ptr %v.4968
   %t.50621 = inttoptr i64 %t.50620 to ptr
@@ -16607,7 +16579,7 @@ L.fall.5063:
 L.540:
   br label %L.541
 L.541:
-  %t.50690 = ptrtoint ptr @.str.106 to i64
+  %t.50690 = ptrtoint ptr @.str.104 to i64
   store i64 %t.50690, ptr %v.5069
   %t.50700 = load i64, ptr %v.4968
   %t.50701 = inttoptr i64 %t.50700 to ptr
@@ -16627,7 +16599,7 @@ L.fall.5071:
 L.542:
   br label %L.543
 L.543:
-  %t.50770 = ptrtoint ptr @.str.107 to i64
+  %t.50770 = ptrtoint ptr @.str.105 to i64
   store i64 %t.50770, ptr %v.5077
   %t.50780 = load i64, ptr %v.4968
   %t.50781 = inttoptr i64 %t.50780 to ptr
@@ -16650,7 +16622,7 @@ L.fall.5079:
 L.544:
   br label %L.545
 L.545:
-  %t.50870 = ptrtoint ptr @.str.108 to i64
+  %t.50870 = ptrtoint ptr @.str.106 to i64
   store i64 %t.50870, ptr %v.5087
   %t.50880 = load i64, ptr %v.4968
   %t.50881 = inttoptr i64 %t.50880 to ptr
@@ -17493,7 +17465,7 @@ L.567:
   %t.53621 = icmp eq i64 %t.53620, 0
   br i1 %t.53621, label %L.568, label %L.fall.5362
 L.fall.5362:
-  %t.53630 = ptrtoint ptr @.str.109 to i64
+  %t.53630 = ptrtoint ptr @.str.107 to i64
   store i64 %t.53630, ptr %v.5363
   %t.53650 = load i64, ptr %v.5363
   %t.53659 = call i64 @io_Print(i64 %t.53650)
@@ -17504,7 +17476,7 @@ L.fall.5362:
   %t.53690 = load i64, ptr %v.5367
   %t.53699 = call i64 @io_Print(i64 %t.53690)
   store i64 %t.53699, ptr %v.5369
-  %t.53700 = ptrtoint ptr @.str.110 to i64
+  %t.53700 = ptrtoint ptr @.str.108 to i64
   store i64 %t.53700, ptr %v.5370
   %t.53720 = load i64, ptr %v.5370
   %t.53729 = call i64 @io_Print(i64 %t.53720)
@@ -17519,7 +17491,7 @@ L.fall.5362:
   %t.53790 = load i64, ptr %v.5377
   %t.53799 = call i64 @io_Print(i64 %t.53790)
   store i64 %t.53799, ptr %v.5379
-  %t.53800 = ptrtoint ptr @.str.111 to i64
+  %t.53800 = ptrtoint ptr @.str.109 to i64
   store i64 %t.53800, ptr %v.5380
   %t.53820 = load i64, ptr %v.5380
   %t.53829 = call i64 @io_Print(i64 %t.53820)
@@ -17530,7 +17502,7 @@ L.fall.5362:
   %t.53860 = load i64, ptr %v.5384
   %t.53869 = call i64 @io_Print(i64 %t.53860)
   store i64 %t.53869, ptr %v.5386
-  %t.53870 = ptrtoint ptr @.str.112 to i64
+  %t.53870 = ptrtoint ptr @.str.110 to i64
   store i64 %t.53870, ptr %v.5387
   %t.53890 = load i64, ptr %v.5387
   %t.53899 = call i64 @io_Print(i64 %t.53890)
@@ -17546,7 +17518,7 @@ L.fall.5362:
   %t.53940 = load i64, ptr %v.5392
   %t.53949 = call i64 @io_Print(i64 %t.53940)
   store i64 %t.53949, ptr %v.5394
-  %t.53950 = ptrtoint ptr @.str.113 to i64
+  %t.53950 = ptrtoint ptr @.str.111 to i64
   store i64 %t.53950, ptr %v.5395
   %t.53970 = load i64, ptr %v.5395
   %t.53979 = call i64 @io_Print(i64 %t.53970)
@@ -17589,7 +17561,7 @@ L.571:
   %t.54140 = load i64, ptr %v.5412
   %t.54149 = call i64 @io_Print(i64 %t.54140)
   store i64 %t.54149, ptr %v.5414
-  %t.54150 = ptrtoint ptr @.str.114 to i64
+  %t.54150 = ptrtoint ptr @.str.112 to i64
   store i64 %t.54150, ptr %v.5415
   %t.54170 = load i64, ptr %v.5415
   %t.54179 = call i64 @io_Print(i64 %t.54170)
@@ -17697,7 +17669,7 @@ L.565:
   %t.54681 = icmp eq i64 %t.54680, 0
   br i1 %t.54681, label %L.576, label %L.fall.5468
 L.fall.5468:
-  %t.54690 = ptrtoint ptr @.str.115 to i64
+  %t.54690 = ptrtoint ptr @.str.113 to i64
   store i64 %t.54690, ptr %v.5469
   %t.54710 = load i64, ptr %v.5469
   %t.54719 = call i64 @io_Print(i64 %t.54710)
@@ -17708,7 +17680,7 @@ L.fall.5468:
   %t.54750 = load i64, ptr %v.5473
   %t.54759 = call i64 @io_Print(i64 %t.54750)
   store i64 %t.54759, ptr %v.5475
-  %t.54760 = ptrtoint ptr @.str.116 to i64
+  %t.54760 = ptrtoint ptr @.str.114 to i64
   store i64 %t.54760, ptr %v.5476
   %t.54780 = load i64, ptr %v.5476
   %t.54789 = call i64 @io_Print(i64 %t.54780)
@@ -17719,7 +17691,7 @@ L.fall.5468:
   %t.54820 = load i64, ptr %v.5480
   %t.54829 = call i64 @io_Print(i64 %t.54820)
   store i64 %t.54829, ptr %v.5482
-  %t.54830 = ptrtoint ptr @.str.117 to i64
+  %t.54830 = ptrtoint ptr @.str.115 to i64
   store i64 %t.54830, ptr %v.5483
   %t.54850 = load i64, ptr %v.5483
   %t.54859 = call i64 @io_Print(i64 %t.54850)
@@ -17730,7 +17702,7 @@ L.fall.5468:
   %t.54890 = load i64, ptr %v.5487
   %t.54899 = call i64 @io_Print(i64 %t.54890)
   store i64 %t.54899, ptr %v.5489
-  %t.54900 = ptrtoint ptr @.str.118 to i64
+  %t.54900 = ptrtoint ptr @.str.116 to i64
   store i64 %t.54900, ptr %v.5490
   %t.54920 = load i64, ptr %v.5490
   %t.54929 = call i64 @io_Print(i64 %t.54920)
@@ -17773,7 +17745,7 @@ L.579:
   %t.55090 = load i64, ptr %v.5507
   %t.55099 = call i64 @io_Print(i64 %t.55090)
   store i64 %t.55099, ptr %v.5509
-  %t.55100 = ptrtoint ptr @.str.119 to i64
+  %t.55100 = ptrtoint ptr @.str.117 to i64
   store i64 %t.55100, ptr %v.5510
   %t.55120 = load i64, ptr %v.5510
   %t.55129 = call i64 @io_Print(i64 %t.55120)
@@ -18653,7 +18625,7 @@ L.595:
   %t.57940 = load i64, ptr %v.5792
   %t.57949 = call i64 @io_Print(i64 %t.57940)
   store i64 %t.57949, ptr %v.5794
-  %t.57950 = ptrtoint ptr @.str.120 to i64
+  %t.57950 = ptrtoint ptr @.str.118 to i64
   store i64 %t.57950, ptr %v.5795
   %t.57970 = load i64, ptr %v.5795
   %t.57979 = call i64 @io_Print(i64 %t.57970)
@@ -18735,7 +18707,7 @@ L.fall.5822:
   %t.58381 = icmp eq i64 %t.58380, 0
   br i1 %t.58381, label %L.598, label %L.fall.5838
 L.fall.5838:
-  %t.58390 = ptrtoint ptr @.str.121 to i64
+  %t.58390 = ptrtoint ptr @.str.119 to i64
   store i64 %t.58390, ptr %v.5839
   %t.58400 = load i64, ptr %v.5839
   store i64 %t.58400, ptr %v.5815
@@ -18949,7 +18921,7 @@ L.607:
   store i64 0, ptr %v.5946
   %t.59470 = load i64, ptr %v.5946
   store i64 %t.59470, ptr %v.5947
-  %t.59480 = ptrtoint ptr @.str.122 to i64
+  %t.59480 = ptrtoint ptr @.str.120 to i64
   store i64 %t.59480, ptr %v.5948
   %t.59490 = load i64, ptr %v.5815
   %t.59491 = inttoptr i64 %t.59490 to ptr
@@ -18969,7 +18941,7 @@ L.fall.5950:
 L.608:
   br label %L.609
 L.609:
-  %t.59560 = ptrtoint ptr @.str.123 to i64
+  %t.59560 = ptrtoint ptr @.str.121 to i64
   store i64 %t.59560, ptr %v.5956
   %t.59570 = load i64, ptr %v.5815
   %t.59571 = inttoptr i64 %t.59570 to ptr
@@ -18989,7 +18961,7 @@ L.fall.5958:
 L.610:
   br label %L.611
 L.611:
-  %t.59640 = ptrtoint ptr @.str.124 to i64
+  %t.59640 = ptrtoint ptr @.str.122 to i64
   store i64 %t.59640, ptr %v.5964
   %t.59650 = load i64, ptr %v.5815
   %t.59651 = inttoptr i64 %t.59650 to ptr
@@ -19009,7 +18981,7 @@ L.fall.5966:
 L.612:
   br label %L.613
 L.613:
-  %t.59720 = ptrtoint ptr @.str.125 to i64
+  %t.59720 = ptrtoint ptr @.str.123 to i64
   store i64 %t.59720, ptr %v.5972
   %t.59730 = load i64, ptr %v.5815
   %t.59731 = inttoptr i64 %t.59730 to ptr
@@ -19032,7 +19004,7 @@ L.fall.5974:
 L.614:
   br label %L.615
 L.615:
-  %t.59820 = ptrtoint ptr @.str.126 to i64
+  %t.59820 = ptrtoint ptr @.str.124 to i64
   store i64 %t.59820, ptr %v.5982
   %t.59830 = load i64, ptr %v.5815
   %t.59831 = inttoptr i64 %t.59830 to ptr
@@ -19447,7 +19419,7 @@ L.621:
   %t.61001 = icmp eq i64 %t.61000, 0
   br i1 %t.61001, label %L.622, label %L.fall.6100
 L.fall.6100:
-  %t.61010 = ptrtoint ptr @.str.127 to i64
+  %t.61010 = ptrtoint ptr @.str.125 to i64
   store i64 %t.61010, ptr %v.6101
   %t.61020 = load i64, ptr %v.6101
   store i64 %t.61020, ptr %v.6097
@@ -19644,7 +19616,7 @@ L.631:
   store i64 0, ptr %v.6204
   %t.62050 = load i64, ptr %v.6204
   store i64 %t.62050, ptr %v.6205
-  %t.62060 = ptrtoint ptr @.str.128 to i64
+  %t.62060 = ptrtoint ptr @.str.126 to i64
   store i64 %t.62060, ptr %v.6206
   %t.62070 = load i64, ptr %v.6097
   %t.62071 = inttoptr i64 %t.62070 to ptr
@@ -19664,7 +19636,7 @@ L.fall.6208:
 L.632:
   br label %L.633
 L.633:
-  %t.62140 = ptrtoint ptr @.str.129 to i64
+  %t.62140 = ptrtoint ptr @.str.127 to i64
   store i64 %t.62140, ptr %v.6214
   %t.62150 = load i64, ptr %v.6097
   %t.62151 = inttoptr i64 %t.62150 to ptr
@@ -19684,7 +19656,7 @@ L.fall.6216:
 L.634:
   br label %L.635
 L.635:
-  %t.62220 = ptrtoint ptr @.str.130 to i64
+  %t.62220 = ptrtoint ptr @.str.128 to i64
   store i64 %t.62220, ptr %v.6222
   %t.62230 = load i64, ptr %v.6097
   %t.62231 = inttoptr i64 %t.62230 to ptr
@@ -19704,7 +19676,7 @@ L.fall.6224:
 L.636:
   br label %L.637
 L.637:
-  %t.62300 = ptrtoint ptr @.str.131 to i64
+  %t.62300 = ptrtoint ptr @.str.129 to i64
   store i64 %t.62300, ptr %v.6230
   %t.62310 = load i64, ptr %v.6097
   %t.62311 = inttoptr i64 %t.62310 to ptr
@@ -19727,7 +19699,7 @@ L.fall.6232:
 L.638:
   br label %L.639
 L.639:
-  %t.62400 = ptrtoint ptr @.str.132 to i64
+  %t.62400 = ptrtoint ptr @.str.130 to i64
   store i64 %t.62400, ptr %v.6240
   %t.62410 = load i64, ptr %v.6097
   %t.62411 = inttoptr i64 %t.62410 to ptr
@@ -19750,7 +19722,7 @@ L.fall.6242:
 L.640:
   br label %L.641
 L.641:
-  %t.62500 = ptrtoint ptr @.str.133 to i64
+  %t.62500 = ptrtoint ptr @.str.131 to i64
   store i64 %t.62500, ptr %v.6250
   %t.62510 = load i64, ptr %v.6097
   %t.62511 = inttoptr i64 %t.62510 to ptr
@@ -21066,7 +21038,7 @@ L.673:
   store i64 %t.66959, ptr %v.6695
   %t.66960 = load i64, ptr %v.6695
   store i64 %t.66960, ptr %v.6499
-  %t.66970 = ptrtoint ptr @.str.134 to i64
+  %t.66970 = ptrtoint ptr @.str.132 to i64
   store i64 %t.66970, ptr %v.6697
   %t.66980 = load i64, ptr %v.6697
   store i64 %t.66980, ptr %v.6698
@@ -24247,7 +24219,7 @@ L.fall.7824:
   %t.78266 = inttoptr i64 %t.78262 to ptr
   %t.78267 = load i64, ptr %t.78266
   store i64 %t.78267, ptr %v.7826
-  %t.78270 = ptrtoint ptr @.str.135 to i64
+  %t.78270 = ptrtoint ptr @.str.133 to i64
   store i64 %t.78270, ptr %v.7827
   %t.78280 = load i64, ptr %v.7826
   %t.78281 = inttoptr i64 %t.78280 to ptr
@@ -26194,7 +26166,7 @@ define i64 @ir_struct_size(i64 %param.0) {
   store i64 %param.0, ptr %v.90000
   br label %B.body
 B.body:
-  %t.85150 = ptrtoint ptr @.str.136 to i64
+  %t.85150 = ptrtoint ptr @.str.134 to i64
   store i64 %t.85150, ptr %v.8515
   %t.85160 = load i64, ptr %v.90000
   %t.85161 = inttoptr i64 %t.85160 to ptr
@@ -26212,7 +26184,7 @@ L.fall.8517:
 L.832:
   br label %L.833
 L.833:
-  %t.85230 = ptrtoint ptr @.str.137 to i64
+  %t.85230 = ptrtoint ptr @.str.135 to i64
   store i64 %t.85230, ptr %v.8523
   %t.85240 = load i64, ptr %v.90000
   %t.85241 = inttoptr i64 %t.85240 to ptr
@@ -26230,7 +26202,7 @@ L.fall.8525:
 L.834:
   br label %L.835
 L.835:
-  %t.85310 = ptrtoint ptr @.str.138 to i64
+  %t.85310 = ptrtoint ptr @.str.136 to i64
   store i64 %t.85310, ptr %v.8531
   %t.85320 = load i64, ptr %v.90000
   %t.85321 = inttoptr i64 %t.85320 to ptr
@@ -26423,7 +26395,7 @@ define i64 @ir_field_offset(i64 %param.0, i64 %param.1) {
   store i64 %param.1, ptr %v.90001
   br label %B.body
 B.body:
-  %t.85660 = ptrtoint ptr @.str.139 to i64
+  %t.85660 = ptrtoint ptr @.str.137 to i64
   store i64 %t.85660, ptr %v.8566
   %t.85670 = load i64, ptr %v.90000
   %t.85671 = inttoptr i64 %t.85670 to ptr
@@ -26435,7 +26407,7 @@ B.body:
   %t.85681 = icmp eq i64 %t.85680, 0
   br i1 %t.85681, label %L.842, label %L.fall.8568
 L.fall.8568:
-  %t.85690 = ptrtoint ptr @.str.140 to i64
+  %t.85690 = ptrtoint ptr @.str.138 to i64
   store i64 %t.85690, ptr %v.8569
   %t.85700 = load i64, ptr %v.90001
   %t.85701 = inttoptr i64 %t.85700 to ptr
@@ -26453,7 +26425,7 @@ L.fall.8571:
 L.844:
   br label %L.845
 L.845:
-  %t.85770 = ptrtoint ptr @.str.141 to i64
+  %t.85770 = ptrtoint ptr @.str.139 to i64
   store i64 %t.85770, ptr %v.8577
   %t.85780 = load i64, ptr %v.90001
   %t.85781 = inttoptr i64 %t.85780 to ptr
@@ -26471,7 +26443,7 @@ L.fall.8579:
 L.846:
   br label %L.847
 L.847:
-  %t.85850 = ptrtoint ptr @.str.142 to i64
+  %t.85850 = ptrtoint ptr @.str.140 to i64
   store i64 %t.85850, ptr %v.8585
   %t.85860 = load i64, ptr %v.90001
   %t.85861 = inttoptr i64 %t.85860 to ptr
@@ -26489,7 +26461,7 @@ L.fall.8587:
 L.848:
   br label %L.849
 L.849:
-  %t.85930 = ptrtoint ptr @.str.143 to i64
+  %t.85930 = ptrtoint ptr @.str.141 to i64
   store i64 %t.85930, ptr %v.8593
   %t.85940 = load i64, ptr %v.90001
   %t.85941 = inttoptr i64 %t.85940 to ptr
@@ -26507,7 +26479,7 @@ L.fall.8595:
 L.850:
   br label %L.851
 L.851:
-  %t.86010 = ptrtoint ptr @.str.144 to i64
+  %t.86010 = ptrtoint ptr @.str.142 to i64
   store i64 %t.86010, ptr %v.8601
   %t.86020 = load i64, ptr %v.90001
   %t.86021 = inttoptr i64 %t.86020 to ptr
@@ -26525,7 +26497,7 @@ L.fall.8603:
 L.852:
   br label %L.853
 L.853:
-  %t.86090 = ptrtoint ptr @.str.145 to i64
+  %t.86090 = ptrtoint ptr @.str.143 to i64
   store i64 %t.86090, ptr %v.8609
   %t.86100 = load i64, ptr %v.90001
   %t.86101 = inttoptr i64 %t.86100 to ptr
@@ -26543,7 +26515,7 @@ L.fall.8611:
 L.854:
   br label %L.855
 L.855:
-  %t.86170 = ptrtoint ptr @.str.146 to i64
+  %t.86170 = ptrtoint ptr @.str.144 to i64
   store i64 %t.86170, ptr %v.8617
   %t.86180 = load i64, ptr %v.90001
   %t.86181 = inttoptr i64 %t.86180 to ptr
@@ -26565,7 +26537,7 @@ L.857:
 L.842:
   br label %L.843
 L.843:
-  %t.86280 = ptrtoint ptr @.str.147 to i64
+  %t.86280 = ptrtoint ptr @.str.145 to i64
   store i64 %t.86280, ptr %v.8628
   %t.86290 = load i64, ptr %v.90000
   %t.86291 = inttoptr i64 %t.86290 to ptr
@@ -26577,7 +26549,7 @@ L.843:
   %t.86301 = icmp eq i64 %t.86300, 0
   br i1 %t.86301, label %L.858, label %L.fall.8630
 L.fall.8630:
-  %t.86310 = ptrtoint ptr @.str.148 to i64
+  %t.86310 = ptrtoint ptr @.str.146 to i64
   store i64 %t.86310, ptr %v.8631
   %t.86320 = load i64, ptr %v.90001
   %t.86321 = inttoptr i64 %t.86320 to ptr
@@ -26595,7 +26567,7 @@ L.fall.8633:
 L.860:
   br label %L.861
 L.861:
-  %t.86390 = ptrtoint ptr @.str.149 to i64
+  %t.86390 = ptrtoint ptr @.str.147 to i64
   store i64 %t.86390, ptr %v.8639
   %t.86400 = load i64, ptr %v.90001
   %t.86401 = inttoptr i64 %t.86400 to ptr
@@ -26613,7 +26585,7 @@ L.fall.8641:
 L.862:
   br label %L.863
 L.863:
-  %t.86470 = ptrtoint ptr @.str.150 to i64
+  %t.86470 = ptrtoint ptr @.str.148 to i64
   store i64 %t.86470, ptr %v.8647
   %t.86480 = load i64, ptr %v.90001
   %t.86481 = inttoptr i64 %t.86480 to ptr
@@ -26631,7 +26603,7 @@ L.fall.8649:
 L.864:
   br label %L.865
 L.865:
-  %t.86550 = ptrtoint ptr @.str.151 to i64
+  %t.86550 = ptrtoint ptr @.str.149 to i64
   store i64 %t.86550, ptr %v.8655
   %t.86560 = load i64, ptr %v.90001
   %t.86561 = inttoptr i64 %t.86560 to ptr
@@ -26649,7 +26621,7 @@ L.fall.8657:
 L.866:
   br label %L.867
 L.867:
-  %t.86630 = ptrtoint ptr @.str.152 to i64
+  %t.86630 = ptrtoint ptr @.str.150 to i64
   store i64 %t.86630, ptr %v.8663
   %t.86640 = load i64, ptr %v.90001
   %t.86641 = inttoptr i64 %t.86640 to ptr
@@ -26667,7 +26639,7 @@ L.fall.8665:
 L.868:
   br label %L.869
 L.869:
-  %t.86710 = ptrtoint ptr @.str.153 to i64
+  %t.86710 = ptrtoint ptr @.str.151 to i64
   store i64 %t.86710, ptr %v.8671
   %t.86720 = load i64, ptr %v.90001
   %t.86721 = inttoptr i64 %t.86720 to ptr
@@ -26689,7 +26661,7 @@ L.871:
 L.858:
   br label %L.859
 L.859:
-  %t.86820 = ptrtoint ptr @.str.154 to i64
+  %t.86820 = ptrtoint ptr @.str.152 to i64
   store i64 %t.86820, ptr %v.8682
   %t.86830 = load i64, ptr %v.90000
   %t.86831 = inttoptr i64 %t.86830 to ptr
@@ -26701,7 +26673,7 @@ L.859:
   %t.86841 = icmp eq i64 %t.86840, 0
   br i1 %t.86841, label %L.872, label %L.fall.8684
 L.fall.8684:
-  %t.86850 = ptrtoint ptr @.str.155 to i64
+  %t.86850 = ptrtoint ptr @.str.153 to i64
   store i64 %t.86850, ptr %v.8685
   %t.86860 = load i64, ptr %v.90001
   %t.86861 = inttoptr i64 %t.86860 to ptr
@@ -26719,7 +26691,7 @@ L.fall.8687:
 L.874:
   br label %L.875
 L.875:
-  %t.86930 = ptrtoint ptr @.str.156 to i64
+  %t.86930 = ptrtoint ptr @.str.154 to i64
   store i64 %t.86930, ptr %v.8693
   %t.86940 = load i64, ptr %v.90001
   %t.86941 = inttoptr i64 %t.86940 to ptr
@@ -26741,7 +26713,7 @@ L.877:
 L.872:
   br label %L.873
 L.873:
-  %t.87040 = ptrtoint ptr @.str.157 to i64
+  %t.87040 = ptrtoint ptr @.str.155 to i64
   store i64 %t.87040, ptr %v.8704
   %t.87050 = load i64, ptr %v.90000
   %t.87051 = inttoptr i64 %t.87050 to ptr
@@ -26753,7 +26725,7 @@ L.873:
   %t.87061 = icmp eq i64 %t.87060, 0
   br i1 %t.87061, label %L.878, label %L.fall.8706
 L.fall.8706:
-  %t.87070 = ptrtoint ptr @.str.158 to i64
+  %t.87070 = ptrtoint ptr @.str.156 to i64
   store i64 %t.87070, ptr %v.8707
   %t.87080 = load i64, ptr %v.90001
   %t.87081 = inttoptr i64 %t.87080 to ptr
@@ -26771,7 +26743,7 @@ L.fall.8709:
 L.880:
   br label %L.881
 L.881:
-  %t.87150 = ptrtoint ptr @.str.159 to i64
+  %t.87150 = ptrtoint ptr @.str.157 to i64
   store i64 %t.87150, ptr %v.8715
   %t.87160 = load i64, ptr %v.90001
   %t.87161 = inttoptr i64 %t.87160 to ptr
@@ -26789,7 +26761,7 @@ L.fall.8717:
 L.882:
   br label %L.883
 L.883:
-  %t.87230 = ptrtoint ptr @.str.160 to i64
+  %t.87230 = ptrtoint ptr @.str.158 to i64
   store i64 %t.87230, ptr %v.8723
   %t.87240 = load i64, ptr %v.90001
   %t.87241 = inttoptr i64 %t.87240 to ptr
@@ -27047,7 +27019,7 @@ define i64 @ir_get_struct_field_names(i64 %param.0) {
   store i64 %param.0, ptr %v.90000
   br label %B.body
 B.body:
-  %t.87830 = ptrtoint ptr @.str.161 to i64
+  %t.87830 = ptrtoint ptr @.str.159 to i64
   store i64 %t.87830, ptr %v.8783
   %t.87840 = load i64, ptr %v.90000
   %t.87841 = inttoptr i64 %t.87840 to ptr
@@ -27059,19 +27031,19 @@ B.body:
   %t.87851 = icmp eq i64 %t.87850, 0
   br i1 %t.87851, label %L.894, label %L.fall.8785
 L.fall.8785:
-  %t.87860 = ptrtoint ptr @.str.162 to i64
+  %t.87860 = ptrtoint ptr @.str.160 to i64
   store i64 %t.87860, ptr %v.8786
-  %t.87870 = ptrtoint ptr @.str.163 to i64
+  %t.87870 = ptrtoint ptr @.str.161 to i64
   store i64 %t.87870, ptr %v.8787
-  %t.87880 = ptrtoint ptr @.str.164 to i64
+  %t.87880 = ptrtoint ptr @.str.162 to i64
   store i64 %t.87880, ptr %v.8788
-  %t.87890 = ptrtoint ptr @.str.165 to i64
+  %t.87890 = ptrtoint ptr @.str.163 to i64
   store i64 %t.87890, ptr %v.8789
-  %t.87900 = ptrtoint ptr @.str.166 to i64
+  %t.87900 = ptrtoint ptr @.str.164 to i64
   store i64 %t.87900, ptr %v.8790
-  %t.87910 = ptrtoint ptr @.str.167 to i64
+  %t.87910 = ptrtoint ptr @.str.165 to i64
   store i64 %t.87910, ptr %v.8791
-  %t.87920 = ptrtoint ptr @.str.168 to i64
+  %t.87920 = ptrtoint ptr @.str.166 to i64
   store i64 %t.87920, ptr %v.8792
   store i64 56, ptr %v.8793
   %t.87940 = load i64, ptr %v.8793
@@ -27157,7 +27129,7 @@ L.fall.8785:
 L.894:
   br label %L.895
 L.895:
-  %t.88210 = ptrtoint ptr @.str.169 to i64
+  %t.88210 = ptrtoint ptr @.str.167 to i64
   store i64 %t.88210, ptr %v.8821
   %t.88220 = load i64, ptr %v.90000
   %t.88221 = inttoptr i64 %t.88220 to ptr
@@ -27169,17 +27141,17 @@ L.895:
   %t.88231 = icmp eq i64 %t.88230, 0
   br i1 %t.88231, label %L.896, label %L.fall.8823
 L.fall.8823:
-  %t.88240 = ptrtoint ptr @.str.170 to i64
+  %t.88240 = ptrtoint ptr @.str.168 to i64
   store i64 %t.88240, ptr %v.8824
-  %t.88250 = ptrtoint ptr @.str.171 to i64
+  %t.88250 = ptrtoint ptr @.str.169 to i64
   store i64 %t.88250, ptr %v.8825
-  %t.88260 = ptrtoint ptr @.str.172 to i64
+  %t.88260 = ptrtoint ptr @.str.170 to i64
   store i64 %t.88260, ptr %v.8826
-  %t.88270 = ptrtoint ptr @.str.173 to i64
+  %t.88270 = ptrtoint ptr @.str.171 to i64
   store i64 %t.88270, ptr %v.8827
-  %t.88280 = ptrtoint ptr @.str.174 to i64
+  %t.88280 = ptrtoint ptr @.str.172 to i64
   store i64 %t.88280, ptr %v.8828
-  %t.88290 = ptrtoint ptr @.str.175 to i64
+  %t.88290 = ptrtoint ptr @.str.173 to i64
   store i64 %t.88290, ptr %v.8829
   store i64 48, ptr %v.8830
   %t.88310 = load i64, ptr %v.8830
@@ -27258,7 +27230,7 @@ L.fall.8823:
 L.896:
   br label %L.897
 L.897:
-  %t.88560 = ptrtoint ptr @.str.176 to i64
+  %t.88560 = ptrtoint ptr @.str.174 to i64
   store i64 %t.88560, ptr %v.8856
   %t.88570 = load i64, ptr %v.90000
   %t.88571 = inttoptr i64 %t.88570 to ptr
@@ -27270,9 +27242,9 @@ L.897:
   %t.88581 = icmp eq i64 %t.88580, 0
   br i1 %t.88581, label %L.898, label %L.fall.8858
 L.fall.8858:
-  %t.88590 = ptrtoint ptr @.str.177 to i64
+  %t.88590 = ptrtoint ptr @.str.175 to i64
   store i64 %t.88590, ptr %v.8859
-  %t.88600 = ptrtoint ptr @.str.178 to i64
+  %t.88600 = ptrtoint ptr @.str.176 to i64
   store i64 %t.88600, ptr %v.8860
   store i64 16, ptr %v.8861
   %t.88620 = load i64, ptr %v.8861
@@ -28263,7 +28235,7 @@ L.fall.9159:
   %t.91606 = inttoptr i64 %t.91602 to ptr
   %t.91607 = load i64, ptr %t.91606
   store i64 %t.91607, ptr %v.9160
-  %t.91610 = ptrtoint ptr @.str.179 to i64
+  %t.91610 = ptrtoint ptr @.str.177 to i64
   store i64 %t.91610, ptr %v.9161
   %t.91620 = load i64, ptr %v.9160
   %t.91621 = inttoptr i64 %t.91620 to ptr
@@ -31055,7 +31027,7 @@ B.body:
   store i64 0, ptr %v.9996
   %t.99970 = load i64, ptr %v.9996
   store i64 %t.99970, ptr %v.9997
-  %t.99980 = ptrtoint ptr @.str.180 to i64
+  %t.99980 = ptrtoint ptr @.str.178 to i64
   store i64 %t.99980, ptr %v.9998
   %t.99990 = load i64, ptr %v.90000
   %t.99991 = inttoptr i64 %t.99990 to ptr
@@ -31074,7 +31046,7 @@ L.fall.10000:
 L.998:
   br label %L.999
 L.999:
-  %t.100060 = ptrtoint ptr @.str.181 to i64
+  %t.100060 = ptrtoint ptr @.str.179 to i64
   store i64 %t.100060, ptr %v.10006
   %t.100070 = load i64, ptr %v.90000
   %t.100071 = inttoptr i64 %t.100070 to ptr
@@ -31093,7 +31065,7 @@ L.fall.10008:
 L.1000:
   br label %L.1001
 L.1001:
-  %t.100140 = ptrtoint ptr @.str.182 to i64
+  %t.100140 = ptrtoint ptr @.str.180 to i64
   store i64 %t.100140, ptr %v.10014
   %t.100150 = load i64, ptr %v.90000
   %t.100151 = inttoptr i64 %t.100150 to ptr
@@ -31112,7 +31084,7 @@ L.fall.10016:
 L.1002:
   br label %L.1003
 L.1003:
-  %t.100220 = ptrtoint ptr @.str.183 to i64
+  %t.100220 = ptrtoint ptr @.str.181 to i64
   store i64 %t.100220, ptr %v.10022
   %t.100230 = load i64, ptr %v.90000
   %t.100231 = inttoptr i64 %t.100230 to ptr
@@ -31131,7 +31103,7 @@ L.fall.10024:
 L.1004:
   br label %L.1005
 L.1005:
-  %t.100300 = ptrtoint ptr @.str.184 to i64
+  %t.100300 = ptrtoint ptr @.str.182 to i64
   store i64 %t.100300, ptr %v.10030
   %t.100310 = load i64, ptr %v.90000
   %t.100311 = inttoptr i64 %t.100310 to ptr
@@ -31150,7 +31122,7 @@ L.fall.10032:
 L.1006:
   br label %L.1007
 L.1007:
-  %t.100380 = ptrtoint ptr @.str.185 to i64
+  %t.100380 = ptrtoint ptr @.str.183 to i64
   store i64 %t.100380, ptr %v.10038
   %t.100390 = load i64, ptr %v.90000
   %t.100391 = inttoptr i64 %t.100390 to ptr
@@ -31169,7 +31141,7 @@ L.fall.10040:
 L.1008:
   br label %L.1009
 L.1009:
-  %t.100460 = ptrtoint ptr @.str.186 to i64
+  %t.100460 = ptrtoint ptr @.str.184 to i64
   store i64 %t.100460, ptr %v.10046
   %t.100470 = load i64, ptr %v.90000
   %t.100471 = inttoptr i64 %t.100470 to ptr
@@ -31188,7 +31160,7 @@ L.fall.10048:
 L.1010:
   br label %L.1011
 L.1011:
-  %t.100540 = ptrtoint ptr @.str.187 to i64
+  %t.100540 = ptrtoint ptr @.str.185 to i64
   store i64 %t.100540, ptr %v.10054
   %t.100550 = load i64, ptr %v.90000
   %t.100551 = inttoptr i64 %t.100550 to ptr
@@ -31207,7 +31179,7 @@ L.fall.10056:
 L.1012:
   br label %L.1013
 L.1013:
-  %t.100620 = ptrtoint ptr @.str.188 to i64
+  %t.100620 = ptrtoint ptr @.str.186 to i64
   store i64 %t.100620, ptr %v.10062
   %t.100630 = load i64, ptr %v.90000
   %t.100631 = inttoptr i64 %t.100630 to ptr
@@ -31226,7 +31198,7 @@ L.fall.10064:
 L.1014:
   br label %L.1015
 L.1015:
-  %t.100700 = ptrtoint ptr @.str.189 to i64
+  %t.100700 = ptrtoint ptr @.str.187 to i64
   store i64 %t.100700, ptr %v.10070
   %t.100710 = load i64, ptr %v.90000
   %t.100711 = inttoptr i64 %t.100710 to ptr
@@ -31245,7 +31217,7 @@ L.fall.10072:
 L.1016:
   br label %L.1017
 L.1017:
-  %t.100780 = ptrtoint ptr @.str.190 to i64
+  %t.100780 = ptrtoint ptr @.str.188 to i64
   store i64 %t.100780, ptr %v.10078
   %t.100790 = load i64, ptr %v.90000
   %t.100791 = inttoptr i64 %t.100790 to ptr
@@ -31264,7 +31236,7 @@ L.fall.10080:
 L.1018:
   br label %L.1019
 L.1019:
-  %t.100860 = ptrtoint ptr @.str.191 to i64
+  %t.100860 = ptrtoint ptr @.str.189 to i64
   store i64 %t.100860, ptr %v.10086
   %t.100870 = load i64, ptr %v.90000
   %t.100871 = inttoptr i64 %t.100870 to ptr
@@ -31283,7 +31255,7 @@ L.fall.10088:
 L.1020:
   br label %L.1021
 L.1021:
-  %t.100940 = ptrtoint ptr @.str.192 to i64
+  %t.100940 = ptrtoint ptr @.str.190 to i64
   store i64 %t.100940, ptr %v.10094
   %t.100950 = load i64, ptr %v.90000
   %t.100951 = inttoptr i64 %t.100950 to ptr
@@ -31302,7 +31274,7 @@ L.fall.10096:
 L.1022:
   br label %L.1023
 L.1023:
-  %t.101020 = ptrtoint ptr @.str.193 to i64
+  %t.101020 = ptrtoint ptr @.str.191 to i64
   store i64 %t.101020, ptr %v.10102
   %t.101030 = load i64, ptr %v.90000
   %t.101031 = inttoptr i64 %t.101030 to ptr
@@ -31598,7 +31570,7 @@ B.body:
   %t.101921 = load i64, ptr %v.10190
   %t.101922 = inttoptr i64 %t.101920 to ptr
   store i64 %t.101921, ptr %t.101922
-  %t.101930 = ptrtoint ptr @.str.194 to i64
+  %t.101930 = ptrtoint ptr @.str.192 to i64
   store i64 %t.101930, ptr %v.10193
   %t.101940 = load i64, ptr %v.10180
   %t.101941 = add i64 %t.101940, 40
@@ -31709,7 +31681,7 @@ B.body:
   %t.102126 = inttoptr i64 %t.102122 to ptr
   %t.102127 = load i64, ptr %t.102126
   store i64 %t.102127, ptr %v.10212
-  %t.102130 = ptrtoint ptr @.str.195 to i64
+  %t.102130 = ptrtoint ptr @.str.193 to i64
   store i64 %t.102130, ptr %v.10213
   %t.102140 = load i64, ptr %v.10212
   %t.102141 = inttoptr i64 %t.102140 to ptr
@@ -31753,7 +31725,7 @@ L.fall.10215:
   %t.102226 = inttoptr i64 %t.102222 to ptr
   %t.102227 = load i64, ptr %t.102226
   store i64 %t.102227, ptr %v.10222
-  %t.102230 = ptrtoint ptr @.str.196 to i64
+  %t.102230 = ptrtoint ptr @.str.194 to i64
   store i64 %t.102230, ptr %v.10223
   %t.102240 = load i64, ptr %v.10222
   %t.102241 = inttoptr i64 %t.102240 to ptr
@@ -31823,7 +31795,7 @@ L.fall.10235:
   %t.102426 = inttoptr i64 %t.102422 to ptr
   %t.102427 = load i64, ptr %t.102426
   store i64 %t.102427, ptr %v.10242
-  %t.102430 = ptrtoint ptr @.str.197 to i64
+  %t.102430 = ptrtoint ptr @.str.195 to i64
   store i64 %t.102430, ptr %v.10243
   %t.102440 = load i64, ptr %v.10242
   %t.102441 = inttoptr i64 %t.102440 to ptr
@@ -39486,7 +39458,7 @@ L.fall.12404:
   store i64 %t.124079, ptr %v.12407
   %t.124080 = load i64, ptr %v.12407
   store i64 %t.124080, ptr %v.12408
-  %t.124090 = ptrtoint ptr @.str.198 to i64
+  %t.124090 = ptrtoint ptr @.str.196 to i64
   store i64 %t.124090, ptr %v.12409
   %t.124100 = load i64, ptr %v.12408
   %t.124101 = inttoptr i64 %t.124100 to ptr
@@ -39510,7 +39482,7 @@ L.fall.12411:
 L.1206:
   br label %L.1207
 L.1207:
-  %t.124220 = ptrtoint ptr @.str.199 to i64
+  %t.124220 = ptrtoint ptr @.str.197 to i64
   store i64 %t.124220, ptr %v.12422
   %t.124230 = load i64, ptr %v.12408
   %t.124231 = inttoptr i64 %t.124230 to ptr
@@ -39534,7 +39506,7 @@ L.fall.12424:
 L.1208:
   br label %L.1209
 L.1209:
-  %t.124350 = ptrtoint ptr @.str.200 to i64
+  %t.124350 = ptrtoint ptr @.str.198 to i64
   store i64 %t.124350, ptr %v.12435
   %t.124360 = load i64, ptr %v.12408
   %t.124361 = inttoptr i64 %t.124360 to ptr
@@ -39558,7 +39530,7 @@ L.fall.12437:
 L.1210:
   br label %L.1211
 L.1211:
-  %t.124480 = ptrtoint ptr @.str.201 to i64
+  %t.124480 = ptrtoint ptr @.str.199 to i64
   store i64 %t.124480, ptr %v.12448
   %t.124490 = load i64, ptr %v.12408
   %t.124491 = inttoptr i64 %t.124490 to ptr
@@ -39582,7 +39554,7 @@ L.fall.12450:
 L.1212:
   br label %L.1213
 L.1213:
-  %t.124610 = ptrtoint ptr @.str.202 to i64
+  %t.124610 = ptrtoint ptr @.str.200 to i64
   store i64 %t.124610, ptr %v.12461
   %t.124620 = load i64, ptr %v.12408
   %t.124621 = inttoptr i64 %t.124620 to ptr
@@ -39606,7 +39578,7 @@ L.fall.12463:
 L.1214:
   br label %L.1215
 L.1215:
-  %t.124740 = ptrtoint ptr @.str.203 to i64
+  %t.124740 = ptrtoint ptr @.str.201 to i64
   store i64 %t.124740, ptr %v.12474
   %t.124750 = load i64, ptr %v.12408
   %t.124751 = inttoptr i64 %t.124750 to ptr
@@ -39630,7 +39602,7 @@ L.fall.12476:
 L.1216:
   br label %L.1217
 L.1217:
-  %t.124870 = ptrtoint ptr @.str.204 to i64
+  %t.124870 = ptrtoint ptr @.str.202 to i64
   store i64 %t.124870, ptr %v.12487
   %t.124880 = load i64, ptr %v.12408
   %t.124881 = inttoptr i64 %t.124880 to ptr
@@ -39654,7 +39626,7 @@ L.fall.12489:
 L.1218:
   br label %L.1219
 L.1219:
-  %t.125000 = ptrtoint ptr @.str.205 to i64
+  %t.125000 = ptrtoint ptr @.str.203 to i64
   store i64 %t.125000, ptr %v.12500
   %t.125010 = load i64, ptr %v.12408
   %t.125011 = inttoptr i64 %t.125010 to ptr
@@ -39678,7 +39650,7 @@ L.fall.12502:
 L.1220:
   br label %L.1221
 L.1221:
-  %t.125130 = ptrtoint ptr @.str.206 to i64
+  %t.125130 = ptrtoint ptr @.str.204 to i64
   store i64 %t.125130, ptr %v.12513
   %t.125140 = load i64, ptr %v.12408
   %t.125141 = inttoptr i64 %t.125140 to ptr
@@ -39702,7 +39674,7 @@ L.fall.12515:
 L.1222:
   br label %L.1223
 L.1223:
-  %t.125260 = ptrtoint ptr @.str.207 to i64
+  %t.125260 = ptrtoint ptr @.str.205 to i64
   store i64 %t.125260, ptr %v.12526
   %t.125270 = load i64, ptr %v.12408
   %t.125271 = inttoptr i64 %t.125270 to ptr
@@ -39726,7 +39698,7 @@ L.fall.12528:
 L.1224:
   br label %L.1225
 L.1225:
-  %t.125390 = ptrtoint ptr @.str.208 to i64
+  %t.125390 = ptrtoint ptr @.str.206 to i64
   store i64 %t.125390, ptr %v.12539
   %t.125400 = load i64, ptr %v.12408
   %t.125401 = inttoptr i64 %t.125400 to ptr
@@ -39750,7 +39722,7 @@ L.fall.12541:
 L.1226:
   br label %L.1227
 L.1227:
-  %t.125520 = ptrtoint ptr @.str.209 to i64
+  %t.125520 = ptrtoint ptr @.str.207 to i64
   store i64 %t.125520, ptr %v.12552
   %t.125530 = load i64, ptr %v.12408
   %t.125531 = inttoptr i64 %t.125530 to ptr
@@ -39774,7 +39746,7 @@ L.fall.12554:
 L.1228:
   br label %L.1229
 L.1229:
-  %t.125650 = ptrtoint ptr @.str.210 to i64
+  %t.125650 = ptrtoint ptr @.str.208 to i64
   store i64 %t.125650, ptr %v.12565
   %t.125660 = load i64, ptr %v.12408
   %t.125661 = inttoptr i64 %t.125660 to ptr
@@ -39798,7 +39770,7 @@ L.fall.12567:
 L.1230:
   br label %L.1231
 L.1231:
-  %t.125780 = ptrtoint ptr @.str.211 to i64
+  %t.125780 = ptrtoint ptr @.str.209 to i64
   store i64 %t.125780, ptr %v.12578
   %t.125790 = load i64, ptr %v.12408
   %t.125791 = inttoptr i64 %t.125790 to ptr
@@ -40598,7 +40570,7 @@ B.body:
   %t.128931 = icmp eq i64 %t.128930, 0
   br i1 %t.128931, label %L.1274, label %L.fall.12893
 L.fall.12893:
-  %t.128940 = ptrtoint ptr @.str.212 to i64
+  %t.128940 = ptrtoint ptr @.str.210 to i64
   store i64 %t.128940, ptr %v.12894
   %t.128950 = load i64, ptr %v.12894
   ret i64 %t.128950
@@ -40615,7 +40587,7 @@ L.1275:
   %t.129011 = icmp eq i64 %t.129010, 0
   br i1 %t.129011, label %L.1276, label %L.fall.12901
 L.fall.12901:
-  %t.129020 = ptrtoint ptr @.str.213 to i64
+  %t.129020 = ptrtoint ptr @.str.211 to i64
   store i64 %t.129020, ptr %v.12902
   %t.129030 = load i64, ptr %v.12902
   ret i64 %t.129030
@@ -40632,7 +40604,7 @@ L.1277:
   %t.129091 = icmp eq i64 %t.129090, 0
   br i1 %t.129091, label %L.1278, label %L.fall.12909
 L.fall.12909:
-  %t.129100 = ptrtoint ptr @.str.214 to i64
+  %t.129100 = ptrtoint ptr @.str.212 to i64
   store i64 %t.129100, ptr %v.12910
   %t.129110 = load i64, ptr %v.12910
   ret i64 %t.129110
@@ -40649,7 +40621,7 @@ L.1279:
   %t.129171 = icmp eq i64 %t.129170, 0
   br i1 %t.129171, label %L.1280, label %L.fall.12917
 L.fall.12917:
-  %t.129180 = ptrtoint ptr @.str.215 to i64
+  %t.129180 = ptrtoint ptr @.str.213 to i64
   store i64 %t.129180, ptr %v.12918
   %t.129190 = load i64, ptr %v.12918
   ret i64 %t.129190
@@ -40666,7 +40638,7 @@ L.1281:
   %t.129251 = icmp eq i64 %t.129250, 0
   br i1 %t.129251, label %L.1282, label %L.fall.12925
 L.fall.12925:
-  %t.129260 = ptrtoint ptr @.str.216 to i64
+  %t.129260 = ptrtoint ptr @.str.214 to i64
   store i64 %t.129260, ptr %v.12926
   %t.129270 = load i64, ptr %v.12926
   ret i64 %t.129270
@@ -40683,7 +40655,7 @@ L.1283:
   %t.129331 = icmp eq i64 %t.129330, 0
   br i1 %t.129331, label %L.1284, label %L.fall.12933
 L.fall.12933:
-  %t.129340 = ptrtoint ptr @.str.217 to i64
+  %t.129340 = ptrtoint ptr @.str.215 to i64
   store i64 %t.129340, ptr %v.12934
   %t.129350 = load i64, ptr %v.12934
   ret i64 %t.129350
@@ -40700,7 +40672,7 @@ L.1285:
   %t.129411 = icmp eq i64 %t.129410, 0
   br i1 %t.129411, label %L.1286, label %L.fall.12941
 L.fall.12941:
-  %t.129420 = ptrtoint ptr @.str.218 to i64
+  %t.129420 = ptrtoint ptr @.str.216 to i64
   store i64 %t.129420, ptr %v.12942
   %t.129430 = load i64, ptr %v.12942
   ret i64 %t.129430
@@ -40717,7 +40689,7 @@ L.1287:
   %t.129491 = icmp eq i64 %t.129490, 0
   br i1 %t.129491, label %L.1288, label %L.fall.12949
 L.fall.12949:
-  %t.129500 = ptrtoint ptr @.str.219 to i64
+  %t.129500 = ptrtoint ptr @.str.217 to i64
   store i64 %t.129500, ptr %v.12950
   %t.129510 = load i64, ptr %v.12950
   ret i64 %t.129510
@@ -40734,7 +40706,7 @@ L.1289:
   %t.129571 = icmp eq i64 %t.129570, 0
   br i1 %t.129571, label %L.1290, label %L.fall.12957
 L.fall.12957:
-  %t.129580 = ptrtoint ptr @.str.220 to i64
+  %t.129580 = ptrtoint ptr @.str.218 to i64
   store i64 %t.129580, ptr %v.12958
   %t.129590 = load i64, ptr %v.12958
   ret i64 %t.129590
@@ -40751,7 +40723,7 @@ L.1291:
   %t.129651 = icmp eq i64 %t.129650, 0
   br i1 %t.129651, label %L.1292, label %L.fall.12965
 L.fall.12965:
-  %t.129660 = ptrtoint ptr @.str.221 to i64
+  %t.129660 = ptrtoint ptr @.str.219 to i64
   store i64 %t.129660, ptr %v.12966
   %t.129670 = load i64, ptr %v.12966
   ret i64 %t.129670
@@ -40768,7 +40740,7 @@ L.1293:
   %t.129731 = icmp eq i64 %t.129730, 0
   br i1 %t.129731, label %L.1294, label %L.fall.12973
 L.fall.12973:
-  %t.129740 = ptrtoint ptr @.str.222 to i64
+  %t.129740 = ptrtoint ptr @.str.220 to i64
   store i64 %t.129740, ptr %v.12974
   %t.129750 = load i64, ptr %v.12974
   ret i64 %t.129750
@@ -40785,7 +40757,7 @@ L.1295:
   %t.129811 = icmp eq i64 %t.129810, 0
   br i1 %t.129811, label %L.1296, label %L.fall.12981
 L.fall.12981:
-  %t.129820 = ptrtoint ptr @.str.223 to i64
+  %t.129820 = ptrtoint ptr @.str.221 to i64
   store i64 %t.129820, ptr %v.12982
   %t.129830 = load i64, ptr %v.12982
   ret i64 %t.129830
@@ -40802,7 +40774,7 @@ L.1297:
   %t.129891 = icmp eq i64 %t.129890, 0
   br i1 %t.129891, label %L.1298, label %L.fall.12989
 L.fall.12989:
-  %t.129900 = ptrtoint ptr @.str.224 to i64
+  %t.129900 = ptrtoint ptr @.str.222 to i64
   store i64 %t.129900, ptr %v.12990
   %t.129910 = load i64, ptr %v.12990
   ret i64 %t.129910
@@ -40819,7 +40791,7 @@ L.1299:
   %t.129971 = icmp eq i64 %t.129970, 0
   br i1 %t.129971, label %L.1300, label %L.fall.12997
 L.fall.12997:
-  %t.129980 = ptrtoint ptr @.str.225 to i64
+  %t.129980 = ptrtoint ptr @.str.223 to i64
   store i64 %t.129980, ptr %v.12998
   %t.129990 = load i64, ptr %v.12998
   ret i64 %t.129990
@@ -40836,7 +40808,7 @@ L.1301:
   %t.130051 = icmp eq i64 %t.130050, 0
   br i1 %t.130051, label %L.1302, label %L.fall.13005
 L.fall.13005:
-  %t.130060 = ptrtoint ptr @.str.226 to i64
+  %t.130060 = ptrtoint ptr @.str.224 to i64
   store i64 %t.130060, ptr %v.13006
   %t.130070 = load i64, ptr %v.13006
   ret i64 %t.130070
@@ -40853,14 +40825,14 @@ L.1303:
   %t.130131 = icmp eq i64 %t.130130, 0
   br i1 %t.130131, label %L.1304, label %L.fall.13013
 L.fall.13013:
-  %t.130140 = ptrtoint ptr @.str.227 to i64
+  %t.130140 = ptrtoint ptr @.str.225 to i64
   store i64 %t.130140, ptr %v.13014
   %t.130150 = load i64, ptr %v.13014
   ret i64 %t.130150
 L.1304:
   br label %L.1305
 L.1305:
-  %t.130190 = ptrtoint ptr @.str.228 to i64
+  %t.130190 = ptrtoint ptr @.str.226 to i64
   store i64 %t.130190, ptr %v.13019
   %t.130200 = load i64, ptr %v.13019
   ret i64 %t.130200
@@ -40956,7 +40928,7 @@ define i64 @llvm_llvm_escape_string(i64 %param.0) {
   store i64 %param.0, ptr %v.90000
   br label %B.body
 B.body:
-  %t.130360 = ptrtoint ptr @.str.229 to i64
+  %t.130360 = ptrtoint ptr @.str.227 to i64
   store i64 %t.130360, ptr %v.13036
   %t.130370 = load i64, ptr %v.13036
   store i64 %t.130370, ptr %v.13037
@@ -41053,7 +41025,7 @@ L.1308:
   store i64 %t.130709, ptr %v.13070
   %t.130710 = load i64, ptr %v.13070
   store i64 %t.130710, ptr %v.13071
-  %t.130720 = ptrtoint ptr @.str.230 to i64
+  %t.130720 = ptrtoint ptr @.str.228 to i64
   store i64 %t.130720, ptr %v.13072
   %t.130730 = load i64, ptr %v.13037
   %t.130731 = inttoptr i64 %t.130730 to ptr
@@ -41082,7 +41054,7 @@ L.1309:
   store i64 %t.130790, ptr %v.13039
   br label %L.1306
 L.1307:
-  %t.130820 = ptrtoint ptr @.str.231 to i64
+  %t.130820 = ptrtoint ptr @.str.229 to i64
   store i64 %t.130820, ptr %v.13082
   %t.130830 = load i64, ptr %v.13037
   %t.130831 = inttoptr i64 %t.130830 to ptr
@@ -41162,7 +41134,7 @@ L.fall.13095:
   %t.131001 = icmp eq i64 %t.131000, 0
   br i1 %t.131001, label %L.1312, label %L.fall.13100
 L.fall.13100:
-  %t.131010 = ptrtoint ptr @.str.232 to i64
+  %t.131010 = ptrtoint ptr @.str.230 to i64
   store i64 %t.131010, ptr %v.13101
   %t.131020 = load i64, ptr %v.13088
   %t.131021 = inttoptr i64 %t.131020 to ptr
@@ -41219,7 +41191,7 @@ define i64 @llvm_llvm_func_name(i64 %param.0) {
   store i64 %param.0, ptr %v.90000
   br label %B.body
 B.body:
-  %t.131220 = ptrtoint ptr @.str.233 to i64
+  %t.131220 = ptrtoint ptr @.str.231 to i64
   store i64 %t.131220, ptr %v.13122
   %t.131230 = load i64, ptr %v.90000
   %t.131231 = inttoptr i64 %t.131230 to ptr
@@ -41231,7 +41203,7 @@ B.body:
   %t.131241 = icmp eq i64 %t.131240, 0
   br i1 %t.131241, label %L.1314, label %L.fall.13124
 L.fall.13124:
-  %t.131250 = ptrtoint ptr @.str.234 to i64
+  %t.131250 = ptrtoint ptr @.str.232 to i64
   store i64 %t.131250, ptr %v.13125
   %t.131260 = load i64, ptr %v.13125
   ret i64 %t.131260
@@ -41334,7 +41306,7 @@ define i64 @llvm_tmp_name(i64 %param.0, i64 %param.1) {
   store i64 %param.1, ptr %v.90001
   br label %B.body
 B.body:
-  %t.131540 = ptrtoint ptr @.str.235 to i64
+  %t.131540 = ptrtoint ptr @.str.233 to i64
   store i64 %t.131540, ptr %v.13154
   store i64 10, ptr %v.13155
   %t.131560 = load i64, ptr %v.90000
@@ -41388,7 +41360,7 @@ B.body:
   store i64 %t.131659, ptr %v.13165
   %t.131660 = load i64, ptr %v.13165
   store i64 %t.131660, ptr %v.13166
-  %t.131670 = ptrtoint ptr @.str.236 to i64
+  %t.131670 = ptrtoint ptr @.str.234 to i64
   store i64 %t.131670, ptr %v.13167
   %t.131680 = load i64, ptr %v.13167
   %t.131681 = inttoptr i64 %t.131680 to ptr
@@ -41397,7 +41369,7 @@ B.body:
   %t.131684 = call ptr @ease_str_concat(ptr %t.131681, ptr %t.131683)
   %t.131685 = ptrtoint ptr %t.131684 to i64
   store i64 %t.131685, ptr %v.13168
-  %t.131690 = ptrtoint ptr @.str.237 to i64
+  %t.131690 = ptrtoint ptr @.str.235 to i64
   store i64 %t.131690, ptr %v.13169
   %t.131700 = load i64, ptr %v.13168
   %t.131701 = inttoptr i64 %t.131700 to ptr
@@ -41416,7 +41388,7 @@ B.body:
   %t.131734 = call ptr @ease_str_concat(ptr %t.131731, ptr %t.131733)
   %t.131735 = ptrtoint ptr %t.131734 to i64
   store i64 %t.131735, ptr %v.13173
-  %t.131740 = ptrtoint ptr @.str.238 to i64
+  %t.131740 = ptrtoint ptr @.str.236 to i64
   store i64 %t.131740, ptr %v.13174
   %t.131750 = load i64, ptr %v.13173
   %t.131751 = inttoptr i64 %t.131750 to ptr
@@ -41473,7 +41445,7 @@ B.body:
   store i64 %t.131899, ptr %v.13189
   %t.131900 = load i64, ptr %v.13189
   store i64 %t.131900, ptr %v.13190
-  %t.131910 = ptrtoint ptr @.str.239 to i64
+  %t.131910 = ptrtoint ptr @.str.237 to i64
   store i64 %t.131910, ptr %v.13191
   %t.131920 = load i64, ptr %v.13191
   %t.131921 = inttoptr i64 %t.131920 to ptr
@@ -41482,7 +41454,7 @@ B.body:
   %t.131924 = call ptr @ease_str_concat(ptr %t.131921, ptr %t.131923)
   %t.131925 = ptrtoint ptr %t.131924 to i64
   store i64 %t.131925, ptr %v.13192
-  %t.131930 = ptrtoint ptr @.str.240 to i64
+  %t.131930 = ptrtoint ptr @.str.238 to i64
   store i64 %t.131930, ptr %v.13193
   %t.131940 = load i64, ptr %v.13192
   %t.131941 = inttoptr i64 %t.131940 to ptr
@@ -41498,7 +41470,7 @@ B.body:
   %t.131954 = call ptr @ease_str_concat(ptr %t.131951, ptr %t.131953)
   %t.131955 = ptrtoint ptr %t.131954 to i64
   store i64 %t.131955, ptr %v.13195
-  %t.131960 = ptrtoint ptr @.str.241 to i64
+  %t.131960 = ptrtoint ptr @.str.239 to i64
   store i64 %t.131960, ptr %v.13196
   %t.131970 = load i64, ptr %v.13195
   %t.131971 = inttoptr i64 %t.131970 to ptr
@@ -41533,7 +41505,7 @@ define i64 @llvm_emit_store_vreg(i64 %param.0, i64 %param.1, i64 %param.2) {
   store i64 %param.2, ptr %v.90002
   br label %B.body
 B.body:
-  %t.132030 = ptrtoint ptr @.str.242 to i64
+  %t.132030 = ptrtoint ptr @.str.240 to i64
   store i64 %t.132030, ptr %v.13203
   %t.132040 = load i64, ptr %v.13203
   %t.132041 = inttoptr i64 %t.132040 to ptr
@@ -41542,7 +41514,7 @@ B.body:
   %t.132044 = call ptr @ease_str_concat(ptr %t.132041, ptr %t.132043)
   %t.132045 = ptrtoint ptr %t.132044 to i64
   store i64 %t.132045, ptr %v.13204
-  %t.132050 = ptrtoint ptr @.str.243 to i64
+  %t.132050 = ptrtoint ptr @.str.241 to i64
   store i64 %t.132050, ptr %v.13205
   %t.132060 = load i64, ptr %v.13204
   %t.132061 = inttoptr i64 %t.132060 to ptr
@@ -41561,7 +41533,7 @@ B.body:
   %t.132094 = call ptr @ease_str_concat(ptr %t.132091, ptr %t.132093)
   %t.132095 = ptrtoint ptr %t.132094 to i64
   store i64 %t.132095, ptr %v.13209
-  %t.132100 = ptrtoint ptr @.str.244 to i64
+  %t.132100 = ptrtoint ptr @.str.242 to i64
   store i64 %t.132100, ptr %v.13210
   %t.132110 = load i64, ptr %v.13209
   %t.132111 = inttoptr i64 %t.132110 to ptr
@@ -41607,7 +41579,7 @@ B.body:
   store i64 %t.132189, ptr %v.13218
   %t.132190 = load i64, ptr %v.13218
   store i64 %t.132190, ptr %v.13219
-  %t.132200 = ptrtoint ptr @.str.245 to i64
+  %t.132200 = ptrtoint ptr @.str.243 to i64
   store i64 %t.132200, ptr %v.13220
   %t.132210 = load i64, ptr %v.13220
   %t.132211 = inttoptr i64 %t.132210 to ptr
@@ -41616,7 +41588,7 @@ B.body:
   %t.132214 = call ptr @ease_str_concat(ptr %t.132211, ptr %t.132213)
   %t.132215 = ptrtoint ptr %t.132214 to i64
   store i64 %t.132215, ptr %v.13221
-  %t.132220 = ptrtoint ptr @.str.246 to i64
+  %t.132220 = ptrtoint ptr @.str.244 to i64
   store i64 %t.132220, ptr %v.13222
   %t.132230 = load i64, ptr %v.13221
   %t.132231 = inttoptr i64 %t.132230 to ptr
@@ -41632,7 +41604,7 @@ B.body:
   %t.132244 = call ptr @ease_str_concat(ptr %t.132241, ptr %t.132243)
   %t.132245 = ptrtoint ptr %t.132244 to i64
   store i64 %t.132245, ptr %v.13224
-  %t.132250 = ptrtoint ptr @.str.247 to i64
+  %t.132250 = ptrtoint ptr @.str.245 to i64
   store i64 %t.132250, ptr %v.13225
   %t.132260 = load i64, ptr %v.13224
   %t.132261 = inttoptr i64 %t.132260 to ptr
@@ -41726,7 +41698,7 @@ B.body:
   store i64 %t.132549, ptr %v.13254
   %t.132550 = load i64, ptr %v.13254
   store i64 %t.132550, ptr %v.13255
-  %t.132560 = ptrtoint ptr @.str.248 to i64
+  %t.132560 = ptrtoint ptr @.str.246 to i64
   store i64 %t.132560, ptr %v.13256
   %t.132570 = load i64, ptr %v.13256
   %t.132571 = inttoptr i64 %t.132570 to ptr
@@ -41735,7 +41707,7 @@ B.body:
   %t.132574 = call ptr @ease_str_concat(ptr %t.132571, ptr %t.132573)
   %t.132575 = ptrtoint ptr %t.132574 to i64
   store i64 %t.132575, ptr %v.13257
-  %t.132580 = ptrtoint ptr @.str.249 to i64
+  %t.132580 = ptrtoint ptr @.str.247 to i64
   store i64 %t.132580, ptr %v.13258
   %t.132590 = load i64, ptr %v.13257
   %t.132591 = inttoptr i64 %t.132590 to ptr
@@ -41751,7 +41723,7 @@ B.body:
   %t.132604 = call ptr @ease_str_concat(ptr %t.132601, ptr %t.132603)
   %t.132605 = ptrtoint ptr %t.132604 to i64
   store i64 %t.132605, ptr %v.13260
-  %t.132610 = ptrtoint ptr @.str.250 to i64
+  %t.132610 = ptrtoint ptr @.str.248 to i64
   store i64 %t.132610, ptr %v.13261
   %t.132620 = load i64, ptr %v.13260
   %t.132621 = inttoptr i64 %t.132620 to ptr
@@ -41767,7 +41739,7 @@ B.body:
   %t.132634 = call ptr @ease_str_concat(ptr %t.132631, ptr %t.132633)
   %t.132635 = ptrtoint ptr %t.132634 to i64
   store i64 %t.132635, ptr %v.13263
-  %t.132640 = ptrtoint ptr @.str.251 to i64
+  %t.132640 = ptrtoint ptr @.str.249 to i64
   store i64 %t.132640, ptr %v.13264
   %t.132650 = load i64, ptr %v.13263
   %t.132651 = inttoptr i64 %t.132650 to ptr
@@ -41783,7 +41755,7 @@ B.body:
   %t.132664 = call ptr @ease_str_concat(ptr %t.132661, ptr %t.132663)
   %t.132665 = ptrtoint ptr %t.132664 to i64
   store i64 %t.132665, ptr %v.13266
-  %t.132670 = ptrtoint ptr @.str.252 to i64
+  %t.132670 = ptrtoint ptr @.str.250 to i64
   store i64 %t.132670, ptr %v.13267
   %t.132680 = load i64, ptr %v.13266
   %t.132681 = inttoptr i64 %t.132680 to ptr
@@ -41893,7 +41865,7 @@ B.body:
   store i64 %t.132979, ptr %v.13297
   %t.132980 = load i64, ptr %v.13297
   store i64 %t.132980, ptr %v.13298
-  %t.132990 = ptrtoint ptr @.str.253 to i64
+  %t.132990 = ptrtoint ptr @.str.251 to i64
   store i64 %t.132990, ptr %v.13299
   %t.133000 = load i64, ptr %v.13299
   %t.133001 = inttoptr i64 %t.133000 to ptr
@@ -41902,7 +41874,7 @@ B.body:
   %t.133004 = call ptr @ease_str_concat(ptr %t.133001, ptr %t.133003)
   %t.133005 = ptrtoint ptr %t.133004 to i64
   store i64 %t.133005, ptr %v.13300
-  %t.133010 = ptrtoint ptr @.str.254 to i64
+  %t.133010 = ptrtoint ptr @.str.252 to i64
   store i64 %t.133010, ptr %v.13301
   %t.133020 = load i64, ptr %v.13300
   %t.133021 = inttoptr i64 %t.133020 to ptr
@@ -41918,7 +41890,7 @@ B.body:
   %t.133034 = call ptr @ease_str_concat(ptr %t.133031, ptr %t.133033)
   %t.133035 = ptrtoint ptr %t.133034 to i64
   store i64 %t.133035, ptr %v.13303
-  %t.133040 = ptrtoint ptr @.str.255 to i64
+  %t.133040 = ptrtoint ptr @.str.253 to i64
   store i64 %t.133040, ptr %v.13304
   %t.133050 = load i64, ptr %v.13303
   %t.133051 = inttoptr i64 %t.133050 to ptr
@@ -41934,7 +41906,7 @@ B.body:
   %t.133064 = call ptr @ease_str_concat(ptr %t.133061, ptr %t.133063)
   %t.133065 = ptrtoint ptr %t.133064 to i64
   store i64 %t.133065, ptr %v.13306
-  %t.133070 = ptrtoint ptr @.str.256 to i64
+  %t.133070 = ptrtoint ptr @.str.254 to i64
   store i64 %t.133070, ptr %v.13307
   %t.133080 = load i64, ptr %v.13306
   %t.133081 = inttoptr i64 %t.133080 to ptr
@@ -41950,7 +41922,7 @@ B.body:
   %t.133094 = call ptr @ease_str_concat(ptr %t.133091, ptr %t.133093)
   %t.133095 = ptrtoint ptr %t.133094 to i64
   store i64 %t.133095, ptr %v.13309
-  %t.133100 = ptrtoint ptr @.str.257 to i64
+  %t.133100 = ptrtoint ptr @.str.255 to i64
   store i64 %t.133100, ptr %v.13310
   %t.133110 = load i64, ptr %v.13309
   %t.133111 = inttoptr i64 %t.133110 to ptr
@@ -41970,7 +41942,7 @@ B.body:
   store i64 %t.133189, ptr %v.13318
   %t.133190 = load i64, ptr %v.13318
   store i64 %t.133190, ptr %v.13319
-  %t.133200 = ptrtoint ptr @.str.258 to i64
+  %t.133200 = ptrtoint ptr @.str.256 to i64
   store i64 %t.133200, ptr %v.13320
   %t.133210 = load i64, ptr %v.13320
   %t.133211 = inttoptr i64 %t.133210 to ptr
@@ -41979,7 +41951,7 @@ B.body:
   %t.133214 = call ptr @ease_str_concat(ptr %t.133211, ptr %t.133213)
   %t.133215 = ptrtoint ptr %t.133214 to i64
   store i64 %t.133215, ptr %v.13321
-  %t.133220 = ptrtoint ptr @.str.259 to i64
+  %t.133220 = ptrtoint ptr @.str.257 to i64
   store i64 %t.133220, ptr %v.13322
   %t.133230 = load i64, ptr %v.13321
   %t.133231 = inttoptr i64 %t.133230 to ptr
@@ -41995,7 +41967,7 @@ B.body:
   %t.133244 = call ptr @ease_str_concat(ptr %t.133241, ptr %t.133243)
   %t.133245 = ptrtoint ptr %t.133244 to i64
   store i64 %t.133245, ptr %v.13324
-  %t.133250 = ptrtoint ptr @.str.260 to i64
+  %t.133250 = ptrtoint ptr @.str.258 to i64
   store i64 %t.133250, ptr %v.13325
   %t.133260 = load i64, ptr %v.13324
   %t.133261 = inttoptr i64 %t.133260 to ptr
@@ -42078,157 +42050,157 @@ define i64 @llvm_emit_llvm_decls(i64 %param.0) {
   store i64 %param.0, ptr %v.90000
   br label %B.body
 B.body:
-  %t.133360 = ptrtoint ptr @.str.261 to i64
+  %t.133360 = ptrtoint ptr @.str.259 to i64
   store i64 %t.133360, ptr %v.13336
   %t.133390 = load i64, ptr %v.90000
   %t.133391 = load i64, ptr %v.13336
   %t.133399 = call i64 @llvm_write_str(i64 %t.133390, i64 %t.133391)
   store i64 %t.133399, ptr %v.13339
-  %t.133400 = ptrtoint ptr @.str.262 to i64
+  %t.133400 = ptrtoint ptr @.str.260 to i64
   store i64 %t.133400, ptr %v.13340
   %t.133430 = load i64, ptr %v.90000
   %t.133431 = load i64, ptr %v.13340
   %t.133439 = call i64 @llvm_write_str(i64 %t.133430, i64 %t.133431)
   store i64 %t.133439, ptr %v.13343
-  %t.133440 = ptrtoint ptr @.str.263 to i64
+  %t.133440 = ptrtoint ptr @.str.261 to i64
   store i64 %t.133440, ptr %v.13344
   %t.133470 = load i64, ptr %v.90000
   %t.133471 = load i64, ptr %v.13344
   %t.133479 = call i64 @llvm_write_str(i64 %t.133470, i64 %t.133471)
   store i64 %t.133479, ptr %v.13347
-  %t.133480 = ptrtoint ptr @.str.264 to i64
+  %t.133480 = ptrtoint ptr @.str.262 to i64
   store i64 %t.133480, ptr %v.13348
   %t.133510 = load i64, ptr %v.90000
   %t.133511 = load i64, ptr %v.13348
   %t.133519 = call i64 @llvm_write_str(i64 %t.133510, i64 %t.133511)
   store i64 %t.133519, ptr %v.13351
-  %t.133520 = ptrtoint ptr @.str.265 to i64
+  %t.133520 = ptrtoint ptr @.str.263 to i64
   store i64 %t.133520, ptr %v.13352
   %t.133550 = load i64, ptr %v.90000
   %t.133551 = load i64, ptr %v.13352
   %t.133559 = call i64 @llvm_write_str(i64 %t.133550, i64 %t.133551)
   store i64 %t.133559, ptr %v.13355
-  %t.133560 = ptrtoint ptr @.str.266 to i64
+  %t.133560 = ptrtoint ptr @.str.264 to i64
   store i64 %t.133560, ptr %v.13356
   %t.133590 = load i64, ptr %v.90000
   %t.133591 = load i64, ptr %v.13356
   %t.133599 = call i64 @llvm_write_str(i64 %t.133590, i64 %t.133591)
   store i64 %t.133599, ptr %v.13359
-  %t.133600 = ptrtoint ptr @.str.267 to i64
+  %t.133600 = ptrtoint ptr @.str.265 to i64
   store i64 %t.133600, ptr %v.13360
   %t.133630 = load i64, ptr %v.90000
   %t.133631 = load i64, ptr %v.13360
   %t.133639 = call i64 @llvm_write_str(i64 %t.133630, i64 %t.133631)
   store i64 %t.133639, ptr %v.13363
-  %t.133640 = ptrtoint ptr @.str.268 to i64
+  %t.133640 = ptrtoint ptr @.str.266 to i64
   store i64 %t.133640, ptr %v.13364
   %t.133670 = load i64, ptr %v.90000
   %t.133671 = load i64, ptr %v.13364
   %t.133679 = call i64 @llvm_write_str(i64 %t.133670, i64 %t.133671)
   store i64 %t.133679, ptr %v.13367
-  %t.133680 = ptrtoint ptr @.str.269 to i64
+  %t.133680 = ptrtoint ptr @.str.267 to i64
   store i64 %t.133680, ptr %v.13368
   %t.133710 = load i64, ptr %v.90000
   %t.133711 = load i64, ptr %v.13368
   %t.133719 = call i64 @llvm_write_str(i64 %t.133710, i64 %t.133711)
   store i64 %t.133719, ptr %v.13371
-  %t.133720 = ptrtoint ptr @.str.270 to i64
+  %t.133720 = ptrtoint ptr @.str.268 to i64
   store i64 %t.133720, ptr %v.13372
   %t.133750 = load i64, ptr %v.90000
   %t.133751 = load i64, ptr %v.13372
   %t.133759 = call i64 @llvm_write_str(i64 %t.133750, i64 %t.133751)
   store i64 %t.133759, ptr %v.13375
-  %t.133760 = ptrtoint ptr @.str.271 to i64
+  %t.133760 = ptrtoint ptr @.str.269 to i64
   store i64 %t.133760, ptr %v.13376
   %t.133790 = load i64, ptr %v.90000
   %t.133791 = load i64, ptr %v.13376
   %t.133799 = call i64 @llvm_write_str(i64 %t.133790, i64 %t.133791)
   store i64 %t.133799, ptr %v.13379
-  %t.133800 = ptrtoint ptr @.str.272 to i64
+  %t.133800 = ptrtoint ptr @.str.270 to i64
   store i64 %t.133800, ptr %v.13380
   %t.133830 = load i64, ptr %v.90000
   %t.133831 = load i64, ptr %v.13380
   %t.133839 = call i64 @llvm_write_str(i64 %t.133830, i64 %t.133831)
   store i64 %t.133839, ptr %v.13383
-  %t.133840 = ptrtoint ptr @.str.273 to i64
+  %t.133840 = ptrtoint ptr @.str.271 to i64
   store i64 %t.133840, ptr %v.13384
   %t.133870 = load i64, ptr %v.90000
   %t.133871 = load i64, ptr %v.13384
   %t.133879 = call i64 @llvm_write_str(i64 %t.133870, i64 %t.133871)
   store i64 %t.133879, ptr %v.13387
-  %t.133880 = ptrtoint ptr @.str.274 to i64
+  %t.133880 = ptrtoint ptr @.str.272 to i64
   store i64 %t.133880, ptr %v.13388
   %t.133910 = load i64, ptr %v.90000
   %t.133911 = load i64, ptr %v.13388
   %t.133919 = call i64 @llvm_write_str(i64 %t.133910, i64 %t.133911)
   store i64 %t.133919, ptr %v.13391
-  %t.133920 = ptrtoint ptr @.str.275 to i64
+  %t.133920 = ptrtoint ptr @.str.273 to i64
   store i64 %t.133920, ptr %v.13392
   %t.133950 = load i64, ptr %v.90000
   %t.133951 = load i64, ptr %v.13392
   %t.133959 = call i64 @llvm_write_str(i64 %t.133950, i64 %t.133951)
   store i64 %t.133959, ptr %v.13395
-  %t.133960 = ptrtoint ptr @.str.276 to i64
+  %t.133960 = ptrtoint ptr @.str.274 to i64
   store i64 %t.133960, ptr %v.13396
   %t.133990 = load i64, ptr %v.90000
   %t.133991 = load i64, ptr %v.13396
   %t.133999 = call i64 @llvm_write_str(i64 %t.133990, i64 %t.133991)
   store i64 %t.133999, ptr %v.13399
-  %t.134000 = ptrtoint ptr @.str.277 to i64
+  %t.134000 = ptrtoint ptr @.str.275 to i64
   store i64 %t.134000, ptr %v.13400
   %t.134030 = load i64, ptr %v.90000
   %t.134031 = load i64, ptr %v.13400
   %t.134039 = call i64 @llvm_write_str(i64 %t.134030, i64 %t.134031)
   store i64 %t.134039, ptr %v.13403
-  %t.134040 = ptrtoint ptr @.str.278 to i64
+  %t.134040 = ptrtoint ptr @.str.276 to i64
   store i64 %t.134040, ptr %v.13404
   %t.134070 = load i64, ptr %v.90000
   %t.134071 = load i64, ptr %v.13404
   %t.134079 = call i64 @llvm_write_str(i64 %t.134070, i64 %t.134071)
   store i64 %t.134079, ptr %v.13407
-  %t.134080 = ptrtoint ptr @.str.279 to i64
+  %t.134080 = ptrtoint ptr @.str.277 to i64
   store i64 %t.134080, ptr %v.13408
   %t.134110 = load i64, ptr %v.90000
   %t.134111 = load i64, ptr %v.13408
   %t.134119 = call i64 @llvm_write_str(i64 %t.134110, i64 %t.134111)
   store i64 %t.134119, ptr %v.13411
-  %t.134120 = ptrtoint ptr @.str.280 to i64
+  %t.134120 = ptrtoint ptr @.str.278 to i64
   store i64 %t.134120, ptr %v.13412
   %t.134150 = load i64, ptr %v.90000
   %t.134151 = load i64, ptr %v.13412
   %t.134159 = call i64 @llvm_write_str(i64 %t.134150, i64 %t.134151)
   store i64 %t.134159, ptr %v.13415
-  %t.134160 = ptrtoint ptr @.str.281 to i64
+  %t.134160 = ptrtoint ptr @.str.279 to i64
   store i64 %t.134160, ptr %v.13416
   %t.134190 = load i64, ptr %v.90000
   %t.134191 = load i64, ptr %v.13416
   %t.134199 = call i64 @llvm_write_str(i64 %t.134190, i64 %t.134191)
   store i64 %t.134199, ptr %v.13419
-  %t.134200 = ptrtoint ptr @.str.282 to i64
+  %t.134200 = ptrtoint ptr @.str.280 to i64
   store i64 %t.134200, ptr %v.13420
   %t.134230 = load i64, ptr %v.90000
   %t.134231 = load i64, ptr %v.13420
   %t.134239 = call i64 @llvm_write_str(i64 %t.134230, i64 %t.134231)
   store i64 %t.134239, ptr %v.13423
-  %t.134240 = ptrtoint ptr @.str.283 to i64
+  %t.134240 = ptrtoint ptr @.str.281 to i64
   store i64 %t.134240, ptr %v.13424
   %t.134270 = load i64, ptr %v.90000
   %t.134271 = load i64, ptr %v.13424
   %t.134279 = call i64 @llvm_write_str(i64 %t.134270, i64 %t.134271)
   store i64 %t.134279, ptr %v.13427
-  %t.134280 = ptrtoint ptr @.str.284 to i64
+  %t.134280 = ptrtoint ptr @.str.282 to i64
   store i64 %t.134280, ptr %v.13428
   %t.134310 = load i64, ptr %v.90000
   %t.134311 = load i64, ptr %v.13428
   %t.134319 = call i64 @llvm_write_str(i64 %t.134310, i64 %t.134311)
   store i64 %t.134319, ptr %v.13431
-  %t.134320 = ptrtoint ptr @.str.285 to i64
+  %t.134320 = ptrtoint ptr @.str.283 to i64
   store i64 %t.134320, ptr %v.13432
   %t.134350 = load i64, ptr %v.90000
   %t.134351 = load i64, ptr %v.13432
   %t.134359 = call i64 @llvm_write_str(i64 %t.134350, i64 %t.134351)
   store i64 %t.134359, ptr %v.13435
-  %t.134360 = ptrtoint ptr @.str.286 to i64
+  %t.134360 = ptrtoint ptr @.str.284 to i64
   store i64 %t.134360, ptr %v.13436
   %t.134390 = load i64, ptr %v.90000
   %t.134391 = load i64, ptr %v.13436
@@ -43981,7 +43953,7 @@ B.body:
   %t.138311 = icmp eq i64 %t.138310, 0
   br i1 %t.138311, label %L.1350, label %L.fall.13831
 L.fall.13831:
-  %t.138320 = ptrtoint ptr @.str.287 to i64
+  %t.138320 = ptrtoint ptr @.str.285 to i64
   store i64 %t.138320, ptr %v.13832
   %t.138330 = load i64, ptr %v.13832
   %t.138331 = inttoptr i64 %t.138330 to ptr
@@ -43990,7 +43962,7 @@ L.fall.13831:
   %t.138334 = call ptr @ease_str_concat(ptr %t.138331, ptr %t.138333)
   %t.138335 = ptrtoint ptr %t.138334 to i64
   store i64 %t.138335, ptr %v.13833
-  %t.138340 = ptrtoint ptr @.str.288 to i64
+  %t.138340 = ptrtoint ptr @.str.286 to i64
   store i64 %t.138340, ptr %v.13834
   %t.138350 = load i64, ptr %v.13833
   %t.138351 = inttoptr i64 %t.138350 to ptr
@@ -44184,7 +44156,7 @@ L.fall.13887:
   store i64 %t.138919, ptr %v.13891
   %t.138920 = load i64, ptr %v.13891
   store i64 %t.138920, ptr %v.13892
-  %t.138930 = ptrtoint ptr @.str.289 to i64
+  %t.138930 = ptrtoint ptr @.str.287 to i64
   store i64 %t.138930, ptr %v.13893
   %t.138950 = load i64, ptr %v.13883
   %t.138959 = call i64 @strconv_Itoa(i64 %t.138950)
@@ -44196,7 +44168,7 @@ L.fall.13887:
   %t.138964 = call ptr @ease_str_concat(ptr %t.138961, ptr %t.138963)
   %t.138965 = ptrtoint ptr %t.138964 to i64
   store i64 %t.138965, ptr %v.13896
-  %t.138970 = ptrtoint ptr @.str.290 to i64
+  %t.138970 = ptrtoint ptr @.str.288 to i64
   store i64 %t.138970, ptr %v.13897
   %t.138980 = load i64, ptr %v.13896
   %t.138981 = inttoptr i64 %t.138980 to ptr
@@ -44224,7 +44196,7 @@ L.fall.13887:
   %t.139044 = call ptr @ease_str_concat(ptr %t.139041, ptr %t.139043)
   %t.139045 = ptrtoint ptr %t.139044 to i64
   store i64 %t.139045, ptr %v.13904
-  %t.139050 = ptrtoint ptr @.str.291 to i64
+  %t.139050 = ptrtoint ptr @.str.289 to i64
   store i64 %t.139050, ptr %v.13905
   %t.139060 = load i64, ptr %v.13904
   %t.139061 = inttoptr i64 %t.139060 to ptr
@@ -44240,7 +44212,7 @@ L.fall.13887:
   %t.139074 = call ptr @ease_str_concat(ptr %t.139071, ptr %t.139073)
   %t.139075 = ptrtoint ptr %t.139074 to i64
   store i64 %t.139075, ptr %v.13907
-  %t.139080 = ptrtoint ptr @.str.292 to i64
+  %t.139080 = ptrtoint ptr @.str.290 to i64
   store i64 %t.139080, ptr %v.13908
   %t.139090 = load i64, ptr %v.13907
   %t.139091 = inttoptr i64 %t.139090 to ptr
@@ -44277,7 +44249,7 @@ L.1359:
   %t.139211 = icmp eq i64 %t.139210, 0
   br i1 %t.139211, label %L.1360, label %L.fall.13921
 L.fall.13921:
-  %t.139220 = ptrtoint ptr @.str.293 to i64
+  %t.139220 = ptrtoint ptr @.str.291 to i64
   store i64 %t.139220, ptr %v.13922
   %t.139250 = load i64, ptr %v.13828
   %t.139251 = load i64, ptr %v.13922
@@ -44485,7 +44457,7 @@ L.fall.13988:
   %t.139941 = icmp eq i64 %t.139940, 0
   br i1 %t.139941, label %L.1374, label %L.fall.13994
 L.fall.13994:
-  %t.139950 = ptrtoint ptr @.str.294 to i64
+  %t.139950 = ptrtoint ptr @.str.292 to i64
   store i64 %t.139950, ptr %v.13995
   %t.139960 = load i64, ptr %v.13931
   %t.139961 = inttoptr i64 %t.139960 to ptr
@@ -44503,7 +44475,7 @@ L.fall.13994:
   %t.139974 = call ptr @ease_str_concat(ptr %t.139971, ptr %t.139973)
   %t.139975 = ptrtoint ptr %t.139974 to i64
   store i64 %t.139975, ptr %v.13997
-  %t.139980 = ptrtoint ptr @.str.295 to i64
+  %t.139980 = ptrtoint ptr @.str.293 to i64
   store i64 %t.139980, ptr %v.13998
   %t.139990 = load i64, ptr %v.13997
   %t.139991 = inttoptr i64 %t.139990 to ptr
@@ -44518,7 +44490,7 @@ L.fall.13994:
   store i64 %t.140029, ptr %v.14002
   br label %L.1375
 L.1374:
-  %t.140050 = ptrtoint ptr @.str.296 to i64
+  %t.140050 = ptrtoint ptr @.str.294 to i64
   store i64 %t.140050, ptr %v.14005
   %t.140060 = load i64, ptr %v.13931
   %t.140061 = inttoptr i64 %t.140060 to ptr
@@ -44536,7 +44508,7 @@ L.1374:
   %t.140074 = call ptr @ease_str_concat(ptr %t.140071, ptr %t.140073)
   %t.140075 = ptrtoint ptr %t.140074 to i64
   store i64 %t.140075, ptr %v.14007
-  %t.140080 = ptrtoint ptr @.str.297 to i64
+  %t.140080 = ptrtoint ptr @.str.295 to i64
   store i64 %t.140080, ptr %v.14008
   %t.140090 = load i64, ptr %v.14007
   %t.140091 = inttoptr i64 %t.140090 to ptr
@@ -44575,7 +44547,7 @@ L.1373:
   %t.140221 = icmp eq i64 %t.140220, 0
   br i1 %t.140221, label %L.1376, label %L.fall.14022
 L.fall.14022:
-  %t.140230 = ptrtoint ptr @.str.298 to i64
+  %t.140230 = ptrtoint ptr @.str.296 to i64
   store i64 %t.140230, ptr %v.14023
   %t.140260 = load i64, ptr %v.13828
   %t.140261 = load i64, ptr %v.14023
@@ -44809,7 +44781,7 @@ L.1379:
   %t.141030 = load i64, ptr %v.13828
   %t.141031 = call i64 @ease_syscall_close(i64 %t.141030)
   store i64 %t.141031, ptr %v.14103
-  %t.141040 = ptrtoint ptr @.str.299 to i64
+  %t.141040 = ptrtoint ptr @.str.297 to i64
   store i64 %t.141040, ptr %v.14104
   %t.141050 = load i64, ptr %v.14104
   %t.141051 = inttoptr i64 %t.141050 to ptr
@@ -44818,7 +44790,7 @@ L.1379:
   %t.141054 = call ptr @ease_str_concat(ptr %t.141051, ptr %t.141053)
   %t.141055 = ptrtoint ptr %t.141054 to i64
   store i64 %t.141055, ptr %v.14105
-  %t.141060 = ptrtoint ptr @.str.300 to i64
+  %t.141060 = ptrtoint ptr @.str.298 to i64
   store i64 %t.141060, ptr %v.14106
   %t.141070 = load i64, ptr %v.14105
   %t.141071 = inttoptr i64 %t.141070 to ptr
@@ -46258,7 +46230,7 @@ L.fall.14145:
   %t.141481 = icmp eq i64 %t.141480, 0
   br i1 %t.141481, label %L.1392, label %L.fall.14148
 L.fall.14148:
-  %t.141490 = ptrtoint ptr @.str.301 to i64
+  %t.141490 = ptrtoint ptr @.str.299 to i64
   store i64 %t.141490, ptr %v.14149
   %t.141500 = load i64, ptr %v.14140
   %t.141501 = inttoptr i64 %t.141500 to ptr
@@ -46273,7 +46245,7 @@ L.fall.14148:
 L.1392:
   br label %L.1393
 L.1393:
-  %t.141550 = ptrtoint ptr @.str.302 to i64
+  %t.141550 = ptrtoint ptr @.str.300 to i64
   store i64 %t.141550, ptr %v.14155
   %t.141560 = load i64, ptr %v.14140
   %t.141561 = inttoptr i64 %t.141560 to ptr
@@ -46303,7 +46275,7 @@ L.1393:
   store i64 %t.141630, ptr %v.14142
   br label %L.1390
 L.1391:
-  %t.141660 = ptrtoint ptr @.str.303 to i64
+  %t.141660 = ptrtoint ptr @.str.301 to i64
   store i64 %t.141660, ptr %v.14166
   %t.141670 = load i64, ptr %v.14166
   %t.141671 = inttoptr i64 %t.141670 to ptr
@@ -46312,7 +46284,7 @@ L.1391:
   %t.141674 = call ptr @ease_str_concat(ptr %t.141671, ptr %t.141673)
   %t.141675 = ptrtoint ptr %t.141674 to i64
   store i64 %t.141675, ptr %v.14167
-  %t.141680 = ptrtoint ptr @.str.304 to i64
+  %t.141680 = ptrtoint ptr @.str.302 to i64
   store i64 %t.141680, ptr %v.14168
   %t.141690 = load i64, ptr %v.14167
   %t.141691 = inttoptr i64 %t.141690 to ptr
@@ -46328,7 +46300,7 @@ L.1391:
   %t.141704 = call ptr @ease_str_concat(ptr %t.141701, ptr %t.141703)
   %t.141705 = ptrtoint ptr %t.141704 to i64
   store i64 %t.141705, ptr %v.14170
-  %t.141710 = ptrtoint ptr @.str.305 to i64
+  %t.141710 = ptrtoint ptr @.str.303 to i64
   store i64 %t.141710, ptr %v.14171
   %t.141720 = load i64, ptr %v.14170
   %t.141721 = inttoptr i64 %t.141720 to ptr
@@ -46368,7 +46340,7 @@ L.1394:
   %t.141871 = icmp eq i64 %t.141870, 0
   br i1 %t.141871, label %L.1395, label %L.fall.14187
 L.fall.14187:
-  %t.141880 = ptrtoint ptr @.str.306 to i64
+  %t.141880 = ptrtoint ptr @.str.304 to i64
   store i64 %t.141880, ptr %v.14188
   %t.141890 = load i64, ptr %v.14181
   %t.141891 = inttoptr i64 %t.141890 to ptr
@@ -46389,7 +46361,7 @@ L.fall.14187:
   %t.141924 = call ptr @ease_str_concat(ptr %t.141921, ptr %t.141923)
   %t.141925 = ptrtoint ptr %t.141924 to i64
   store i64 %t.141925, ptr %v.14192
-  %t.141930 = ptrtoint ptr @.str.307 to i64
+  %t.141930 = ptrtoint ptr @.str.305 to i64
   store i64 %t.141930, ptr %v.14193
   %t.141940 = load i64, ptr %v.14192
   %t.141941 = inttoptr i64 %t.141940 to ptr
@@ -46425,7 +46397,7 @@ L.1396:
   %t.142071 = icmp eq i64 %t.142070, 0
   br i1 %t.142071, label %L.1397, label %L.fall.14207
 L.fall.14207:
-  %t.142080 = ptrtoint ptr @.str.308 to i64
+  %t.142080 = ptrtoint ptr @.str.306 to i64
   store i64 %t.142080, ptr %v.14208
   %t.142100 = load i64, ptr %v.14142
   %t.142109 = call i64 @strconv_Itoa(i64 %t.142100)
@@ -46437,7 +46409,7 @@ L.fall.14207:
   %t.142114 = call ptr @ease_str_concat(ptr %t.142111, ptr %t.142113)
   %t.142115 = ptrtoint ptr %t.142114 to i64
   store i64 %t.142115, ptr %v.14211
-  %t.142120 = ptrtoint ptr @.str.309 to i64
+  %t.142120 = ptrtoint ptr @.str.307 to i64
   store i64 %t.142120, ptr %v.14212
   %t.142130 = load i64, ptr %v.14211
   %t.142131 = inttoptr i64 %t.142130 to ptr
@@ -46461,7 +46433,7 @@ L.fall.14207:
   %t.142184 = call ptr @ease_str_concat(ptr %t.142181, ptr %t.142183)
   %t.142185 = ptrtoint ptr %t.142184 to i64
   store i64 %t.142185, ptr %v.14218
-  %t.142190 = ptrtoint ptr @.str.310 to i64
+  %t.142190 = ptrtoint ptr @.str.308 to i64
   store i64 %t.142190, ptr %v.14219
   %t.142200 = load i64, ptr %v.14218
   %t.142201 = inttoptr i64 %t.142200 to ptr
@@ -46483,13 +46455,13 @@ L.fall.14207:
   store i64 %t.142260, ptr %v.14142
   br label %L.1396
 L.1397:
-  %t.142290 = ptrtoint ptr @.str.311 to i64
+  %t.142290 = ptrtoint ptr @.str.309 to i64
   store i64 %t.142290, ptr %v.14229
   %t.142320 = load i64, ptr %v.90000
   %t.142321 = load i64, ptr %v.14229
   %t.142329 = call i64 @llvm_write_str(i64 %t.142320, i64 %t.142321)
   store i64 %t.142329, ptr %v.14232
-  %t.142330 = ptrtoint ptr @.str.312 to i64
+  %t.142330 = ptrtoint ptr @.str.310 to i64
   store i64 %t.142330, ptr %v.14233
   %t.142360 = load i64, ptr %v.90000
   %t.142361 = load i64, ptr %v.14233
@@ -46573,7 +46545,7 @@ L.fall.14256:
   %t.142591 = icmp eq i64 %t.142590, 0
   br i1 %t.142591, label %L.1402, label %L.fall.14259
 L.fall.14259:
-  %t.142600 = ptrtoint ptr @.str.313 to i64
+  %t.142600 = ptrtoint ptr @.str.311 to i64
   store i64 %t.142600, ptr %v.14260
   %t.142610 = load i64, ptr %v.14247
   %t.142612 = add i64 %t.142610, 8
@@ -46590,7 +46562,7 @@ L.fall.14259:
   %t.142644 = call ptr @ease_str_concat(ptr %t.142641, ptr %t.142643)
   %t.142645 = ptrtoint ptr %t.142644 to i64
   store i64 %t.142645, ptr %v.14264
-  %t.142650 = ptrtoint ptr @.str.314 to i64
+  %t.142650 = ptrtoint ptr @.str.312 to i64
   store i64 %t.142650, ptr %v.14265
   %t.142660 = load i64, ptr %v.14264
   %t.142661 = inttoptr i64 %t.142660 to ptr
@@ -46607,7 +46579,7 @@ L.fall.14259:
 L.1402:
   br label %L.1403
 L.1403:
-  %t.142730 = ptrtoint ptr @.str.315 to i64
+  %t.142730 = ptrtoint ptr @.str.313 to i64
   store i64 %t.142730, ptr %v.14273
   %t.142740 = load i64, ptr %v.14247
   %t.142742 = add i64 %t.142740, 8
@@ -46624,7 +46596,7 @@ L.1403:
   %t.142774 = call ptr @ease_str_concat(ptr %t.142771, ptr %t.142773)
   %t.142775 = ptrtoint ptr %t.142774 to i64
   store i64 %t.142775, ptr %v.14277
-  %t.142780 = ptrtoint ptr @.str.316 to i64
+  %t.142780 = ptrtoint ptr @.str.314 to i64
   store i64 %t.142780, ptr %v.14278
   %t.142790 = load i64, ptr %v.14277
   %t.142791 = inttoptr i64 %t.142790 to ptr
@@ -46713,7 +46685,7 @@ L.fall.14306:
   store i64 %t.143109, ptr %v.14310
   %t.143110 = load i64, ptr %v.14310
   store i64 %t.143110, ptr %v.14311
-  %t.143120 = ptrtoint ptr @.str.317 to i64
+  %t.143120 = ptrtoint ptr @.str.315 to i64
   store i64 %t.143120, ptr %v.14312
   %t.143130 = load i64, ptr %v.14312
   %t.143131 = inttoptr i64 %t.143130 to ptr
@@ -46722,7 +46694,7 @@ L.fall.14306:
   %t.143134 = call ptr @ease_str_concat(ptr %t.143131, ptr %t.143133)
   %t.143135 = ptrtoint ptr %t.143134 to i64
   store i64 %t.143135, ptr %v.14313
-  %t.143140 = ptrtoint ptr @.str.318 to i64
+  %t.143140 = ptrtoint ptr @.str.316 to i64
   store i64 %t.143140, ptr %v.14314
   %t.143150 = load i64, ptr %v.14313
   %t.143151 = inttoptr i64 %t.143150 to ptr
@@ -46741,7 +46713,7 @@ L.fall.14306:
   %t.143184 = call ptr @ease_str_concat(ptr %t.143181, ptr %t.143183)
   %t.143185 = ptrtoint ptr %t.143184 to i64
   store i64 %t.143185, ptr %v.14318
-  %t.143190 = ptrtoint ptr @.str.319 to i64
+  %t.143190 = ptrtoint ptr @.str.317 to i64
   store i64 %t.143190, ptr %v.14319
   %t.143200 = load i64, ptr %v.14318
   %t.143201 = inttoptr i64 %t.143200 to ptr
@@ -46826,7 +46798,7 @@ L.fall.14352:
   store i64 %t.143569, ptr %v.14356
   %t.143570 = load i64, ptr %v.14356
   store i64 %t.143570, ptr %v.14357
-  %t.143580 = ptrtoint ptr @.str.320 to i64
+  %t.143580 = ptrtoint ptr @.str.318 to i64
   store i64 %t.143580, ptr %v.14358
   %t.143590 = load i64, ptr %v.14358
   %t.143591 = inttoptr i64 %t.143590 to ptr
@@ -46835,7 +46807,7 @@ L.fall.14352:
   %t.143594 = call ptr @ease_str_concat(ptr %t.143591, ptr %t.143593)
   %t.143595 = ptrtoint ptr %t.143594 to i64
   store i64 %t.143595, ptr %v.14359
-  %t.143600 = ptrtoint ptr @.str.321 to i64
+  %t.143600 = ptrtoint ptr @.str.319 to i64
   store i64 %t.143600, ptr %v.14360
   %t.143610 = load i64, ptr %v.14359
   %t.143611 = inttoptr i64 %t.143610 to ptr
@@ -46856,7 +46828,7 @@ L.fall.14352:
   %t.143634 = call ptr @ease_str_concat(ptr %t.143631, ptr %t.143633)
   %t.143635 = ptrtoint ptr %t.143634 to i64
   store i64 %t.143635, ptr %v.14363
-  %t.143640 = ptrtoint ptr @.str.322 to i64
+  %t.143640 = ptrtoint ptr @.str.320 to i64
   store i64 %t.143640, ptr %v.14364
   %t.143650 = load i64, ptr %v.14363
   %t.143651 = inttoptr i64 %t.143650 to ptr
@@ -46954,7 +46926,7 @@ L.fall.14389:
   store i64 %t.144029, ptr %v.14402
   br label %L.1415
 L.1414:
-  %t.144050 = ptrtoint ptr @.str.323 to i64
+  %t.144050 = ptrtoint ptr @.str.321 to i64
   store i64 %t.144050, ptr %v.14405
   %t.144100 = load i64, ptr %v.90000
   %t.144101 = load i64, ptr %v.14247
@@ -46993,7 +46965,7 @@ L.1413:
   %t.144211 = icmp eq i64 %t.144210, 0
   br i1 %t.144211, label %L.1416, label %L.fall.14421
 L.fall.14421:
-  %t.144220 = ptrtoint ptr @.str.324 to i64
+  %t.144220 = ptrtoint ptr @.str.322 to i64
   store i64 %t.144220, ptr %v.14422
   %t.144270 = load i64, ptr %v.90000
   %t.144271 = load i64, ptr %v.14247
@@ -47030,7 +47002,7 @@ L.1417:
   %t.144371 = icmp eq i64 %t.144370, 0
   br i1 %t.144371, label %L.1418, label %L.fall.14437
 L.fall.14437:
-  %t.144380 = ptrtoint ptr @.str.325 to i64
+  %t.144380 = ptrtoint ptr @.str.323 to i64
   store i64 %t.144380, ptr %v.14438
   %t.144430 = load i64, ptr %v.90000
   %t.144431 = load i64, ptr %v.14247
@@ -47067,7 +47039,7 @@ L.1419:
   %t.144531 = icmp eq i64 %t.144530, 0
   br i1 %t.144531, label %L.1420, label %L.fall.14453
 L.fall.14453:
-  %t.144540 = ptrtoint ptr @.str.326 to i64
+  %t.144540 = ptrtoint ptr @.str.324 to i64
   store i64 %t.144540, ptr %v.14454
   %t.144590 = load i64, ptr %v.90000
   %t.144591 = load i64, ptr %v.14247
@@ -47104,7 +47076,7 @@ L.1421:
   %t.144691 = icmp eq i64 %t.144690, 0
   br i1 %t.144691, label %L.1422, label %L.fall.14469
 L.fall.14469:
-  %t.144700 = ptrtoint ptr @.str.327 to i64
+  %t.144700 = ptrtoint ptr @.str.325 to i64
   store i64 %t.144700, ptr %v.14470
   %t.144750 = load i64, ptr %v.90000
   %t.144751 = load i64, ptr %v.14247
@@ -47141,7 +47113,7 @@ L.1423:
   %t.144851 = icmp eq i64 %t.144850, 0
   br i1 %t.144851, label %L.1424, label %L.fall.14485
 L.fall.14485:
-  %t.144860 = ptrtoint ptr @.str.328 to i64
+  %t.144860 = ptrtoint ptr @.str.326 to i64
   store i64 %t.144860, ptr %v.14486
   %t.144910 = load i64, ptr %v.90000
   %t.144911 = load i64, ptr %v.14247
@@ -47178,7 +47150,7 @@ L.1425:
   %t.145011 = icmp eq i64 %t.145010, 0
   br i1 %t.145011, label %L.1426, label %L.fall.14501
 L.fall.14501:
-  %t.145020 = ptrtoint ptr @.str.329 to i64
+  %t.145020 = ptrtoint ptr @.str.327 to i64
   store i64 %t.145020, ptr %v.14502
   %t.145070 = load i64, ptr %v.90000
   %t.145071 = load i64, ptr %v.14247
@@ -47215,7 +47187,7 @@ L.1427:
   %t.145171 = icmp eq i64 %t.145170, 0
   br i1 %t.145171, label %L.1428, label %L.fall.14517
 L.fall.14517:
-  %t.145180 = ptrtoint ptr @.str.330 to i64
+  %t.145180 = ptrtoint ptr @.str.328 to i64
   store i64 %t.145180, ptr %v.14518
   %t.145230 = load i64, ptr %v.90000
   %t.145231 = load i64, ptr %v.14247
@@ -47252,7 +47224,7 @@ L.1429:
   %t.145331 = icmp eq i64 %t.145330, 0
   br i1 %t.145331, label %L.1430, label %L.fall.14533
 L.fall.14533:
-  %t.145340 = ptrtoint ptr @.str.331 to i64
+  %t.145340 = ptrtoint ptr @.str.329 to i64
   store i64 %t.145340, ptr %v.14534
   %t.145390 = load i64, ptr %v.90000
   %t.145391 = load i64, ptr %v.14247
@@ -47289,7 +47261,7 @@ L.1431:
   %t.145491 = icmp eq i64 %t.145490, 0
   br i1 %t.145491, label %L.1432, label %L.fall.14549
 L.fall.14549:
-  %t.145500 = ptrtoint ptr @.str.332 to i64
+  %t.145500 = ptrtoint ptr @.str.330 to i64
   store i64 %t.145500, ptr %v.14550
   %t.145550 = load i64, ptr %v.90000
   %t.145551 = load i64, ptr %v.14247
@@ -47347,7 +47319,7 @@ L.fall.14565:
   store i64 %t.145779, ptr %v.14577
   %t.145780 = load i64, ptr %v.14577
   store i64 %t.145780, ptr %v.14578
-  %t.145790 = ptrtoint ptr @.str.333 to i64
+  %t.145790 = ptrtoint ptr @.str.331 to i64
   store i64 %t.145790, ptr %v.14579
   %t.145800 = load i64, ptr %v.14579
   %t.145801 = inttoptr i64 %t.145800 to ptr
@@ -47356,7 +47328,7 @@ L.fall.14565:
   %t.145804 = call ptr @ease_str_concat(ptr %t.145801, ptr %t.145803)
   %t.145805 = ptrtoint ptr %t.145804 to i64
   store i64 %t.145805, ptr %v.14580
-  %t.145810 = ptrtoint ptr @.str.334 to i64
+  %t.145810 = ptrtoint ptr @.str.332 to i64
   store i64 %t.145810, ptr %v.14581
   %t.145820 = load i64, ptr %v.14580
   %t.145821 = inttoptr i64 %t.145820 to ptr
@@ -47372,7 +47344,7 @@ L.fall.14565:
   %t.145834 = call ptr @ease_str_concat(ptr %t.145831, ptr %t.145833)
   %t.145835 = ptrtoint ptr %t.145834 to i64
   store i64 %t.145835, ptr %v.14583
-  %t.145840 = ptrtoint ptr @.str.335 to i64
+  %t.145840 = ptrtoint ptr @.str.333 to i64
   store i64 %t.145840, ptr %v.14584
   %t.145850 = load i64, ptr %v.14583
   %t.145851 = inttoptr i64 %t.145850 to ptr
@@ -47424,7 +47396,7 @@ L.1435:
   %t.146031 = icmp eq i64 %t.146030, 0
   br i1 %t.146031, label %L.1436, label %L.fall.14603
 L.fall.14603:
-  %t.146040 = ptrtoint ptr @.str.336 to i64
+  %t.146040 = ptrtoint ptr @.str.334 to i64
   store i64 %t.146040, ptr %v.14604
   %t.146090 = load i64, ptr %v.90000
   %t.146091 = load i64, ptr %v.14247
@@ -47461,7 +47433,7 @@ L.1437:
   %t.146191 = icmp eq i64 %t.146190, 0
   br i1 %t.146191, label %L.1438, label %L.fall.14619
 L.fall.14619:
-  %t.146200 = ptrtoint ptr @.str.337 to i64
+  %t.146200 = ptrtoint ptr @.str.335 to i64
   store i64 %t.146200, ptr %v.14620
   %t.146250 = load i64, ptr %v.90000
   %t.146251 = load i64, ptr %v.14247
@@ -47498,7 +47470,7 @@ L.1439:
   %t.146351 = icmp eq i64 %t.146350, 0
   br i1 %t.146351, label %L.1440, label %L.fall.14635
 L.fall.14635:
-  %t.146360 = ptrtoint ptr @.str.338 to i64
+  %t.146360 = ptrtoint ptr @.str.336 to i64
   store i64 %t.146360, ptr %v.14636
   %t.146410 = load i64, ptr %v.90000
   %t.146411 = load i64, ptr %v.14247
@@ -47535,7 +47507,7 @@ L.1441:
   %t.146511 = icmp eq i64 %t.146510, 0
   br i1 %t.146511, label %L.1442, label %L.fall.14651
 L.fall.14651:
-  %t.146520 = ptrtoint ptr @.str.339 to i64
+  %t.146520 = ptrtoint ptr @.str.337 to i64
   store i64 %t.146520, ptr %v.14652
   %t.146570 = load i64, ptr %v.90000
   %t.146571 = load i64, ptr %v.14247
@@ -47572,7 +47544,7 @@ L.1443:
   %t.146671 = icmp eq i64 %t.146670, 0
   br i1 %t.146671, label %L.1444, label %L.fall.14667
 L.fall.14667:
-  %t.146680 = ptrtoint ptr @.str.340 to i64
+  %t.146680 = ptrtoint ptr @.str.338 to i64
   store i64 %t.146680, ptr %v.14668
   %t.146730 = load i64, ptr %v.90000
   %t.146731 = load i64, ptr %v.14247
@@ -47609,7 +47581,7 @@ L.1445:
   %t.146831 = icmp eq i64 %t.146830, 0
   br i1 %t.146831, label %L.1446, label %L.fall.14683
 L.fall.14683:
-  %t.146840 = ptrtoint ptr @.str.341 to i64
+  %t.146840 = ptrtoint ptr @.str.339 to i64
   store i64 %t.146840, ptr %v.14684
   %t.146890 = load i64, ptr %v.90000
   %t.146891 = load i64, ptr %v.14247
@@ -47668,7 +47640,7 @@ L.fall.14699:
   %t.147106 = inttoptr i64 %t.147102 to ptr
   %t.147107 = load i64, ptr %t.147106
   store i64 %t.147107, ptr %v.14710
-  %t.147110 = ptrtoint ptr @.str.342 to i64
+  %t.147110 = ptrtoint ptr @.str.340 to i64
   store i64 %t.147110, ptr %v.14711
   %t.147120 = load i64, ptr %v.14710
   %t.147121 = inttoptr i64 %t.147120 to ptr
@@ -47687,7 +47659,7 @@ L.fall.14713:
   store i64 %t.147179, ptr %v.14717
   %t.147180 = load i64, ptr %v.14717
   store i64 %t.147180, ptr %v.14718
-  %t.147190 = ptrtoint ptr @.str.343 to i64
+  %t.147190 = ptrtoint ptr @.str.341 to i64
   store i64 %t.147190, ptr %v.14719
   %t.147200 = load i64, ptr %v.14719
   %t.147201 = inttoptr i64 %t.147200 to ptr
@@ -47696,7 +47668,7 @@ L.fall.14713:
   %t.147204 = call ptr @ease_str_concat(ptr %t.147201, ptr %t.147203)
   %t.147205 = ptrtoint ptr %t.147204 to i64
   store i64 %t.147205, ptr %v.14720
-  %t.147210 = ptrtoint ptr @.str.344 to i64
+  %t.147210 = ptrtoint ptr @.str.342 to i64
   store i64 %t.147210, ptr %v.14721
   %t.147220 = load i64, ptr %v.14720
   %t.147221 = inttoptr i64 %t.147220 to ptr
@@ -47712,7 +47684,7 @@ L.fall.14713:
   %t.147234 = call ptr @ease_str_concat(ptr %t.147231, ptr %t.147233)
   %t.147235 = ptrtoint ptr %t.147234 to i64
   store i64 %t.147235, ptr %v.14723
-  %t.147240 = ptrtoint ptr @.str.345 to i64
+  %t.147240 = ptrtoint ptr @.str.343 to i64
   store i64 %t.147240, ptr %v.14724
   %t.147250 = load i64, ptr %v.14723
   %t.147251 = inttoptr i64 %t.147250 to ptr
@@ -47732,7 +47704,7 @@ L.fall.14713:
   store i64 %t.147329, ptr %v.14732
   %t.147330 = load i64, ptr %v.14732
   store i64 %t.147330, ptr %v.14733
-  %t.147340 = ptrtoint ptr @.str.346 to i64
+  %t.147340 = ptrtoint ptr @.str.344 to i64
   store i64 %t.147340, ptr %v.14734
   %t.147350 = load i64, ptr %v.14734
   %t.147351 = inttoptr i64 %t.147350 to ptr
@@ -47741,7 +47713,7 @@ L.fall.14713:
   %t.147354 = call ptr @ease_str_concat(ptr %t.147351, ptr %t.147353)
   %t.147355 = ptrtoint ptr %t.147354 to i64
   store i64 %t.147355, ptr %v.14735
-  %t.147360 = ptrtoint ptr @.str.347 to i64
+  %t.147360 = ptrtoint ptr @.str.345 to i64
   store i64 %t.147360, ptr %v.14736
   %t.147370 = load i64, ptr %v.14735
   %t.147371 = inttoptr i64 %t.147370 to ptr
@@ -47757,7 +47729,7 @@ L.fall.14713:
   %t.147384 = call ptr @ease_str_concat(ptr %t.147381, ptr %t.147383)
   %t.147385 = ptrtoint ptr %t.147384 to i64
   store i64 %t.147385, ptr %v.14738
-  %t.147390 = ptrtoint ptr @.str.348 to i64
+  %t.147390 = ptrtoint ptr @.str.346 to i64
   store i64 %t.147390, ptr %v.14739
   %t.147400 = load i64, ptr %v.14738
   %t.147401 = inttoptr i64 %t.147400 to ptr
@@ -47791,7 +47763,7 @@ L.fall.14713:
   store i64 %t.147559, ptr %v.14755
   %t.147560 = load i64, ptr %v.14755
   store i64 %t.147560, ptr %v.14756
-  %t.147570 = ptrtoint ptr @.str.349 to i64
+  %t.147570 = ptrtoint ptr @.str.347 to i64
   store i64 %t.147570, ptr %v.14757
   %t.147580 = load i64, ptr %v.14757
   %t.147581 = inttoptr i64 %t.147580 to ptr
@@ -47800,7 +47772,7 @@ L.fall.14713:
   %t.147584 = call ptr @ease_str_concat(ptr %t.147581, ptr %t.147583)
   %t.147585 = ptrtoint ptr %t.147584 to i64
   store i64 %t.147585, ptr %v.14758
-  %t.147590 = ptrtoint ptr @.str.350 to i64
+  %t.147590 = ptrtoint ptr @.str.348 to i64
   store i64 %t.147590, ptr %v.14759
   %t.147600 = load i64, ptr %v.14758
   %t.147601 = inttoptr i64 %t.147600 to ptr
@@ -47816,7 +47788,7 @@ L.fall.14713:
   %t.147614 = call ptr @ease_str_concat(ptr %t.147611, ptr %t.147613)
   %t.147615 = ptrtoint ptr %t.147614 to i64
   store i64 %t.147615, ptr %v.14761
-  %t.147620 = ptrtoint ptr @.str.351 to i64
+  %t.147620 = ptrtoint ptr @.str.349 to i64
   store i64 %t.147620, ptr %v.14762
   %t.147630 = load i64, ptr %v.14761
   %t.147631 = inttoptr i64 %t.147630 to ptr
@@ -47836,7 +47808,7 @@ L.fall.14713:
   store i64 %t.147709, ptr %v.14770
   %t.147710 = load i64, ptr %v.14770
   store i64 %t.147710, ptr %v.14771
-  %t.147720 = ptrtoint ptr @.str.352 to i64
+  %t.147720 = ptrtoint ptr @.str.350 to i64
   store i64 %t.147720, ptr %v.14772
   %t.147730 = load i64, ptr %v.14772
   %t.147731 = inttoptr i64 %t.147730 to ptr
@@ -47845,7 +47817,7 @@ L.fall.14713:
   %t.147734 = call ptr @ease_str_concat(ptr %t.147731, ptr %t.147733)
   %t.147735 = ptrtoint ptr %t.147734 to i64
   store i64 %t.147735, ptr %v.14773
-  %t.147740 = ptrtoint ptr @.str.353 to i64
+  %t.147740 = ptrtoint ptr @.str.351 to i64
   store i64 %t.147740, ptr %v.14774
   %t.147750 = load i64, ptr %v.14773
   %t.147751 = inttoptr i64 %t.147750 to ptr
@@ -47861,7 +47833,7 @@ L.fall.14713:
   %t.147764 = call ptr @ease_str_concat(ptr %t.147761, ptr %t.147763)
   %t.147765 = ptrtoint ptr %t.147764 to i64
   store i64 %t.147765, ptr %v.14776
-  %t.147770 = ptrtoint ptr @.str.354 to i64
+  %t.147770 = ptrtoint ptr @.str.352 to i64
   store i64 %t.147770, ptr %v.14777
   %t.147780 = load i64, ptr %v.14776
   %t.147781 = inttoptr i64 %t.147780 to ptr
@@ -47877,7 +47849,7 @@ L.fall.14713:
   %t.147794 = call ptr @ease_str_concat(ptr %t.147791, ptr %t.147793)
   %t.147795 = ptrtoint ptr %t.147794 to i64
   store i64 %t.147795, ptr %v.14779
-  %t.147800 = ptrtoint ptr @.str.355 to i64
+  %t.147800 = ptrtoint ptr @.str.353 to i64
   store i64 %t.147800, ptr %v.14780
   %t.147810 = load i64, ptr %v.14779
   %t.147811 = inttoptr i64 %t.147810 to ptr
@@ -47920,7 +47892,7 @@ L.1452:
   store i64 %t.147989, ptr %v.14798
   %t.147990 = load i64, ptr %v.14798
   store i64 %t.147990, ptr %v.14799
-  %t.148000 = ptrtoint ptr @.str.356 to i64
+  %t.148000 = ptrtoint ptr @.str.354 to i64
   store i64 %t.148000, ptr %v.14800
   %t.148010 = load i64, ptr %v.14800
   %t.148011 = inttoptr i64 %t.148010 to ptr
@@ -47929,7 +47901,7 @@ L.1452:
   %t.148014 = call ptr @ease_str_concat(ptr %t.148011, ptr %t.148013)
   %t.148015 = ptrtoint ptr %t.148014 to i64
   store i64 %t.148015, ptr %v.14801
-  %t.148020 = ptrtoint ptr @.str.357 to i64
+  %t.148020 = ptrtoint ptr @.str.355 to i64
   store i64 %t.148020, ptr %v.14802
   %t.148030 = load i64, ptr %v.14801
   %t.148031 = inttoptr i64 %t.148030 to ptr
@@ -47945,7 +47917,7 @@ L.1452:
   %t.148044 = call ptr @ease_str_concat(ptr %t.148041, ptr %t.148043)
   %t.148045 = ptrtoint ptr %t.148044 to i64
   store i64 %t.148045, ptr %v.14804
-  %t.148050 = ptrtoint ptr @.str.358 to i64
+  %t.148050 = ptrtoint ptr @.str.356 to i64
   store i64 %t.148050, ptr %v.14805
   %t.148060 = load i64, ptr %v.14804
   %t.148061 = inttoptr i64 %t.148060 to ptr
@@ -47969,7 +47941,7 @@ L.1452:
   %t.148104 = call ptr @ease_str_concat(ptr %t.148101, ptr %t.148103)
   %t.148105 = ptrtoint ptr %t.148104 to i64
   store i64 %t.148105, ptr %v.14810
-  %t.148110 = ptrtoint ptr @.str.359 to i64
+  %t.148110 = ptrtoint ptr @.str.357 to i64
   store i64 %t.148110, ptr %v.14811
   %t.148120 = load i64, ptr %v.14810
   %t.148121 = inttoptr i64 %t.148120 to ptr
@@ -47995,7 +47967,7 @@ L.1451:
   store i64 %t.148229, ptr %v.14822
   %t.148230 = load i64, ptr %v.14822
   store i64 %t.148230, ptr %v.14823
-  %t.148240 = ptrtoint ptr @.str.360 to i64
+  %t.148240 = ptrtoint ptr @.str.358 to i64
   store i64 %t.148240, ptr %v.14824
   %t.148250 = load i64, ptr %v.14824
   %t.148251 = inttoptr i64 %t.148250 to ptr
@@ -48004,7 +47976,7 @@ L.1451:
   %t.148254 = call ptr @ease_str_concat(ptr %t.148251, ptr %t.148253)
   %t.148255 = ptrtoint ptr %t.148254 to i64
   store i64 %t.148255, ptr %v.14825
-  %t.148260 = ptrtoint ptr @.str.361 to i64
+  %t.148260 = ptrtoint ptr @.str.359 to i64
   store i64 %t.148260, ptr %v.14826
   %t.148270 = load i64, ptr %v.14825
   %t.148271 = inttoptr i64 %t.148270 to ptr
@@ -48020,7 +47992,7 @@ L.1451:
   %t.148284 = call ptr @ease_str_concat(ptr %t.148281, ptr %t.148283)
   %t.148285 = ptrtoint ptr %t.148284 to i64
   store i64 %t.148285, ptr %v.14828
-  %t.148290 = ptrtoint ptr @.str.362 to i64
+  %t.148290 = ptrtoint ptr @.str.360 to i64
   store i64 %t.148290, ptr %v.14829
   %t.148300 = load i64, ptr %v.14828
   %t.148301 = inttoptr i64 %t.148300 to ptr
@@ -48040,7 +48012,7 @@ L.1451:
   store i64 %t.148379, ptr %v.14837
   %t.148380 = load i64, ptr %v.14837
   store i64 %t.148380, ptr %v.14838
-  %t.148390 = ptrtoint ptr @.str.363 to i64
+  %t.148390 = ptrtoint ptr @.str.361 to i64
   store i64 %t.148390, ptr %v.14839
   %t.148400 = load i64, ptr %v.14839
   %t.148401 = inttoptr i64 %t.148400 to ptr
@@ -48049,7 +48021,7 @@ L.1451:
   %t.148404 = call ptr @ease_str_concat(ptr %t.148401, ptr %t.148403)
   %t.148405 = ptrtoint ptr %t.148404 to i64
   store i64 %t.148405, ptr %v.14840
-  %t.148410 = ptrtoint ptr @.str.364 to i64
+  %t.148410 = ptrtoint ptr @.str.362 to i64
   store i64 %t.148410, ptr %v.14841
   %t.148420 = load i64, ptr %v.14840
   %t.148421 = inttoptr i64 %t.148420 to ptr
@@ -48065,7 +48037,7 @@ L.1451:
   %t.148434 = call ptr @ease_str_concat(ptr %t.148431, ptr %t.148433)
   %t.148435 = ptrtoint ptr %t.148434 to i64
   store i64 %t.148435, ptr %v.14843
-  %t.148440 = ptrtoint ptr @.str.365 to i64
+  %t.148440 = ptrtoint ptr @.str.363 to i64
   store i64 %t.148440, ptr %v.14844
   %t.148450 = load i64, ptr %v.14843
   %t.148451 = inttoptr i64 %t.148450 to ptr
@@ -48152,7 +48124,7 @@ L.fall.14863:
   store i64 %t.148839, ptr %v.14883
   %t.148840 = load i64, ptr %v.14883
   store i64 %t.148840, ptr %v.14884
-  %t.148850 = ptrtoint ptr @.str.366 to i64
+  %t.148850 = ptrtoint ptr @.str.364 to i64
   store i64 %t.148850, ptr %v.14885
   %t.148860 = load i64, ptr %v.14885
   %t.148861 = inttoptr i64 %t.148860 to ptr
@@ -48161,7 +48133,7 @@ L.fall.14863:
   %t.148864 = call ptr @ease_str_concat(ptr %t.148861, ptr %t.148863)
   %t.148865 = ptrtoint ptr %t.148864 to i64
   store i64 %t.148865, ptr %v.14886
-  %t.148870 = ptrtoint ptr @.str.367 to i64
+  %t.148870 = ptrtoint ptr @.str.365 to i64
   store i64 %t.148870, ptr %v.14887
   %t.148880 = load i64, ptr %v.14886
   %t.148881 = inttoptr i64 %t.148880 to ptr
@@ -48177,7 +48149,7 @@ L.fall.14863:
   %t.148894 = call ptr @ease_str_concat(ptr %t.148891, ptr %t.148893)
   %t.148895 = ptrtoint ptr %t.148894 to i64
   store i64 %t.148895, ptr %v.14889
-  %t.148900 = ptrtoint ptr @.str.368 to i64
+  %t.148900 = ptrtoint ptr @.str.366 to i64
   store i64 %t.148900, ptr %v.14890
   %t.148910 = load i64, ptr %v.14889
   %t.148911 = inttoptr i64 %t.148910 to ptr
@@ -48190,7 +48162,7 @@ L.fall.14863:
   %t.148941 = load i64, ptr %v.14891
   %t.148949 = call i64 @llvm_write_str(i64 %t.148940, i64 %t.148941)
   store i64 %t.148949, ptr %v.14894
-  %t.148950 = ptrtoint ptr @.str.369 to i64
+  %t.148950 = ptrtoint ptr @.str.367 to i64
   store i64 %t.148950, ptr %v.14895
   %t.148960 = load i64, ptr %v.14895
   %t.148961 = inttoptr i64 %t.148960 to ptr
@@ -48199,7 +48171,7 @@ L.fall.14863:
   %t.148964 = call ptr @ease_str_concat(ptr %t.148961, ptr %t.148963)
   %t.148965 = ptrtoint ptr %t.148964 to i64
   store i64 %t.148965, ptr %v.14896
-  %t.148970 = ptrtoint ptr @.str.370 to i64
+  %t.148970 = ptrtoint ptr @.str.368 to i64
   store i64 %t.148970, ptr %v.14897
   %t.148980 = load i64, ptr %v.14896
   %t.148981 = inttoptr i64 %t.148980 to ptr
@@ -48215,7 +48187,7 @@ L.fall.14863:
   %t.148994 = call ptr @ease_str_concat(ptr %t.148991, ptr %t.148993)
   %t.148995 = ptrtoint ptr %t.148994 to i64
   store i64 %t.148995, ptr %v.14899
-  %t.149000 = ptrtoint ptr @.str.371 to i64
+  %t.149000 = ptrtoint ptr @.str.369 to i64
   store i64 %t.149000, ptr %v.14900
   %t.149010 = load i64, ptr %v.14899
   %t.149011 = inttoptr i64 %t.149010 to ptr
@@ -48327,7 +48299,7 @@ L.fall.14937:
   store i64 %t.149459, ptr %v.14945
   %t.149460 = load i64, ptr %v.14945
   store i64 %t.149460, ptr %v.14946
-  %t.149470 = ptrtoint ptr @.str.372 to i64
+  %t.149470 = ptrtoint ptr @.str.370 to i64
   store i64 %t.149470, ptr %v.14947
   %t.149480 = load i64, ptr %v.14947
   %t.149481 = inttoptr i64 %t.149480 to ptr
@@ -48336,7 +48308,7 @@ L.fall.14937:
   %t.149484 = call ptr @ease_str_concat(ptr %t.149481, ptr %t.149483)
   %t.149485 = ptrtoint ptr %t.149484 to i64
   store i64 %t.149485, ptr %v.14948
-  %t.149490 = ptrtoint ptr @.str.373 to i64
+  %t.149490 = ptrtoint ptr @.str.371 to i64
   store i64 %t.149490, ptr %v.14949
   %t.149500 = load i64, ptr %v.14948
   %t.149501 = inttoptr i64 %t.149500 to ptr
@@ -48352,7 +48324,7 @@ L.fall.14937:
   %t.149514 = call ptr @ease_str_concat(ptr %t.149511, ptr %t.149513)
   %t.149515 = ptrtoint ptr %t.149514 to i64
   store i64 %t.149515, ptr %v.14951
-  %t.149520 = ptrtoint ptr @.str.374 to i64
+  %t.149520 = ptrtoint ptr @.str.372 to i64
   store i64 %t.149520, ptr %v.14952
   %t.149530 = load i64, ptr %v.14951
   %t.149531 = inttoptr i64 %t.149530 to ptr
@@ -48372,7 +48344,7 @@ L.fall.14937:
   store i64 %t.149609, ptr %v.14960
   %t.149610 = load i64, ptr %v.14960
   store i64 %t.149610, ptr %v.14961
-  %t.149620 = ptrtoint ptr @.str.375 to i64
+  %t.149620 = ptrtoint ptr @.str.373 to i64
   store i64 %t.149620, ptr %v.14962
   %t.149630 = load i64, ptr %v.14962
   %t.149631 = inttoptr i64 %t.149630 to ptr
@@ -48381,7 +48353,7 @@ L.fall.14937:
   %t.149634 = call ptr @ease_str_concat(ptr %t.149631, ptr %t.149633)
   %t.149635 = ptrtoint ptr %t.149634 to i64
   store i64 %t.149635, ptr %v.14963
-  %t.149640 = ptrtoint ptr @.str.376 to i64
+  %t.149640 = ptrtoint ptr @.str.374 to i64
   store i64 %t.149640, ptr %v.14964
   %t.149650 = load i64, ptr %v.14963
   %t.149651 = inttoptr i64 %t.149650 to ptr
@@ -48397,7 +48369,7 @@ L.fall.14937:
   %t.149664 = call ptr @ease_str_concat(ptr %t.149661, ptr %t.149663)
   %t.149665 = ptrtoint ptr %t.149664 to i64
   store i64 %t.149665, ptr %v.14966
-  %t.149670 = ptrtoint ptr @.str.377 to i64
+  %t.149670 = ptrtoint ptr @.str.375 to i64
   store i64 %t.149670, ptr %v.14967
   %t.149680 = load i64, ptr %v.14966
   %t.149681 = inttoptr i64 %t.149680 to ptr
@@ -48413,7 +48385,7 @@ L.fall.14937:
   %t.149694 = call ptr @ease_str_concat(ptr %t.149691, ptr %t.149693)
   %t.149695 = ptrtoint ptr %t.149694 to i64
   store i64 %t.149695, ptr %v.14969
-  %t.149700 = ptrtoint ptr @.str.378 to i64
+  %t.149700 = ptrtoint ptr @.str.376 to i64
   store i64 %t.149700, ptr %v.14970
   %t.149710 = load i64, ptr %v.14969
   %t.149711 = inttoptr i64 %t.149710 to ptr
@@ -48516,7 +48488,7 @@ L.1462:
   store i64 %t.150159, ptr %v.15015
   %t.150160 = load i64, ptr %v.15015
   store i64 %t.150160, ptr %v.15016
-  %t.150170 = ptrtoint ptr @.str.379 to i64
+  %t.150170 = ptrtoint ptr @.str.377 to i64
   store i64 %t.150170, ptr %v.15017
   %t.150180 = load i64, ptr %v.15017
   %t.150181 = inttoptr i64 %t.150180 to ptr
@@ -48525,7 +48497,7 @@ L.1462:
   %t.150184 = call ptr @ease_str_concat(ptr %t.150181, ptr %t.150183)
   %t.150185 = ptrtoint ptr %t.150184 to i64
   store i64 %t.150185, ptr %v.15018
-  %t.150190 = ptrtoint ptr @.str.380 to i64
+  %t.150190 = ptrtoint ptr @.str.378 to i64
   store i64 %t.150190, ptr %v.15019
   %t.150200 = load i64, ptr %v.15018
   %t.150201 = inttoptr i64 %t.150200 to ptr
@@ -48541,7 +48513,7 @@ L.1462:
   %t.150214 = call ptr @ease_str_concat(ptr %t.150211, ptr %t.150213)
   %t.150215 = ptrtoint ptr %t.150214 to i64
   store i64 %t.150215, ptr %v.15021
-  %t.150220 = ptrtoint ptr @.str.381 to i64
+  %t.150220 = ptrtoint ptr @.str.379 to i64
   store i64 %t.150220, ptr %v.15022
   %t.150230 = load i64, ptr %v.15021
   %t.150231 = inttoptr i64 %t.150230 to ptr
@@ -48565,7 +48537,7 @@ L.1462:
   %t.150274 = call ptr @ease_str_concat(ptr %t.150271, ptr %t.150273)
   %t.150275 = ptrtoint ptr %t.150274 to i64
   store i64 %t.150275, ptr %v.15027
-  %t.150280 = ptrtoint ptr @.str.382 to i64
+  %t.150280 = ptrtoint ptr @.str.380 to i64
   store i64 %t.150280, ptr %v.15028
   %t.150290 = load i64, ptr %v.15027
   %t.150291 = inttoptr i64 %t.150290 to ptr
@@ -48665,7 +48637,7 @@ L.fall.15048:
   store i64 %t.150759, ptr %v.15075
   %t.150760 = load i64, ptr %v.15075
   store i64 %t.150760, ptr %v.15076
-  %t.150770 = ptrtoint ptr @.str.383 to i64
+  %t.150770 = ptrtoint ptr @.str.381 to i64
   store i64 %t.150770, ptr %v.15077
   %t.150780 = load i64, ptr %v.15077
   %t.150781 = inttoptr i64 %t.150780 to ptr
@@ -48674,7 +48646,7 @@ L.fall.15048:
   %t.150784 = call ptr @ease_str_concat(ptr %t.150781, ptr %t.150783)
   %t.150785 = ptrtoint ptr %t.150784 to i64
   store i64 %t.150785, ptr %v.15078
-  %t.150790 = ptrtoint ptr @.str.384 to i64
+  %t.150790 = ptrtoint ptr @.str.382 to i64
   store i64 %t.150790, ptr %v.15079
   %t.150800 = load i64, ptr %v.15078
   %t.150801 = inttoptr i64 %t.150800 to ptr
@@ -48690,7 +48662,7 @@ L.fall.15048:
   %t.150814 = call ptr @ease_str_concat(ptr %t.150811, ptr %t.150813)
   %t.150815 = ptrtoint ptr %t.150814 to i64
   store i64 %t.150815, ptr %v.15081
-  %t.150820 = ptrtoint ptr @.str.385 to i64
+  %t.150820 = ptrtoint ptr @.str.383 to i64
   store i64 %t.150820, ptr %v.15082
   %t.150830 = load i64, ptr %v.15081
   %t.150831 = inttoptr i64 %t.150830 to ptr
@@ -48706,7 +48678,7 @@ L.fall.15048:
   %t.150844 = call ptr @ease_str_concat(ptr %t.150841, ptr %t.150843)
   %t.150845 = ptrtoint ptr %t.150844 to i64
   store i64 %t.150845, ptr %v.15084
-  %t.150850 = ptrtoint ptr @.str.386 to i64
+  %t.150850 = ptrtoint ptr @.str.384 to i64
   store i64 %t.150850, ptr %v.15085
   %t.150860 = load i64, ptr %v.15084
   %t.150861 = inttoptr i64 %t.150860 to ptr
@@ -48769,7 +48741,7 @@ L.fall.15099:
   store i64 %t.151119, ptr %v.15111
   %t.151120 = load i64, ptr %v.15111
   store i64 %t.151120, ptr %v.15112
-  %t.151130 = ptrtoint ptr @.str.387 to i64
+  %t.151130 = ptrtoint ptr @.str.385 to i64
   store i64 %t.151130, ptr %v.15113
   %t.151140 = load i64, ptr %v.15113
   %t.151141 = inttoptr i64 %t.151140 to ptr
@@ -48778,7 +48750,7 @@ L.fall.15099:
   %t.151144 = call ptr @ease_str_concat(ptr %t.151141, ptr %t.151143)
   %t.151145 = ptrtoint ptr %t.151144 to i64
   store i64 %t.151145, ptr %v.15114
-  %t.151150 = ptrtoint ptr @.str.388 to i64
+  %t.151150 = ptrtoint ptr @.str.386 to i64
   store i64 %t.151150, ptr %v.15115
   %t.151160 = load i64, ptr %v.15114
   %t.151161 = inttoptr i64 %t.151160 to ptr
@@ -48794,7 +48766,7 @@ L.fall.15099:
   %t.151174 = call ptr @ease_str_concat(ptr %t.151171, ptr %t.151173)
   %t.151175 = ptrtoint ptr %t.151174 to i64
   store i64 %t.151175, ptr %v.15117
-  %t.151180 = ptrtoint ptr @.str.389 to i64
+  %t.151180 = ptrtoint ptr @.str.387 to i64
   store i64 %t.151180, ptr %v.15118
   %t.151190 = load i64, ptr %v.15117
   %t.151191 = inttoptr i64 %t.151190 to ptr
@@ -48814,7 +48786,7 @@ L.fall.15099:
   store i64 %t.151269, ptr %v.15126
   %t.151270 = load i64, ptr %v.15126
   store i64 %t.151270, ptr %v.15127
-  %t.151280 = ptrtoint ptr @.str.390 to i64
+  %t.151280 = ptrtoint ptr @.str.388 to i64
   store i64 %t.151280, ptr %v.15128
   %t.151290 = load i64, ptr %v.15128
   %t.151291 = inttoptr i64 %t.151290 to ptr
@@ -48823,7 +48795,7 @@ L.fall.15099:
   %t.151294 = call ptr @ease_str_concat(ptr %t.151291, ptr %t.151293)
   %t.151295 = ptrtoint ptr %t.151294 to i64
   store i64 %t.151295, ptr %v.15129
-  %t.151300 = ptrtoint ptr @.str.391 to i64
+  %t.151300 = ptrtoint ptr @.str.389 to i64
   store i64 %t.151300, ptr %v.15130
   %t.151310 = load i64, ptr %v.15129
   %t.151311 = inttoptr i64 %t.151310 to ptr
@@ -48839,7 +48811,7 @@ L.fall.15099:
   %t.151324 = call ptr @ease_str_concat(ptr %t.151321, ptr %t.151323)
   %t.151325 = ptrtoint ptr %t.151324 to i64
   store i64 %t.151325, ptr %v.15132
-  %t.151330 = ptrtoint ptr @.str.392 to i64
+  %t.151330 = ptrtoint ptr @.str.390 to i64
   store i64 %t.151330, ptr %v.15133
   %t.151340 = load i64, ptr %v.15132
   %t.151341 = inttoptr i64 %t.151340 to ptr
@@ -48859,7 +48831,7 @@ L.fall.15099:
   store i64 %t.151419, ptr %v.15141
   %t.151420 = load i64, ptr %v.15141
   store i64 %t.151420, ptr %v.15142
-  %t.151430 = ptrtoint ptr @.str.393 to i64
+  %t.151430 = ptrtoint ptr @.str.391 to i64
   store i64 %t.151430, ptr %v.15143
   %t.151440 = load i64, ptr %v.15143
   %t.151441 = inttoptr i64 %t.151440 to ptr
@@ -48868,7 +48840,7 @@ L.fall.15099:
   %t.151444 = call ptr @ease_str_concat(ptr %t.151441, ptr %t.151443)
   %t.151445 = ptrtoint ptr %t.151444 to i64
   store i64 %t.151445, ptr %v.15144
-  %t.151450 = ptrtoint ptr @.str.394 to i64
+  %t.151450 = ptrtoint ptr @.str.392 to i64
   store i64 %t.151450, ptr %v.15145
   %t.151460 = load i64, ptr %v.15144
   %t.151461 = inttoptr i64 %t.151460 to ptr
@@ -48884,7 +48856,7 @@ L.fall.15099:
   %t.151474 = call ptr @ease_str_concat(ptr %t.151471, ptr %t.151473)
   %t.151475 = ptrtoint ptr %t.151474 to i64
   store i64 %t.151475, ptr %v.15147
-  %t.151480 = ptrtoint ptr @.str.395 to i64
+  %t.151480 = ptrtoint ptr @.str.393 to i64
   store i64 %t.151480, ptr %v.15148
   %t.151490 = load i64, ptr %v.15147
   %t.151491 = inttoptr i64 %t.151490 to ptr
@@ -48957,7 +48929,7 @@ L.fall.15167:
   store i64 %t.151799, ptr %v.15179
   %t.151800 = load i64, ptr %v.15179
   store i64 %t.151800, ptr %v.15180
-  %t.151810 = ptrtoint ptr @.str.396 to i64
+  %t.151810 = ptrtoint ptr @.str.394 to i64
   store i64 %t.151810, ptr %v.15181
   %t.151820 = load i64, ptr %v.15181
   %t.151821 = inttoptr i64 %t.151820 to ptr
@@ -48966,7 +48938,7 @@ L.fall.15167:
   %t.151824 = call ptr @ease_str_concat(ptr %t.151821, ptr %t.151823)
   %t.151825 = ptrtoint ptr %t.151824 to i64
   store i64 %t.151825, ptr %v.15182
-  %t.151830 = ptrtoint ptr @.str.397 to i64
+  %t.151830 = ptrtoint ptr @.str.395 to i64
   store i64 %t.151830, ptr %v.15183
   %t.151840 = load i64, ptr %v.15182
   %t.151841 = inttoptr i64 %t.151840 to ptr
@@ -48982,7 +48954,7 @@ L.fall.15167:
   %t.151854 = call ptr @ease_str_concat(ptr %t.151851, ptr %t.151853)
   %t.151855 = ptrtoint ptr %t.151854 to i64
   store i64 %t.151855, ptr %v.15185
-  %t.151860 = ptrtoint ptr @.str.398 to i64
+  %t.151860 = ptrtoint ptr @.str.396 to i64
   store i64 %t.151860, ptr %v.15186
   %t.151870 = load i64, ptr %v.15185
   %t.151871 = inttoptr i64 %t.151870 to ptr
@@ -49002,7 +48974,7 @@ L.fall.15167:
   store i64 %t.151949, ptr %v.15194
   %t.151950 = load i64, ptr %v.15194
   store i64 %t.151950, ptr %v.15195
-  %t.151960 = ptrtoint ptr @.str.399 to i64
+  %t.151960 = ptrtoint ptr @.str.397 to i64
   store i64 %t.151960, ptr %v.15196
   %t.151970 = load i64, ptr %v.15196
   %t.151971 = inttoptr i64 %t.151970 to ptr
@@ -49011,7 +48983,7 @@ L.fall.15167:
   %t.151974 = call ptr @ease_str_concat(ptr %t.151971, ptr %t.151973)
   %t.151975 = ptrtoint ptr %t.151974 to i64
   store i64 %t.151975, ptr %v.15197
-  %t.151980 = ptrtoint ptr @.str.400 to i64
+  %t.151980 = ptrtoint ptr @.str.398 to i64
   store i64 %t.151980, ptr %v.15198
   %t.151990 = load i64, ptr %v.15197
   %t.151991 = inttoptr i64 %t.151990 to ptr
@@ -49027,7 +48999,7 @@ L.fall.15167:
   %t.152004 = call ptr @ease_str_concat(ptr %t.152001, ptr %t.152003)
   %t.152005 = ptrtoint ptr %t.152004 to i64
   store i64 %t.152005, ptr %v.15200
-  %t.152010 = ptrtoint ptr @.str.401 to i64
+  %t.152010 = ptrtoint ptr @.str.399 to i64
   store i64 %t.152010, ptr %v.15201
   %t.152020 = load i64, ptr %v.15200
   %t.152021 = inttoptr i64 %t.152020 to ptr
@@ -49116,7 +49088,7 @@ L.fall.15220:
   store i64 %t.152429, ptr %v.15242
   %t.152430 = load i64, ptr %v.15242
   store i64 %t.152430, ptr %v.15243
-  %t.152440 = ptrtoint ptr @.str.402 to i64
+  %t.152440 = ptrtoint ptr @.str.400 to i64
   store i64 %t.152440, ptr %v.15244
   %t.152450 = load i64, ptr %v.15244
   %t.152451 = inttoptr i64 %t.152450 to ptr
@@ -49125,7 +49097,7 @@ L.fall.15220:
   %t.152454 = call ptr @ease_str_concat(ptr %t.152451, ptr %t.152453)
   %t.152455 = ptrtoint ptr %t.152454 to i64
   store i64 %t.152455, ptr %v.15245
-  %t.152460 = ptrtoint ptr @.str.403 to i64
+  %t.152460 = ptrtoint ptr @.str.401 to i64
   store i64 %t.152460, ptr %v.15246
   %t.152470 = load i64, ptr %v.15245
   %t.152471 = inttoptr i64 %t.152470 to ptr
@@ -49138,7 +49110,7 @@ L.fall.15220:
   %t.152501 = load i64, ptr %v.15247
   %t.152509 = call i64 @llvm_write_str(i64 %t.152500, i64 %t.152501)
   store i64 %t.152509, ptr %v.15250
-  %t.152510 = ptrtoint ptr @.str.404 to i64
+  %t.152510 = ptrtoint ptr @.str.402 to i64
   store i64 %t.152510, ptr %v.15251
   %t.152520 = load i64, ptr %v.15251
   %t.152521 = inttoptr i64 %t.152520 to ptr
@@ -49147,7 +49119,7 @@ L.fall.15220:
   %t.152524 = call ptr @ease_str_concat(ptr %t.152521, ptr %t.152523)
   %t.152525 = ptrtoint ptr %t.152524 to i64
   store i64 %t.152525, ptr %v.15252
-  %t.152530 = ptrtoint ptr @.str.405 to i64
+  %t.152530 = ptrtoint ptr @.str.403 to i64
   store i64 %t.152530, ptr %v.15253
   %t.152540 = load i64, ptr %v.15252
   %t.152541 = inttoptr i64 %t.152540 to ptr
@@ -49163,7 +49135,7 @@ L.fall.15220:
   %t.152554 = call ptr @ease_str_concat(ptr %t.152551, ptr %t.152553)
   %t.152555 = ptrtoint ptr %t.152554 to i64
   store i64 %t.152555, ptr %v.15255
-  %t.152560 = ptrtoint ptr @.str.406 to i64
+  %t.152560 = ptrtoint ptr @.str.404 to i64
   store i64 %t.152560, ptr %v.15256
   %t.152570 = load i64, ptr %v.15255
   %t.152571 = inttoptr i64 %t.152570 to ptr
@@ -49176,7 +49148,7 @@ L.fall.15220:
   %t.152601 = load i64, ptr %v.15257
   %t.152609 = call i64 @llvm_write_str(i64 %t.152600, i64 %t.152601)
   store i64 %t.152609, ptr %v.15260
-  %t.152610 = ptrtoint ptr @.str.407 to i64
+  %t.152610 = ptrtoint ptr @.str.405 to i64
   store i64 %t.152610, ptr %v.15261
   %t.152620 = load i64, ptr %v.15261
   %t.152621 = inttoptr i64 %t.152620 to ptr
@@ -49185,7 +49157,7 @@ L.fall.15220:
   %t.152624 = call ptr @ease_str_concat(ptr %t.152621, ptr %t.152623)
   %t.152625 = ptrtoint ptr %t.152624 to i64
   store i64 %t.152625, ptr %v.15262
-  %t.152630 = ptrtoint ptr @.str.408 to i64
+  %t.152630 = ptrtoint ptr @.str.406 to i64
   store i64 %t.152630, ptr %v.15263
   %t.152640 = load i64, ptr %v.15262
   %t.152641 = inttoptr i64 %t.152640 to ptr
@@ -49201,7 +49173,7 @@ L.fall.15220:
   %t.152654 = call ptr @ease_str_concat(ptr %t.152651, ptr %t.152653)
   %t.152655 = ptrtoint ptr %t.152654 to i64
   store i64 %t.152655, ptr %v.15265
-  %t.152660 = ptrtoint ptr @.str.409 to i64
+  %t.152660 = ptrtoint ptr @.str.407 to i64
   store i64 %t.152660, ptr %v.15266
   %t.152670 = load i64, ptr %v.15265
   %t.152671 = inttoptr i64 %t.152670 to ptr
@@ -49273,7 +49245,7 @@ L.fall.15280:
   store i64 %t.152979, ptr %v.15297
   %t.152980 = load i64, ptr %v.15297
   store i64 %t.152980, ptr %v.15298
-  %t.152990 = ptrtoint ptr @.str.410 to i64
+  %t.152990 = ptrtoint ptr @.str.408 to i64
   store i64 %t.152990, ptr %v.15299
   %t.153000 = load i64, ptr %v.15299
   %t.153001 = inttoptr i64 %t.153000 to ptr
@@ -49282,7 +49254,7 @@ L.fall.15280:
   %t.153004 = call ptr @ease_str_concat(ptr %t.153001, ptr %t.153003)
   %t.153005 = ptrtoint ptr %t.153004 to i64
   store i64 %t.153005, ptr %v.15300
-  %t.153010 = ptrtoint ptr @.str.411 to i64
+  %t.153010 = ptrtoint ptr @.str.409 to i64
   store i64 %t.153010, ptr %v.15301
   %t.153020 = load i64, ptr %v.15300
   %t.153021 = inttoptr i64 %t.153020 to ptr
@@ -49298,7 +49270,7 @@ L.fall.15280:
   %t.153034 = call ptr @ease_str_concat(ptr %t.153031, ptr %t.153033)
   %t.153035 = ptrtoint ptr %t.153034 to i64
   store i64 %t.153035, ptr %v.15303
-  %t.153040 = ptrtoint ptr @.str.412 to i64
+  %t.153040 = ptrtoint ptr @.str.410 to i64
   store i64 %t.153040, ptr %v.15304
   %t.153050 = load i64, ptr %v.15303
   %t.153051 = inttoptr i64 %t.153050 to ptr
@@ -49363,7 +49335,7 @@ L.fall.15318:
   store i64 %t.153329, ptr %v.15332
   %t.153330 = load i64, ptr %v.15332
   store i64 %t.153330, ptr %v.15333
-  %t.153340 = ptrtoint ptr @.str.413 to i64
+  %t.153340 = ptrtoint ptr @.str.411 to i64
   store i64 %t.153340, ptr %v.15334
   %t.153350 = load i64, ptr %v.15334
   %t.153351 = inttoptr i64 %t.153350 to ptr
@@ -49372,7 +49344,7 @@ L.fall.15318:
   %t.153354 = call ptr @ease_str_concat(ptr %t.153351, ptr %t.153353)
   %t.153355 = ptrtoint ptr %t.153354 to i64
   store i64 %t.153355, ptr %v.15335
-  %t.153360 = ptrtoint ptr @.str.414 to i64
+  %t.153360 = ptrtoint ptr @.str.412 to i64
   store i64 %t.153360, ptr %v.15336
   %t.153370 = load i64, ptr %v.15335
   %t.153371 = inttoptr i64 %t.153370 to ptr
@@ -49388,7 +49360,7 @@ L.fall.15318:
   %t.153384 = call ptr @ease_str_concat(ptr %t.153381, ptr %t.153383)
   %t.153385 = ptrtoint ptr %t.153384 to i64
   store i64 %t.153385, ptr %v.15338
-  %t.153390 = ptrtoint ptr @.str.415 to i64
+  %t.153390 = ptrtoint ptr @.str.413 to i64
   store i64 %t.153390, ptr %v.15339
   %t.153400 = load i64, ptr %v.15338
   %t.153401 = inttoptr i64 %t.153400 to ptr
@@ -49461,7 +49433,7 @@ L.fall.15358:
   store i64 %t.153709, ptr %v.15370
   %t.153710 = load i64, ptr %v.15370
   store i64 %t.153710, ptr %v.15371
-  %t.153720 = ptrtoint ptr @.str.416 to i64
+  %t.153720 = ptrtoint ptr @.str.414 to i64
   store i64 %t.153720, ptr %v.15372
   %t.153730 = load i64, ptr %v.15372
   %t.153731 = inttoptr i64 %t.153730 to ptr
@@ -49470,7 +49442,7 @@ L.fall.15358:
   %t.153734 = call ptr @ease_str_concat(ptr %t.153731, ptr %t.153733)
   %t.153735 = ptrtoint ptr %t.153734 to i64
   store i64 %t.153735, ptr %v.15373
-  %t.153740 = ptrtoint ptr @.str.417 to i64
+  %t.153740 = ptrtoint ptr @.str.415 to i64
   store i64 %t.153740, ptr %v.15374
   %t.153750 = load i64, ptr %v.15373
   %t.153751 = inttoptr i64 %t.153750 to ptr
@@ -49486,7 +49458,7 @@ L.fall.15358:
   %t.153764 = call ptr @ease_str_concat(ptr %t.153761, ptr %t.153763)
   %t.153765 = ptrtoint ptr %t.153764 to i64
   store i64 %t.153765, ptr %v.15376
-  %t.153770 = ptrtoint ptr @.str.418 to i64
+  %t.153770 = ptrtoint ptr @.str.416 to i64
   store i64 %t.153770, ptr %v.15377
   %t.153780 = load i64, ptr %v.15376
   %t.153781 = inttoptr i64 %t.153780 to ptr
@@ -49506,7 +49478,7 @@ L.fall.15358:
   store i64 %t.153859, ptr %v.15385
   %t.153860 = load i64, ptr %v.15385
   store i64 %t.153860, ptr %v.15386
-  %t.153870 = ptrtoint ptr @.str.419 to i64
+  %t.153870 = ptrtoint ptr @.str.417 to i64
   store i64 %t.153870, ptr %v.15387
   %t.153880 = load i64, ptr %v.15387
   %t.153881 = inttoptr i64 %t.153880 to ptr
@@ -49515,7 +49487,7 @@ L.fall.15358:
   %t.153884 = call ptr @ease_str_concat(ptr %t.153881, ptr %t.153883)
   %t.153885 = ptrtoint ptr %t.153884 to i64
   store i64 %t.153885, ptr %v.15388
-  %t.153890 = ptrtoint ptr @.str.420 to i64
+  %t.153890 = ptrtoint ptr @.str.418 to i64
   store i64 %t.153890, ptr %v.15389
   %t.153900 = load i64, ptr %v.15388
   %t.153901 = inttoptr i64 %t.153900 to ptr
@@ -49531,7 +49503,7 @@ L.fall.15358:
   %t.153914 = call ptr @ease_str_concat(ptr %t.153911, ptr %t.153913)
   %t.153915 = ptrtoint ptr %t.153914 to i64
   store i64 %t.153915, ptr %v.15391
-  %t.153920 = ptrtoint ptr @.str.421 to i64
+  %t.153920 = ptrtoint ptr @.str.419 to i64
   store i64 %t.153920, ptr %v.15392
   %t.153930 = load i64, ptr %v.15391
   %t.153931 = inttoptr i64 %t.153930 to ptr
@@ -49547,7 +49519,7 @@ L.fall.15358:
   %t.153944 = call ptr @ease_str_concat(ptr %t.153941, ptr %t.153943)
   %t.153945 = ptrtoint ptr %t.153944 to i64
   store i64 %t.153945, ptr %v.15394
-  %t.153950 = ptrtoint ptr @.str.422 to i64
+  %t.153950 = ptrtoint ptr @.str.420 to i64
   store i64 %t.153950, ptr %v.15395
   %t.153960 = load i64, ptr %v.15394
   %t.153961 = inttoptr i64 %t.153960 to ptr
@@ -49609,7 +49581,7 @@ L.fall.15417:
   store i64 %t.154219, ptr %v.15421
   %t.154220 = load i64, ptr %v.15421
   store i64 %t.154220, ptr %v.15422
-  %t.154230 = ptrtoint ptr @.str.423 to i64
+  %t.154230 = ptrtoint ptr @.str.421 to i64
   store i64 %t.154230, ptr %v.15423
   %t.154240 = load i64, ptr %v.15423
   %t.154241 = inttoptr i64 %t.154240 to ptr
@@ -49618,7 +49590,7 @@ L.fall.15417:
   %t.154244 = call ptr @ease_str_concat(ptr %t.154241, ptr %t.154243)
   %t.154245 = ptrtoint ptr %t.154244 to i64
   store i64 %t.154245, ptr %v.15424
-  %t.154250 = ptrtoint ptr @.str.424 to i64
+  %t.154250 = ptrtoint ptr @.str.422 to i64
   store i64 %t.154250, ptr %v.15425
   %t.154260 = load i64, ptr %v.15424
   %t.154261 = inttoptr i64 %t.154260 to ptr
@@ -49691,7 +49663,7 @@ L.fall.15444:
   store i64 %t.154569, ptr %v.15456
   %t.154570 = load i64, ptr %v.15456
   store i64 %t.154570, ptr %v.15457
-  %t.154580 = ptrtoint ptr @.str.425 to i64
+  %t.154580 = ptrtoint ptr @.str.423 to i64
   store i64 %t.154580, ptr %v.15458
   %t.154590 = load i64, ptr %v.15458
   %t.154591 = inttoptr i64 %t.154590 to ptr
@@ -49700,7 +49672,7 @@ L.fall.15444:
   %t.154594 = call ptr @ease_str_concat(ptr %t.154591, ptr %t.154593)
   %t.154595 = ptrtoint ptr %t.154594 to i64
   store i64 %t.154595, ptr %v.15459
-  %t.154600 = ptrtoint ptr @.str.426 to i64
+  %t.154600 = ptrtoint ptr @.str.424 to i64
   store i64 %t.154600, ptr %v.15460
   %t.154610 = load i64, ptr %v.15459
   %t.154611 = inttoptr i64 %t.154610 to ptr
@@ -49716,7 +49688,7 @@ L.fall.15444:
   %t.154624 = call ptr @ease_str_concat(ptr %t.154621, ptr %t.154623)
   %t.154625 = ptrtoint ptr %t.154624 to i64
   store i64 %t.154625, ptr %v.15462
-  %t.154630 = ptrtoint ptr @.str.427 to i64
+  %t.154630 = ptrtoint ptr @.str.425 to i64
   store i64 %t.154630, ptr %v.15463
   %t.154640 = load i64, ptr %v.15462
   %t.154641 = inttoptr i64 %t.154640 to ptr
@@ -49792,7 +49764,7 @@ L.fall.15485:
   store i64 %t.154979, ptr %v.15497
   %t.154980 = load i64, ptr %v.15497
   store i64 %t.154980, ptr %v.15498
-  %t.154990 = ptrtoint ptr @.str.428 to i64
+  %t.154990 = ptrtoint ptr @.str.426 to i64
   store i64 %t.154990, ptr %v.15499
   %t.155000 = load i64, ptr %v.15499
   %t.155001 = inttoptr i64 %t.155000 to ptr
@@ -49801,7 +49773,7 @@ L.fall.15485:
   %t.155004 = call ptr @ease_str_concat(ptr %t.155001, ptr %t.155003)
   %t.155005 = ptrtoint ptr %t.155004 to i64
   store i64 %t.155005, ptr %v.15500
-  %t.155010 = ptrtoint ptr @.str.429 to i64
+  %t.155010 = ptrtoint ptr @.str.427 to i64
   store i64 %t.155010, ptr %v.15501
   %t.155020 = load i64, ptr %v.15500
   %t.155021 = inttoptr i64 %t.155020 to ptr
@@ -49817,7 +49789,7 @@ L.fall.15485:
   %t.155034 = call ptr @ease_str_concat(ptr %t.155031, ptr %t.155033)
   %t.155035 = ptrtoint ptr %t.155034 to i64
   store i64 %t.155035, ptr %v.15503
-  %t.155040 = ptrtoint ptr @.str.430 to i64
+  %t.155040 = ptrtoint ptr @.str.428 to i64
   store i64 %t.155040, ptr %v.15504
   %t.155050 = load i64, ptr %v.15503
   %t.155051 = inttoptr i64 %t.155050 to ptr
@@ -49911,7 +49883,7 @@ L.fall.15526:
   store i64 %t.155509, ptr %v.15550
   %t.155510 = load i64, ptr %v.15550
   store i64 %t.155510, ptr %v.15551
-  %t.155520 = ptrtoint ptr @.str.431 to i64
+  %t.155520 = ptrtoint ptr @.str.429 to i64
   store i64 %t.155520, ptr %v.15552
   %t.155530 = load i64, ptr %v.15552
   %t.155531 = inttoptr i64 %t.155530 to ptr
@@ -49920,7 +49892,7 @@ L.fall.15526:
   %t.155534 = call ptr @ease_str_concat(ptr %t.155531, ptr %t.155533)
   %t.155535 = ptrtoint ptr %t.155534 to i64
   store i64 %t.155535, ptr %v.15553
-  %t.155540 = ptrtoint ptr @.str.432 to i64
+  %t.155540 = ptrtoint ptr @.str.430 to i64
   store i64 %t.155540, ptr %v.15554
   %t.155550 = load i64, ptr %v.15553
   %t.155551 = inttoptr i64 %t.155550 to ptr
@@ -49936,7 +49908,7 @@ L.fall.15526:
   %t.155564 = call ptr @ease_str_concat(ptr %t.155561, ptr %t.155563)
   %t.155565 = ptrtoint ptr %t.155564 to i64
   store i64 %t.155565, ptr %v.15556
-  %t.155570 = ptrtoint ptr @.str.433 to i64
+  %t.155570 = ptrtoint ptr @.str.431 to i64
   store i64 %t.155570, ptr %v.15557
   %t.155580 = load i64, ptr %v.15556
   %t.155581 = inttoptr i64 %t.155580 to ptr
@@ -49952,7 +49924,7 @@ L.fall.15526:
   %t.155594 = call ptr @ease_str_concat(ptr %t.155591, ptr %t.155593)
   %t.155595 = ptrtoint ptr %t.155594 to i64
   store i64 %t.155595, ptr %v.15559
-  %t.155600 = ptrtoint ptr @.str.434 to i64
+  %t.155600 = ptrtoint ptr @.str.432 to i64
   store i64 %t.155600, ptr %v.15560
   %t.155610 = load i64, ptr %v.15559
   %t.155611 = inttoptr i64 %t.155610 to ptr
@@ -50043,7 +50015,7 @@ L.fall.15579:
   store i64 %t.156039, ptr %v.15603
   %t.156040 = load i64, ptr %v.15603
   store i64 %t.156040, ptr %v.15604
-  %t.156050 = ptrtoint ptr @.str.435 to i64
+  %t.156050 = ptrtoint ptr @.str.433 to i64
   store i64 %t.156050, ptr %v.15605
   %t.156060 = load i64, ptr %v.15605
   %t.156061 = inttoptr i64 %t.156060 to ptr
@@ -50052,7 +50024,7 @@ L.fall.15579:
   %t.156064 = call ptr @ease_str_concat(ptr %t.156061, ptr %t.156063)
   %t.156065 = ptrtoint ptr %t.156064 to i64
   store i64 %t.156065, ptr %v.15606
-  %t.156070 = ptrtoint ptr @.str.436 to i64
+  %t.156070 = ptrtoint ptr @.str.434 to i64
   store i64 %t.156070, ptr %v.15607
   %t.156080 = load i64, ptr %v.15606
   %t.156081 = inttoptr i64 %t.156080 to ptr
@@ -50068,7 +50040,7 @@ L.fall.15579:
   %t.156094 = call ptr @ease_str_concat(ptr %t.156091, ptr %t.156093)
   %t.156095 = ptrtoint ptr %t.156094 to i64
   store i64 %t.156095, ptr %v.15609
-  %t.156100 = ptrtoint ptr @.str.437 to i64
+  %t.156100 = ptrtoint ptr @.str.435 to i64
   store i64 %t.156100, ptr %v.15610
   %t.156110 = load i64, ptr %v.15609
   %t.156111 = inttoptr i64 %t.156110 to ptr
@@ -50084,7 +50056,7 @@ L.fall.15579:
   %t.156124 = call ptr @ease_str_concat(ptr %t.156121, ptr %t.156123)
   %t.156125 = ptrtoint ptr %t.156124 to i64
   store i64 %t.156125, ptr %v.15612
-  %t.156130 = ptrtoint ptr @.str.438 to i64
+  %t.156130 = ptrtoint ptr @.str.436 to i64
   store i64 %t.156130, ptr %v.15613
   %t.156140 = load i64, ptr %v.15612
   %t.156141 = inttoptr i64 %t.156140 to ptr
@@ -50175,7 +50147,7 @@ L.fall.15632:
   store i64 %t.156569, ptr %v.15656
   %t.156570 = load i64, ptr %v.15656
   store i64 %t.156570, ptr %v.15657
-  %t.156580 = ptrtoint ptr @.str.439 to i64
+  %t.156580 = ptrtoint ptr @.str.437 to i64
   store i64 %t.156580, ptr %v.15658
   %t.156590 = load i64, ptr %v.15658
   %t.156591 = inttoptr i64 %t.156590 to ptr
@@ -50184,7 +50156,7 @@ L.fall.15632:
   %t.156594 = call ptr @ease_str_concat(ptr %t.156591, ptr %t.156593)
   %t.156595 = ptrtoint ptr %t.156594 to i64
   store i64 %t.156595, ptr %v.15659
-  %t.156600 = ptrtoint ptr @.str.440 to i64
+  %t.156600 = ptrtoint ptr @.str.438 to i64
   store i64 %t.156600, ptr %v.15660
   %t.156610 = load i64, ptr %v.15659
   %t.156611 = inttoptr i64 %t.156610 to ptr
@@ -50200,7 +50172,7 @@ L.fall.15632:
   %t.156624 = call ptr @ease_str_concat(ptr %t.156621, ptr %t.156623)
   %t.156625 = ptrtoint ptr %t.156624 to i64
   store i64 %t.156625, ptr %v.15662
-  %t.156630 = ptrtoint ptr @.str.441 to i64
+  %t.156630 = ptrtoint ptr @.str.439 to i64
   store i64 %t.156630, ptr %v.15663
   %t.156640 = load i64, ptr %v.15662
   %t.156641 = inttoptr i64 %t.156640 to ptr
@@ -50216,7 +50188,7 @@ L.fall.15632:
   %t.156654 = call ptr @ease_str_concat(ptr %t.156651, ptr %t.156653)
   %t.156655 = ptrtoint ptr %t.156654 to i64
   store i64 %t.156655, ptr %v.15665
-  %t.156660 = ptrtoint ptr @.str.442 to i64
+  %t.156660 = ptrtoint ptr @.str.440 to i64
   store i64 %t.156660, ptr %v.15666
   %t.156670 = load i64, ptr %v.15665
   %t.156671 = inttoptr i64 %t.156670 to ptr
@@ -50308,7 +50280,7 @@ L.fall.15688:
   store i64 %t.157109, ptr %v.15710
   %t.157110 = load i64, ptr %v.15710
   store i64 %t.157110, ptr %v.15711
-  %t.157120 = ptrtoint ptr @.str.443 to i64
+  %t.157120 = ptrtoint ptr @.str.441 to i64
   store i64 %t.157120, ptr %v.15712
   %t.157130 = load i64, ptr %v.15712
   %t.157131 = inttoptr i64 %t.157130 to ptr
@@ -50317,7 +50289,7 @@ L.fall.15688:
   %t.157134 = call ptr @ease_str_concat(ptr %t.157131, ptr %t.157133)
   %t.157135 = ptrtoint ptr %t.157134 to i64
   store i64 %t.157135, ptr %v.15713
-  %t.157140 = ptrtoint ptr @.str.444 to i64
+  %t.157140 = ptrtoint ptr @.str.442 to i64
   store i64 %t.157140, ptr %v.15714
   %t.157150 = load i64, ptr %v.15713
   %t.157151 = inttoptr i64 %t.157150 to ptr
@@ -50333,7 +50305,7 @@ L.fall.15688:
   %t.157164 = call ptr @ease_str_concat(ptr %t.157161, ptr %t.157163)
   %t.157165 = ptrtoint ptr %t.157164 to i64
   store i64 %t.157165, ptr %v.15716
-  %t.157170 = ptrtoint ptr @.str.445 to i64
+  %t.157170 = ptrtoint ptr @.str.443 to i64
   store i64 %t.157170, ptr %v.15717
   %t.157180 = load i64, ptr %v.15716
   %t.157181 = inttoptr i64 %t.157180 to ptr
@@ -50349,7 +50321,7 @@ L.fall.15688:
   %t.157194 = call ptr @ease_str_concat(ptr %t.157191, ptr %t.157193)
   %t.157195 = ptrtoint ptr %t.157194 to i64
   store i64 %t.157195, ptr %v.15719
-  %t.157200 = ptrtoint ptr @.str.446 to i64
+  %t.157200 = ptrtoint ptr @.str.444 to i64
   store i64 %t.157200, ptr %v.15720
   %t.157210 = load i64, ptr %v.15719
   %t.157211 = inttoptr i64 %t.157210 to ptr
@@ -50452,7 +50424,7 @@ L.fall.15739:
   store i64 %t.157699, ptr %v.15769
   %t.157700 = load i64, ptr %v.15769
   store i64 %t.157700, ptr %v.15770
-  %t.157710 = ptrtoint ptr @.str.447 to i64
+  %t.157710 = ptrtoint ptr @.str.445 to i64
   store i64 %t.157710, ptr %v.15771
   %t.157720 = load i64, ptr %v.15771
   %t.157721 = inttoptr i64 %t.157720 to ptr
@@ -50461,7 +50433,7 @@ L.fall.15739:
   %t.157724 = call ptr @ease_str_concat(ptr %t.157721, ptr %t.157723)
   %t.157725 = ptrtoint ptr %t.157724 to i64
   store i64 %t.157725, ptr %v.15772
-  %t.157730 = ptrtoint ptr @.str.448 to i64
+  %t.157730 = ptrtoint ptr @.str.446 to i64
   store i64 %t.157730, ptr %v.15773
   %t.157740 = load i64, ptr %v.15772
   %t.157741 = inttoptr i64 %t.157740 to ptr
@@ -50477,7 +50449,7 @@ L.fall.15739:
   %t.157754 = call ptr @ease_str_concat(ptr %t.157751, ptr %t.157753)
   %t.157755 = ptrtoint ptr %t.157754 to i64
   store i64 %t.157755, ptr %v.15775
-  %t.157760 = ptrtoint ptr @.str.449 to i64
+  %t.157760 = ptrtoint ptr @.str.447 to i64
   store i64 %t.157760, ptr %v.15776
   %t.157770 = load i64, ptr %v.15775
   %t.157771 = inttoptr i64 %t.157770 to ptr
@@ -50493,7 +50465,7 @@ L.fall.15739:
   %t.157784 = call ptr @ease_str_concat(ptr %t.157781, ptr %t.157783)
   %t.157785 = ptrtoint ptr %t.157784 to i64
   store i64 %t.157785, ptr %v.15778
-  %t.157790 = ptrtoint ptr @.str.450 to i64
+  %t.157790 = ptrtoint ptr @.str.448 to i64
   store i64 %t.157790, ptr %v.15779
   %t.157800 = load i64, ptr %v.15778
   %t.157801 = inttoptr i64 %t.157800 to ptr
@@ -50509,7 +50481,7 @@ L.fall.15739:
   %t.157814 = call ptr @ease_str_concat(ptr %t.157811, ptr %t.157813)
   %t.157815 = ptrtoint ptr %t.157814 to i64
   store i64 %t.157815, ptr %v.15781
-  %t.157820 = ptrtoint ptr @.str.451 to i64
+  %t.157820 = ptrtoint ptr @.str.449 to i64
   store i64 %t.157820, ptr %v.15782
   %t.157830 = load i64, ptr %v.15781
   %t.157831 = inttoptr i64 %t.157830 to ptr
@@ -50612,7 +50584,7 @@ L.fall.15801:
   store i64 %t.158319, ptr %v.15831
   %t.158320 = load i64, ptr %v.15831
   store i64 %t.158320, ptr %v.15832
-  %t.158330 = ptrtoint ptr @.str.452 to i64
+  %t.158330 = ptrtoint ptr @.str.450 to i64
   store i64 %t.158330, ptr %v.15833
   %t.158340 = load i64, ptr %v.15833
   %t.158341 = inttoptr i64 %t.158340 to ptr
@@ -50621,7 +50593,7 @@ L.fall.15801:
   %t.158344 = call ptr @ease_str_concat(ptr %t.158341, ptr %t.158343)
   %t.158345 = ptrtoint ptr %t.158344 to i64
   store i64 %t.158345, ptr %v.15834
-  %t.158350 = ptrtoint ptr @.str.453 to i64
+  %t.158350 = ptrtoint ptr @.str.451 to i64
   store i64 %t.158350, ptr %v.15835
   %t.158360 = load i64, ptr %v.15834
   %t.158361 = inttoptr i64 %t.158360 to ptr
@@ -50637,7 +50609,7 @@ L.fall.15801:
   %t.158374 = call ptr @ease_str_concat(ptr %t.158371, ptr %t.158373)
   %t.158375 = ptrtoint ptr %t.158374 to i64
   store i64 %t.158375, ptr %v.15837
-  %t.158380 = ptrtoint ptr @.str.454 to i64
+  %t.158380 = ptrtoint ptr @.str.452 to i64
   store i64 %t.158380, ptr %v.15838
   %t.158390 = load i64, ptr %v.15837
   %t.158391 = inttoptr i64 %t.158390 to ptr
@@ -50653,7 +50625,7 @@ L.fall.15801:
   %t.158404 = call ptr @ease_str_concat(ptr %t.158401, ptr %t.158403)
   %t.158405 = ptrtoint ptr %t.158404 to i64
   store i64 %t.158405, ptr %v.15840
-  %t.158410 = ptrtoint ptr @.str.455 to i64
+  %t.158410 = ptrtoint ptr @.str.453 to i64
   store i64 %t.158410, ptr %v.15841
   %t.158420 = load i64, ptr %v.15840
   %t.158421 = inttoptr i64 %t.158420 to ptr
@@ -50669,7 +50641,7 @@ L.fall.15801:
   %t.158434 = call ptr @ease_str_concat(ptr %t.158431, ptr %t.158433)
   %t.158435 = ptrtoint ptr %t.158434 to i64
   store i64 %t.158435, ptr %v.15843
-  %t.158440 = ptrtoint ptr @.str.456 to i64
+  %t.158440 = ptrtoint ptr @.str.454 to i64
   store i64 %t.158440, ptr %v.15844
   %t.158450 = load i64, ptr %v.15843
   %t.158451 = inttoptr i64 %t.158450 to ptr
@@ -50742,7 +50714,7 @@ L.fall.15863:
   store i64 %t.158759, ptr %v.15875
   %t.158760 = load i64, ptr %v.15875
   store i64 %t.158760, ptr %v.15876
-  %t.158770 = ptrtoint ptr @.str.457 to i64
+  %t.158770 = ptrtoint ptr @.str.455 to i64
   store i64 %t.158770, ptr %v.15877
   %t.158780 = load i64, ptr %v.15877
   %t.158781 = inttoptr i64 %t.158780 to ptr
@@ -50751,7 +50723,7 @@ L.fall.15863:
   %t.158784 = call ptr @ease_str_concat(ptr %t.158781, ptr %t.158783)
   %t.158785 = ptrtoint ptr %t.158784 to i64
   store i64 %t.158785, ptr %v.15878
-  %t.158790 = ptrtoint ptr @.str.458 to i64
+  %t.158790 = ptrtoint ptr @.str.456 to i64
   store i64 %t.158790, ptr %v.15879
   %t.158800 = load i64, ptr %v.15878
   %t.158801 = inttoptr i64 %t.158800 to ptr
@@ -50767,7 +50739,7 @@ L.fall.15863:
   %t.158814 = call ptr @ease_str_concat(ptr %t.158811, ptr %t.158813)
   %t.158815 = ptrtoint ptr %t.158814 to i64
   store i64 %t.158815, ptr %v.15881
-  %t.158820 = ptrtoint ptr @.str.459 to i64
+  %t.158820 = ptrtoint ptr @.str.457 to i64
   store i64 %t.158820, ptr %v.15882
   %t.158830 = load i64, ptr %v.15881
   %t.158831 = inttoptr i64 %t.158830 to ptr
@@ -50870,7 +50842,7 @@ L.fall.15901:
   store i64 %t.159319, ptr %v.15931
   %t.159320 = load i64, ptr %v.15931
   store i64 %t.159320, ptr %v.15932
-  %t.159330 = ptrtoint ptr @.str.460 to i64
+  %t.159330 = ptrtoint ptr @.str.458 to i64
   store i64 %t.159330, ptr %v.15933
   %t.159340 = load i64, ptr %v.15933
   %t.159341 = inttoptr i64 %t.159340 to ptr
@@ -50879,7 +50851,7 @@ L.fall.15901:
   %t.159344 = call ptr @ease_str_concat(ptr %t.159341, ptr %t.159343)
   %t.159345 = ptrtoint ptr %t.159344 to i64
   store i64 %t.159345, ptr %v.15934
-  %t.159350 = ptrtoint ptr @.str.461 to i64
+  %t.159350 = ptrtoint ptr @.str.459 to i64
   store i64 %t.159350, ptr %v.15935
   %t.159360 = load i64, ptr %v.15934
   %t.159361 = inttoptr i64 %t.159360 to ptr
@@ -50895,7 +50867,7 @@ L.fall.15901:
   %t.159374 = call ptr @ease_str_concat(ptr %t.159371, ptr %t.159373)
   %t.159375 = ptrtoint ptr %t.159374 to i64
   store i64 %t.159375, ptr %v.15937
-  %t.159380 = ptrtoint ptr @.str.462 to i64
+  %t.159380 = ptrtoint ptr @.str.460 to i64
   store i64 %t.159380, ptr %v.15938
   %t.159390 = load i64, ptr %v.15937
   %t.159391 = inttoptr i64 %t.159390 to ptr
@@ -50911,7 +50883,7 @@ L.fall.15901:
   %t.159404 = call ptr @ease_str_concat(ptr %t.159401, ptr %t.159403)
   %t.159405 = ptrtoint ptr %t.159404 to i64
   store i64 %t.159405, ptr %v.15940
-  %t.159410 = ptrtoint ptr @.str.463 to i64
+  %t.159410 = ptrtoint ptr @.str.461 to i64
   store i64 %t.159410, ptr %v.15941
   %t.159420 = load i64, ptr %v.15940
   %t.159421 = inttoptr i64 %t.159420 to ptr
@@ -50927,7 +50899,7 @@ L.fall.15901:
   %t.159434 = call ptr @ease_str_concat(ptr %t.159431, ptr %t.159433)
   %t.159435 = ptrtoint ptr %t.159434 to i64
   store i64 %t.159435, ptr %v.15943
-  %t.159440 = ptrtoint ptr @.str.464 to i64
+  %t.159440 = ptrtoint ptr @.str.462 to i64
   store i64 %t.159440, ptr %v.15944
   %t.159450 = load i64, ptr %v.15943
   %t.159451 = inttoptr i64 %t.159450 to ptr
@@ -51002,7 +50974,7 @@ L.fall.15963:
   store i64 %t.159779, ptr %v.15977
   %t.159780 = load i64, ptr %v.15977
   store i64 %t.159780, ptr %v.15978
-  %t.159790 = ptrtoint ptr @.str.465 to i64
+  %t.159790 = ptrtoint ptr @.str.463 to i64
   store i64 %t.159790, ptr %v.15979
   %t.159800 = load i64, ptr %v.15979
   %t.159801 = inttoptr i64 %t.159800 to ptr
@@ -51011,7 +50983,7 @@ L.fall.15963:
   %t.159804 = call ptr @ease_str_concat(ptr %t.159801, ptr %t.159803)
   %t.159805 = ptrtoint ptr %t.159804 to i64
   store i64 %t.159805, ptr %v.15980
-  %t.159810 = ptrtoint ptr @.str.466 to i64
+  %t.159810 = ptrtoint ptr @.str.464 to i64
   store i64 %t.159810, ptr %v.15981
   %t.159820 = load i64, ptr %v.15980
   %t.159821 = inttoptr i64 %t.159820 to ptr
@@ -51027,7 +50999,7 @@ L.fall.15963:
   %t.159834 = call ptr @ease_str_concat(ptr %t.159831, ptr %t.159833)
   %t.159835 = ptrtoint ptr %t.159834 to i64
   store i64 %t.159835, ptr %v.15983
-  %t.159840 = ptrtoint ptr @.str.467 to i64
+  %t.159840 = ptrtoint ptr @.str.465 to i64
   store i64 %t.159840, ptr %v.15984
   %t.159850 = load i64, ptr %v.15983
   %t.159851 = inttoptr i64 %t.159850 to ptr
@@ -51102,7 +51074,7 @@ L.fall.16003:
   store i64 %t.160179, ptr %v.16017
   %t.160180 = load i64, ptr %v.16017
   store i64 %t.160180, ptr %v.16018
-  %t.160190 = ptrtoint ptr @.str.468 to i64
+  %t.160190 = ptrtoint ptr @.str.466 to i64
   store i64 %t.160190, ptr %v.16019
   %t.160200 = load i64, ptr %v.16019
   %t.160201 = inttoptr i64 %t.160200 to ptr
@@ -51111,7 +51083,7 @@ L.fall.16003:
   %t.160204 = call ptr @ease_str_concat(ptr %t.160201, ptr %t.160203)
   %t.160205 = ptrtoint ptr %t.160204 to i64
   store i64 %t.160205, ptr %v.16020
-  %t.160210 = ptrtoint ptr @.str.469 to i64
+  %t.160210 = ptrtoint ptr @.str.467 to i64
   store i64 %t.160210, ptr %v.16021
   %t.160220 = load i64, ptr %v.16020
   %t.160221 = inttoptr i64 %t.160220 to ptr
@@ -51127,7 +51099,7 @@ L.fall.16003:
   %t.160234 = call ptr @ease_str_concat(ptr %t.160231, ptr %t.160233)
   %t.160235 = ptrtoint ptr %t.160234 to i64
   store i64 %t.160235, ptr %v.16023
-  %t.160240 = ptrtoint ptr @.str.470 to i64
+  %t.160240 = ptrtoint ptr @.str.468 to i64
   store i64 %t.160240, ptr %v.16024
   %t.160250 = load i64, ptr %v.16023
   %t.160251 = inttoptr i64 %t.160250 to ptr
@@ -51264,7 +51236,7 @@ L.fall.16070:
   %t.160731 = icmp eq i64 %t.160730, 0
   br i1 %t.160731, label %L.1510, label %L.fall.16073
 L.fall.16073:
-  %t.160740 = ptrtoint ptr @.str.471 to i64
+  %t.160740 = ptrtoint ptr @.str.469 to i64
   store i64 %t.160740, ptr %v.16074
   %t.160750 = load i64, ptr %v.16064
   %t.160751 = inttoptr i64 %t.160750 to ptr
@@ -51296,7 +51268,7 @@ L.1511:
   store i64 %t.160859, ptr %v.16085
   %t.160860 = load i64, ptr %v.16085
   store i64 %t.160860, ptr %v.16086
-  %t.160870 = ptrtoint ptr @.str.472 to i64
+  %t.160870 = ptrtoint ptr @.str.470 to i64
   store i64 %t.160870, ptr %v.16087
   %t.160880 = load i64, ptr %v.16064
   %t.160881 = inttoptr i64 %t.160880 to ptr
@@ -51345,7 +51317,7 @@ L.fall.16099:
   store i64 %t.161039, ptr %v.16103
   %t.161040 = load i64, ptr %v.16103
   store i64 %t.161040, ptr %v.16104
-  %t.161050 = ptrtoint ptr @.str.473 to i64
+  %t.161050 = ptrtoint ptr @.str.471 to i64
   store i64 %t.161050, ptr %v.16105
   %t.161060 = load i64, ptr %v.16105
   %t.161061 = inttoptr i64 %t.161060 to ptr
@@ -51354,7 +51326,7 @@ L.fall.16099:
   %t.161064 = call ptr @ease_str_concat(ptr %t.161061, ptr %t.161063)
   %t.161065 = ptrtoint ptr %t.161064 to i64
   store i64 %t.161065, ptr %v.16106
-  %t.161070 = ptrtoint ptr @.str.474 to i64
+  %t.161070 = ptrtoint ptr @.str.472 to i64
   store i64 %t.161070, ptr %v.16107
   %t.161080 = load i64, ptr %v.16106
   %t.161081 = inttoptr i64 %t.161080 to ptr
@@ -51370,7 +51342,7 @@ L.fall.16099:
   %t.161094 = call ptr @ease_str_concat(ptr %t.161091, ptr %t.161093)
   %t.161095 = ptrtoint ptr %t.161094 to i64
   store i64 %t.161095, ptr %v.16109
-  %t.161100 = ptrtoint ptr @.str.475 to i64
+  %t.161100 = ptrtoint ptr @.str.473 to i64
   store i64 %t.161100, ptr %v.16110
   %t.161110 = load i64, ptr %v.16109
   %t.161111 = inttoptr i64 %t.161110 to ptr
@@ -51386,7 +51358,7 @@ L.fall.16099:
   %t.161124 = call ptr @ease_str_concat(ptr %t.161121, ptr %t.161123)
   %t.161125 = ptrtoint ptr %t.161124 to i64
   store i64 %t.161125, ptr %v.16112
-  %t.161130 = ptrtoint ptr @.str.476 to i64
+  %t.161130 = ptrtoint ptr @.str.474 to i64
   store i64 %t.161130, ptr %v.16113
   %t.161140 = load i64, ptr %v.16112
   %t.161141 = inttoptr i64 %t.161140 to ptr
@@ -51411,7 +51383,7 @@ L.fall.16099:
   store i64 %t.161229, ptr %v.16122
   br label %L.1513
 L.1512:
-  %t.161250 = ptrtoint ptr @.str.477 to i64
+  %t.161250 = ptrtoint ptr @.str.475 to i64
   store i64 %t.161250, ptr %v.16125
   %t.161260 = load i64, ptr %v.16125
   %t.161261 = inttoptr i64 %t.161260 to ptr
@@ -51420,7 +51392,7 @@ L.1512:
   %t.161264 = call ptr @ease_str_concat(ptr %t.161261, ptr %t.161263)
   %t.161265 = ptrtoint ptr %t.161264 to i64
   store i64 %t.161265, ptr %v.16126
-  %t.161270 = ptrtoint ptr @.str.478 to i64
+  %t.161270 = ptrtoint ptr @.str.476 to i64
   store i64 %t.161270, ptr %v.16127
   %t.161280 = load i64, ptr %v.16126
   %t.161281 = inttoptr i64 %t.161280 to ptr
@@ -51436,7 +51408,7 @@ L.1512:
   %t.161294 = call ptr @ease_str_concat(ptr %t.161291, ptr %t.161293)
   %t.161295 = ptrtoint ptr %t.161294 to i64
   store i64 %t.161295, ptr %v.16129
-  %t.161300 = ptrtoint ptr @.str.479 to i64
+  %t.161300 = ptrtoint ptr @.str.477 to i64
   store i64 %t.161300, ptr %v.16130
   %t.161310 = load i64, ptr %v.16129
   %t.161311 = inttoptr i64 %t.161310 to ptr
@@ -51517,7 +51489,7 @@ L.fall.16152:
   store i64 %t.161599, ptr %v.16159
   %t.161600 = load i64, ptr %v.16159
   store i64 %t.161600, ptr %v.16160
-  %t.161610 = ptrtoint ptr @.str.480 to i64
+  %t.161610 = ptrtoint ptr @.str.478 to i64
   store i64 %t.161610, ptr %v.16161
   %t.161620 = load i64, ptr %v.16161
   %t.161621 = inttoptr i64 %t.161620 to ptr
@@ -51526,7 +51498,7 @@ L.fall.16152:
   %t.161624 = call ptr @ease_str_concat(ptr %t.161621, ptr %t.161623)
   %t.161625 = ptrtoint ptr %t.161624 to i64
   store i64 %t.161625, ptr %v.16162
-  %t.161630 = ptrtoint ptr @.str.481 to i64
+  %t.161630 = ptrtoint ptr @.str.479 to i64
   store i64 %t.161630, ptr %v.16163
   %t.161640 = load i64, ptr %v.16162
   %t.161641 = inttoptr i64 %t.161640 to ptr
@@ -51541,7 +51513,7 @@ L.fall.16152:
   store i64 %t.161679, ptr %v.16167
   br label %L.1517
 L.1516:
-  %t.161700 = ptrtoint ptr @.str.482 to i64
+  %t.161700 = ptrtoint ptr @.str.480 to i64
   store i64 %t.161700, ptr %v.16170
   %t.161730 = load i64, ptr %v.90000
   %t.161731 = load i64, ptr %v.16170
@@ -51581,7 +51553,7 @@ L.1515:
   %t.161861 = icmp eq i64 %t.161860, 0
   br i1 %t.161861, label %L.1518, label %L.fall.16186
 L.fall.16186:
-  %t.161870 = ptrtoint ptr @.str.483 to i64
+  %t.161870 = ptrtoint ptr @.str.481 to i64
   store i64 %t.161870, ptr %v.16187
   %t.161880 = load i64, ptr %v.14247
   %t.161882 = add i64 %t.161880, 8
@@ -51598,7 +51570,7 @@ L.fall.16186:
   %t.161914 = call ptr @ease_str_concat(ptr %t.161911, ptr %t.161913)
   %t.161915 = ptrtoint ptr %t.161914 to i64
   store i64 %t.161915, ptr %v.16191
-  %t.161920 = ptrtoint ptr @.str.484 to i64
+  %t.161920 = ptrtoint ptr @.str.482 to i64
   store i64 %t.161920, ptr %v.16192
   %t.161930 = load i64, ptr %v.16191
   %t.161931 = inttoptr i64 %t.161930 to ptr
@@ -51664,7 +51636,7 @@ L.fall.16208:
   store i64 %t.162209, ptr %v.16220
   %t.162210 = load i64, ptr %v.16220
   store i64 %t.162210, ptr %v.16221
-  %t.162220 = ptrtoint ptr @.str.485 to i64
+  %t.162220 = ptrtoint ptr @.str.483 to i64
   store i64 %t.162220, ptr %v.16222
   %t.162230 = load i64, ptr %v.16222
   %t.162231 = inttoptr i64 %t.162230 to ptr
@@ -51673,7 +51645,7 @@ L.fall.16208:
   %t.162234 = call ptr @ease_str_concat(ptr %t.162231, ptr %t.162233)
   %t.162235 = ptrtoint ptr %t.162234 to i64
   store i64 %t.162235, ptr %v.16223
-  %t.162240 = ptrtoint ptr @.str.486 to i64
+  %t.162240 = ptrtoint ptr @.str.484 to i64
   store i64 %t.162240, ptr %v.16224
   %t.162250 = load i64, ptr %v.16223
   %t.162251 = inttoptr i64 %t.162250 to ptr
@@ -51689,7 +51661,7 @@ L.fall.16208:
   %t.162264 = call ptr @ease_str_concat(ptr %t.162261, ptr %t.162263)
   %t.162265 = ptrtoint ptr %t.162264 to i64
   store i64 %t.162265, ptr %v.16226
-  %t.162270 = ptrtoint ptr @.str.487 to i64
+  %t.162270 = ptrtoint ptr @.str.485 to i64
   store i64 %t.162270, ptr %v.16227
   %t.162280 = load i64, ptr %v.16226
   %t.162281 = inttoptr i64 %t.162280 to ptr
@@ -51702,7 +51674,7 @@ L.fall.16208:
   %t.162311 = load i64, ptr %v.16228
   %t.162319 = call i64 @llvm_write_str(i64 %t.162310, i64 %t.162311)
   store i64 %t.162319, ptr %v.16231
-  %t.162320 = ptrtoint ptr @.str.488 to i64
+  %t.162320 = ptrtoint ptr @.str.486 to i64
   store i64 %t.162320, ptr %v.16232
   %t.162340 = load i64, ptr %v.14248
   %t.162349 = call i64 @strconv_Itoa(i64 %t.162340)
@@ -51716,7 +51688,7 @@ L.fall.16208:
   store i64 %t.162355, ptr %v.16235
   %t.162360 = load i64, ptr %v.16235
   store i64 %t.162360, ptr %v.16236
-  %t.162370 = ptrtoint ptr @.str.489 to i64
+  %t.162370 = ptrtoint ptr @.str.487 to i64
   store i64 %t.162370, ptr %v.16237
   %t.162380 = load i64, ptr %v.16237
   %t.162381 = inttoptr i64 %t.162380 to ptr
@@ -51725,7 +51697,7 @@ L.fall.16208:
   %t.162384 = call ptr @ease_str_concat(ptr %t.162381, ptr %t.162383)
   %t.162385 = ptrtoint ptr %t.162384 to i64
   store i64 %t.162385, ptr %v.16238
-  %t.162390 = ptrtoint ptr @.str.490 to i64
+  %t.162390 = ptrtoint ptr @.str.488 to i64
   store i64 %t.162390, ptr %v.16239
   %t.162400 = load i64, ptr %v.16238
   %t.162401 = inttoptr i64 %t.162400 to ptr
@@ -51749,7 +51721,7 @@ L.fall.16208:
   %t.162444 = call ptr @ease_str_concat(ptr %t.162441, ptr %t.162443)
   %t.162445 = ptrtoint ptr %t.162444 to i64
   store i64 %t.162445, ptr %v.16244
-  %t.162450 = ptrtoint ptr @.str.491 to i64
+  %t.162450 = ptrtoint ptr @.str.489 to i64
   store i64 %t.162450, ptr %v.16245
   %t.162460 = load i64, ptr %v.16244
   %t.162461 = inttoptr i64 %t.162460 to ptr
@@ -51765,7 +51737,7 @@ L.fall.16208:
   %t.162474 = call ptr @ease_str_concat(ptr %t.162471, ptr %t.162473)
   %t.162475 = ptrtoint ptr %t.162474 to i64
   store i64 %t.162475, ptr %v.16247
-  %t.162480 = ptrtoint ptr @.str.492 to i64
+  %t.162480 = ptrtoint ptr @.str.490 to i64
   store i64 %t.162480, ptr %v.16248
   %t.162490 = load i64, ptr %v.16247
   %t.162491 = inttoptr i64 %t.162490 to ptr
@@ -51778,7 +51750,7 @@ L.fall.16208:
   %t.162521 = load i64, ptr %v.16249
   %t.162529 = call i64 @llvm_write_str(i64 %t.162520, i64 %t.162521)
   store i64 %t.162529, ptr %v.16252
-  %t.162530 = ptrtoint ptr @.str.493 to i64
+  %t.162530 = ptrtoint ptr @.str.491 to i64
   store i64 %t.162530, ptr %v.16253
   %t.162540 = load i64, ptr %v.16236
   %t.162541 = inttoptr i64 %t.162540 to ptr
@@ -51817,7 +51789,7 @@ L.1399:
   %t.162701 = icmp eq i64 %t.162700, 0
   br i1 %t.162701, label %L.1522, label %L.fall.16270
 L.fall.16270:
-  %t.162710 = ptrtoint ptr @.str.494 to i64
+  %t.162710 = ptrtoint ptr @.str.492 to i64
   store i64 %t.162710, ptr %v.16271
   %t.162740 = load i64, ptr %v.90000
   %t.162741 = load i64, ptr %v.16271
@@ -51827,7 +51799,7 @@ L.fall.16270:
 L.1522:
   br label %L.1523
 L.1523:
-  %t.162780 = ptrtoint ptr @.str.495 to i64
+  %t.162780 = ptrtoint ptr @.str.493 to i64
   store i64 %t.162780, ptr %v.16278
   %t.162810 = load i64, ptr %v.90000
   %t.162811 = load i64, ptr %v.16278
@@ -52016,7 +51988,7 @@ L.1528:
   %t.163281 = icmp eq i64 %t.163280, 0
   br i1 %t.163281, label %L.1530, label %L.fall.16328
 L.fall.16328:
-  %t.163290 = ptrtoint ptr @.str.496 to i64
+  %t.163290 = ptrtoint ptr @.str.494 to i64
   store i64 %t.163290, ptr %v.16329
   %t.163310 = load i64, ptr %v.16329
   %t.163319 = call i64 @io_Print(i64 %t.163310)
@@ -52035,7 +52007,7 @@ L.1531:
   %t.163371 = icmp eq i64 %t.163370, 0
   br i1 %t.163371, label %L.1532, label %L.fall.16337
 L.fall.16337:
-  %t.163380 = ptrtoint ptr @.str.497 to i64
+  %t.163380 = ptrtoint ptr @.str.495 to i64
   store i64 %t.163380, ptr %v.16338
   %t.163400 = load i64, ptr %v.16338
   %t.163409 = call i64 @io_Print(i64 %t.163400)
@@ -52054,7 +52026,7 @@ L.1533:
   %t.163461 = icmp eq i64 %t.163460, 0
   br i1 %t.163461, label %L.1534, label %L.fall.16346
 L.fall.16346:
-  %t.163470 = ptrtoint ptr @.str.498 to i64
+  %t.163470 = ptrtoint ptr @.str.496 to i64
   store i64 %t.163470, ptr %v.16347
   %t.163490 = load i64, ptr %v.16347
   %t.163499 = call i64 @io_Print(i64 %t.163490)
@@ -52073,7 +52045,7 @@ L.1535:
   %t.163551 = icmp eq i64 %t.163550, 0
   br i1 %t.163551, label %L.1536, label %L.fall.16355
 L.fall.16355:
-  %t.163560 = ptrtoint ptr @.str.499 to i64
+  %t.163560 = ptrtoint ptr @.str.497 to i64
   store i64 %t.163560, ptr %v.16356
   %t.163580 = load i64, ptr %v.16356
   %t.163589 = call i64 @io_Print(i64 %t.163580)
@@ -52092,7 +52064,7 @@ L.1537:
   %t.163641 = icmp eq i64 %t.163640, 0
   br i1 %t.163641, label %L.1538, label %L.fall.16364
 L.fall.16364:
-  %t.163650 = ptrtoint ptr @.str.500 to i64
+  %t.163650 = ptrtoint ptr @.str.498 to i64
   store i64 %t.163650, ptr %v.16365
   %t.163670 = load i64, ptr %v.16365
   %t.163679 = call i64 @io_Print(i64 %t.163670)
@@ -52111,7 +52083,7 @@ L.1539:
   %t.163731 = icmp eq i64 %t.163730, 0
   br i1 %t.163731, label %L.1540, label %L.fall.16373
 L.fall.16373:
-  %t.163740 = ptrtoint ptr @.str.501 to i64
+  %t.163740 = ptrtoint ptr @.str.499 to i64
   store i64 %t.163740, ptr %v.16374
   %t.163760 = load i64, ptr %v.16374
   %t.163769 = call i64 @io_Print(i64 %t.163760)

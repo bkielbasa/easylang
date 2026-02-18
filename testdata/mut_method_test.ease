@@ -13,7 +13,7 @@ impl Counter {
 }
 
 fn main() -> int {
-    let mut c = Counter { value: 0 }
+    c := Counter { value: 0 }
     c.inc()
     c.inc()
     c.inc()

@@ -1,6 +1,6 @@
 fn main() -> int {
     // Test 1: Array literal has correct len
-    let arr = [1, 2, 3]
+    arr := [1, 2, 3]
     if len(arr) != 3 {
         return 1
     }

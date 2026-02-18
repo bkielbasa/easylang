@@ -25,12 +25,12 @@ impl Rect {
 }
 
 fn main() -> int {
-    let p = Point { x: 3, y: 4 }
-    let r = Rect { w: 5, h: 6 }
+    p := Point { x: 3, y: 4 }
+    r := Rect { w: 5, h: 6 }
 
-    let sum = p.sum()           // 3 + 4 = 7
-    let scaled = p.scale(2)     // 3*2 + 4*2 = 14
-    let area = r.area()         // 5 * 6 = 30
+    sum := p.sum()           // 3 + 4 = 7
+    scaled := p.scale(2)     // 3*2 + 4*2 = 14
+    area := r.area()         // 5 * 6 = 30
 
     // Total: 7 + 14 + 30 = 51
     return sum + scaled + area

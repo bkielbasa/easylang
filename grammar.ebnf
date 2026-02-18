@@ -127,8 +127,8 @@ const_decl = "const" , identifier , [ ":" , type ] , "=" , expression ;
 (* Use return error.New("msg") to fail                               *)
 test_decl = "test" , string_lit , block ;
 
-(* Variables - immutable by default *)
-let_decl = "let" , [ "mut" ] , pattern , [ ":" , type ] , [ "=" , expression ] ;
+(* Variables - all mutable, Go-style := declaration *)
+var_decl = identifier , ":=" , expression ;
 
 (* ============================================== *)
 (* TYPES                                          *)
@@ -174,7 +174,7 @@ channel_type = "chan" , "<" , type , ">" ;
 (* STATEMENTS                                     *)
 (* ============================================== *)
 
-statement = let_decl
+statement = var_decl
           | expression_stmt
           | return_stmt
           | if_stmt
@@ -335,8 +335,8 @@ channel_recv = "<-" , expression ;          (* receive from channel *)
 (* ============================================== *)
 
 (* Channel creation *)
-(* let ch = chan<int>()           - unbuffered channel *)
-(* let ch = chan<int>(10)         - buffered channel with capacity 10 *)
+(* ch := chan<int>()              - unbuffered channel *)
+(* ch := chan<int>(10)            - buffered channel with capacity 10 *)
 
 (* Spawn goroutine *)
 (* go some_function()             *)
@@ -344,7 +344,7 @@ channel_recv = "<-" , expression ;          (* receive from channel *)
 
 (* Send and receive *)
 (* ch <- value                    - send *)
-(* let x = <-ch                   - receive *)
+(* x := <-ch                      - receive *)
 
 (* Select statement - for multiple channel operations *)
 select_stmt = "select" , "{" , { select_arm } , "}" ;
@@ -460,8 +460,8 @@ impl Validator for Config {
 
 // loadConfig is private (lowercase)
 fn loadConfig(path: string) -> Result<Config, Error> {
-    let content = io.ReadFile(path)?
-    let cfg = config.Parse(content)?      // using local ./config module
+    content := io.ReadFile(path)?
+    cfg := config.Parse(content)?      // using local ./config module
     valid.Check(cfg)?                     // using aliased module
     return cfg
 }
@@ -486,15 +486,15 @@ fn handleMessage(msg: Message) {
 
 // main is the entry point (special case, like Go)
 fn main() -> Result<(), Error> {
-    let cfg = loadConfig("config.json")?
+    cfg := loadConfig("config.json")?
 
     logger.Info("loaded config: " + cfg.Name)   // using external package
 
     // Using enums
-    let msg = Message::Move { x: 10, y: 20 }
+    msg := Message::Move { x: 10, y: 20 }
     handleMessage(msg)
 
-    let server = http.Server{
+    server := http.Server{
         Addr: ":" + cfg.Port.to_string(),
     }
 

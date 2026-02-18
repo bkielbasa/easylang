@@ -23,7 +23,7 @@ fn abs(x: int) -> int {
 }
 
 test "addition works" {
-    let result = add(2, 3)
+    result := add(2, 3)
     if result != 5 {
         return 1
     }

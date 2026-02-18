@@ -5,7 +5,7 @@ struct Point {
 
 fn main() -> int {
     // Test 1: Simple field assignment
-    let mut p = Point { x: 0, y: 0 }
+    p := Point { x: 0, y: 0 }
     p.x = 10
     p.y = 20
     if p.x != 10 {

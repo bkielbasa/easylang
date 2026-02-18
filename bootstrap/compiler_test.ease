@@ -21,10 +21,10 @@ fn lex_peek(src: string, pos: int) -> int {
 }
 
 fn lex_skip(src: string, pos: int) -> int {
-    let src_len = len(src)
-    let mut p = pos
+    src_len := len(src)
+    p := pos
     for p < src_len {
-        let ch = lex_peek(src, p)
+        ch := lex_peek(src, p)
         if ch == 32 || ch == 9 || ch == 10 || ch == 13 {
             p = p + 1
         } else {
@@ -35,11 +35,11 @@ fn lex_skip(src: string, pos: int) -> int {
 }
 
 fn lex_kind(src: string, pos: int) -> int {
-    let src_len = len(src)
+    src_len := len(src)
     if pos >= src_len {
         return TK_EOF()
     }
-    let ch = lex_peek(src, pos)
+    ch := lex_peek(src, pos)
     if ch == 42 { return TK_STAR() }
     if is_digit(ch) { return TK_INT() }
     return TK_EOF()
@@ -49,7 +49,7 @@ fn lex_end(src: string, pos: int, kind: int) -> int {
     if kind == TK_EOF() { return pos }
     if kind == TK_STAR() { return pos + 1 }
     if kind == TK_INT() {
-        let mut end = pos
+        end := pos
         for end < len(src) && is_digit(lex_peek(src, end)) {
             end = end + 1
         }
@@ -59,11 +59,11 @@ fn lex_end(src: string, pos: int, kind: int) -> int {
 }
 
 fn lex_int_value(src: string, pos: int) -> int {
-    let end = lex_end(src, pos, TK_INT())
-    let s = str_substring(src, pos, end)
-    let mut val = 0
+    end := lex_end(src, pos, TK_INT())
+    s := str_substring(src, pos, end)
+    val := 0
     for i in 0..len(s) {
-        let ch = str_char_at(s, i)
+        ch := str_char_at(s, i)
         val = val * 10 + (ch - 48)
     }
     return val
@@ -85,20 +85,20 @@ fn encode_mul(rd: int, rn: int, rm: int) -> int {
 fn main() -> int {
     print("=== Testing: 3 * 7 ===\n\n")
 
-    let source = "3 * 7"
+    source := "3 * 7"
 
     // Lex
-    let mut pos = 0
+    pos := 0
     pos = lex_skip(source, pos)
-    let val1 = lex_int_value(source, pos)
+    val1 := lex_int_value(source, pos)
     pos = lex_end(source, pos, TK_INT())
 
     pos = lex_skip(source, pos)
-    let op = lex_kind(source, pos)
+    op := lex_kind(source, pos)
     pos = lex_end(source, pos, op)
 
     pos = lex_skip(source, pos)
-    let val2 = lex_int_value(source, pos)
+    val2 := lex_int_value(source, pos)
 
     print("Parsed: ")
     print(strconv.Itoa(val1))
@@ -107,7 +107,7 @@ fn main() -> int {
     print("\n\n")
 
     // Generate IR
-    let mut instrs = []IRInstr{}
+    instrs := []IRInstr{}
     push(instrs, IRInstr { op: 1, dest: 0, arg1: val1, arg2: 0 })  // loadconst val1
     push(instrs, IRInstr { op: 1, dest: 1, arg1: val2, arg2: 0 })  // loadconst val2
     push(instrs, IRInstr { op: OP_MUL(), dest: 2, arg1: 0, arg2: 1 })  // mul
@@ -115,17 +115,17 @@ fn main() -> int {
     print("IR: v2 = mul v0, v1\n\n")
 
     // Generate code
-    let encoded = encode_mul(2, 0, 1)
+    encoded := encode_mul(2, 0, 1)
     print("ARM64: 0x")
     // Print hex
-    let mut v = encoded
-    let mut digits = []int{}
+    v := encoded
+    digits := []int{}
     for i in 0..8 {
         push(digits, v % 16)
         v = v / 16
     }
     for i in 0..8 {
-        let d = digits[7 - i]
+        d := digits[7 - i]
         if d < 10 {
             print(strconv.Itoa(d))
         } else {

@@ -17,7 +17,7 @@ fn Join(parts: []string, sep: string) -> string {
         return ""
     }
 
-    let mut result = parts[0]
+    result := parts[0]
     for i in 1..len(parts) {
         result = str_concat(result, sep)
         result = str_concat(result, parts[i])

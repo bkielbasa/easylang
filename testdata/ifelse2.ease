@@ -1,5 +1,5 @@
 fn abs(x: int) -> int {
-    let result = 0
+    result := 0
     if x < 0 {
         result = 0 - x
     } else {

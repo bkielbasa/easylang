@@ -9,8 +9,8 @@ fn main() -> int {
     print("=== String Operations Demo ===\n\n")
 
     // Concatenation
-    let greeting = strings.Concat("Hello", " ")
-    let message = strings.Concat(greeting, "World!")
+    greeting := strings.Concat("Hello", " ")
+    message := strings.Concat(greeting, "World!")
     print("Concatenation: ")
     print(message)
     print("\n\n")
@@ -40,36 +40,36 @@ fn main() -> int {
     print("\n")
 
     // Index of
-    let pos = strings.IndexOf(message, "World")
+    pos := strings.IndexOf(message, "World")
     print("Position of 'World': ")
     print(strconv.Itoa(pos))
     print("\n\n")
 
     // Substring
-    let sub = strings.Substring(message, 0, 5)
+    sub := strings.Substring(message, 0, 5)
     print("First 5 characters: ")
     print(sub)
     print("\n\n")
 
     // Character at
-    let ch = strings.CharAt(message, 0)
+    ch := strings.CharAt(message, 0)
     print("First character code: ")
     print(strconv.Itoa(ch))
     print("\n\n")
 
     // Replace
-    let replaced = strings.Replace(message, "World", "Ease")
+    replaced := strings.Replace(message, "World", "Ease")
     print("Replaced: ")
     print(replaced)
     print("\n\n")
 
     // Number conversion
-    let num_str = strconv.Itoa(42)
+    num_str := strconv.Itoa(42)
     print("Number to string: ")
     print(num_str)
     print("\n")
 
-    let num = strconv.Atoi("123")
+    num := strconv.Atoi("123")
     print("String to number: ")
     print(strconv.Itoa(num))
     print("\n")

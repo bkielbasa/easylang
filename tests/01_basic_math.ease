@@ -2,12 +2,12 @@ package main
 
 // Test 1: Basic arithmetic operations
 fn main() -> int {
-    let a = 10
-    let b = 20
-    let sum = a + b
-    let diff = b - a
-    let prod = a * b
-    let quot = b / a
+    a := 10
+    b := 20
+    sum := a + b
+    diff := b - a
+    prod := a * b
+    quot := b / a
     
     if sum != 30 {
         return 1  // fail

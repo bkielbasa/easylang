@@ -43,7 +43,7 @@ fn power(base: int, exp: int) -> int {
     if exp == 1 {
         return base
     }
-    let half = power(base, exp / 2)
+    half := power(base, exp / 2)
     if exp - (exp / 2) * 2 == 0 {
         return half * half
     }

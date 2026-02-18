@@ -11,11 +11,11 @@ fn unwrap_or(opt: Option, def: int) -> int {
 }
 
 fn main() -> int {
-    let some = Option::Some { value: 42 }
-    let none = Option::None
+    some := Option::Some { value: 42 }
+    none := Option::None
 
-    let a = unwrap_or(some, 0)    // should be 42
-    let b = unwrap_or(none, 10)   // should be 10
+    a := unwrap_or(some, 0)    // should be 42
+    b := unwrap_or(none, 10)   // should be 10
 
     return a + b  // 42 + 10 = 52
 }

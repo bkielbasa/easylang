@@ -55,7 +55,7 @@ struct ParseResult {
 
 // Helper functions for creating AST nodes
 fn new_int_node(val: int, nodes: []AstNode) -> int {
-    let node = AstNode {
+    node := AstNode {
         tag: EXPR_INT(),
         int_val: val,
         str_val: "",
@@ -69,7 +69,7 @@ fn new_int_node(val: int, nodes: []AstNode) -> int {
 }
 
 fn new_bool_node(val: int, nodes: []AstNode) -> int {
-    let node = AstNode {
+    node := AstNode {
         tag: EXPR_BOOL(),
         int_val: val,
         str_val: "",
@@ -83,7 +83,7 @@ fn new_bool_node(val: int, nodes: []AstNode) -> int {
 }
 
 fn new_ident_node(name: string, nodes: []AstNode) -> int {
-    let node = AstNode {
+    node := AstNode {
         tag: EXPR_IDENT(),
         int_val: 0,
         str_val: name,
@@ -97,7 +97,7 @@ fn new_ident_node(name: string, nodes: []AstNode) -> int {
 }
 
 fn new_binary_node(op: int, left_idx: int, right_idx: int, nodes: []AstNode) -> int {
-    let node = AstNode {
+    node := AstNode {
         tag: EXPR_BINARY(),
         int_val: op,
         str_val: "",
@@ -111,7 +111,7 @@ fn new_binary_node(op: int, left_idx: int, right_idx: int, nodes: []AstNode) -> 
 }
 
 fn new_unary_node(op: int, operand: int, nodes: []AstNode) -> int {
-    let node = AstNode {
+    node := AstNode {
         tag: EXPR_UNARY(),
         int_val: op,
         str_val: "",

@@ -3,6 +3,6 @@ fn get_string() -> string {
 }
 
 fn main() -> int {
-    let s = get_string()
+    s := get_string()
     return 42
 }

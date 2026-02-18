@@ -4,17 +4,17 @@ package strconv
 
 fn Itoa(n: int) -> string {
     if n == 0 { return "0" }
-    let mut val = n
-    let mut negative = false
+    val := n
+    negative := false
     if val < 0 {
         negative = true
         val = 0 - val
     }
-    let mut result = ""
+    result := ""
     for val > 0 {
-        let digit = val - ((val / 10) * 10)
+        digit := val - ((val / 10) * 10)
         val = val / 10
-        let mut ch = "0"
+        ch := "0"
         if digit == 1 { ch = "1" }
         if digit == 2 { ch = "2" }
         if digit == 3 { ch = "3" }
@@ -31,16 +31,16 @@ fn Itoa(n: int) -> string {
 }
 
 fn Atoi(s: string) -> int {
-    let mut result = 0
-    let mut negative = 0
-    let slen = len(s)
-    let mut i = 0
+    result := 0
+    negative := 0
+    slen := len(s)
+    i := 0
     if slen > 0 && str_char_at(s, 0) == 45 {
         negative = 1
         i = 1
     }
     for i < slen {
-        let ch = str_char_at(s, i)
+        ch := str_char_at(s, i)
         if ch >= 48 && ch <= 57 {
             result = result * 10 + (ch - 48)
         } else {

@@ -5,9 +5,9 @@ enum Color {
 }
 
 fn main() -> int {
-    let r = Color::Red     // tag = 0
-    let g = Color::Green   // tag = 1
-    let b = Color::Blue    // tag = 2
+    r := Color::Red     // tag = 0
+    g := Color::Green   // tag = 1
+    b := Color::Blue    // tag = 2
 
     // For now, just return a fixed value to verify parsing/compilation works
     // Later we'll add pattern matching to extract values
