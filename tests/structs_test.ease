@@ -1,0 +1,31 @@
+package main
+
+// Struct operations
+
+fn TestStructLiteral() {
+    p1 := Point { x: 10, y: 20 }
+    if p1.x != 10 {
+        testing.Fatal("p1.x should be 10")
+    }
+    if p1.y != 20 {
+        testing.Fatal("p1.y should be 20")
+    }
+}
+
+fn TestStructFromFunction() {
+    p2 := make_point(5, 15)
+    if p2.x != 5 {
+        testing.Fatal("p2.x should be 5")
+    }
+    if p2.y != 15 {
+        testing.Fatal("p2.y should be 15")
+    }
+}
+
+fn TestStructPassedToFunction() {
+    rect := Rectangle { width: 8, height: 12 }
+    a := area(rect)
+    if a != 96 {
+        testing.Fatal("area should be 96")
+    }
+}

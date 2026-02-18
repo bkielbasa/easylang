@@ -117,10 +117,9 @@ fn TestMultiply() {
 - **stdlib auto-loaded**: `testing`, `io`, `strings`, `os`, `strconv` available without import
 
 ```bash
-ease test dir/                      # discover and compile tests in dir/
-# Then: clang -O1 runtime/ease_runtime.c tmp/output.ll -o tmp/test_bin && ./tmp/test_bin
-make ease-test                      # shortcut (defaults to examples/testdemo)
-make ease-test DIR=path/to/dir      # test a specific directory
+make test                           # run all tests in tests/
+make test DIR=path/to/dir           # run tests in a specific directory
+ease test dir/                      # compile tests (then clang + run)
 ```
 
 **Example output:**
@@ -163,7 +162,7 @@ ease/
 │       ├── strings/strings.ease   # String functions
 │       ├── os/os.ease             # OS functions (ReadFile via syscall)
 │       └── testing/testing.ease   # Testing framework (Fatal)
-├── tests/                # Integration tests (6/6 passing)
+├── tests/                # Go-style tests (21 passing)
 ├── examples/             # Example programs
 │   └── testdemo/         # Go-style test demo (math.ease + math_test.ease)
 └── findings/             # Compiler engineering notes
@@ -175,9 +174,8 @@ The compiler is fully self-hosting. No Go or other compilers needed — just `cl
 
 ```bash
 make                    # Build compiler from seed LLVM IR
-make test               # Run integration tests (6/6 passing)
-make ease-test          # Run Go-style tests (examples/testdemo)
-make ease-test DIR=dir  # Run Go-style tests in specific directory
+make test               # Run tests (21 passing)
+make test DIR=path      # Run tests in specific directory
 make verify             # Verify self-hosting convergence (gen1 == gen2)
 make update-seed        # Update seed after modifying compiler source
 make clean              # Remove build artifacts
@@ -223,7 +221,7 @@ The Ease compiler is written in Ease and compiles itself with byte-identical con
 - Function return type registry (automatic string/int dispatch)
 - String `==`/`!=` auto-dispatch (no explicit str_eq/str_ne needed)
 - Dynamic struct field registry for user-defined structs
-- Integration test suite (6/6 passing)
+- Go-style test suite (21 tests passing)
 
 **Compiler Components** (all in `bootstrap/ease/`):
 - [x] Lexer with comment handling (// comments)
@@ -295,24 +293,25 @@ The Ease compiler is written in Ease and compiles itself with byte-identical con
 
 ```bash
 make                                    # Build from seed (no Go required)
-make test                               # Run integration tests (6/6 passing)
-make ease-test                          # Run Go-style unit tests
-make ease-test DIR=path/to/tests        # Run tests in specific directory
+make test                               # Run tests (21 passing)
+make test DIR=path                      # Run tests in specific directory
 make verify                             # Verify self-hosting convergence
 make update-seed                        # Update seed after source changes
 ```
 
-**Integration Tests (6/6 passing):**
-| Test | Description | Features Tested |
-|------|-------------|-----------------|
-| 01_basic_math | Arithmetic and variables | `+`, `-`, `*`, `/`, `%`, conditionals |
-| 02_functions | Function calls and recursion | Parameters, return values, recursion |
-| 03_arrays | Array operations | Literal, index, push, len |
-| 04_strings | String operations | Concat, Contains, StartsWith, EndsWith, IndexOf, strconv |
-| 05_structs | Struct definitions | Struct literals, field access, pass to functions |
-| 06_loops | Loops and control flow | Range `for i in start..end`, condition loops, `%` modulo |
+**Test Suite (21 tests, Go-style):**
 
-All tests return exit code 0 on success.
+Tests live in `tests/` as `*_test.ease` files with `fn TestXxx()` functions:
+
+| File | Tests | Features Covered |
+|------|-------|-----------------|
+| `math_test.ease` | 4 | `+`, `-`, `*`, `/`, conditionals |
+| `functions_test.ease` | 2 | Parameters, return values, recursion |
+| `arrays_test.ease` | 3 | Literal, index, push, len |
+| `strings_test.ease` | 6 | Concat, Contains, StartsWith, EndsWith, IndexOf, strconv |
+| `structs_test.ease` | 3 | Struct literals, field access, pass to functions |
+| `loops_test.ease` | 3 | Range `for i in start..end`, condition loops, modulo |
+| `helpers.ease` | — | Shared helper functions and struct definitions |
 
 ## Example Programs
 

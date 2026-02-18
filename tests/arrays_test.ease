@@ -1,0 +1,35 @@
+package main
+
+// Array operations
+
+fn TestArrayLiteralAndIndex() {
+    arr := []int{10, 20, 30, 40, 50}
+    if arr[0] != 10 {
+        testing.Fatal("arr[0] should be 10")
+    }
+    if arr[2] != 30 {
+        testing.Fatal("arr[2] should be 30")
+    }
+    if arr[4] != 50 {
+        testing.Fatal("arr[4] should be 50")
+    }
+}
+
+fn TestArrayLen() {
+    arr := []int{10, 20, 30, 40, 50}
+    if len(arr) != 5 {
+        testing.Fatal("len should be 5")
+    }
+}
+
+fn TestArrayPush() {
+    darr := []int{1, 2}
+    push(darr, 3)
+    push(darr, 4)
+    if len(darr) != 4 {
+        testing.Fatal("len after push should be 4")
+    }
+    if darr[3] != 4 {
+        testing.Fatal("darr[3] should be 4")
+    }
+}

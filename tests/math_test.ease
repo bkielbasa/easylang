@@ -1,0 +1,29 @@
+package main
+
+// Basic arithmetic operations
+
+fn TestAddition() {
+    if add(10, 20) != 30 {
+        testing.Fatal("10 + 20 should be 30")
+    }
+}
+
+fn TestSubtraction() {
+    diff := 20 - 10
+    if diff != 10 {
+        testing.Fatal("20 - 10 should be 10")
+    }
+}
+
+fn TestMultiplication() {
+    if multiply(10, 20) != 200 {
+        testing.Fatal("10 * 20 should be 200")
+    }
+}
+
+fn TestDivision() {
+    quot := 20 / 10
+    if quot != 2 {
+        testing.Fatal("20 / 10 should be 2")
+    }
+}

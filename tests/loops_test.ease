@@ -1,0 +1,30 @@
+package main
+
+// Loops and control flow
+
+fn TestRangeLoop() {
+    s := sum_range(1, 6)
+    if s != 15 {
+        testing.Fatal("sum_range(1,6) should be 15")
+    }
+}
+
+fn TestConditionLoop() {
+    n := 0
+    sum := 0
+    for n < 10 {
+        sum = sum + n
+        n = n + 1
+    }
+    if sum != 45 {
+        testing.Fatal("sum 0..9 should be 45")
+    }
+}
+
+fn TestCountEven() {
+    arr := []int{1, 2, 3, 4, 5, 6}
+    evens := count_even(arr)
+    if evens != 3 {
+        testing.Fatal("should have 3 even numbers")
+    }
+}

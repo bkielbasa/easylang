@@ -1,0 +1,54 @@
+package main
+
+// Shared helper functions and structs for test suite
+
+fn add(x: int, y: int) -> int {
+    return x + y
+}
+
+fn multiply(x: int, y: int) -> int {
+    return x * y
+}
+
+fn factorial(n: int) -> int {
+    if n <= 1 {
+        return 1
+    }
+    return n * factorial(n - 1)
+}
+
+struct Point {
+    x: int,
+    y: int,
+}
+
+struct Rectangle {
+    width: int,
+    height: int,
+}
+
+fn make_point(x: int, y: int) -> Point {
+    return Point { x: x, y: y }
+}
+
+fn area(r: Rectangle) -> int {
+    return r.width * r.height
+}
+
+fn sum_range(start: int, end: int) -> int {
+    sum := 0
+    for i in start..end {
+        sum = sum + i
+    }
+    return sum
+}
+
+fn count_even(arr: []int) -> int {
+    count := 0
+    for i in 0..len(arr) {
+        if arr[i] % 2 == 0 {
+            count = count + 1
+        }
+    }
+    return count
+}

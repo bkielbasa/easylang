@@ -1,0 +1,52 @@
+package main
+
+import ("strings")
+import ("strconv")
+
+// String operations
+
+fn TestStringConcat() {
+    hello := "Hello"
+    world := "World"
+    greeting := strings.Concat(hello, " ")
+    greeting = strings.Concat(greeting, world)
+    if !strings.Contains(greeting, "World") {
+        testing.Fatal("should contain World")
+    }
+}
+
+fn TestStringStartsWith() {
+    s := "Hello World"
+    if !strings.StartsWith(s, "Hello") {
+        testing.Fatal("should start with Hello")
+    }
+}
+
+fn TestStringEndsWith() {
+    s := "Hello World"
+    if !strings.EndsWith(s, "World") {
+        testing.Fatal("should end with World")
+    }
+}
+
+fn TestStringIndexOf() {
+    s := "Hello World"
+    idx := strings.IndexOf(s, "World")
+    if idx != 6 {
+        testing.Fatal("IndexOf World should be 6")
+    }
+}
+
+fn TestStrconvItoa() {
+    num_str := strconv.Itoa(42)
+    if num_str != "42" {
+        testing.Fatal("Itoa(42) should be 42")
+    }
+}
+
+fn TestStrconvAtoi() {
+    num := strconv.Atoi("123")
+    if num != 123 {
+        testing.Fatal("Atoi(123) should be 123")
+    }
+}

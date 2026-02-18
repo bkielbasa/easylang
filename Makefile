@@ -18,7 +18,7 @@ COMPILER_SRC := bootstrap/compiler.ease
 BUILD_DIR := tmp
 EASE      := $(BUILD_DIR)/ease
 
-.PHONY: all clean verify update-seed test ease-test
+.PHONY: all clean verify update-seed test
 
 all: $(EASE)
 
@@ -50,40 +50,13 @@ update-seed: verify
 	cp $(BUILD_DIR)/verify_gen1.ll $(SEED)
 	@echo "=== Seed updated ==="
 
-# Run integration tests
+# Run tests (Go-style: fn TestXxx in *_test.ease files)
+# Usage: make test [DIR=path/to/dir] (default: tests/)
+DIR ?= tests
 test: $(EASE)
-	@echo "================================"
-	@echo "  Ease Compiler Test Suite"
-	@echo "================================"
-	@echo
-	@passed=0; failed=0; \
-	for test_file in $$(ls tests/*.ease | sort); do \
-		test_name=$$(basename "$$test_file" .ease); \
-		printf "Running $$test_name... "; \
-		$(EASE) "$$test_file" > /dev/null 2>&1 \
-			&& $(CC) $(CFLAGS) $(RUNTIME) $(BUILD_DIR)/output.ll -o $(BUILD_DIR)/test_bin 2>/dev/null \
-			&& $(BUILD_DIR)/test_bin > /dev/null 2>&1; \
-		if [ $$? -eq 0 ]; then \
-			echo "✓ PASS"; \
-			passed=$$((passed + 1)); \
-		else \
-			echo "✗ FAIL"; \
-			failed=$$((failed + 1)); \
-		fi; \
-	done; \
-	echo; \
-	echo "================================"; \
-	echo "Results: $$passed passed, $$failed failed"; \
-	echo "================================"; \
-	[ $$failed -eq 0 ]
-
-# Run Go-style tests (fn TestXxx in *_test.ease files)
-# Usage: make ease-test DIR=path/to/dir (default: examples/testdemo)
-DIR ?= examples/testdemo
-ease-test: $(EASE)
-	$(EASE) test $(DIR)
-	$(CC) $(CFLAGS) $(RUNTIME) $(BUILD_DIR)/output.ll -o $(BUILD_DIR)/test_bin
-	$(BUILD_DIR)/test_bin
+	@$(EASE) test $(DIR) > /dev/null 2>&1
+	@$(CC) $(CFLAGS) $(RUNTIME) $(BUILD_DIR)/output.ll -o $(BUILD_DIR)/test_bin 2>/dev/null
+	@$(BUILD_DIR)/test_bin
 
 clean:
 	rm -f $(BUILD_DIR)/ease $(BUILD_DIR)/ease_gen1
