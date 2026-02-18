@@ -2231,6 +2231,11 @@ func (a *Analyzer) analyzeFieldExpr(e *ast.FieldExpr) types.Type {
 
 			symbol, found := module.Symbols[e.Field.Name]
 			if !found {
+				// For flat-merged local modules, symbols are in global scope
+				symbol = a.table.Global.Lookup(e.Field.Name)
+				found = symbol != nil
+			}
+			if !found {
 				a.error(e.Field.Pos(), "module %s has no exported symbol %s", ident.Name, e.Field.Name)
 				return types.Typ[types.Invalid]
 			}
@@ -3010,6 +3015,11 @@ func (a *Analyzer) analyzeMethodExpr(e *ast.MethodExpr) types.Type {
 			a.usedModules[ident.Name] = true
 
 			symbol, found := module.Symbols[e.Method.Name]
+			if !found {
+				// For flat-merged local modules, symbols are in global scope
+				symbol = a.table.Global.Lookup(e.Method.Name)
+				found = symbol != nil
+			}
 			if !found {
 				a.error(e.Method.Pos(), "module %s has no exported symbol %s", ident.Name, e.Method.Name)
 				return types.Typ[types.Invalid]

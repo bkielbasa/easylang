@@ -184,18 +184,6 @@ fn gen_ir_call_argv(ast_idx: int, nodes: []AstNode, instrs: []IRInstr, symtab_na
     return result_vreg
 }
 
-fn gen_ir_call_itoa(ast_idx: int, nodes: []AstNode, instrs: []IRInstr, symtab_names: []string, symtab_vregs: []int) -> int {
-    // strconv.Itoa(int) -> string
-    let arg_indices = get_call_args(ast_idx)
-    if len(arg_indices) != 1 {
-        return -1
-    }
-    let int_vreg = gen_ir_from_ast_with_symtab(arg_indices[0], nodes, instrs, symtab_names, symtab_vregs)
-    let result_vreg = len(instrs)
-    let itoa_instr = IRInstr { op: OP_INT_TO_STR(), dest: result_vreg, arg1: int_vreg, arg2: 0, arg3: 0, str_val: "" }
-    push(instrs, itoa_instr)
-    return result_vreg
-}
 
 fn gen_ir_call_print(ast_idx: int, nodes: []AstNode, instrs: []IRInstr, symtab_names: []string, symtab_vregs: []int) -> int {
     // print(string) -> ()
@@ -725,9 +713,6 @@ fn gen_ir_from_ast_with_symtab(ast_idx: int, nodes: []AstNode, instrs: []IRInstr
         }
         if func_name == "os.Argv" {
             return gen_ir_call_argv(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
-        }
-        if func_name == "strconv.Itoa" {
-            return gen_ir_call_itoa(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
         }
         if func_name == "print" {
             return gen_ir_call_print(ast_idx, nodes, instrs, symtab_names, symtab_vregs)

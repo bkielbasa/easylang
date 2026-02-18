@@ -2,7 +2,7 @@
 // Main entry point — imports domain modules and orchestrates compilation pipeline
 
 import (
-    "strconv"
+    "./strconv"
     "./token"
     "./lexer"
     "./ast"
@@ -395,7 +395,6 @@ fn main() -> int {
 
     // Build function return type registry
     // Pre-register built-in functions (no DECL_FUNC nodes for these)
-    register_func_return_type("strconv.Itoa", TYPE_STRING(), 0)
     register_func_return_type("os.ReadFile", TYPE_STRING(), 0)
     register_func_return_type("os.Argv", TYPE_STRING(), 0)
     register_func_return_type("str_substring", TYPE_STRING(), 0)
