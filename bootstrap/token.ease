@@ -1,12 +1,8 @@
-// Token types for the Ease bootstrap compiler
-// Uses integer constants instead of enums for simplicity
+// Token type constants for the Ease bootstrap compiler
 
-// Token kinds (integer constants)
-// Literals
 fn TK_IDENT() -> int { return 1 }
 fn TK_INT() -> int { return 2 }
 fn TK_STRING() -> int { return 3 }
-fn TK_CHAR() -> int { return 4 }
 
 // Keywords
 fn TK_FN() -> int { return 10 }
@@ -17,189 +13,51 @@ fn TK_ELSE() -> int { return 14 }
 fn TK_FOR() -> int { return 15 }
 fn TK_IN() -> int { return 16 }
 fn TK_RETURN() -> int { return 17 }
-fn TK_STRUCT() -> int { return 18 }
-fn TK_ENUM() -> int { return 19 }
-fn TK_MATCH() -> int { return 20 }
-fn TK_IMPL() -> int { return 21 }
-fn TK_BREAK() -> int { return 22 }
-fn TK_CONTINUE() -> int { return 23 }
-fn TK_TRUE() -> int { return 24 }
-fn TK_FALSE() -> int { return 25 }
+fn TK_BREAK() -> int { return 18 }
+fn TK_STRUCT() -> int { return 19 }
+fn TK_TRUE() -> int { return 20 }
+fn TK_FALSE() -> int { return 21 }
+fn TK_IMPORT() -> int { return 22 }
 
-// Operators
+// Arithmetic operators
 fn TK_PLUS() -> int { return 30 }
 fn TK_MINUS() -> int { return 31 }
 fn TK_STAR() -> int { return 32 }
 fn TK_SLASH() -> int { return 33 }
 fn TK_PERCENT() -> int { return 34 }
-fn TK_EQ() -> int { return 35 }
-fn TK_EQEQ() -> int { return 36 }
-fn TK_BANGEQ() -> int { return 37 }
-fn TK_LT() -> int { return 38 }
-fn TK_GT() -> int { return 39 }
-fn TK_LTEQ() -> int { return 40 }
-fn TK_GTEQ() -> int { return 41 }
-fn TK_BANG() -> int { return 42 }
-fn TK_AMPAMP() -> int { return 43 }
-fn TK_PIPEPIPE() -> int { return 44 }
-fn TK_AMP() -> int { return 45 }
-fn TK_ARROW() -> int { return 46 }
-fn TK_FATARROW() -> int { return 47 }
-fn TK_COLONCOLON() -> int { return 48 }
-fn TK_DOTDOT() -> int { return 49 }
+
+// Comparison operators
+fn TK_LT() -> int { return 35 }
+fn TK_GT() -> int { return 36 }
+fn TK_LE() -> int { return 37 }
+fn TK_GE() -> int { return 38 }
+fn TK_EQ() -> int { return 39 }
+fn TK_NE() -> int { return 40 }
+
+// Logical operators
+fn TK_AND() -> int { return 41 }
+fn TK_OR() -> int { return 42 }
+fn TK_NOT() -> int { return 43 }
+fn TK_CARET() -> int { return 44 }  // XOR operator ^
+fn TK_AMPERSAND() -> int { return 46 }  // Bitwise AND operator &
+fn TK_PIPE() -> int { return 50 }  // Bitwise OR operator |
+
+// Assignment
+fn TK_ASSIGN() -> int { return 45 }
 
 // Delimiters
-fn TK_LPAREN() -> int { return 50 }
-fn TK_RPAREN() -> int { return 51 }
-fn TK_LBRACE() -> int { return 52 }
-fn TK_RBRACE() -> int { return 53 }
-fn TK_LBRACKET() -> int { return 54 }
-fn TK_RBRACKET() -> int { return 55 }
-fn TK_COMMA() -> int { return 56 }
-fn TK_COLON() -> int { return 57 }
-fn TK_SEMI() -> int { return 58 }
-fn TK_DOT() -> int { return 59 }
-fn TK_UNDERSCORE() -> int { return 60 }
+fn TK_ARROW() -> int { return 47 }
+fn TK_DOT() -> int { return 48 }
+fn TK_DOTDOT() -> int { return 49 }
 
-// Special
+fn TK_LPAREN() -> int { return 51 }
+fn TK_RPAREN() -> int { return 52 }
+fn TK_LBRACE() -> int { return 53 }
+fn TK_RBRACE() -> int { return 54 }
+fn TK_LBRACKET() -> int { return 55 }
+fn TK_RBRACKET() -> int { return 56 }
+fn TK_COMMA() -> int { return 57 }
+fn TK_COLON() -> int { return 58 }
+fn TK_SEMI() -> int { return 59 }
+
 fn TK_EOF() -> int { return 100 }
-fn TK_ERROR() -> int { return 101 }
-
-// Token struct
-struct Token {
-    kind: int,
-    value: string,  // For IDENT/STRING, the actual value; for INT, the string representation
-    int_val: int,   // For INT tokens, the numeric value
-    line: int,
-    col: int,
-}
-
-// Create a new token
-fn new_token(kind: int, value: string, line: int, col: int) -> Token {
-    return Token {
-        kind: kind,
-        value: value,
-        int_val: 0,
-        line: line,
-        col: col,
-    }
-}
-
-// Create a new integer token
-fn new_int_token(value: int, str_val: string, line: int, col: int) -> Token {
-    return Token {
-        kind: TK_INT(),
-        value: str_val,
-        int_val: value,
-        line: line,
-        col: col,
-    }
-}
-
-// Lookup keyword or return IDENT
-fn lookup_keyword(name: string) -> int {
-    if name == "fn" { return TK_FN() }
-    if name == "let" { return TK_LET() }
-    if name == "mut" { return TK_MUT() }
-    if name == "if" { return TK_IF() }
-    if name == "else" { return TK_ELSE() }
-    if name == "for" { return TK_FOR() }
-    if name == "in" { return TK_IN() }
-    if name == "return" { return TK_RETURN() }
-    if name == "struct" { return TK_STRUCT() }
-    if name == "enum" { return TK_ENUM() }
-    if name == "match" { return TK_MATCH() }
-    if name == "impl" { return TK_IMPL() }
-    if name == "break" { return TK_BREAK() }
-    if name == "continue" { return TK_CONTINUE() }
-    if name == "true" { return TK_TRUE() }
-    if name == "false" { return TK_FALSE() }
-    return TK_IDENT()
-}
-
-// Get token kind name for debugging
-fn token_kind_name(kind: int) -> string {
-    if kind == TK_IDENT() { return "IDENT" }
-    if kind == TK_INT() { return "INT" }
-    if kind == TK_STRING() { return "STRING" }
-    if kind == TK_CHAR() { return "CHAR" }
-    if kind == TK_FN() { return "fn" }
-    if kind == TK_LET() { return "let" }
-    if kind == TK_MUT() { return "mut" }
-    if kind == TK_IF() { return "if" }
-    if kind == TK_ELSE() { return "else" }
-    if kind == TK_FOR() { return "for" }
-    if kind == TK_IN() { return "in" }
-    if kind == TK_RETURN() { return "return" }
-    if kind == TK_STRUCT() { return "struct" }
-    if kind == TK_ENUM() { return "enum" }
-    if kind == TK_MATCH() { return "match" }
-    if kind == TK_IMPL() { return "impl" }
-    if kind == TK_BREAK() { return "break" }
-    if kind == TK_CONTINUE() { return "continue" }
-    if kind == TK_TRUE() { return "true" }
-    if kind == TK_FALSE() { return "false" }
-    if kind == TK_PLUS() { return "+" }
-    if kind == TK_MINUS() { return "-" }
-    if kind == TK_STAR() { return "*" }
-    if kind == TK_SLASH() { return "/" }
-    if kind == TK_PERCENT() { return "%" }
-    if kind == TK_EQ() { return "=" }
-    if kind == TK_EQEQ() { return "==" }
-    if kind == TK_BANGEQ() { return "!=" }
-    if kind == TK_LT() { return "<" }
-    if kind == TK_GT() { return ">" }
-    if kind == TK_LTEQ() { return "<=" }
-    if kind == TK_GTEQ() { return ">=" }
-    if kind == TK_BANG() { return "!" }
-    if kind == TK_AMPAMP() { return "&&" }
-    if kind == TK_PIPEPIPE() { return "||" }
-    if kind == TK_AMP() { return "&" }
-    if kind == TK_ARROW() { return "->" }
-    if kind == TK_FATARROW() { return "=>" }
-    if kind == TK_COLONCOLON() { return "::" }
-    if kind == TK_DOTDOT() { return ".." }
-    if kind == TK_LPAREN() { return "(" }
-    if kind == TK_RPAREN() { return ")" }
-    if kind == TK_LBRACE() { return "{" }
-    if kind == TK_RBRACE() { return "}" }
-    if kind == TK_LBRACKET() { return "[" }
-    if kind == TK_RBRACKET() { return "]" }
-    if kind == TK_COMMA() { return "," }
-    if kind == TK_COLON() { return ":" }
-    if kind == TK_SEMI() { return ";" }
-    if kind == TK_DOT() { return "." }
-    if kind == TK_UNDERSCORE() { return "_" }
-    if kind == TK_EOF() { return "EOF" }
-    if kind == TK_ERROR() { return "ERROR" }
-    return "UNKNOWN"
-}
-
-// Test main function
-fn main() -> int {
-    // Test token creation
-    let tok = new_token(TK_IDENT(), "hello", 1, 1)
-    if tok.kind != TK_IDENT() {
-        return 1
-    }
-    if tok.value != "hello" {
-        return 2
-    }
-
-    // Test keyword lookup
-    if lookup_keyword("fn") != TK_FN() {
-        return 3
-    }
-    if lookup_keyword("hello") != TK_IDENT() {
-        return 4
-    }
-
-    // Test token kind name
-    let name = token_kind_name(TK_FN())
-    if name != "fn" {
-        return 5
-    }
-
-    print("token.ease: All tests passed!\n")
-    return 0
-}

@@ -1,153 +1,15 @@
-// Lexer for the Ease bootstrap compiler
-// Workaround: Avoid returning structs with strings from functions with loops
-
-// ============================================================================
-// Token definitions (using integer constants)
-// ============================================================================
-
-fn TK_IDENT() -> int { return 1 }
-fn TK_INT() -> int { return 2 }
-fn TK_STRING() -> int { return 3 }
-fn TK_CHAR() -> int { return 4 }
-
-fn TK_FN() -> int { return 10 }
-fn TK_LET() -> int { return 11 }
-fn TK_MUT() -> int { return 12 }
-fn TK_IF() -> int { return 13 }
-fn TK_ELSE() -> int { return 14 }
-fn TK_FOR() -> int { return 15 }
-fn TK_IN() -> int { return 16 }
-fn TK_RETURN() -> int { return 17 }
-fn TK_STRUCT() -> int { return 18 }
-fn TK_ENUM() -> int { return 19 }
-fn TK_MATCH() -> int { return 20 }
-fn TK_IMPL() -> int { return 21 }
-fn TK_BREAK() -> int { return 22 }
-fn TK_CONTINUE() -> int { return 23 }
-fn TK_TRUE() -> int { return 24 }
-fn TK_FALSE() -> int { return 25 }
-
-fn TK_PLUS() -> int { return 30 }
-fn TK_MINUS() -> int { return 31 }
-fn TK_STAR() -> int { return 32 }
-fn TK_SLASH() -> int { return 33 }
-fn TK_PERCENT() -> int { return 34 }
-fn TK_EQ() -> int { return 35 }
-fn TK_EQEQ() -> int { return 36 }
-fn TK_BANGEQ() -> int { return 37 }
-fn TK_LT() -> int { return 38 }
-fn TK_GT() -> int { return 39 }
-fn TK_LTEQ() -> int { return 40 }
-fn TK_GTEQ() -> int { return 41 }
-fn TK_BANG() -> int { return 42 }
-fn TK_AMPAMP() -> int { return 43 }
-fn TK_PIPEPIPE() -> int { return 44 }
-fn TK_AMP() -> int { return 45 }
-fn TK_ARROW() -> int { return 46 }
-fn TK_FATARROW() -> int { return 47 }
-fn TK_COLONCOLON() -> int { return 48 }
-fn TK_DOTDOT() -> int { return 49 }
-
-fn TK_LPAREN() -> int { return 50 }
-fn TK_RPAREN() -> int { return 51 }
-fn TK_LBRACE() -> int { return 52 }
-fn TK_RBRACE() -> int { return 53 }
-fn TK_LBRACKET() -> int { return 54 }
-fn TK_RBRACKET() -> int { return 55 }
-fn TK_COMMA() -> int { return 56 }
-fn TK_COLON() -> int { return 57 }
-fn TK_SEMI() -> int { return 58 }
-fn TK_DOT() -> int { return 59 }
-fn TK_UNDERSCORE() -> int { return 60 }
-
-fn TK_EOF() -> int { return 100 }
-fn TK_ERROR() -> int { return 101 }
-
-fn token_kind_name(kind: int) -> string {
-    if kind == TK_IDENT() { return "IDENT" }
-    if kind == TK_INT() { return "INT" }
-    if kind == TK_STRING() { return "STRING" }
-    if kind == TK_CHAR() { return "CHAR" }
-    if kind == TK_FN() { return "fn" }
-    if kind == TK_LET() { return "let" }
-    if kind == TK_MUT() { return "mut" }
-    if kind == TK_IF() { return "if" }
-    if kind == TK_ELSE() { return "else" }
-    if kind == TK_FOR() { return "for" }
-    if kind == TK_IN() { return "in" }
-    if kind == TK_RETURN() { return "return" }
-    if kind == TK_STRUCT() { return "struct" }
-    if kind == TK_ENUM() { return "enum" }
-    if kind == TK_MATCH() { return "match" }
-    if kind == TK_IMPL() { return "impl" }
-    if kind == TK_BREAK() { return "break" }
-    if kind == TK_CONTINUE() { return "continue" }
-    if kind == TK_TRUE() { return "true" }
-    if kind == TK_FALSE() { return "false" }
-    if kind == TK_PLUS() { return "+" }
-    if kind == TK_MINUS() { return "-" }
-    if kind == TK_STAR() { return "*" }
-    if kind == TK_SLASH() { return "/" }
-    if kind == TK_PERCENT() { return "%" }
-    if kind == TK_EQ() { return "=" }
-    if kind == TK_EQEQ() { return "==" }
-    if kind == TK_BANGEQ() { return "!=" }
-    if kind == TK_LT() { return "<" }
-    if kind == TK_GT() { return ">" }
-    if kind == TK_LTEQ() { return "<=" }
-    if kind == TK_GTEQ() { return ">=" }
-    if kind == TK_BANG() { return "!" }
-    if kind == TK_AMPAMP() { return "&&" }
-    if kind == TK_PIPEPIPE() { return "||" }
-    if kind == TK_AMP() { return "&" }
-    if kind == TK_ARROW() { return "->" }
-    if kind == TK_FATARROW() { return "=>" }
-    if kind == TK_COLONCOLON() { return "::" }
-    if kind == TK_DOTDOT() { return ".." }
-    if kind == TK_LPAREN() { return "(" }
-    if kind == TK_RPAREN() { return ")" }
-    if kind == TK_LBRACE() { return "{" }
-    if kind == TK_RBRACE() { return "}" }
-    if kind == TK_LBRACKET() { return "[" }
-    if kind == TK_RBRACKET() { return "]" }
-    if kind == TK_COMMA() { return "," }
-    if kind == TK_COLON() { return ":" }
-    if kind == TK_SEMI() { return ";" }
-    if kind == TK_DOT() { return "." }
-    if kind == TK_UNDERSCORE() { return "_" }
-    if kind == TK_EOF() { return "EOF" }
-    if kind == TK_ERROR() { return "ERROR" }
-    return "UNKNOWN"
-}
-
-// ============================================================================
-// Character helpers
-// ============================================================================
-
-fn is_whitespace(ch: int) -> bool {
-    return ch == ' ' || ch == '\t' || ch == '\r' || ch == '\n'
-}
+// Lexer - tokenizer functions for the Ease bootstrap compiler
 
 fn is_digit(ch: int) -> bool {
-    return ch >= '0' && ch <= '9'
+    return ch >= 48 && ch <= 57  // '0' to '9'
 }
 
 fn is_alpha(ch: int) -> bool {
-    // Workaround: || chain bug - use if/return instead
-    if ch >= 'a' && ch <= 'z' {
-        return true
-    }
-    if ch >= 'A' && ch <= 'Z' {
-        return true
-    }
-    if ch == '_' {
-        return true
-    }
-    return false
+    return (ch >= 65 && ch <= 90) || (ch >= 97 && ch <= 122) || ch == 95  // A-Z, a-z, _
 }
 
-fn is_alnum(ch: int) -> bool {
-    return is_alpha(ch) || is_digit(ch)
+fn is_hex_digit(ch: int) -> bool {
+    return is_digit(ch) || (ch >= 97 && ch <= 102) || (ch >= 65 && ch <= 70)  // 0-9, a-f, A-F
 }
 
 fn lex_peek(src: string, pos: int) -> int {
@@ -157,137 +19,40 @@ fn lex_peek(src: string, pos: int) -> int {
     return str_char_at(src, pos)
 }
 
-// String equality (workaround for == bug)
-fn str_eq(a: string, b: string) -> bool {
-    let la = len(a)
-    let lb = len(b)
-    if la != lb {
-        return false
-    }
-    let mut i = 0
-    for i < la {
-        if str_char_at(a, i) != str_char_at(b, i) {
-            return false
-        }
-        i = i + 1
-    }
-    return true
-}
-
-fn lookup_keyword(name: string) -> int {
-    if str_eq(name, "fn") { return TK_FN() }
-    if str_eq(name, "let") { return TK_LET() }
-    if str_eq(name, "mut") { return TK_MUT() }
-    if str_eq(name, "if") { return TK_IF() }
-    if str_eq(name, "else") { return TK_ELSE() }
-    if str_eq(name, "for") { return TK_FOR() }
-    if str_eq(name, "in") { return TK_IN() }
-    if str_eq(name, "return") { return TK_RETURN() }
-    if str_eq(name, "struct") { return TK_STRUCT() }
-    if str_eq(name, "enum") { return TK_ENUM() }
-    if str_eq(name, "match") { return TK_MATCH() }
-    if str_eq(name, "impl") { return TK_IMPL() }
-    if str_eq(name, "break") { return TK_BREAK() }
-    if str_eq(name, "continue") { return TK_CONTINUE() }
-    if str_eq(name, "true") { return TK_TRUE() }
-    if str_eq(name, "false") { return TK_FALSE() }
-    return TK_IDENT()
-}
-
-// ============================================================================
-// Lexer - returns only integers, extracts strings separately
-// ============================================================================
-
-// Result: packed as kind | (start << 16) | (end << 32) - but that's too complex
-// Instead: use multiple return calls
-
-// Skip whitespace, return new position
 fn lex_skip(src: string, pos: int) -> int {
     let src_len = len(src)
     let mut p = pos
     for p < src_len {
         let ch = lex_peek(src, p)
-        if is_whitespace(ch) {
+
+        // Skip whitespace
+        if ch == 32 || ch == 9 || ch == 10 || ch == 13 {  // space, tab, newline, CR
             p = p + 1
-        } else if ch == '/' && p + 1 < src_len && lex_peek(src, p + 1) == '/' {
-            for p < src_len && lex_peek(src, p) != '\n' {
-                p = p + 1
-            }
         } else {
-            break
+            // Check for comments: //
+            if ch == 47 && p + 1 < src_len {  // '/' character
+                let next_ch = lex_peek(src, p + 1)
+                if next_ch == 47 {  // Second '/' - it's a comment
+                    // Skip until end of line
+                    p = p + 2  // Skip //
+                    for p < src_len {
+                        let comment_ch = lex_peek(src, p)
+                        if comment_ch == 10 || comment_ch == 13 {  // newline or CR
+                            break
+                        }
+                        p = p + 1
+                    }
+                } else {
+                    break  // Not a comment, stop skipping
+                }
+            } else {
+                break  // Not whitespace or comment
+            }
         }
     }
     return p
 }
 
-// Scan identifier, return end position
-fn lex_ident_end(src: string, pos: int) -> int {
-    let src_len = len(src)
-    let mut p = pos
-    for p < src_len && is_alnum(lex_peek(src, p)) {
-        p = p + 1
-    }
-    return p
-}
-
-// Scan number, return end position
-fn lex_number_end(src: string, pos: int) -> int {
-    let src_len = len(src)
-    let mut p = pos
-    for p < src_len && is_digit(lex_peek(src, p)) {
-        p = p + 1
-    }
-    return p
-}
-
-// Scan string, return end position (after closing quote)
-fn lex_string_end(src: string, pos: int) -> int {
-    let src_len = len(src)
-    let mut p = pos + 1  // skip opening quote
-    for p < src_len && lex_peek(src, p) != '"' {
-        if lex_peek(src, p) == '\\' {
-            p = p + 1
-        }
-        p = p + 1
-    }
-    if p < src_len {
-        p = p + 1  // skip closing quote
-    }
-    return p
-}
-
-// Scan char, return end position
-fn lex_char_end(src: string, pos: int) -> int {
-    let mut p = pos + 1  // skip opening quote
-    if lex_peek(src, p) == '\\' {
-        p = p + 2
-    } else {
-        p = p + 1
-    }
-    if lex_peek(src, p) == '\'' {
-        p = p + 1
-    }
-    return p
-}
-
-// Get char value at position
-fn lex_char_value(src: string, pos: int) -> int {
-    let mut p = pos + 1
-    let mut ch = lex_peek(src, p)
-    if ch == '\\' {
-        let esc = lex_peek(src, p + 1)
-        if esc == 'n' { return '\n' }
-        if esc == 't' { return '\t' }
-        if esc == 'r' { return '\r' }
-        if esc == '0' { return '\0' }
-        if esc == '\\' { return '\\' }
-        if esc == '\'' { return '\'' }
-        return esc
-    }
-    return ch
-}
-
-// Get token kind at position (after skip)
 fn lex_kind(src: string, pos: int) -> int {
     let src_len = len(src)
     if pos >= src_len {
@@ -295,216 +60,219 @@ fn lex_kind(src: string, pos: int) -> int {
     }
 
     let ch = lex_peek(src, pos)
-
-    if is_alpha(ch) {
-        let end = lex_ident_end(src, pos)
-        let name = str_substring(src, pos, end)
-        return lookup_keyword(name)
+    let mut next = 0
+    if pos + 1 < src_len {
+        next = lex_peek(src, pos + 1)
     }
 
+    // Two-character tokens
+    if ch == 45 && next == 62 { return TK_ARROW() }      // ->
+    if ch == 60 && next == 61 { return TK_LE() }         // <=
+    if ch == 62 && next == 61 { return TK_GE() }         // >=
+    if ch == 61 && next == 61 { return TK_EQ() }         // ==
+    if ch == 33 && next == 61 { return TK_NE() }         // !=
+    if ch == 38 && next == 38 { return TK_AND() }        // &&
+    if ch == 124 && next == 124 { return TK_OR() }       // ||
+    if ch == 46 && next == 46 { return TK_DOTDOT() }     // ..
+
+    // Single-char tokens
+    if ch == 40 { return TK_LPAREN() }    // (
+    if ch == 41 { return TK_RPAREN() }    // )
+    if ch == 123 { return TK_LBRACE() }   // {
+    if ch == 125 { return TK_RBRACE() }   // }
+    if ch == 91 { return TK_LBRACKET() }  // [
+    if ch == 93 { return TK_RBRACKET() }  // ]
+    if ch == 44 { return TK_COMMA() }     // ,
+    if ch == 58 { return TK_COLON() }     // :
+    if ch == 59 { return TK_SEMI() }      // ;
+    if ch == 46 { return TK_DOT() }       // .
+    if ch == 43 { return TK_PLUS() }      // +
+    if ch == 45 { return TK_MINUS() }     // -
+    if ch == 42 { return TK_STAR() }      // *
+    if ch == 47 { return TK_SLASH() }     // /
+    if ch == 37 { return TK_PERCENT() }   // %
+    if ch == 94 { return TK_CARET() }     // ^ (XOR)
+    if ch == 38 { return TK_AMPERSAND() } // & (bitwise AND, after && check)
+    if ch == 124 { return TK_PIPE() }     // | (bitwise OR, after || check)
+    if ch == 60 { return TK_LT() }        // <
+    if ch == 62 { return TK_GT() }        // >
+    if ch == 61 { return TK_ASSIGN() }    // =
+    if ch == 33 { return TK_NOT() }       // !
+
+    // Numbers
     if is_digit(ch) {
         return TK_INT()
     }
 
-    if ch == '"' {
+    // String literals
+    if ch == 34 {  // " character
         return TK_STRING()
     }
 
-    if ch == '\'' {
-        return TK_CHAR()
+    // Identifiers and keywords
+    if is_alpha(ch) {
+        let mut end = pos
+        for end < src_len && (is_alpha(lex_peek(src, end)) || is_digit(lex_peek(src, end))) {
+            end = end + 1
+        }
+        let word = str_substring(src, pos, end)
+        if word == "fn" { return TK_FN() }
+        if word == "let" { return TK_LET() }
+        if word == "mut" { return TK_MUT() }
+        if word == "if" { return TK_IF() }
+        if word == "else" { return TK_ELSE() }
+        if word == "for" { return TK_FOR() }
+        if word == "in" { return TK_IN() }
+        if word == "return" { return TK_RETURN() }
+        if word == "break" { return TK_BREAK() }
+        if word == "struct" { return TK_STRUCT() }
+        if word == "true" { return TK_TRUE() }
+        if word == "false" { return TK_FALSE() }
+        if word == "import" { return TK_IMPORT() }
+        return TK_IDENT()
     }
 
-    // Two-char operators
-    let next = lex_peek(src, pos + 1)
-    if ch == '=' && next == '=' { return TK_EQEQ() }
-    if ch == '!' && next == '=' { return TK_BANGEQ() }
-    if ch == '<' && next == '=' { return TK_LTEQ() }
-    if ch == '>' && next == '=' { return TK_GTEQ() }
-    if ch == '-' && next == '>' { return TK_ARROW() }
-    if ch == '=' && next == '>' { return TK_FATARROW() }
-    if ch == '&' && next == '&' { return TK_AMPAMP() }
-    if ch == '|' && next == '|' { return TK_PIPEPIPE() }
-    if ch == ':' && next == ':' { return TK_COLONCOLON() }
-    if ch == '.' && next == '.' { return TK_DOTDOT() }
-
-    // Single-char operators
-    if ch == '+' { return TK_PLUS() }
-    if ch == '-' { return TK_MINUS() }
-    if ch == '*' { return TK_STAR() }
-    if ch == '/' { return TK_SLASH() }
-    if ch == '%' { return TK_PERCENT() }
-    if ch == '=' { return TK_EQ() }
-    if ch == '!' { return TK_BANG() }
-    if ch == '<' { return TK_LT() }
-    if ch == '>' { return TK_GT() }
-    if ch == '&' { return TK_AMP() }
-    if ch == '(' { return TK_LPAREN() }
-    if ch == ')' { return TK_RPAREN() }
-    if ch == '{' { return TK_LBRACE() }
-    if ch == '}' { return TK_RBRACE() }
-    if ch == '[' { return TK_LBRACKET() }
-    if ch == ']' { return TK_RBRACKET() }
-    if ch == ',' { return TK_COMMA() }
-    if ch == ':' { return TK_COLON() }
-    if ch == ';' { return TK_SEMI() }
-    if ch == '.' { return TK_DOT() }
-
-    return TK_ERROR()
+    return TK_EOF()
 }
 
-// Get token end position
 fn lex_end(src: string, pos: int, kind: int) -> int {
     if kind == TK_EOF() { return pos }
-    if kind == TK_IDENT() || kind == TK_FN() || kind == TK_LET() || kind == TK_MUT() ||
-       kind == TK_IF() || kind == TK_ELSE() || kind == TK_FOR() || kind == TK_IN() ||
-       kind == TK_RETURN() || kind == TK_STRUCT() || kind == TK_ENUM() || kind == TK_MATCH() ||
-       kind == TK_IMPL() || kind == TK_BREAK() || kind == TK_CONTINUE() ||
-       kind == TK_TRUE() || kind == TK_FALSE() {
-        return lex_ident_end(src, pos)
-    }
-    if kind == TK_INT() {
-        return lex_number_end(src, pos)
-    }
-    if kind == TK_STRING() {
-        return lex_string_end(src, pos)
-    }
-    if kind == TK_CHAR() {
-        return lex_char_end(src, pos)
-    }
-    // Two-char operators
-    if kind == TK_EQEQ() || kind == TK_BANGEQ() || kind == TK_LTEQ() || kind == TK_GTEQ() ||
-       kind == TK_ARROW() || kind == TK_FATARROW() || kind == TK_AMPAMP() || kind == TK_PIPEPIPE() ||
-       kind == TK_COLONCOLON() || kind == TK_DOTDOT() {
+
+    // Two-character tokens
+    if kind == TK_ARROW() || kind == TK_LE() || kind == TK_GE() ||
+       kind == TK_EQ() || kind == TK_NE() || kind == TK_AND() ||
+       kind == TK_OR() || kind == TK_DOTDOT() {
         return pos + 2
     }
-    // Single-char operators
+
+    // Single-character tokens
+    if kind == TK_LPAREN() || kind == TK_RPAREN() || kind == TK_LBRACE() ||
+       kind == TK_RBRACE() || kind == TK_LBRACKET() || kind == TK_RBRACKET() ||
+       kind == TK_COMMA() || kind == TK_COLON() || kind == TK_SEMI() || kind == TK_DOT() ||
+       kind == TK_PLUS() || kind == TK_MINUS() || kind == TK_STAR() || kind == TK_SLASH() ||
+       kind == TK_PERCENT() || kind == TK_CARET() || kind == TK_AMPERSAND() || kind == TK_PIPE() || kind == TK_LT() || kind == TK_GT() || kind == TK_ASSIGN() || kind == TK_NOT() {
+        return pos + 1
+    }
+
+    // Numbers (decimal and hexadecimal)
+    if kind == TK_INT() {
+        let mut end = pos
+        // Check for hex literal: 0x...
+        if end + 1 < len(src) && lex_peek(src, end) == 48 && lex_peek(src, end + 1) == 120 {  // '0' and 'x'
+            end = end + 2  // Skip "0x"
+            for end < len(src) && is_hex_digit(lex_peek(src, end)) {
+                end = end + 1
+            }
+        } else {
+            // Decimal number
+            for end < len(src) && is_digit(lex_peek(src, end)) {
+                end = end + 1
+            }
+        }
+        return end
+    }
+
+    // String literals
+    if kind == TK_STRING() {
+        let mut end = pos + 1  // Skip opening quote
+        for end < len(src) {
+            let ch = lex_peek(src, end)
+            if ch == 34 {  // Closing quote
+                return end + 1  // Include closing quote
+            }
+            if ch == 92 {  // Backslash (escape)
+                end = end + 2  // Skip escape sequence
+            } else {
+                end = end + 1
+            }
+        }
+        return end  // Unterminated string (return what we have)
+    }
+
+    // Identifiers and keywords
+    if kind == TK_IDENT() || kind == TK_FN() || kind == TK_LET() || kind == TK_MUT() ||
+       kind == TK_IF() || kind == TK_ELSE() || kind == TK_FOR() || kind == TK_IN() ||
+       kind == TK_RETURN() || kind == TK_BREAK() || kind == TK_STRUCT() ||
+       kind == TK_TRUE() || kind == TK_FALSE() || kind == TK_IMPORT() {
+        let mut end = pos
+        for end < len(src) && (is_alpha(lex_peek(src, end)) || is_digit(lex_peek(src, end))) {
+            end = end + 1
+        }
+        return end
+    }
+
+    // Two-character operators
+    if kind == TK_ARROW() || kind == TK_LE() || kind == TK_GE() ||
+       kind == TK_EQ() || kind == TK_NE() || kind == TK_AND() ||
+       kind == TK_OR() || kind == TK_DOTDOT() {
+        return pos + 2
+    }
+
     return pos + 1
 }
 
-// Get string value for IDENT/STRING tokens
 fn lex_string_value(src: string, pos: int, kind: int) -> string {
+    if kind == TK_IDENT() || kind == TK_FN() || kind == TK_LET() || kind == TK_MUT() ||
+       kind == TK_IF() || kind == TK_ELSE() || kind == TK_FOR() || kind == TK_IN() ||
+       kind == TK_RETURN() || kind == TK_BREAK() || kind == TK_STRUCT() ||
+       kind == TK_TRUE() || kind == TK_FALSE() || kind == TK_IMPORT() {
+        let end = lex_end(src, pos, kind)
+        return str_substring(src, pos, end)
+    }
     if kind == TK_STRING() {
-        let end = lex_string_end(src, pos)
-        return str_substring(src, pos + 1, end - 1)
+        // Extract string content without quotes, decode escape sequences
+        let end = lex_end(src, pos, kind)
+        let raw = str_substring(src, pos + 1, end - 1)
+        let raw_len = len(raw)
+        let mut result = ""
+        let mut ri = 0
+        for ri < raw_len {
+            let ch = str_char_at(raw, ri)
+            if ch == 92 && ri + 1 < raw_len {
+                let next = str_char_at(raw, ri + 1)
+                if next == 110 { result = result + "\n" }
+                if next == 116 { result = result + "\t" }
+                if next == 92  { result = result + "\\" }
+                if next == 34  { result = result + "\"" }
+                if next == 48  { poke(result, len(result), 0) }
+                ri = ri + 2
+            } else {
+                result = result + str_substring(raw, ri, ri + 1)
+                ri = ri + 1
+            }
+        }
+        return result
     }
-    let end = lex_ident_end(src, pos)
-    return str_substring(src, pos, end)
+    return ""
 }
 
-// Get int value for INT/CHAR tokens
-fn lex_int_value(src: string, pos: int, kind: int) -> int {
-    if kind == TK_CHAR() {
-        return lex_char_value(src, pos)
-    }
-    let end = lex_number_end(src, pos)
+fn lex_int_value(src: string, pos: int) -> int {
+    let end = lex_end(src, pos, TK_INT())
     let s = str_substring(src, pos, end)
-    return strconv.Atoi(s)
-}
+    let mut val = 0
+    let mut i = 0
+    let s_len = len(s)
 
-// ============================================================================
-// Test
-// ============================================================================
-
-fn main() -> int {
-    let src = "fn main() -> int { let x = 42; return x + 1 }"
-
-    print("Lexing: ")
-    print(src)
-    print("\n\n")
-
-    let mut pos = 0
-    let mut count = 0
-
-    for {
-        pos = lex_skip(src, pos)
-        let kind = lex_kind(src, pos)
-
-        print(token_kind_name(kind))
-
-        if kind == TK_IDENT() || kind == TK_STRING() {
-            print("(")
-            print(lex_string_value(src, pos, kind))
-            print(")")
+    // Check for hex: "0x..."
+    if s_len >= 2 && str_char_at(s, 0) == 48 && str_char_at(s, 1) == 120 {  // '0' and 'x'
+        // Parse hex
+        i = 2  // Skip "0x"
+        for i < s_len {
+            let ch = str_char_at(s, i)
+            let mut digit = 0
+            if ch >= 48 && ch <= 57 { digit = ch - 48 }            // '0'-'9'
+            if ch >= 97 && ch <= 102 { digit = ch - 97 + 10 }      // 'a'-'f'
+            if ch >= 65 && ch <= 70 { digit = ch - 65 + 10 }       // 'A'-'F'
+            val = val * 16 + digit
+            i = i + 1
         }
-        if kind == TK_INT() {
-            print("(")
-            print(strconv.Itoa(lex_int_value(src, pos, kind)))
-            print(")")
-        }
-        print(" ")
-
-        pos = lex_end(src, pos, kind)
-        count = count + 1
-
-        if kind == TK_EOF() {
-            break
-        }
-        if count > 100 {
-            print("\nToo many!\n")
-            return 1
+    } else {
+        // Parse decimal
+        for i < s_len {
+            let ch = str_char_at(s, i)
+            val = val * 10 + (ch - 48)
+            i = i + 1
         }
     }
-
-    print("\n\nTokens: ")
-    print(strconv.Itoa(count))
-    print("\n")
-
-    // Test keywords
-    let src2 = "let mut x = 123"
-    let mut p2 = 0
-
-    p2 = lex_skip(src2, p2)
-    if lex_kind(src2, p2) != TK_LET() { return 1 }
-    p2 = lex_end(src2, p2, TK_LET())
-
-    p2 = lex_skip(src2, p2)
-    if lex_kind(src2, p2) != TK_MUT() { return 2 }
-    p2 = lex_end(src2, p2, TK_MUT())
-
-    p2 = lex_skip(src2, p2)
-    if lex_kind(src2, p2) != TK_IDENT() { return 3 }
-    if !str_eq(lex_string_value(src2, p2, TK_IDENT()), "x") { return 3 }
-    p2 = lex_end(src2, p2, TK_IDENT())
-
-    p2 = lex_skip(src2, p2)
-    if lex_kind(src2, p2) != TK_EQ() { return 4 }
-    p2 = lex_end(src2, p2, TK_EQ())
-
-    p2 = lex_skip(src2, p2)
-    if lex_kind(src2, p2) != TK_INT() { return 5 }
-    if lex_int_value(src2, p2, TK_INT()) != 123 { return 5 }
-
-    // Test operators
-    let src3 = "== != -> =>"
-    let mut p3 = 0
-
-    p3 = lex_skip(src3, p3)
-    if lex_kind(src3, p3) != TK_EQEQ() { return 10 }
-    p3 = lex_end(src3, p3, TK_EQEQ())
-
-    p3 = lex_skip(src3, p3)
-    if lex_kind(src3, p3) != TK_BANGEQ() { return 11 }
-    p3 = lex_end(src3, p3, TK_BANGEQ())
-
-    p3 = lex_skip(src3, p3)
-    if lex_kind(src3, p3) != TK_ARROW() { return 12 }
-    p3 = lex_end(src3, p3, TK_ARROW())
-
-    p3 = lex_skip(src3, p3)
-    if lex_kind(src3, p3) != TK_FATARROW() { return 13 }
-
-    // Test string
-    let src4 = "\"hello\""
-    let p4 = lex_skip(src4, 0)
-    if lex_kind(src4, p4) != TK_STRING() { return 20 }
-    if !str_eq(lex_string_value(src4, p4, TK_STRING()), "hello") { return 20 }
-
-    // Test char
-    let src5 = "'a'"
-    let p5 = lex_skip(src5, 0)
-    if lex_kind(src5, p5) != TK_CHAR() { return 21 }
-    if lex_int_value(src5, p5, TK_CHAR()) != 'a' { return 21 }
-
-    print("lexer.ease: All tests passed!\n")
-    return 0
+    return val
 }

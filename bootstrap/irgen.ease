@@ -1,0 +1,853 @@
+// IR generation - translates AST to IR instructions for the Ease bootstrap compiler
+
+// Helper: check if an AST expression produces a string value
+fn is_string_expr(idx: int, nodes: []AstNode) -> int {
+    if idx < 0 { return 0 }
+    let node = nodes[idx]
+    if node.tag == EXPR_STRING() { return 1 }
+    if node.tag == EXPR_IDENT() {
+        // Check if this variable was tracked as holding a string (current function scope only)
+        let mut si = g_string_vars_start
+        let slen = len(g_string_vars)
+        for si < slen {
+            if g_string_vars[si] == node.str_val { return 1 }
+            si = si + 1
+        }
+        return 0
+    }
+    if node.tag == EXPR_CALL() {
+        let call_name = lookup_rename(node.str_val)
+        let ret_type = lookup_func_return_type(call_name)
+        if ret_type == TYPE_STRING() {
+            if lookup_func_return_is_array(call_name) == 0 {
+                return 1
+            }
+        }
+        return 0
+    }
+    if node.tag == EXPR_FIELD() {
+        // Field access: check if the field name is known to be a string
+        if node.str_val == "str_val" { return 1 }
+        return 0
+    }
+    if node.tag == EXPR_INDEX() {
+        // Array indexing: check if base array is a known string array (current function scope only)
+        let base = nodes[node.left]
+        if base.tag == EXPR_IDENT() {
+            let mut sai = g_string_array_vars_start
+            for sai < len(g_string_array_vars) {
+                if g_string_array_vars[sai] == base.str_val { return 1 }
+                sai = sai + 1
+            }
+        }
+        return 0
+    }
+    // NOTE: EXPR_ARRAY_LIT is NOT a string - it's an array.
+    // []string{} is a string ARRAY, not a string value.
+    // String array detection is in is_string_array_expr.
+    if node.tag == EXPR_BINARY() {
+        if node.int_val == TK_PLUS() {
+            if is_string_expr(node.left, nodes) == 1 { return 1 }
+            if is_string_expr(node.right, nodes) == 1 { return 1 }
+        }
+        return 0
+    }
+    return 0
+}
+
+fn is_string_array_expr(idx: int, nodes: []AstNode) -> int {
+    if idx < 0 { return 0 }
+    let node = nodes[idx]
+    if node.tag == EXPR_ARRAY_LIT() {
+        if node.str_val == "string" { return 1 }
+        return 0
+    }
+    if node.tag == EXPR_IDENT() {
+        let mut i = g_string_array_vars_start
+        for i < len(g_string_array_vars) {
+            if g_string_array_vars[i] == node.str_val { return 1 }
+            i = i + 1
+        }
+        return 0
+    }
+    if node.tag == EXPR_CALL() {
+        let call_name = lookup_rename(node.str_val)
+        let ret_type = lookup_func_return_type(call_name)
+        if ret_type == TYPE_STRING() && lookup_func_return_is_array(call_name) == 1 {
+            return 1
+        }
+        return 0
+    }
+    return 0
+}
+
+// Helper: Generate IR for len() builtin
+fn gen_ir_call_len(ast_idx: int, nodes: []AstNode, instrs: []IRInstr, symtab_names: []string, symtab_vregs: []int) -> int {
+    let arg_indices = get_call_args(ast_idx)
+    if len(arg_indices) != 1 {
+        return -1
+    }
+    let array_vreg = gen_ir_from_ast_with_symtab(arg_indices[0], nodes, instrs, symtab_names, symtab_vregs)
+    let result_vreg = len(instrs)
+    let mut op = OP_ARRAY_LEN()
+    if is_string_expr(arg_indices[0], nodes) == 1 {
+        op = OP_STR_LEN()
+    }
+    let len_instr = IRInstr { op: op, dest: result_vreg, arg1: array_vreg, arg2: 0, arg3: 0, str_val: "" }
+    push(instrs, len_instr)
+    return result_vreg
+}
+
+// Helper: Generate IR for push() builtin
+fn gen_ir_call_push(ast_idx: int, nodes: []AstNode, instrs: []IRInstr, symtab_names: []string, symtab_vregs: []int) -> int {
+    let arg_indices = get_call_args(ast_idx)
+    if len(arg_indices) != 2 {
+        return -1
+    }
+    let array_vreg = gen_ir_from_ast_with_symtab(arg_indices[0], nodes, instrs, symtab_names, symtab_vregs)
+    let elem_vreg = gen_ir_from_ast_with_symtab(arg_indices[1], nodes, instrs, symtab_names, symtab_vregs)
+    let push_instr = IRInstr { op: OP_ARRAY_PUSH(), dest: -1, arg1: array_vreg, arg2: elem_vreg, arg3: 0, str_val: "" }
+    push(instrs, push_instr)
+    return array_vreg
+}
+
+// Helper: Generate IR for poke() builtin
+fn gen_ir_call_poke(ast_idx: int, nodes: []AstNode, instrs: []IRInstr, symtab_names: []string, symtab_vregs: []int) -> int {
+    let arg_indices = get_call_args(ast_idx)
+    if len(arg_indices) != 2 {
+        return -1
+    }
+    let addr_vreg = gen_ir_from_ast_with_symtab(arg_indices[0], nodes, instrs, symtab_names, symtab_vregs)
+    let value_vreg = gen_ir_from_ast_with_symtab(arg_indices[1], nodes, instrs, symtab_names, symtab_vregs)
+    let poke_instr = IRInstr { op: OP_POKE(), dest: -1, arg1: addr_vreg, arg2: value_vreg, arg3: 0, str_val: "" }
+    push(instrs, poke_instr)
+    return -1  // poke returns nothing
+}
+
+// Helper: Generate IR for peek() builtin
+fn gen_ir_call_peek(ast_idx: int, nodes: []AstNode, instrs: []IRInstr, symtab_names: []string, symtab_vregs: []int) -> int {
+    let arg_indices = get_call_args(ast_idx)
+    if len(arg_indices) != 1 {
+        return -1
+    }
+    let addr_vreg = gen_ir_from_ast_with_symtab(arg_indices[0], nodes, instrs, symtab_names, symtab_vregs)
+    let result_vreg = len(instrs)
+    let peek_instr = IRInstr { op: OP_PEEK(), dest: result_vreg, arg1: addr_vreg, arg2: 0, arg3: 0, str_val: "" }
+    push(instrs, peek_instr)
+    return result_vreg  // peek returns the byte value
+}
+
+// Helper: Generate IR for heap_alloc() builtin
+fn gen_ir_call_heap_alloc(ast_idx: int, nodes: []AstNode, instrs: []IRInstr, symtab_names: []string, symtab_vregs: []int) -> int {
+    let arg_indices = get_call_args(ast_idx)
+    if len(arg_indices) != 1 {
+        return -1
+    }
+    let size_vreg = gen_ir_from_ast_with_symtab(arg_indices[0], nodes, instrs, symtab_names, symtab_vregs)
+    let result_vreg = len(instrs)
+    let heap_alloc_instr = IRInstr { op: OP_HEAP_ALLOC(), dest: result_vreg, arg1: size_vreg, arg2: 0, arg3: 0, str_val: "" }
+    push(instrs, heap_alloc_instr)
+    return result_vreg  // heap_alloc returns the allocated pointer
+}
+
+fn gen_ir_call_readfile(ast_idx: int, nodes: []AstNode, instrs: []IRInstr, symtab_names: []string, symtab_vregs: []int) -> int {
+    // os.ReadFile(path) -> string
+    let arg_indices = get_call_args(ast_idx)
+    if len(arg_indices) != 1 {
+        return -1
+    }
+    let path_vreg = gen_ir_from_ast_with_symtab(arg_indices[0], nodes, instrs, symtab_names, symtab_vregs)
+    let result_vreg = len(instrs)
+    let readfile_instr = IRInstr { op: OP_READFILE(), dest: result_vreg, arg1: path_vreg, arg2: 0, arg3: 0, str_val: "" }
+    push(instrs, readfile_instr)
+    return result_vreg  // ReadFile returns the file content as string
+}
+
+fn gen_ir_call_argc(ast_idx: int, nodes: []AstNode, instrs: []IRInstr, symtab_names: []string, symtab_vregs: []int) -> int {
+    // os.Argc() -> int
+    let result_vreg = len(instrs)
+    let argc_instr = IRInstr { op: OP_ARGC(), dest: result_vreg, arg1: 0, arg2: 0, arg3: 0, str_val: "" }
+    push(instrs, argc_instr)
+    return result_vreg
+}
+
+fn gen_ir_call_argv(ast_idx: int, nodes: []AstNode, instrs: []IRInstr, symtab_names: []string, symtab_vregs: []int) -> int {
+    // os.Argv(index) -> string
+    let arg_indices = get_call_args(ast_idx)
+    if len(arg_indices) != 1 {
+        return -1
+    }
+    let index_vreg = gen_ir_from_ast_with_symtab(arg_indices[0], nodes, instrs, symtab_names, symtab_vregs)
+    let result_vreg = len(instrs)
+    let argv_instr = IRInstr { op: OP_ARGV(), dest: result_vreg, arg1: index_vreg, arg2: 0, arg3: 0, str_val: "" }
+    push(instrs, argv_instr)
+    return result_vreg
+}
+
+fn gen_ir_call_itoa(ast_idx: int, nodes: []AstNode, instrs: []IRInstr, symtab_names: []string, symtab_vregs: []int) -> int {
+    // strconv.Itoa(int) -> string
+    let arg_indices = get_call_args(ast_idx)
+    if len(arg_indices) != 1 {
+        return -1
+    }
+    let int_vreg = gen_ir_from_ast_with_symtab(arg_indices[0], nodes, instrs, symtab_names, symtab_vregs)
+    let result_vreg = len(instrs)
+    let itoa_instr = IRInstr { op: OP_INT_TO_STR(), dest: result_vreg, arg1: int_vreg, arg2: 0, arg3: 0, str_val: "" }
+    push(instrs, itoa_instr)
+    return result_vreg
+}
+
+fn gen_ir_call_print(ast_idx: int, nodes: []AstNode, instrs: []IRInstr, symtab_names: []string, symtab_vregs: []int) -> int {
+    // print(string) -> ()
+    let arg_indices = get_call_args(ast_idx)
+    if len(arg_indices) != 1 {
+        return -1
+    }
+    let str_vreg = gen_ir_from_ast_with_symtab(arg_indices[0], nodes, instrs, symtab_names, symtab_vregs)
+    let print_instr = IRInstr { op: OP_PRINT(), dest: 0, arg1: str_vreg, arg2: 0, arg3: 0, str_val: "" }
+    push(instrs, print_instr)
+    return 0  // print returns nothing
+}
+
+fn gen_ir_call_str_char_at(ast_idx: int, nodes: []AstNode, instrs: []IRInstr, symtab_names: []string, symtab_vregs: []int) -> int {
+    let arg_indices = get_call_args(ast_idx)
+    if len(arg_indices) != 2 { return -1 }
+    let str_vreg = gen_ir_from_ast_with_symtab(arg_indices[0], nodes, instrs, symtab_names, symtab_vregs)
+    let idx_vreg = gen_ir_from_ast_with_symtab(arg_indices[1], nodes, instrs, symtab_names, symtab_vregs)
+    let result_vreg = len(instrs)
+    push(instrs, IRInstr { op: OP_STR_CHAR_AT(), dest: result_vreg, arg1: str_vreg, arg2: idx_vreg, arg3: 0, str_val: "" })
+    return result_vreg
+}
+
+fn gen_ir_call_str_substring(ast_idx: int, nodes: []AstNode, instrs: []IRInstr, symtab_names: []string, symtab_vregs: []int) -> int {
+    let arg_indices = get_call_args(ast_idx)
+    if len(arg_indices) != 3 { return -1 }
+    let str_vreg = gen_ir_from_ast_with_symtab(arg_indices[0], nodes, instrs, symtab_names, symtab_vregs)
+    let start_vreg = gen_ir_from_ast_with_symtab(arg_indices[1], nodes, instrs, symtab_names, symtab_vregs)
+    let end_vreg = gen_ir_from_ast_with_symtab(arg_indices[2], nodes, instrs, symtab_names, symtab_vregs)
+    let result_vreg = len(instrs)
+    push(instrs, IRInstr { op: OP_STR_SUBSTRING(), dest: result_vreg, arg1: str_vreg, arg2: start_vreg, arg3: end_vreg, str_val: "" })
+    return result_vreg
+}
+
+fn gen_ir_call_syscall_open(ast_idx: int, nodes: []AstNode, instrs: []IRInstr, symtab_names: []string, symtab_vregs: []int) -> int {
+    let arg_indices = get_call_args(ast_idx)
+    if len(arg_indices) != 3 { return -1 }
+    let path_vreg = gen_ir_from_ast_with_symtab(arg_indices[0], nodes, instrs, symtab_names, symtab_vregs)
+    let flags_vreg = gen_ir_from_ast_with_symtab(arg_indices[1], nodes, instrs, symtab_names, symtab_vregs)
+    let mode_vreg = gen_ir_from_ast_with_symtab(arg_indices[2], nodes, instrs, symtab_names, symtab_vregs)
+    let result_vreg = len(instrs)
+    push(instrs, IRInstr { op: OP_SYSCALL_OPEN(), dest: result_vreg, arg1: path_vreg, arg2: flags_vreg, arg3: mode_vreg, str_val: "" })
+    return result_vreg
+}
+
+fn gen_ir_call_syscall_write(ast_idx: int, nodes: []AstNode, instrs: []IRInstr, symtab_names: []string, symtab_vregs: []int) -> int {
+    let arg_indices = get_call_args(ast_idx)
+    if len(arg_indices) != 3 { return -1 }
+    let fd_vreg = gen_ir_from_ast_with_symtab(arg_indices[0], nodes, instrs, symtab_names, symtab_vregs)
+    let buf_vreg = gen_ir_from_ast_with_symtab(arg_indices[1], nodes, instrs, symtab_names, symtab_vregs)
+    let size_vreg = gen_ir_from_ast_with_symtab(arg_indices[2], nodes, instrs, symtab_names, symtab_vregs)
+    let result_vreg = len(instrs)
+    push(instrs, IRInstr { op: OP_SYSCALL_WRITE(), dest: result_vreg, arg1: fd_vreg, arg2: buf_vreg, arg3: size_vreg, str_val: "" })
+    return result_vreg
+}
+
+fn gen_ir_call_syscall_close(ast_idx: int, nodes: []AstNode, instrs: []IRInstr, symtab_names: []string, symtab_vregs: []int) -> int {
+    let arg_indices = get_call_args(ast_idx)
+    if len(arg_indices) != 1 { return -1 }
+    let fd_vreg = gen_ir_from_ast_with_symtab(arg_indices[0], nodes, instrs, symtab_names, symtab_vregs)
+    let result_vreg = len(instrs)
+    push(instrs, IRInstr { op: OP_SYSCALL_CLOSE(), dest: result_vreg, arg1: fd_vreg, arg2: 0, arg3: 0, str_val: "" })
+    return result_vreg
+}
+
+fn get_field_offset(name: string) -> int {
+    let mut off = 0
+    // AstNode fields
+    if name == "tag" { off = 0 }
+    if name == "int_val" { off = 8 }
+    if name == "str_val" { off = 16 }
+    if name == "left" { off = 24 }
+    if name == "right" { off = 32 }
+    if name == "extra" { off = 40 }
+    if name == "type_tag" { off = 48 }
+    // ParseResult fields (unique names)
+    if name == "node_idx" { off = 0 }
+    if name == "new_pos" { off = 8 }
+    // IRInstr fields (unique names only - str_val collision handled in gen_ir_field)
+    if name == "op" { off = 0 }
+    if name == "dest" { off = 8 }
+    if name == "arg1" { off = 16 }
+    if name == "arg2" { off = 24 }
+    if name == "arg3" { off = 32 }
+    return off
+}
+
+fn gen_ir_eval_args(ast_idx: int, nodes: []AstNode, instrs: []IRInstr, st_names: []string, st_vregs: []int) -> []int {
+    let mut arg_vregs = []int{}
+    let arg_indices = get_call_args(ast_idx)
+    let mut i = 0
+    for i < len(arg_indices) {
+        let vreg = gen_ir_from_ast_with_symtab(arg_indices[i], nodes, instrs, st_names, st_vregs)
+        push(arg_vregs, vreg)
+        i = i + 1
+    }
+    return arg_vregs
+}
+
+fn gen_ir_index(node: AstNode, nodes: []AstNode, instrs: []IRInstr, st_names: []string, st_vregs: []int) -> int {
+    let arr = gen_ir_from_ast_with_symtab(node.left, nodes, instrs, st_names, st_vregs)
+    let idx = gen_ir_from_ast_with_symtab(node.right, nodes, instrs, st_names, st_vregs)
+    let res = len(instrs)
+    let instr = IRInstr { op: OP_LOAD(), dest: res, arg1: arr, arg2: idx, arg3: 0, str_val: "array_index" }
+    push(instrs, instr)
+    return res
+}
+
+fn gen_ir_field(node: AstNode, nodes: []AstNode, instrs: []IRInstr, st_names: []string, st_vregs: []int) -> int {
+    let base = gen_ir_from_ast_with_symtab(node.left, nodes, instrs, st_names, st_vregs)
+    let mut off = get_field_offset(node.str_val)
+    // Handle str_val collision: AstNode.str_val is at offset 16, IRInstr.str_val is at offset 40
+    // Detect IRInstr access by checking the base expression variable name
+    if node.str_val == "str_val" {
+        let left = nodes[node.left]
+        if left.tag == EXPR_IDENT() && left.str_val == "instr" {
+            off = 40
+        }
+        if left.tag == EXPR_INDEX() {
+            let arr = nodes[left.left]
+            if arr.tag == EXPR_IDENT() && arr.str_val == "instrs" {
+                off = 40
+            }
+        }
+    }
+    let res = len(instrs)
+    let instr = IRInstr { op: OP_LOAD(), dest: res, arg1: base, arg2: off, arg3: 0, str_val: node.str_val }
+    push(instrs, instr)
+    return res
+}
+
+fn gen_ir_array_lit(node: AstNode, nodes: []AstNode, instrs: []IRInstr, st_n: []string, st_v: []int) -> int {
+    let mut f = -1
+    let mut cnt = 0
+    let mut i = node.right
+    for i < len(nodes) && cnt < node.int_val {
+        if nodes[i].tag < STMT_LET() {
+            let v = gen_ir_from_ast_with_symtab(i, nodes, instrs, st_n, st_v)
+            if cnt == 0 { f = v }
+            cnt = cnt + 1
+        }
+        i = i + 1
+    }
+    if f >= 0 { return f }
+    // Empty array: allocate a 24-byte fat pointer (ptr, len, cap) initialized to zero
+    let size_vreg = len(instrs)
+    push(instrs, IRInstr { op: OP_LOADCONST(), dest: size_vreg, arg1: 24, arg2: 0, arg3: 0, str_val: "" })
+    let r = len(instrs)
+    push(instrs, IRInstr { op: OP_HEAP_ALLOC(), dest: r, arg1: size_vreg, arg2: 0, arg3: 0, str_val: "" })
+    return r
+}
+
+fn gen_ir_store_struct_fields(ptr: int, sname: string, idx: int, nodes: []AstNode, instrs: []IRInstr, st_names: []string, st_vregs: []int) -> int {
+    let vals = get_struct_fields(idx)
+    let fnames = get_struct_field_names(sname)
+    let mut i = 0
+    for i < len(vals) && i < len(fnames) {
+        let v = gen_ir_from_ast_with_symtab(vals[i], nodes, instrs, st_names, st_vregs)
+        let off = field_offset(sname, fnames[i])
+        let addr = len(instrs)
+        push(instrs, IRInstr { op: OP_INDEXADDR(), dest: addr, arg1: ptr, arg2: off, arg3: 0, str_val: fnames[i] })
+        push(instrs, IRInstr { op: OP_STORE(), dest: -1, arg1: addr, arg2: v, arg3: 0, str_val: "" })
+        i = i + 1
+    }
+    return 0 }
+
+fn gen_ir_struct_lit(node: AstNode, ast_idx: int, nodes: []AstNode, instrs: []IRInstr, st_names: []string, st_vregs: []int) -> int {
+    let size = struct_size(node.str_val)
+    let ptr = len(instrs)
+    let alloc = IRInstr { op: OP_ALLOCA(), dest: ptr, arg1: size, arg2: 0, arg3: 0, str_val: node.str_val }
+    push(instrs, alloc)
+    gen_ir_store_struct_fields(ptr, node.str_val, ast_idx, nodes, instrs, st_names, st_vregs)
+    return ptr
+}
+
+fn gen_ir_call_user(node: AstNode, ast_idx: int, nodes: []AstNode, instrs: []IRInstr, st_names: []string, st_vregs: []int) -> int {
+    let args = gen_ir_eval_args(ast_idx, nodes, instrs, st_names, st_vregs)
+    let mut i = 0
+    for i < len(args) {
+        push(instrs, IRInstr { op: OP_ARG(), dest: i, arg1: args[i], arg2: -1, arg3: 0, str_val: "" })
+        i = i + 1
+    }
+    let res = len(instrs)
+    push(instrs, IRInstr { op: OP_CALL(), dest: res, arg1: 0, arg2: node.int_val, arg3: 0, str_val: lookup_rename(node.str_val) })
+    return res
+}
+
+// Helper: Generate IR for binary operations
+fn gen_ir_binary_op(token_op: int) -> int {
+    let mut op = OP_ADD()
+    if token_op == TK_PLUS() { op = OP_ADD() }
+    if token_op == TK_MINUS() { op = OP_SUB() }
+    if token_op == TK_STAR() { op = OP_MUL() }
+    if token_op == TK_SLASH() { op = OP_DIV() }
+    if token_op == TK_LT() { op = OP_CMP_LT() }
+    if token_op == TK_GT() { op = OP_CMP_GT() }
+    if token_op == TK_LE() { op = OP_CMP_LE() }
+    if token_op == TK_GE() { op = OP_CMP_GE() }
+    if token_op == TK_EQ() { op = OP_CMP_EQ() }
+    if token_op == TK_NE() { op = OP_CMP_NE() }
+    if token_op == TK_AND() { op = OP_AND() }
+    if token_op == TK_OR() { op = OP_OR() }
+    if token_op == TK_CARET() { op = OP_XOR() }
+    if token_op == TK_AMPERSAND() { op = OP_BITAND() }
+    if token_op == TK_PIPE() { op = OP_BITOR() }
+    return op
+}
+
+fn gen_ir_binary(node: AstNode, nodes: []AstNode, instrs: []IRInstr, symtab_names: []string, symtab_vregs: []int) -> int {
+    let left_vreg = gen_ir_from_ast_with_symtab(node.left, nodes, instrs, symtab_names, symtab_vregs)
+    let right_vreg = gen_ir_from_ast_with_symtab(node.right, nodes, instrs, symtab_names, symtab_vregs)
+    let mut op = gen_ir_binary_op(node.int_val)
+    // Detect string concatenation: if + and either operand is string-typed
+    if node.int_val == TK_PLUS() {
+        if is_string_expr(node.left, nodes) == 1 || is_string_expr(node.right, nodes) == 1 {
+            op = OP_STR_CONCAT()
+        }
+    }
+    // Detect string equality: if == and either operand is string-typed
+    if node.int_val == TK_EQ() {
+        if is_string_expr(node.left, nodes) == 1 || is_string_expr(node.right, nodes) == 1 {
+            op = OP_STR_EQ()
+        }
+    }
+    // Detect string inequality: if != and either operand is string-typed
+    if node.int_val == TK_NE() {
+        if is_string_expr(node.left, nodes) == 1 || is_string_expr(node.right, nodes) == 1 {
+            op = OP_STR_NE()
+        }
+    }
+    let dest_vreg = len(instrs)
+    let instr = IRInstr { op: op, dest: dest_vreg, arg1: left_vreg, arg2: right_vreg, arg3: 0, str_val: "" }
+    push(instrs, instr)
+    return dest_vreg
+}
+
+// Helper: Generate IR for simple expression nodes
+fn gen_ir_expr(node: AstNode, ast_idx: int, nodes: []AstNode, instrs: []IRInstr, symtab_names: []string, symtab_vregs: []int) -> int {
+    if node.tag == EXPR_INT() {
+        let vreg = len(instrs)
+        let instr = IRInstr { op: OP_LOADCONST(), dest: vreg, arg1: node.int_val, arg2: 0, arg3: 0, str_val: "" }
+        push(instrs, instr)
+        return vreg
+    }
+
+    if node.tag == EXPR_BOOL() {
+        let vreg = len(instrs)
+        let instr = IRInstr { op: OP_LOADCONST(), dest: vreg, arg1: node.int_val, arg2: 0, arg3: 0, str_val: "" }
+        push(instrs, instr)
+        return vreg
+    }
+
+    if node.tag == EXPR_IDENT() {
+        // Search backwards to find the most recent binding (handles variable shadowing)
+        let mut found_vreg = -1
+        let symtab_len = len(symtab_names)
+        let mut idx1 = symtab_len - 1
+        for idx1 >= 0 {
+            if symtab_names[idx1] == node.str_val {
+                found_vreg = symtab_vregs[idx1]
+                break
+            }
+            idx1 = idx1 - 1
+        }
+        if found_vreg <= -1000 {
+            // Global variable sentinel - emit OP_LOAD_GLOBAL
+            let vreg = len(instrs)
+            push(instrs, IRInstr { op: OP_LOAD_GLOBAL(), dest: vreg, arg1: 0, arg2: 0, arg3: 0, str_val: node.str_val })
+            if is_scalar_global(node.str_val) == 1 {
+                // For scalar globals, dereference the address to get the value
+                let val_vreg = len(instrs)
+                push(instrs, IRInstr { op: OP_LOAD(), dest: val_vreg, arg1: vreg, arg2: 0, arg3: 0, str_val: "" })
+                return val_vreg
+            }
+            return vreg
+        }
+        if found_vreg < 0 {
+            return -1
+        }
+        return found_vreg
+    }
+
+    if node.tag == EXPR_STRING() {
+        // String literal - will be loaded from string table
+        let vreg = len(instrs)
+        // Store string index in arg1, use str_val to store the actual string for later embedding
+        let instr = IRInstr { op: OP_LOADCONST(), dest: vreg, arg1: 0, arg2: 0, arg3: 0, str_val: node.str_val }
+        push(instrs, instr)
+        return vreg
+    }
+
+    return 0
+}
+
+fn gen_ir_stmt_ret(node: AstNode, nodes: []AstNode, instrs: []IRInstr, st_n: []string, st_v: []int) -> int {
+    let mut v = -1
+    if node.left >= 0 {
+        v = gen_ir_from_ast_with_symtab(node.left, nodes, instrs, st_n, st_v)
+    }
+    push(instrs, IRInstr { op: OP_RET(), dest: v, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
+    return v
+}
+
+fn gen_ir_stmt_let(node: AstNode, nodes: []AstNode, instrs: []IRInstr, st_n: []string, st_v: []int) -> int {
+    // Track string variables for is_string_expr heuristic
+    if node.right >= 0 {
+        if is_string_expr(node.right, nodes) == 1 {
+            push(g_string_vars, node.str_val)
+        }
+        if is_string_array_expr(node.right, nodes) == 1 {
+            push(g_string_array_vars, node.str_val)
+        }
+    }
+    let v = gen_ir_from_ast_with_symtab(node.right, nodes, instrs, st_n, st_v)
+    if v < 0 { return -1 }
+    // Always create a new vreg via COPY to prevent aliasing when init is a variable reference.
+    // Without this, "let mut end = pos" would map end to pos's vreg, and modifying end would corrupt pos.
+    let new_vreg = len(instrs)
+    push(instrs, IRInstr { op: OP_COPY(), dest: new_vreg, arg1: v, arg2: 0, arg3: 0, str_val: "" })
+    push(st_n, node.str_val)
+    push(st_v, new_vreg)
+    return new_vreg
+}
+
+fn gen_ir_stmt_assign(node: AstNode, nodes: []AstNode, instrs: []IRInstr, st_n: []string, st_v: []int) -> int {
+    let val_vreg = gen_ir_from_ast_with_symtab(node.right, nodes, instrs, st_n, st_v)
+    if val_vreg < 0 { return -1 }
+
+    // Look up the target variable in the symbol table
+    let target_name = node.str_val
+    let mut var_vreg = -1
+    let mut si = 0
+    let st_len = len(st_n)
+    for si < st_len {
+        if st_n[si] == target_name {
+            var_vreg = st_v[si]
+        }
+        si = si + 1
+    }
+
+    if var_vreg <= -1000 {
+        // Global variable - emit store through address
+        if is_scalar_global(target_name) == 1 {
+            let addr_vreg = len(instrs)
+            push(instrs, IRInstr { op: OP_LOAD_GLOBAL(), dest: addr_vreg, arg1: 0, arg2: 0, arg3: 0, str_val: target_name })
+            push(instrs, IRInstr { op: OP_STORE(), dest: -1, arg1: addr_vreg, arg2: val_vreg, arg3: 0, str_val: "" })
+        }
+    } else if var_vreg >= 0 && var_vreg != val_vreg {
+        // Emit copy from result vreg to variable vreg
+        push(instrs, IRInstr { op: OP_COPY(), dest: var_vreg, arg1: val_vreg, arg2: 0, arg3: 0, str_val: "" })
+    }
+    return val_vreg
+}
+
+fn gen_ir_stmt_if(node: AstNode, nodes: []AstNode, instrs: []IRInstr, st_n: []string, st_v: []int) -> int {
+    let c = gen_ir_from_ast_with_symtab(node.left, nodes, instrs, st_n, st_v)
+    if c < 0 { return -1 }
+    let el = g_next_label
+    g_next_label = g_next_label + 1
+    let en = g_next_label
+    g_next_label = g_next_label + 1
+    push(instrs, IRInstr { op: OP_BRANCH(), dest: c, arg1: el, arg2: 0, arg3: 0, str_val: "" })
+    if node.right >= 0 { gen_ir_from_ast_with_symtab(node.right, nodes, instrs, st_n, st_v) }
+    push(instrs, IRInstr { op: OP_JUMP(), dest: en, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
+    push(instrs, IRInstr { op: OP_LABEL(), dest: el, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
+    if node.extra >= 0 { gen_ir_from_ast_with_symtab(node.extra, nodes, instrs, st_n, st_v) }
+    push(instrs, IRInstr { op: OP_LABEL(), dest: en, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
+    return 0
+}
+
+fn gen_ir_stmt_for(n: AstNode, nodes: []AstNode, instrs: []IRInstr, st_n: []string, st_v: []int) -> int {
+    let s = g_next_label
+    g_next_label = g_next_label + 1
+    let e = g_next_label
+    g_next_label = g_next_label + 1
+    push(instrs, IRInstr { op: OP_LABEL(), dest: s, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
+    if n.left >= 0 {
+        let c = gen_ir_from_ast_with_symtab(n.left, nodes, instrs, st_n, st_v)
+        if c < 0 { return -1 }
+        push(instrs, IRInstr { op: OP_BRANCH(), dest: c, arg1: e, arg2: 0, arg3: 0, str_val: "" })
+    }
+    // Save/restore break label for proper nesting
+    let saved_break = g_break_label
+    g_break_label = e
+    if n.right >= 0 { gen_ir_from_ast_with_symtab(n.right, nodes, instrs, st_n, st_v) }
+    g_break_label = saved_break
+    push(instrs, IRInstr { op: OP_JUMP(), dest: s, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
+    push(instrs, IRInstr { op: OP_LABEL(), dest: e, arg1: 0, arg2: 0, arg3: 0, str_val: "" }) return 0
+}
+
+fn gen_ir_stmt_block(node: AstNode, nodes: []AstNode, instrs: []IRInstr, st_n: []string, st_v: []int) -> int {
+    // First pass: collect child node indices from IF/FOR statements
+    // These nodes and their descendants shouldn't be processed as top-level statements
+    let mut child_indices = []int{}
+    let mut scan_i = node.left
+    let mut e = node.right + 1
+    let nodes_len = len(nodes)
+    if scan_i < 0 { return -1 }
+    if e > nodes_len { e = nodes_len }
+    for scan_i < e {
+        if scan_i >= nodes_len { break }
+        let scan_tag = nodes[scan_i].tag
+        if scan_tag == STMT_IF() || scan_tag == STMT_FOR() {
+            let scan_node = nodes[scan_i]
+            // Mark direct children
+            if scan_node.left >= 0 { push(child_indices, scan_node.left) }
+            if scan_node.right >= 0 {
+                push(child_indices, scan_node.right)
+                // If child is a block, also mark all nodes in that block's range
+                if scan_node.right < len(nodes) {
+                    let child_node = nodes[scan_node.right]
+                    if child_node.tag == STMT_BLOCK() {
+                        let mut block_i = child_node.left
+                        let block_e = child_node.right + 1
+                        for block_i < block_e {
+                            push(child_indices, block_i)
+                            block_i = block_i + 1
+                        }
+                    }
+                }
+            }
+            if scan_node.extra >= 0 {
+                push(child_indices, scan_node.extra)
+                // If child is a block, also mark all nodes in that block's range
+                if scan_node.extra < len(nodes) {
+                    let child_node = nodes[scan_node.extra]
+                    if child_node.tag == STMT_BLOCK() {
+                        let mut block_i = child_node.left
+                        let block_e = child_node.right + 1
+                        for block_i < block_e {
+                            push(child_indices, block_i)
+                            block_i = block_i + 1
+                        }
+                    }
+                }
+            }
+        }
+        scan_i = scan_i + 1
+    }
+
+    // Second pass: process statements, skipping child nodes
+    let mut last = -1
+    let mut i = node.left
+    for i < e {
+        if i >= nodes_len { break }
+        let node_tag = nodes[i].tag
+        if node_tag >= STMT_LET() && node_tag != STMT_BLOCK() {
+            // Check if this node is a child of another statement
+            let mut is_child = 0
+            let mut check_j = 0
+            let child_count = len(child_indices)
+            for check_j < child_count {
+                if child_indices[check_j] == i {
+                    is_child = 1
+                    break
+                }
+                check_j = check_j + 1
+            }
+            if is_child == 0 {
+                last = gen_ir_from_ast_with_symtab(i, nodes, instrs, st_n, st_v)
+            }
+        }
+        i = i + 1
+    }
+    return last
+}
+
+fn gen_ir_from_ast_with_symtab(ast_idx: int, nodes: []AstNode, instrs: []IRInstr, symtab_names: []string, symtab_vregs: []int) -> int {
+    if ast_idx < 0 {
+        return -1
+    }
+
+    let node = nodes[ast_idx]
+
+    // Dispatch simple expressions to helper
+    if node.tag == EXPR_INT() || node.tag == EXPR_BOOL() || node.tag == EXPR_IDENT() || node.tag == EXPR_STRING() {
+        return gen_ir_expr(node, ast_idx, nodes, instrs, symtab_names, symtab_vregs)
+    }
+
+    if node.tag == EXPR_UNARY() {
+        let operand = gen_ir_from_ast_with_symtab(node.left, nodes, instrs, symtab_names, symtab_vregs)
+        if node.int_val == TK_MINUS() {
+            // Unary minus: 0 - operand
+            let zero_vreg = len(instrs)
+            push(instrs, IRInstr { op: OP_LOADCONST(), dest: zero_vreg, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
+            let result_vreg = len(instrs)
+            push(instrs, IRInstr { op: OP_SUB(), dest: result_vreg, arg1: zero_vreg, arg2: operand, arg3: 0, str_val: "" })
+            return result_vreg
+        }
+        if node.int_val == TK_NOT() {
+            // Logical NOT: operand == 0
+            let zero_vreg = len(instrs)
+            push(instrs, IRInstr { op: OP_LOADCONST(), dest: zero_vreg, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
+            let result_vreg = len(instrs)
+            push(instrs, IRInstr { op: OP_CMP_EQ(), dest: result_vreg, arg1: operand, arg2: zero_vreg, arg3: 0, str_val: "" })
+            return result_vreg
+        }
+        return operand
+    }
+
+    if node.tag == EXPR_BINARY() {
+        return gen_ir_binary(node, nodes, instrs, symtab_names, symtab_vregs)
+    }
+
+    if node.tag == EXPR_CALL() {
+        let func_name = lookup_rename(node.str_val)
+        if func_name == "len" {
+            return gen_ir_call_len(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
+        }
+        if func_name == "push" {
+            return gen_ir_call_push(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
+        }
+        if func_name == "poke" {
+            return gen_ir_call_poke(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
+        }
+        if func_name == "peek" {
+            return gen_ir_call_peek(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
+        }
+        if func_name == "heap_alloc" {
+            return gen_ir_call_heap_alloc(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
+        }
+        if func_name == "os.ReadFile" {
+            return gen_ir_call_readfile(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
+        }
+        if func_name == "os.Argc" {
+            return gen_ir_call_argc(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
+        }
+        if func_name == "os.Argv" {
+            return gen_ir_call_argv(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
+        }
+        if func_name == "strconv.Itoa" {
+            return gen_ir_call_itoa(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
+        }
+        if func_name == "print" {
+            return gen_ir_call_print(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
+        }
+        if func_name == "str_char_at" {
+            return gen_ir_call_str_char_at(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
+        }
+        if func_name == "str_substring" {
+            return gen_ir_call_str_substring(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
+        }
+        if func_name == "syscall.open" {
+            return gen_ir_call_syscall_open(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
+        }
+        if func_name == "syscall.write" {
+            return gen_ir_call_syscall_write(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
+        }
+        if func_name == "syscall.close" {
+            return gen_ir_call_syscall_close(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
+        }
+        return gen_ir_call_user(node, ast_idx, nodes, instrs, symtab_names, symtab_vregs)
+    }
+
+    if node.tag == EXPR_ARRAY_LIT() {
+        return gen_ir_array_lit(node, nodes, instrs, symtab_names, symtab_vregs)
+    }
+
+    if node.tag == EXPR_INDEX() {
+        return gen_ir_index(node, nodes, instrs, symtab_names, symtab_vregs)
+    }
+
+    if node.tag == EXPR_FIELD() {
+        return gen_ir_field(node, nodes, instrs, symtab_names, symtab_vregs)
+    }
+
+    if node.tag == EXPR_STRUCT_LIT() {
+        return gen_ir_struct_lit(node, ast_idx, nodes, instrs, symtab_names, symtab_vregs)
+    }
+
+    if node.tag == STMT_RETURN() {
+        return gen_ir_stmt_ret(node, nodes, instrs, symtab_names, symtab_vregs)
+    }
+
+    if node.tag == STMT_LET() {
+        return gen_ir_stmt_let(node, nodes, instrs, symtab_names, symtab_vregs)
+    }
+
+    if node.tag == STMT_ASSIGN() {
+        return gen_ir_stmt_assign(node, nodes, instrs, symtab_names, symtab_vregs)
+    }
+
+    if node.tag == STMT_EXPR() {
+        // Expression statement (e.g., function call without using result)
+        // node.left = expression
+        // Just evaluate the expression and return its vreg
+        return gen_ir_from_ast_with_symtab(node.left, nodes, instrs, symtab_names, symtab_vregs)
+    }
+
+    if node.tag == STMT_IF() {
+        return gen_ir_stmt_if(node, nodes, instrs, symtab_names, symtab_vregs)
+    }
+
+    if node.tag == STMT_FOR() {
+        return gen_ir_stmt_for(node, nodes, instrs, symtab_names, symtab_vregs)
+    }
+
+    if node.tag == STMT_BLOCK() {
+        return gen_ir_stmt_block(node, nodes, instrs, symtab_names, symtab_vregs)
+    }
+
+    if node.tag == STMT_BREAK() {
+        // Use global break label (set by gen_ir_stmt_for with save/restore)
+        if g_break_label >= 0 {
+            push(instrs, IRInstr { op: OP_JUMP(), dest: g_break_label, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
+        }
+        return 0
+    }
+
+    if node.tag == DECL_FUNC() {
+        // Generate function with parameters
+        // node.left = first parameter index (or -1 if no parameters)
+        // node.right = body node
+
+        // Add all parameters to symbol table.
+        // Use 90000+ offset for parameter vregs to avoid collision with instruction-based vregs.
+        // Parameters are stored consecutively in nodes array starting at node.left
+        if node.left >= 0 {
+            // Iterate through consecutive parameter nodes
+            let mut param_idx = node.left
+            let mut param_reg = 90000  // 90000, 90001, 90002, etc.
+
+            // Find how many consecutive DECL_PARAM nodes there are
+            let mut param_i = node.left
+            let nodes_len2 = len(nodes)
+            for param_i < nodes_len2 {
+                let param_node = nodes[param_i]
+                if param_node.tag == DECL_PARAM() {
+                    // Add parameter to symbol table
+                    push(symtab_names, param_node.str_val)
+                    push(symtab_vregs, param_reg)
+                    // Track string-typed parameters for is_string_expr
+                    if param_node.type_tag == TYPE_STRING() && param_node.int_val == 0 {
+                        push(g_string_vars, param_node.str_val)
+                    }
+                    if param_node.type_tag == TYPE_STRING() && param_node.int_val == 1 {
+                        push(g_string_array_vars, param_node.str_val)
+                    }
+                    param_reg = param_reg + 1
+                } else {
+                    // Stop when we hit a non-parameter node
+                    break
+                }
+                param_i = param_i + 1
+            }
+        }
+
+        // Generate body
+        if node.right >= 0 {
+            return gen_ir_from_ast_with_symtab(node.right, nodes, instrs, symtab_names, symtab_vregs)
+        }
+    }
+
+    return 0
+}

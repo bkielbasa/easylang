@@ -1,109 +1,154 @@
-// IR (Intermediate Representation) generator for the Ease bootstrap compiler
-// Simplified version that avoids compiler bugs with struct returns + arrays
-
-// ============================================================================
-// IR Operation Constants
-// ============================================================================
-
-fn OP_ADD() -> int { return 1 }
-fn OP_SUB() -> int { return 2 }
-fn OP_MUL() -> int { return 3 }
-fn OP_DIV() -> int { return 4 }
-fn OP_EQ() -> int { return 7 }
-fn OP_NE() -> int { return 8 }
-fn OP_LT() -> int { return 9 }
-fn OP_GT() -> int { return 11 }
-fn OP_LOADCONST() -> int { return 14 }
-fn OP_CALL() -> int { return 15 }
-fn OP_RETURN() -> int { return 16 }
-
-fn op_name(op: int) -> string {
-    if op == OP_ADD() { return "add" }
-    if op == OP_SUB() { return "sub" }
-    if op == OP_MUL() { return "mul" }
-    if op == OP_DIV() { return "div" }
-    if op == OP_EQ() { return "eq" }
-    if op == OP_NE() { return "ne" }
-    if op == OP_LT() { return "lt" }
-    if op == OP_GT() { return "gt" }
-    if op == OP_LOADCONST() { return "loadconst" }
-    if op == OP_CALL() { return "call" }
-    if op == OP_RETURN() { return "return" }
-    return "unknown"
-}
-
-// ============================================================================
-// IR Instruction (simplified - just stores op and virtual registers)
-// ============================================================================
+// IR types, opcodes, symbol table, and struct layout for the Ease bootstrap compiler
 
 struct IRInstr {
-    op: int,
-    dest: int,    // destination vreg (-1 if none)
-    arg1: int,    // first operand vreg/imm
-    arg2: int,    // second operand vreg/imm (-1 if none)
+    op: int,       // Instruction opcode
+    dest: int,     // Destination vreg or label id
+    arg1: int,     // First argument vreg or immediate
+    arg2: int,     // Second argument vreg or label id
+    arg3: int,     // Third argument vreg (for operations like str_substring)
+    str_val: string, // For function names, variable names, etc.
 }
 
-fn make_instr(op: int, dest: int, arg1: int, arg2: int) -> IRInstr {
-    return IRInstr {
-        op: op,
-        dest: dest,
-        arg1: arg1,
-        arg2: arg2,
+struct SymbolTable {
+    names: []string,  // Variable names
+    vregs: []int,     // Corresponding virtual registers
+    types: []int,     // Type tags (TYPE_INT, TYPE_BOOL, etc.)
+}
+
+fn symtab_new() -> SymbolTable {
+    return SymbolTable {
+        names: []string{},
+        vregs: []int{}
     }
 }
 
-// ============================================================================
-// Simple test: Generate IR for a+b
-// ============================================================================
+fn symtab_add(st: SymbolTable, name: string, vreg: int) {
+    push(st.names, name)
+    push(st.vregs, vreg)
+}
 
-fn main() -> int {
-    print("=== Bootstrap IR Generator ===\n\n")
+fn symtab_lookup(st: SymbolTable, name: string) -> int {
+    // Search backwards to find the most recent binding (handles shadowing)
+    let mut i = len(st.names) - 1
+    for i >= 0 {
+        if st.names[i] == name {
+            return st.vregs[i]
+        }
+        i = i - 1
+    }
+    return -1  // Not found
+}
 
-    // Build IR for: v2 = add v0, v1; return v2
-    let mut instrs = []IRInstr{}
+// IR Opcodes
+fn OP_LOADCONST() -> int { return 1 }
+fn OP_ADD() -> int { return 2 }
+fn OP_SUB() -> int { return 3 }
+fn OP_MUL() -> int { return 4 }
+fn OP_DIV() -> int { return 5 }
+fn OP_CMP_LT() -> int { return 6 }
+fn OP_CMP_GT() -> int { return 7 }
+fn OP_CMP_LE() -> int { return 8 }
+fn OP_CMP_GE() -> int { return 9 }
+fn OP_CMP_EQ() -> int { return 10 }
+fn OP_CMP_NE() -> int { return 11 }
+fn OP_AND() -> int { return 12 }
+fn OP_OR() -> int { return 13 }
+fn OP_NOT() -> int { return 14 }
+fn OP_XOR() -> int { return 15 }
+fn OP_BITAND() -> int { return 16 }
+fn OP_BITOR() -> int { return 17 }
+fn OP_ALLOCA() -> int { return 20 }
+fn OP_STORE() -> int { return 21 }
+fn OP_LOAD() -> int { return 22 }
+fn OP_INDEXADDR() -> int { return 23 }  // Pointer arithmetic: base + offset
+fn OP_MEMCOPY() -> int { return 24 }    // Memory copy: src, dest, size
+fn OP_ARRAY_PUSH() -> int { return 25 } // Array push: array, elem, elem_size
+fn OP_ARRAY_LEN() -> int { return 26 }  // Array length: returns len from fat pointer
+fn OP_STR_CHAR_AT() -> int { return 27 } // String char at: str, index -> char (int)
+fn OP_STR_SUBSTRING() -> int { return 28 } // String substring: str, start, end -> str
+fn OP_POKE() -> int { return 29 }  // Write byte to memory: addr, value
+fn OP_RET() -> int { return 30 }
+fn OP_PEEK() -> int { return 31 }  // Read byte from memory: addr -> value
+fn OP_HEAP_ALLOC() -> int { return 32 }  // Allocate memory: size -> pointer
+fn OP_CALL() -> int { return 33 }
+fn OP_ARG() -> int { return 34 }
+fn OP_READFILE() -> int { return 35 }  // Read file: path -> content string
+fn OP_ARGC() -> int { return 36 }     // Get argument count -> int
+fn OP_ARGV() -> int { return 37 }     // Get argument at index: index -> string
+fn OP_INT_TO_STR() -> int { return 38 } // Convert int to string: int -> string
+fn OP_PRINT() -> int { return 39 } // Print string to stdout: string -> ()
+fn OP_LABEL() -> int { return 40 }
+fn OP_JUMP() -> int { return 41 }
+fn OP_BRANCH() -> int { return 42 }
+fn OP_SYSCALL_OPEN() -> int { return 43 }
+fn OP_SYSCALL_WRITE() -> int { return 44 }
+fn OP_SYSCALL_CLOSE() -> int { return 45 }
+fn OP_STR_EQ() -> int { return 46 }
+fn OP_STR_NE() -> int { return 47 }
+fn OP_STR_CONCAT() -> int { return 48 }
+fn OP_COPY() -> int { return 49 }
+fn OP_LOAD_GLOBAL() -> int { return 50 }
+fn OP_STR_LEN() -> int { return 51 }
 
-    // v2 = add v0, v1
-    push(instrs, make_instr(OP_ADD(), 2, 0, 1))
+// Struct definitions and offsets (hardcoded for known structs)
+// AstNode: tag(8), int_val(8), str_val(8), left(8), right(8), extra(8), type_tag(8) = 56 bytes
+// IRInstr: op(8), dest(8), arg1(8), arg2(8), arg3(8), str_val(8) = 48 bytes
+// ParseResult: node_idx(8), new_pos(8) = 16 bytes
 
-    // return v2
-    push(instrs, make_instr(OP_RETURN(), -1, 2, -1))
+fn struct_size(struct_name: string) -> int {
+    if struct_name == "AstNode" { return 56 }
+    if struct_name == "IRInstr" { return 48 }
+    if struct_name == "ParseResult" { return 16 }
+    return 64  // Default: 8 fields * 8 bytes
+}
 
-    print("Generated ")
-    print(strconv.Itoa(len(instrs)))
-    print(" instructions:\n\n")
+fn field_offset(struct_name: string, field_name: string) -> int {
+    // AstNode fields
+    if struct_name == "AstNode" {
+        if field_name == "tag" { return 0 }
+        if field_name == "int_val" { return 8 }
+        if field_name == "str_val" { return 16 }
+        if field_name == "left" { return 24 }
+        if field_name == "right" { return 32 }
+        if field_name == "extra" { return 40 }
+        if field_name == "type_tag" { return 48 }
+    }
+    // IRInstr fields
+    if struct_name == "IRInstr" {
+        if field_name == "op" { return 0 }
+        if field_name == "dest" { return 8 }
+        if field_name == "arg1" { return 16 }
+        if field_name == "arg2" { return 24 }
+        if field_name == "arg3" { return 32 }
+        if field_name == "str_val" { return 40 }
+    }
+    // ParseResult fields
+    if struct_name == "ParseResult" {
+        if field_name == "node_idx" { return 0 }
+        if field_name == "new_pos" { return 8 }
+    }
+    // SymbolTable fields
+    if struct_name == "SymbolTable" {
+        if field_name == "names" { return 0 }
+        if field_name == "vregs" { return 8 }
+        if field_name == "types" { return 16 }
+    }
+    return 0  // Unknown field, return 0
+}
 
-    // Print instructions
+fn get_struct_field_names(name: string) -> []string {
+    let f = []string{}
+    if name == "AstNode" { push(f, "tag") push(f, "int_val") push(f, "str_val") push(f, "left") push(f, "right") push(f, "extra") push(f, "type_tag") }
+    if name == "IRInstr" { push(f, "op") push(f, "dest") push(f, "arg1") push(f, "arg2") push(f, "arg3") push(f, "str_val") }
+    if name == "ParseResult" { push(f, "node_idx") push(f, "new_pos") }
+    return f
+}
+
+fn is_scalar_global(name: string) -> int {
     let mut i = 0
-    for i < len(instrs) {
-        let instr = instrs[i]
-        print("  ")
-
-        // Print destination
-        if instr.dest >= 0 {
-            print("v")
-            print(strconv.Itoa(instr.dest))
-            print(" = ")
-        }
-
-        // Print operation
-        print(op_name(instr.op))
-
-        // Print arg1
-        if instr.arg1 >= 0 {
-            print(" v")
-            print(strconv.Itoa(instr.arg1))
-        }
-
-        // Print arg2
-        if instr.arg2 >= 0 {
-            print(", v")
-            print(strconv.Itoa(instr.arg2))
-        }
-
-        print("\n")
+    for i < len(g_scalar_globals) {
+        if g_scalar_globals[i] == name { return 1 }
         i = i + 1
     }
-
-    print("\nTest passed!\n")
     return 0
 }

@@ -1,0 +1,754 @@
+// LLVM IR code generation for the Ease bootstrap compiler
+//
+// Strategy: translate bootstrap IR to LLVM IR text, delegate all builtins
+// to the C runtime (ease_runtime.c). clang compiles the .ll to native binary.
+//
+// Design: all values are i64. Pointers are integers (ptrtoint/inttoptr).
+// Each virtual register gets an alloca i64 slot; clang -O1 mem2reg pass
+// promotes these to SSA registers automatically.
+
+fn write_str(fd: int, s: string) {
+    syscall.write(fd, s, len(s))
+}
+
+fn hex_digit_char(v: int) -> string {
+    if v == 0 { return "0" }
+    if v == 1 { return "1" }
+    if v == 2 { return "2" }
+    if v == 3 { return "3" }
+    if v == 4 { return "4" }
+    if v == 5 { return "5" }
+    if v == 6 { return "6" }
+    if v == 7 { return "7" }
+    if v == 8 { return "8" }
+    if v == 9 { return "9" }
+    if v == 10 { return "A" }
+    if v == 11 { return "B" }
+    if v == 12 { return "C" }
+    if v == 13 { return "D" }
+    if v == 14 { return "E" }
+    if v == 15 { return "F" }
+    return "0"
+}
+
+fn hex_byte_str(v: int) -> string {
+    let hi = v / 16
+    let lo = v - hi * 16
+    return hex_digit_char(hi) + hex_digit_char(lo)
+}
+
+fn llvm_escape_string(s: string) -> string {
+    let mut result = "c\""
+    let mut i = 0
+    let slen = len(s)
+    for i < slen {
+        let ch = str_char_at(s, i)
+        if ch >= 32 && ch < 127 && ch != 34 && ch != 92 {
+            result = result + str_substring(s, i, i + 1)
+        } else {
+            let hbs = hex_byte_str(ch)
+            result = result + "\\" + hbs
+        }
+        i = i + 1
+    }
+    result = result + "\\00\""
+    return result
+}
+
+fn llvm_mangle(name: string) -> string {
+    let mut result = ""
+    let mut i = 0
+    let slen = len(name)
+    for i < slen {
+        let ch = str_char_at(name, i)
+        if ch == 46 {
+            result = result + "_"
+        } else {
+            result = result + str_substring(name, i, i + 1)
+        }
+        i = i + 1
+    }
+    return result
+}
+
+fn llvm_func_name(name: string) -> string {
+    if name == "main" {
+        return "ease_main"
+    }
+    return llvm_mangle(name)
+}
+
+fn add_unique(arr: []int, val: int) {
+    let mut i = 0
+    for i < len(arr) {
+        if arr[i] == val { return }
+        i = i + 1
+    }
+    push(arr, val)
+}
+
+fn tmp_name(ti: int, sub: int) -> string {
+    return "%t." + strconv.Itoa(ti * 10 + sub)
+}
+
+fn emit_load_vreg(fd: int, vreg: int, ti: int, sub: int) -> string {
+    let name = tmp_name(ti, sub)
+    write_str(fd, "  " + name + " = load i64, ptr %v." + strconv.Itoa(vreg) + "\n")
+    return name
+}
+
+fn emit_load_ptr(fd: int, vreg: int, ti: int, s1: int, s2: int) -> string {
+    let val = emit_load_vreg(fd, vreg, ti, s1)
+    let name = tmp_name(ti, s2)
+    write_str(fd, "  " + name + " = inttoptr i64 " + val + " to ptr\n")
+    return name
+}
+
+fn emit_store_vreg(fd: int, vreg: int, val: string) {
+    write_str(fd, "  store i64 " + val + ", ptr %v." + strconv.Itoa(vreg) + "\n")
+}
+
+fn emit_ptrtoint_store(fd: int, vreg: int, ptr_val: string, ti: int, sub: int) {
+    let name = tmp_name(ti, sub)
+    write_str(fd, "  " + name + " = ptrtoint ptr " + ptr_val + " to i64\n")
+    emit_store_vreg(fd, vreg, name)
+}
+
+fn emit_llvm_binop(fd: int, instr: IRInstr, op: string, ti: int) {
+    let lhs = emit_load_vreg(fd, instr.arg1, ti, 0)
+    let rhs = emit_load_vreg(fd, instr.arg2, ti, 1)
+    let result = tmp_name(ti, 2)
+    write_str(fd, "  " + result + " = " + op + " i64 " + lhs + ", " + rhs + "\n")
+    emit_store_vreg(fd, instr.dest, result)
+}
+
+fn emit_llvm_cmp(fd: int, instr: IRInstr, pred: string, ti: int) {
+    let lhs = emit_load_vreg(fd, instr.arg1, ti, 0)
+    let rhs = emit_load_vreg(fd, instr.arg2, ti, 1)
+    let cmp = tmp_name(ti, 2)
+    write_str(fd, "  " + cmp + " = icmp " + pred + " i64 " + lhs + ", " + rhs + "\n")
+    let ext = tmp_name(ti, 3)
+    write_str(fd, "  " + ext + " = zext i1 " + cmp + " to i64\n")
+    emit_store_vreg(fd, instr.dest, ext)
+}
+
+fn emit_llvm_decls(fd: int) {
+    write_str(fd, "declare ptr @malloc(i64)\n")
+    write_str(fd, "declare ptr @calloc(i64, i64)\n")
+    write_str(fd, "declare ptr @memcpy(ptr, ptr, i64)\n")
+    write_str(fd, "declare ptr @memset(ptr, i32, i64)\n")
+    write_str(fd, "declare i64 @ease_str_eq(ptr, ptr)\n")
+    write_str(fd, "declare i64 @ease_str_ne(ptr, ptr)\n")
+    write_str(fd, "declare i64 @ease_str_len(ptr)\n")
+    write_str(fd, "declare ptr @ease_str_concat(ptr, ptr)\n")
+    write_str(fd, "declare ptr @ease_str_slice(ptr, i64, i64)\n")
+    write_str(fd, "declare i64 @ease_str_char_at(ptr, i64)\n")
+    write_str(fd, "declare ptr @ease_str_substring(ptr, i64, i64)\n")
+    write_str(fd, "declare void @ease_array_push(ptr, ptr, i64)\n")
+    write_str(fd, "declare void @ease_print(ptr)\n")
+    write_str(fd, "declare ptr @ease_read_file(ptr)\n")
+    write_str(fd, "declare i64 @ease_write_file(ptr, ptr)\n")
+    write_str(fd, "declare ptr @ease_int_to_str(i64)\n")
+    write_str(fd, "declare i64 @ease_str_to_int(ptr)\n")
+    write_str(fd, "declare void @ease_poke(ptr, i64)\n")
+    write_str(fd, "declare i64 @ease_peek(ptr)\n")
+    write_str(fd, "declare void @ease_memset(ptr, i64, i64)\n")
+    write_str(fd, "declare i64 @ease_syscall_open(ptr, i64, i64)\n")
+    write_str(fd, "declare i64 @ease_syscall_read(i64, ptr, i64)\n")
+    write_str(fd, "declare i64 @ease_syscall_write(i64, ptr, i64)\n")
+    write_str(fd, "declare i64 @ease_syscall_close(i64)\n")
+    write_str(fd, "declare i64 @ease_argc()\n")
+    write_str(fd, "declare ptr @ease_argv(i64)\n")
+    write_str(fd, "\n")
+}
+
+fn collect_vregs(instrs: []IRInstr, start: int, end_pos: int, param_count: int) -> []int {
+    let mut vregs = []int{}
+    let mut p = 0
+    for p < param_count {
+        add_unique(vregs, 90000 + p)
+        p = p + 1
+    }
+    let mut i = start
+    for i < end_pos {
+        let instr = instrs[i]
+        let op = instr.op
+        // dest is vreg for result-producing operations
+        if op == OP_LOADCONST() || op == OP_ADD() || op == OP_SUB() || op == OP_MUL() || op == OP_DIV() || op == OP_CMP_LT() || op == OP_CMP_GT() || op == OP_CMP_LE() || op == OP_CMP_GE() || op == OP_CMP_EQ() || op == OP_CMP_NE() || op == OP_AND() || op == OP_OR() || op == OP_NOT() || op == OP_XOR() || op == OP_BITAND() || op == OP_BITOR() || op == OP_ALLOCA() || op == OP_LOAD() || op == OP_INDEXADDR() || op == OP_ARRAY_LEN() || op == OP_STR_LEN() || op == OP_STR_CHAR_AT() || op == OP_STR_SUBSTRING() || op == OP_PEEK() || op == OP_HEAP_ALLOC() || op == OP_CALL() || op == OP_READFILE() || op == OP_ARGC() || op == OP_ARGV() || op == OP_INT_TO_STR() || op == OP_STR_EQ() || op == OP_STR_NE() || op == OP_STR_CONCAT() || op == OP_LOAD_GLOBAL() || op == OP_SYSCALL_OPEN() || op == OP_SYSCALL_WRITE() || op == OP_SYSCALL_CLOSE() {
+            if instr.dest >= 0 { add_unique(vregs, instr.dest) }
+        }
+        // RET dest is vreg
+        if op == OP_RET() && instr.dest >= 0 { add_unique(vregs, instr.dest) }
+        // BRANCH dest is vreg (condition)
+        if op == OP_BRANCH() && instr.dest >= 0 { add_unique(vregs, instr.dest) }
+        // COPY: dest=target, arg1=source
+        if op == OP_COPY() {
+            if instr.dest >= 0 { add_unique(vregs, instr.dest) }
+            if instr.arg1 >= 0 { add_unique(vregs, instr.arg1) }
+        }
+        // arg1 is vreg for most ops (not LOADCONST, ALLOCA, LABEL, JUMP, BRANCH, ARGC, CALL)
+        if op != OP_LOADCONST() && op != OP_LOAD_GLOBAL() && op != OP_ALLOCA() && op != OP_LABEL() && op != OP_JUMP() && op != OP_BRANCH() && op != OP_ARGC() && op != OP_CALL() {
+            if instr.arg1 >= 0 { add_unique(vregs, instr.arg1) }
+        }
+        // arg2 is vreg for binary ops, STORE, ARRAY_PUSH, POKE, STR_EQ/NE, STR_CHAR_AT, etc
+        if op == OP_ADD() || op == OP_SUB() || op == OP_MUL() || op == OP_DIV() || op == OP_CMP_LT() || op == OP_CMP_GT() || op == OP_CMP_LE() || op == OP_CMP_GE() || op == OP_CMP_EQ() || op == OP_CMP_NE() || op == OP_AND() || op == OP_OR() || op == OP_XOR() || op == OP_BITAND() || op == OP_BITOR() || op == OP_STORE() || op == OP_ARRAY_PUSH() || op == OP_POKE() || op == OP_STR_EQ() || op == OP_STR_NE() || op == OP_STR_CONCAT() || op == OP_STR_CHAR_AT() || op == OP_MEMCOPY() || op == OP_SYSCALL_OPEN() || op == OP_SYSCALL_WRITE() || op == OP_SYSCALL_CLOSE() {
+            if instr.arg2 >= 0 { add_unique(vregs, instr.arg2) }
+        }
+        // STR_SUBSTRING arg2 and arg3 are vregs
+        if op == OP_STR_SUBSTRING() {
+            if instr.arg2 >= 0 { add_unique(vregs, instr.arg2) }
+            if instr.arg3 >= 0 { add_unique(vregs, instr.arg3) }
+        }
+        // MEMCOPY arg3 is vreg (size)
+        if op == OP_MEMCOPY() && instr.arg3 >= 0 { add_unique(vregs, instr.arg3) }
+        // SYSCALL_OPEN arg3 is vreg (mode)
+        if op == OP_SYSCALL_OPEN() && instr.arg3 >= 0 { add_unique(vregs, instr.arg3) }
+        i = i + 1
+    }
+    return vregs
+}
+
+fn emit_llvm_ir(instrs: []IRInstr, output_path: string) -> int {
+    let fd = syscall.open(output_path, 1537, 420)
+    if fd < 0 {
+        print("ERROR: Failed to open output file: " + output_path + "\n")
+        return 1
+    }
+
+    // Pass 1: Collect string constants
+    let mut string_table = []string{}
+    let mut string_dests = []int{}
+    let mut si = 0
+    for si < len(instrs) {
+        if instrs[si].op == OP_LOADCONST() {
+            if instrs[si].str_val != "" {
+                push(string_table, instrs[si].str_val)
+                push(string_dests, instrs[si].dest)
+            }
+        }
+        si = si + 1
+    }
+
+    // Emit string constants
+    let mut sci = 0
+    for sci < len(string_table) {
+        let s = string_table[sci]
+        let escaped = llvm_escape_string(s)
+        write_str(fd, "@.str." + strconv.Itoa(sci) + " = private unnamed_addr constant [" + strconv.Itoa(len(s) + 1) + " x i8] " + escaped + "\n")
+        sci = sci + 1
+    }
+    if len(string_table) > 0 {
+        write_str(fd, "\n")
+    }
+
+    // Pass 1b: Collect global variables from OP_LOAD_GLOBAL instructions
+    let mut global_names = []string{}
+    let mut gi = 0
+    for gi < len(instrs) {
+        if instrs[gi].op == OP_LOAD_GLOBAL() {
+            let gname = instrs[gi].str_val
+            // Check if already collected
+            let mut found = 0
+            let mut gj = 0
+            for gj < len(global_names) {
+                if global_names[gj] == gname {
+                    found = 1
+                    break
+                }
+                gj = gj + 1
+            }
+            if found == 0 {
+                push(global_names, gname)
+            }
+        }
+        gi = gi + 1
+    }
+
+    // Emit global variable declarations
+    let mut gdi = 0
+    for gdi < len(global_names) {
+        if is_scalar_global(global_names[gdi]) == 1 {
+            write_str(fd, "@" + global_names[gdi] + " = global i64 0\n")
+        } else {
+            write_str(fd, "@" + global_names[gdi] + " = global [24 x i8] zeroinitializer\n")
+        }
+        gdi = gdi + 1
+    }
+    if len(global_names) > 0 {
+        write_str(fd, "\n")
+    }
+
+    // Emit runtime declarations
+    emit_llvm_decls(fd)
+
+    // Pass 2: Emit functions
+    let mut fi = 0
+    let instrs_len = len(instrs)
+    for fi < instrs_len {
+        if instrs[fi].op == OP_LABEL() && instrs[fi].str_val != "" {
+            let func_name = instrs[fi].str_val
+            let param_count = instrs[fi].arg1
+            let func_start = fi + 1
+
+            // Find function end
+            let mut func_end = instrs_len
+            let mut fj = fi + 1
+            for fj < instrs_len {
+                if instrs[fj].op == OP_LABEL() && instrs[fj].str_val != "" {
+                    func_end = fj
+                    break
+                }
+                fj = fj + 1
+            }
+
+            // Emit function
+            emit_llvm_function(fd, instrs, func_start, func_end, func_name, param_count, string_table, string_dests)
+
+            fi = func_end
+        } else {
+            fi = fi + 1
+        }
+    }
+
+    syscall.close(fd)
+    print("Generated LLVM IR: " + output_path + "\n")
+    return 0
+}
+
+fn find_string_index(dest: int, string_dests: []int) -> int {
+    let mut i = 0
+    for i < len(string_dests) {
+        if string_dests[i] == dest {
+            return i
+        }
+        i = i + 1
+    }
+    return -1
+}
+
+fn emit_llvm_function(fd: int, instrs: []IRInstr, start: int, end_pos: int, func_name: string, param_count: int, string_table: []string, string_dests: []int) {
+    let lname = llvm_func_name(func_name)
+
+    // Build parameter list
+    let mut params = ""
+    let mut pi = 0
+    for pi < param_count {
+        if pi > 0 { params = params + ", " }
+        params = params + "i64 %param." + strconv.Itoa(pi)
+        pi = pi + 1
+    }
+
+    write_str(fd, "define i64 @" + lname + "(" + params + ") {\n")
+
+    // Collect all vregs used
+    let vregs = collect_vregs(instrs, start, end_pos, param_count)
+
+    // Emit allocas for all vregs
+    let mut vi = 0
+    for vi < len(vregs) {
+        write_str(fd, "  %v." + strconv.Itoa(vregs[vi]) + " = alloca i64\n")
+        vi = vi + 1
+    }
+
+    // Store parameters into vreg slots (params use 90000+ offset vregs)
+    pi = 0
+    for pi < param_count {
+        write_str(fd, "  store i64 %param." + strconv.Itoa(pi) + ", ptr %v." + strconv.Itoa(90000 + pi) + "\n")
+        pi = pi + 1
+    }
+
+    // Branch to body
+    write_str(fd, "  br label %B.body\n")
+    write_str(fd, "B.body:\n")
+
+    // Emit instructions
+    let mut terminated = 0
+    let mut call_args = []int{}
+    let mut ii = start
+    for ii < end_pos {
+        let instr = instrs[ii]
+        let ti = ii
+
+        if instr.op == OP_LABEL() && instr.str_val == "" {
+            // Basic block label
+            if terminated == 0 {
+                write_str(fd, "  br label %L." + strconv.Itoa(instr.dest) + "\n")
+            }
+            write_str(fd, "L." + strconv.Itoa(instr.dest) + ":\n")
+            terminated = 0
+        }
+
+        if terminated == 0 && instr.op == OP_LOADCONST() {
+            if instr.str_val != "" {
+                // String constant
+                let str_idx = find_string_index(instr.dest, string_dests)
+                if str_idx >= 0 {
+                    let t = tmp_name(ti, 0)
+                    write_str(fd, "  " + t + " = ptrtoint ptr @.str." + strconv.Itoa(str_idx) + " to i64\n")
+                    emit_store_vreg(fd, instr.dest, t)
+                }
+            } else {
+                // Integer constant
+                emit_store_vreg(fd, instr.dest, strconv.Itoa(instr.arg1))
+            }
+        }
+
+        if terminated == 0 && instr.op == OP_LOAD_GLOBAL() {
+            // Load address of a global variable: ptrtoint ptr @name to i64
+            let t = tmp_name(ti, 0)
+            write_str(fd, "  " + t + " = ptrtoint ptr @" + instr.str_val + " to i64\n")
+            emit_store_vreg(fd, instr.dest, t)
+        }
+
+        if terminated == 0 && instr.op == OP_ADD() {
+            if instr.arg2 == -1 {
+                // Copy (MOV variant)
+                let v = emit_load_vreg(fd, instr.arg1, ti, 0)
+                emit_store_vreg(fd, instr.dest, v)
+            } else {
+                emit_llvm_binop(fd, instr, "add", ti)
+            }
+        }
+        if terminated == 0 && instr.op == OP_SUB() { emit_llvm_binop(fd, instr, "sub", ti) }
+        if terminated == 0 && instr.op == OP_MUL() { emit_llvm_binop(fd, instr, "mul", ti) }
+        if terminated == 0 && instr.op == OP_DIV() { emit_llvm_binop(fd, instr, "sdiv", ti) }
+        if terminated == 0 && instr.op == OP_AND() { emit_llvm_binop(fd, instr, "and", ti) }
+        if terminated == 0 && instr.op == OP_OR() { emit_llvm_binop(fd, instr, "or", ti) }
+        if terminated == 0 && instr.op == OP_XOR() { emit_llvm_binop(fd, instr, "xor", ti) }
+        if terminated == 0 && instr.op == OP_BITAND() { emit_llvm_binop(fd, instr, "and", ti) }
+        if terminated == 0 && instr.op == OP_BITOR() { emit_llvm_binop(fd, instr, "or", ti) }
+
+        if terminated == 0 && instr.op == OP_NOT() {
+            let v = emit_load_vreg(fd, instr.arg1, ti, 0)
+            let r = tmp_name(ti, 1)
+            write_str(fd, "  " + r + " = xor i64 " + v + ", 1\n")
+            emit_store_vreg(fd, instr.dest, r)
+        }
+
+        if terminated == 0 && instr.op == OP_CMP_EQ() { emit_llvm_cmp(fd, instr, "eq", ti) }
+        if terminated == 0 && instr.op == OP_CMP_NE() { emit_llvm_cmp(fd, instr, "ne", ti) }
+        if terminated == 0 && instr.op == OP_CMP_LT() { emit_llvm_cmp(fd, instr, "slt", ti) }
+        if terminated == 0 && instr.op == OP_CMP_LE() { emit_llvm_cmp(fd, instr, "sle", ti) }
+        if terminated == 0 && instr.op == OP_CMP_GT() { emit_llvm_cmp(fd, instr, "sgt", ti) }
+        if terminated == 0 && instr.op == OP_CMP_GE() { emit_llvm_cmp(fd, instr, "sge", ti) }
+
+        if terminated == 0 && instr.op == OP_LOAD() {
+            let base = emit_load_vreg(fd, instr.arg1, ti, 0)
+            // arg2: if str_val is "array_index", arg2 is a vreg; otherwise immediate offset
+            let mut addr_val = ""
+            if instr.str_val == "array_index" {
+                // Array indexing: base is fat pointer address, arg2 is index vreg
+                // 1. Extract data pointer from fat pointer (offset 0)
+                let fp = tmp_name(ti, 1)
+                write_str(fd, "  " + fp + " = inttoptr i64 " + base + " to ptr\n")
+                let dp = tmp_name(ti, 2)
+                write_str(fd, "  " + dp + " = load i64, ptr " + fp + "\n")
+                // 2. Scale index by element size (8 bytes for pointer-based storage)
+                let idx = emit_load_vreg(fd, instr.arg2, ti, 3)
+                let scaled = tmp_name(ti, 4)
+                write_str(fd, "  " + scaled + " = mul i64 " + idx + ", 8\n")
+                // 3. Calculate element address
+                let a = tmp_name(ti, 5)
+                write_str(fd, "  " + a + " = add i64 " + dp + ", " + scaled + "\n")
+                addr_val = a
+            } else {
+                if instr.arg2 == 0 {
+                    addr_val = base
+                } else {
+                    let a = tmp_name(ti, 2)
+                    write_str(fd, "  " + a + " = add i64 " + base + ", " + strconv.Itoa(instr.arg2) + "\n")
+                    addr_val = a
+                }
+            }
+            let ptr = tmp_name(ti, 6)
+            write_str(fd, "  " + ptr + " = inttoptr i64 " + addr_val + " to ptr\n")
+            let val = tmp_name(ti, 7)
+            write_str(fd, "  " + val + " = load i64, ptr " + ptr + "\n")
+            emit_store_vreg(fd, instr.dest, val)
+        }
+
+        if terminated == 0 && instr.op == OP_STORE() {
+            let addr = emit_load_vreg(fd, instr.arg1, ti, 0)
+            let val = emit_load_vreg(fd, instr.arg2, ti, 1)
+            let ptr = tmp_name(ti, 2)
+            write_str(fd, "  " + ptr + " = inttoptr i64 " + addr + " to ptr\n")
+            write_str(fd, "  store i64 " + val + ", ptr " + ptr + "\n")
+        }
+
+        if terminated == 0 && instr.op == OP_COPY() {
+            // Copy value from source vreg (arg1) to dest vreg
+            let val = emit_load_vreg(fd, instr.arg1, ti, 0)
+            emit_store_vreg(fd, instr.dest, val)
+        }
+
+        if terminated == 0 && instr.op == OP_ALLOCA() {
+            // Allocate with malloc (survives function returns)
+            let size = strconv.Itoa(instr.arg1)
+            let p = tmp_name(ti, 0)
+            write_str(fd, "  " + p + " = call ptr @malloc(i64 " + size + ")\n")
+            let z = tmp_name(ti, 1)
+            write_str(fd, "  " + z + " = call ptr @memset(ptr " + p + ", i32 0, i64 " + size + ")\n")
+            emit_ptrtoint_store(fd, instr.dest, p, ti, 2)
+        }
+
+        if terminated == 0 && instr.op == OP_INDEXADDR() {
+            let base = emit_load_vreg(fd, instr.arg1, ti, 0)
+            if instr.arg2 == 0 {
+                emit_store_vreg(fd, instr.dest, base)
+            } else {
+                let r = tmp_name(ti, 1)
+                write_str(fd, "  " + r + " = add i64 " + base + ", " + strconv.Itoa(instr.arg2) + "\n")
+                emit_store_vreg(fd, instr.dest, r)
+            }
+        }
+
+        if terminated == 0 && instr.op == OP_MEMCOPY() {
+            // arg1=src, arg2=dest, arg3=size
+            let src = emit_load_ptr(fd, instr.arg1, ti, 0, 1)
+            let dst = emit_load_ptr(fd, instr.arg2, ti, 2, 3)
+            let size = emit_load_vreg(fd, instr.arg3, ti, 4)
+            write_str(fd, "  call ptr @memcpy(ptr " + dst + ", ptr " + src + ", i64 " + size + ")\n")
+        }
+
+        if terminated == 0 && instr.op == OP_ARRAY_LEN() {
+            // Fat pointer: [ptr, len, cap]. len is at offset 8
+            let base = emit_load_vreg(fd, instr.arg1, ti, 0)
+            let addr = tmp_name(ti, 1)
+            write_str(fd, "  " + addr + " = add i64 " + base + ", 8\n")
+            let ptr = tmp_name(ti, 2)
+            write_str(fd, "  " + ptr + " = inttoptr i64 " + addr + " to ptr\n")
+            let val = tmp_name(ti, 3)
+            write_str(fd, "  " + val + " = load i64, ptr " + ptr + "\n")
+            emit_store_vreg(fd, instr.dest, val)
+        }
+
+        if terminated == 0 && instr.op == OP_STR_LEN() {
+            // String length via runtime call
+            let str_val = emit_load_vreg(fd, instr.arg1, ti, 0)
+            let str_ptr = tmp_name(ti, 1)
+            write_str(fd, "  " + str_ptr + " = inttoptr i64 " + str_val + " to ptr\n")
+            let result = tmp_name(ti, 2)
+            write_str(fd, "  " + result + " = call i64 @ease_str_len(ptr " + str_ptr + ")\n")
+            emit_store_vreg(fd, instr.dest, result)
+        }
+
+        if terminated == 0 && instr.op == OP_ARRAY_PUSH() {
+            // arg1=fat ptr vreg, arg2=element vreg
+            let fp = emit_load_ptr(fd, instr.arg1, ti, 0, 1)
+            let elem = emit_load_vreg(fd, instr.arg2, ti, 2)
+            let tmp_alloca = tmp_name(ti, 3)
+            write_str(fd, "  " + tmp_alloca + " = alloca i64\n")
+            write_str(fd, "  store i64 " + elem + ", ptr " + tmp_alloca + "\n")
+            write_str(fd, "  call void @ease_array_push(ptr " + fp + ", ptr " + tmp_alloca + ", i64 8)\n")
+        }
+
+        if terminated == 0 && instr.op == OP_POKE() {
+            let addr = emit_load_ptr(fd, instr.arg1, ti, 0, 1)
+            let val = emit_load_vreg(fd, instr.arg2, ti, 2)
+            write_str(fd, "  call void @ease_poke(ptr " + addr + ", i64 " + val + ")\n")
+        }
+
+        if terminated == 0 && instr.op == OP_PEEK() {
+            let addr = emit_load_ptr(fd, instr.arg1, ti, 0, 1)
+            let r = tmp_name(ti, 2)
+            write_str(fd, "  " + r + " = call i64 @ease_peek(ptr " + addr + ")\n")
+            emit_store_vreg(fd, instr.dest, r)
+        }
+
+        if terminated == 0 && instr.op == OP_HEAP_ALLOC() {
+            let size = emit_load_vreg(fd, instr.arg1, ti, 0)
+            let p = tmp_name(ti, 1)
+            write_str(fd, "  " + p + " = call ptr @malloc(i64 " + size + ")\n")
+            let ms = tmp_name(ti, 2)
+            write_str(fd, "  " + ms + " = call ptr @memset(ptr " + p + ", i32 0, i64 " + size + ")\n")
+            emit_ptrtoint_store(fd, instr.dest, p, ti, 3)
+        }
+
+        if terminated == 0 && instr.op == OP_READFILE() {
+            let path = emit_load_ptr(fd, instr.arg1, ti, 0, 1)
+            let p = tmp_name(ti, 2)
+            write_str(fd, "  " + p + " = call ptr @ease_read_file(ptr " + path + ")\n")
+            emit_ptrtoint_store(fd, instr.dest, p, ti, 3)
+        }
+
+        if terminated == 0 && instr.op == OP_ARGC() {
+            let r = tmp_name(ti, 0)
+            write_str(fd, "  " + r + " = call i64 @ease_argc()\n")
+            emit_store_vreg(fd, instr.dest, r)
+        }
+
+        if terminated == 0 && instr.op == OP_ARGV() {
+            let idx = emit_load_vreg(fd, instr.arg1, ti, 0)
+            let p = tmp_name(ti, 1)
+            write_str(fd, "  " + p + " = call ptr @ease_argv(i64 " + idx + ")\n")
+            emit_ptrtoint_store(fd, instr.dest, p, ti, 2)
+        }
+
+        if terminated == 0 && instr.op == OP_INT_TO_STR() {
+            let val = emit_load_vreg(fd, instr.arg1, ti, 0)
+            let p = tmp_name(ti, 1)
+            write_str(fd, "  " + p + " = call ptr @ease_int_to_str(i64 " + val + ")\n")
+            emit_ptrtoint_store(fd, instr.dest, p, ti, 2)
+        }
+
+        if terminated == 0 && instr.op == OP_PRINT() {
+            let s = emit_load_ptr(fd, instr.arg1, ti, 0, 1)
+            write_str(fd, "  call void @ease_print(ptr " + s + ")\n")
+        }
+
+        if terminated == 0 && instr.op == OP_STR_EQ() {
+            let a = emit_load_ptr(fd, instr.arg1, ti, 0, 1)
+            let b = emit_load_ptr(fd, instr.arg2, ti, 2, 3)
+            let r = tmp_name(ti, 4)
+            write_str(fd, "  " + r + " = call i64 @ease_str_eq(ptr " + a + ", ptr " + b + ")\n")
+            emit_store_vreg(fd, instr.dest, r)
+        }
+
+        if terminated == 0 && instr.op == OP_STR_NE() {
+            let a = emit_load_ptr(fd, instr.arg1, ti, 0, 1)
+            let b = emit_load_ptr(fd, instr.arg2, ti, 2, 3)
+            let r = tmp_name(ti, 4)
+            write_str(fd, "  " + r + " = call i64 @ease_str_ne(ptr " + a + ", ptr " + b + ")\n")
+            emit_store_vreg(fd, instr.dest, r)
+        }
+
+        if terminated == 0 && instr.op == OP_STR_CONCAT() {
+            let a = emit_load_ptr(fd, instr.arg1, ti, 0, 1)
+            let b = emit_load_ptr(fd, instr.arg2, ti, 2, 3)
+            let r = tmp_name(ti, 4)
+            write_str(fd, "  " + r + " = call ptr @ease_str_concat(ptr " + a + ", ptr " + b + ")\n")
+            emit_ptrtoint_store(fd, instr.dest, r, ti, 5)
+        }
+
+        if terminated == 0 && instr.op == OP_STR_CHAR_AT() {
+            let s = emit_load_ptr(fd, instr.arg1, ti, 0, 1)
+            let idx = emit_load_vreg(fd, instr.arg2, ti, 2)
+            let r = tmp_name(ti, 3)
+            write_str(fd, "  " + r + " = call i64 @ease_str_char_at(ptr " + s + ", i64 " + idx + ")\n")
+            emit_store_vreg(fd, instr.dest, r)
+        }
+
+        if terminated == 0 && instr.op == OP_STR_SUBSTRING() {
+            let s = emit_load_ptr(fd, instr.arg1, ti, 0, 1)
+            let start_val = emit_load_vreg(fd, instr.arg2, ti, 2)
+            let end_val = emit_load_vreg(fd, instr.arg3, ti, 3)
+            let p = tmp_name(ti, 4)
+            write_str(fd, "  " + p + " = call ptr @ease_str_substring(ptr " + s + ", i64 " + start_val + ", i64 " + end_val + ")\n")
+            emit_ptrtoint_store(fd, instr.dest, p, ti, 5)
+        }
+
+        if terminated == 0 && instr.op == OP_SYSCALL_OPEN() {
+            let path = emit_load_ptr(fd, instr.arg1, ti, 0, 1)
+            let flags = emit_load_vreg(fd, instr.arg2, ti, 2)
+            let mode = emit_load_vreg(fd, instr.arg3, ti, 3)
+            let r = tmp_name(ti, 4)
+            write_str(fd, "  " + r + " = call i64 @ease_syscall_open(ptr " + path + ", i64 " + flags + ", i64 " + mode + ")\n")
+            emit_store_vreg(fd, instr.dest, r)
+        }
+
+        if terminated == 0 && instr.op == OP_SYSCALL_WRITE() {
+            let sfd = emit_load_vreg(fd, instr.arg1, ti, 0)
+            let buf = emit_load_ptr(fd, instr.arg2, ti, 1, 2)
+            let size = emit_load_vreg(fd, instr.arg3, ti, 3)
+            let r = tmp_name(ti, 4)
+            write_str(fd, "  " + r + " = call i64 @ease_syscall_write(i64 " + sfd + ", ptr " + buf + ", i64 " + size + ")\n")
+            emit_store_vreg(fd, instr.dest, r)
+        }
+
+        if terminated == 0 && instr.op == OP_SYSCALL_CLOSE() {
+            let sfd = emit_load_vreg(fd, instr.arg1, ti, 0)
+            let r = tmp_name(ti, 1)
+            write_str(fd, "  " + r + " = call i64 @ease_syscall_close(i64 " + sfd + ")\n")
+            emit_store_vreg(fd, instr.dest, r)
+        }
+
+        if terminated == 0 && instr.op == OP_ARG() {
+            // Collect argument for next call
+            push(call_args, instr.arg1)
+        }
+
+        if terminated == 0 && instr.op == OP_CALL() {
+            let callee = llvm_func_name(instr.str_val)
+            // Build argument string
+            let mut args_str = ""
+            let mut ai = 0
+            for ai < len(call_args) {
+                if ai > 0 { args_str = args_str + ", " }
+                let arg_val = emit_load_vreg(fd, call_args[ai], ti, ai)
+                args_str = args_str + "i64 " + arg_val
+                ai = ai + 1
+            }
+            // Emit call
+            if instr.dest >= 0 {
+                let r = tmp_name(ti, 9)
+                write_str(fd, "  " + r + " = call i64 @" + callee + "(" + args_str + ")\n")
+                emit_store_vreg(fd, instr.dest, r)
+            } else {
+                write_str(fd, "  call i64 @" + callee + "(" + args_str + ")\n")
+            }
+            // Reset call args
+            call_args = []int{}
+        }
+
+        if terminated == 0 && instr.op == OP_RET() {
+            if instr.dest >= 0 {
+                let v = emit_load_vreg(fd, instr.dest, ti, 0)
+                write_str(fd, "  ret i64 " + v + "\n")
+            } else {
+                write_str(fd, "  ret i64 0\n")
+            }
+            terminated = 1
+        }
+
+        if terminated == 0 && instr.op == OP_JUMP() {
+            write_str(fd, "  br label %L." + strconv.Itoa(instr.dest) + "\n")
+            terminated = 1
+        }
+
+        if terminated == 0 && instr.op == OP_BRANCH() {
+            // Branch to arg1 if dest is ZERO (CBZ semantics)
+            let cond = emit_load_vreg(fd, instr.dest, ti, 0)
+            let cmp = tmp_name(ti, 1)
+            write_str(fd, "  " + cmp + " = icmp eq i64 " + cond + ", 0\n")
+            let fall_label = "L.fall." + strconv.Itoa(ti)
+            write_str(fd, "  br i1 " + cmp + ", label %L." + strconv.Itoa(instr.arg1) + ", label %" + fall_label + "\n")
+            write_str(fd, fall_label + ":\n")
+            terminated = 0
+        }
+
+        ii = ii + 1
+    }
+
+    // If function didn't end with a terminator, add default return
+    if terminated == 0 {
+        write_str(fd, "  ret i64 0\n")
+    }
+
+    write_str(fd, "}\n\n")
+}
+
+fn print_hex(val: int) {
+    let mut v = val
+    let mut digits = []int{}
+    let mut hex_i = 0
+    for hex_i < 8 {
+        push(digits, v - ((v / 16) * 16))
+        v = v / 16
+        hex_i = hex_i + 1
+    }
+    let mut pri = 0
+    for pri < 8 {
+        let d = digits[7 - pri]
+        if d < 10 {
+            print(strconv.Itoa(d))
+        } else {
+            if d == 10 { print("a") }
+            if d == 11 { print("b") }
+            if d == 12 { print("c") }
+            if d == 13 { print("d") }
+            if d == 14 { print("e") }
+            if d == 15 { print("f") }
+        }
+        pri = pri + 1
+    }
+}

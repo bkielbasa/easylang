@@ -208,6 +208,36 @@ func (a *Analyzer) loadModule(spec ast.ImportSpec) {
 	// Determine module name (last path segment or alias)
 	moduleName := a.getModuleName(spec)
 
+	// Local imports (./...) use flat merge: all declarations are merged into
+	// the main program as if #included. This supports the bootstrap compiler's
+	// module system where cross-module calls use unqualified names.
+	isLocal := len(spec.Path) > 0 && spec.Path[0] == '.'
+	if isLocal {
+		// Add ALL declarations to main program (flat merge)
+		for _, decl := range prog.Decls {
+			a.prog.Decls = append(a.prog.Decls, decl)
+		}
+
+		// Store module info with empty symbols (qualified access not needed
+		// for flat-merged modules, but keep entry to avoid unused-import error)
+		a.modules[moduleName] = &ModuleInfo{
+			Name:    moduleName,
+			Path:    spec.Path,
+			Program: prog,
+			Symbols: make(map[string]*symbols.Symbol),
+		}
+		// Mark as used to prevent unused-import errors for flat-merged modules
+		a.usedModules[moduleName] = true
+
+		// Store alias mapping if present
+		if spec.Alias != "" {
+			a.importAliases[spec.Alias] = moduleName
+		}
+		return
+	}
+
+	// Stdlib imports use namespaced access (qualified calls only)
+
 	// Analyze the module recursively
 	moduleAnalyzer := New()
 	moduleAnalyzer.currentFile = filePath
@@ -319,14 +349,23 @@ func (a *Analyzer) getModuleName(spec ast.ImportSpec) string {
 
 // collectDeclarations performs the first pass to collect all declarations.
 func (a *Analyzer) collectDeclarations(prog *ast.Program) {
+	// First pass: collect types (structs, enums) so they're available as
+	// forward references for function signatures and variable declarations.
+	// This is needed when local module types are appended after the main
+	// file's declarations that reference them.
 	for _, decl := range prog.Decls {
 		switch d := decl.(type) {
-		case *ast.FnDecl:
-			a.collectFnDecl(d)
 		case *ast.StructDecl:
 			a.collectStructDecl(d)
 		case *ast.EnumDecl:
 			a.collectEnumDecl(d)
+		}
+	}
+	// Second pass: collect functions, variables, constants, and impls
+	for _, decl := range prog.Decls {
+		switch d := decl.(type) {
+		case *ast.FnDecl:
+			a.collectFnDecl(d)
 		case *ast.ConstDecl:
 			a.collectConstDecl(d)
 		case *ast.VarDecl:
