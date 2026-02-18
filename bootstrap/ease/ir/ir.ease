@@ -142,11 +142,10 @@ fn field_offset(struct_name: string, field_name: string) -> int {
 }
 
 fn get_struct_field_names(name: string) -> []string {
-    let f = []string{}
-    if name == "AstNode" { push(f, "tag") push(f, "int_val") push(f, "str_val") push(f, "left") push(f, "right") push(f, "extra") push(f, "type_tag") }
-    if name == "IRInstr" { push(f, "op") push(f, "dest") push(f, "arg1") push(f, "arg2") push(f, "arg3") push(f, "str_val") }
-    if name == "ParseResult" { push(f, "node_idx") push(f, "new_pos") }
-    return f
+    if name == "AstNode" { return []string{"tag", "int_val", "str_val", "left", "right", "extra", "type_tag"} }
+    if name == "IRInstr" { return []string{"op", "dest", "arg1", "arg2", "arg3", "str_val"} }
+    if name == "ParseResult" { return []string{"node_idx", "new_pos"} }
+    return []string{}
 }
 
 fn is_scalar_global(name: string) -> int {

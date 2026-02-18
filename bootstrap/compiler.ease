@@ -588,10 +588,7 @@ fn main() -> int {
 
     // Load bootstrap stdlib modules programmatically (not via import declarations,
     // because the Go compiler's sema would reject them due to builtin conflicts)
-    let mut stdlib_mods = []string{}
-    push(stdlib_mods, "./ease/io")
-    push(stdlib_mods, "./ease/strings")
-    push(stdlib_mods, "./ease/os")
+    let stdlib_mods = []string{"./ease/io", "./ease/strings", "./ease/os"}
     let mut smi = 0
     for smi < len(stdlib_mods) {
         let smod_path = stdlib_mods[smi]

@@ -318,24 +318,58 @@ fn gen_ir_field(node: AstNode, nodes: []AstNode, instrs: []IRInstr, st_names: []
 }
 
 fn gen_ir_array_lit(node: AstNode, nodes: []AstNode, instrs: []IRInstr, st_n: []string, st_v: []int) -> int {
-    let mut f = -1
-    let mut cnt = 0
+    let elem_count = node.int_val
+    if elem_count == 0 {
+        // Empty array: allocate a 24-byte fat pointer (ptr, len, cap) initialized to zero
+        let size_vreg = len(instrs)
+        push(instrs, IRInstr { op: OP_LOADCONST(), dest: size_vreg, arg1: 24, arg2: 0, arg3: 0, str_val: "" })
+        let r = len(instrs)
+        push(instrs, IRInstr { op: OP_HEAP_ALLOC(), dest: r, arg1: size_vreg, arg2: 0, arg3: 0, str_val: "" })
+        return r
+    }
+    // Non-empty array: generate IR for each element, collect vregs
+    let mut elem_vregs = []int{}
     let mut i = node.right
-    for i < len(nodes) && cnt < node.int_val {
+    let mut cnt = 0
+    for i < len(nodes) && cnt < elem_count {
         if nodes[i].tag < STMT_LET() {
             let v = gen_ir_from_ast_with_symtab(i, nodes, instrs, st_n, st_v)
-            if cnt == 0 { f = v }
+            push(elem_vregs, v)
             cnt = cnt + 1
         }
         i = i + 1
     }
-    if f >= 0 { return f }
-    // Empty array: allocate a 24-byte fat pointer (ptr, len, cap) initialized to zero
-    let size_vreg = len(instrs)
-    push(instrs, IRInstr { op: OP_LOADCONST(), dest: size_vreg, arg1: 24, arg2: 0, arg3: 0, str_val: "" })
-    let r = len(instrs)
-    push(instrs, IRInstr { op: OP_HEAP_ALLOC(), dest: r, arg1: size_vreg, arg2: 0, arg3: 0, str_val: "" })
-    return r
+    // Allocate element data storage: elem_count * 8 bytes
+    let data_size_vreg = len(instrs)
+    push(instrs, IRInstr { op: OP_LOADCONST(), dest: data_size_vreg, arg1: elem_count * 8, arg2: 0, arg3: 0, str_val: "" })
+    let data_ptr = len(instrs)
+    push(instrs, IRInstr { op: OP_HEAP_ALLOC(), dest: data_ptr, arg1: data_size_vreg, arg2: 0, arg3: 0, str_val: "" })
+    // Store each element at data_ptr + (j * 8)
+    let mut j = 0
+    for j < len(elem_vregs) {
+        let addr = len(instrs)
+        push(instrs, IRInstr { op: OP_INDEXADDR(), dest: addr, arg1: data_ptr, arg2: j * 8, arg3: 0, str_val: "" })
+        push(instrs, IRInstr { op: OP_STORE(), dest: -1, arg1: addr, arg2: elem_vregs[j], arg3: 0, str_val: "" })
+        j = j + 1
+    }
+    // Allocate fat pointer (24 bytes: ptr, len, cap)
+    let fp_size_vreg = len(instrs)
+    push(instrs, IRInstr { op: OP_LOADCONST(), dest: fp_size_vreg, arg1: 24, arg2: 0, arg3: 0, str_val: "" })
+    let fat_ptr = len(instrs)
+    push(instrs, IRInstr { op: OP_HEAP_ALLOC(), dest: fat_ptr, arg1: fp_size_vreg, arg2: 0, arg3: 0, str_val: "" })
+    // Store data_ptr at fat_ptr + 0
+    push(instrs, IRInstr { op: OP_STORE(), dest: -1, arg1: fat_ptr, arg2: data_ptr, arg3: 0, str_val: "" })
+    // Store len at fat_ptr + 8
+    let len_vreg = len(instrs)
+    push(instrs, IRInstr { op: OP_LOADCONST(), dest: len_vreg, arg1: elem_count, arg2: 0, arg3: 0, str_val: "" })
+    let len_addr = len(instrs)
+    push(instrs, IRInstr { op: OP_INDEXADDR(), dest: len_addr, arg1: fat_ptr, arg2: 8, arg3: 0, str_val: "" })
+    push(instrs, IRInstr { op: OP_STORE(), dest: -1, arg1: len_addr, arg2: len_vreg, arg3: 0, str_val: "" })
+    // Store cap at fat_ptr + 16 (cap = len for literals)
+    let cap_addr = len(instrs)
+    push(instrs, IRInstr { op: OP_INDEXADDR(), dest: cap_addr, arg1: fat_ptr, arg2: 16, arg3: 0, str_val: "" })
+    push(instrs, IRInstr { op: OP_STORE(), dest: -1, arg1: cap_addr, arg2: len_vreg, arg3: 0, str_val: "" })
+    return fat_ptr
 }
 
 fn gen_ir_store_struct_fields(ptr: int, sname: string, idx: int, nodes: []AstNode, instrs: []IRInstr, st_names: []string, st_vregs: []int) -> int {
