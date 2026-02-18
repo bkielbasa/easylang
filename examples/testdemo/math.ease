@@ -1,0 +1,16 @@
+package main
+
+fn add(a: int, b: int) -> int {
+    return a + b
+}
+
+fn multiply(a: int, b: int) -> int {
+    return a * b
+}
+
+fn factorial(n: int) -> int {
+    if n <= 1 {
+        return 1
+    }
+    return n * factorial(n - 1)
+}

@@ -839,6 +839,10 @@ fn gen_ir_from_ast_with_symtab(ast_idx: int, nodes: []AstNode, instrs: []IRInstr
         if func_name == "os.ListDir" {
             return gen_ir_call_list_dir(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
         }
+        if func_name == "test_fail" {
+            push(instrs, IRInstr { op: OP_TEST_FAIL(), dest: -1, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
+            return -1
+        }
         return gen_ir_call_user(node, ast_idx, nodes, instrs, symtab_names, symtab_vregs)
     }
 

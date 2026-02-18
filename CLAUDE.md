@@ -86,37 +86,51 @@ enum Message {
 }
 ```
 
-### Testing
-Tests live in `*_test.ease` files alongside source code.
+### Testing (Go-style, implemented)
+Tests live in `*_test.ease` files alongside source code. Test functions start with `Test` (uppercase T).
 
-```
-#[slow]
-#[parallel]
-test "user login succeeds" {
-    result := login("user", "pass")
-    if result.is_err() {
-        return error.New("login should succeed")
+```ease
+// math_test.ease
+package main
+
+fn TestAdd() {
+    result := add(2, 3)
+    if result != 5 {
+        testing.Fatal("expected 5")
     }
 }
 
-test "validates email format" {
-    if !validate_email("bad") {
-        return error.New("should reject invalid email")
+fn TestMultiply() {
+    result := multiply(6, 7)
+    if result != 42 {
+        testing.Fatal("expected 42")
     }
 }
 ```
 
-- **Syntax**: `test "description" { body }` - contextual keyword (can use `test` as identifier elsewhere)
-- **Attributes**: `#[slow]`, `#[parallel]`, `#[integration]` for categorization
-- **Assertions**: Use `error.New()` to fail tests (Result-based)
-- **Execution**: Sequential by default, `#[parallel]` for concurrent tests
-- **Filtering**: By name substring or tags via CLI
+- **Convention**: `fn TestXxx()` in `*_test.ease` files — Go-style naming
+- **Failure**: `testing.Fatal(msg)` prints the message and aborts the test (setjmp/longjmp)
+- **Discovery**: Compiler discovers `*_test.ease` files, identifies `TestXxx` functions
+- **Runner**: Synthetic main() wraps each test with setjmp for failure recovery
+- **Output**: Go-style `=== RUN` / `--- PASS` / `--- FAIL` / `ok` or `FAIL`
+- **Exit code**: 0 if all pass, 1 if any fail
+- **stdlib auto-loaded**: `testing`, `io`, `strings`, `os`, `strconv` available without import
 
 ```bash
-ease test                           # run all tests
-ease test -name "login"             # filter by description
-ease test -tag slow                 # run only #[slow] tests
-ease test -skip integration         # skip #[integration] tests
+ease test dir/                      # discover and compile tests in dir/
+# Then: clang -O1 runtime/ease_runtime.c tmp/output.ll -o tmp/test_bin && ./tmp/test_bin
+make ease-test                      # shortcut (defaults to examples/testdemo)
+make ease-test DIR=path/to/dir      # test a specific directory
+```
+
+**Example output:**
+```
+=== RUN   TestAdd
+--- PASS: TestAdd
+=== RUN   TestSubtract
+    expected 5, got 3
+--- FAIL: TestSubtract
+FAIL
 ```
 
 ### Concurrency
@@ -147,9 +161,11 @@ ease/
 │       ├── strconv/strconv.ease   # String conversion (Itoa, Atoi)
 │       ├── io/io.ease             # I/O (print via syscall)
 │       ├── strings/strings.ease   # String functions
-│       └── os/os.ease             # OS functions (ReadFile via syscall)
+│       ├── os/os.ease             # OS functions (ReadFile via syscall)
+│       └── testing/testing.ease   # Testing framework (Fatal)
 ├── tests/                # Integration tests (6/6 passing)
 ├── examples/             # Example programs
+│   └── testdemo/         # Go-style test demo (math.ease + math_test.ease)
 └── findings/             # Compiler engineering notes
 ```
 
@@ -160,6 +176,8 @@ The compiler is fully self-hosting. No Go or other compilers needed — just `cl
 ```bash
 make                    # Build compiler from seed LLVM IR
 make test               # Run integration tests (6/6 passing)
+make ease-test          # Run Go-style tests (examples/testdemo)
+make ease-test DIR=dir  # Run Go-style tests in specific directory
 make verify             # Verify self-hosting convergence (gen1 == gen2)
 make update-seed        # Update seed after modifying compiler source
 make clean              # Remove build artifacts
@@ -198,7 +216,8 @@ The Ease compiler is written in Ease and compiles itself with byte-identical con
 - Module/import system (local files, directory packages, stdlib imports)
 - Directory package imports with Go-style visibility (uppercase = public)
 - Package declarations (`package main`, `package token`, etc.)
-- Standard library (strings, strconv, io, os — all pure Ease implementations)
+- Standard library (strings, strconv, io, os, testing — all pure Ease implementations)
+- Go-style testing framework (`fn TestXxx()` in `*_test.ease`, `testing.Fatal(msg)`, setjmp/longjmp recovery)
 - Global variables (mutable and immutable)
 - File I/O and command-line arguments
 - Function return type registry (automatic string/int dispatch)
@@ -252,6 +271,7 @@ The Ease compiler is written in Ease and compiles itself with byte-identical con
 - [x] **Range-based for loops** — `for i in start..end` parsed and desugared to init/compare/body/increment.
 - [x] **Modulo operator** — `%` → `OP_MOD` → LLVM `srem`.
 - [x] **Dynamic struct field registry** — `RegisterStruct` + `RegisterFieldOffset` for user-defined structs.
+- [x] **Go-style testing framework** — `fn TestXxx()` in `*_test.ease`, `testing.Fatal(msg)`, setjmp/longjmp for test recovery, synthetic runner with `=== RUN` / `--- PASS/FAIL` output.
 
 ### Language Features
 - [x] **Go-style `:=` declarations** — Replaced `let`/`let mut` with `:=`. All variables are mutable.
@@ -276,6 +296,8 @@ The Ease compiler is written in Ease and compiles itself with byte-identical con
 ```bash
 make                                    # Build from seed (no Go required)
 make test                               # Run integration tests (6/6 passing)
+make ease-test                          # Run Go-style unit tests
+make ease-test DIR=path/to/tests        # Run tests in specific directory
 make verify                             # Verify self-hosting convergence
 make update-seed                        # Update seed after source changes
 ```

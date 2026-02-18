@@ -259,6 +259,26 @@ fn get_struct_fields(struct_node_idx: int) -> []int {
     return []int{}
 }
 
+// Check if a string ends with "_test.ease"
+fn has_test_suffix(s: string) -> int {
+    slen := len(s)
+    if slen < 10 { return 0 }
+    // Check "_test.ease" (10 chars from end)
+    suffix := str_substring(s, slen - 10, slen)
+    if suffix == "_test.ease" { return 1 }
+    return 0
+}
+
+// Check if a function name starts with "Test" (uppercase T)
+fn is_test_func(name: string) -> int {
+    if len(name) < 5 { return 0 }
+    if str_char_at(name, 0) != 84 { return 0 }  // T
+    if str_char_at(name, 1) != 101 { return 0 } // e
+    if str_char_at(name, 2) != 115 { return 0 } // s
+    if str_char_at(name, 3) != 116 { return 0 } // t
+    return 1
+}
+
 fn count_func_params(nodes: []AstNode, func_idx: int) -> int {
     node := nodes[func_idx]
     if node.left < 0 { return 0 }
@@ -276,11 +296,670 @@ fn count_func_params(nodes: []AstNode, func_idx: int) -> int {
     return count
 }
 
+// Parse all top-level declarations from a source string into nodes/func arrays
+// Returns the parse position (or -1 on error)
+fn parse_source_file(source: string, nodes: []AstNode, func_names: []string, func_indices: []int, global_var_names: []string, skip_main: int) -> int {
+    parse_pos := 0
+    parse_pos = lex_skip(source, parse_pos)
+
+    for {
+        parse_pos = lex_skip(source, parse_pos)
+        kind := lex_kind(source, parse_pos)
+        if kind == TK_EOF() { break }
+
+        if kind == TK_PACKAGE() {
+            parse_pos = lex_end(source, parse_pos, kind)
+            parse_pos = lex_skip(source, parse_pos)
+            parse_pos = lex_end(source, parse_pos, lex_kind(source, parse_pos))
+        } else if kind == TK_IMPORT() {
+            import_result := parse_import_decl(source, parse_pos, nodes)
+            if import_result.node_idx >= 0 {
+                parse_pos = import_result.new_pos
+                parse_pos = lex_skip(source, parse_pos)
+            } else {
+                break
+            }
+        } else if kind == TK_STRUCT() {
+            struct_result := parse_struct_decl(source, parse_pos, nodes)
+            parse_pos = struct_result.new_pos
+        } else if kind == TK_IDENT() {
+            ce_end := lex_end(source, parse_pos, kind)
+            ce_next_pos := lex_skip(source, ce_end)
+            if lex_kind(source, ce_next_pos) == TK_COLONEQUAL() {
+                ce_result := parse_colonequal_stmt(source, parse_pos, nodes)
+                if ce_result.node_idx >= 0 {
+                    ce_node := nodes[ce_result.node_idx]
+                    push(global_var_names, ce_node.str_val)
+                    if ce_node.right >= 0 {
+                        ce_init := nodes[ce_node.right]
+                        if ce_init.tag == EXPR_INT() {
+                            push(g_scalar_globals, ce_node.str_val)
+                        }
+                        if ce_init.tag == EXPR_UNARY() {
+                            push(g_scalar_globals, ce_node.str_val)
+                        }
+                    }
+                }
+                parse_pos = ce_result.new_pos
+            } else {
+                break
+            }
+        } else if kind == TK_FN() {
+            parse_result := parse_func_decl(source, parse_pos, nodes)
+            if parse_result.node_idx < 0 {
+                break
+            }
+            func_idx := parse_result.node_idx
+            func_node := nodes[func_idx]
+            // Skip main() if requested (test mode replaces it)
+            if skip_main == 1 && func_node.str_val == "main" {
+                parse_pos = parse_result.new_pos
+                parse_pos = lex_skip(source, parse_pos)
+            } else {
+                push(func_names, func_node.str_val)
+                push(func_indices, func_idx)
+                parse_pos = parse_result.new_pos
+                parse_pos = lex_skip(source, parse_pos)
+            }
+        } else {
+            break
+        }
+    }
+    return 0
+}
+
+fn run_test_mode(test_path: string) -> int {
+    print("=== Ease Test Runner ===\n\n")
+
+    // Determine directory to scan
+    dir := test_path
+    if len(dir) == 0 { dir = "." }
+    // Strip trailing slash
+    if len(dir) > 1 && str_char_at(dir, len(dir) - 1) == 47 {
+        dir = str_substring(dir, 0, len(dir) - 1)
+    }
+
+    print("Test directory: " + dir + "\n")
+
+    // List files in directory
+    entries := os.ListDir(dir)
+    source_files := []string{}
+    test_files := []string{}
+
+    epos := 0
+    estart := 0
+    entries_len := len(entries)
+    for epos <= entries_len {
+        if epos == entries_len || str_char_at(entries, epos) == 10 {
+            if epos > estart {
+                entry := str_substring(entries, estart, epos)
+                if has_ease_suffix(entry) == 1 {
+                    full_path := dir + "/" + entry
+                    if has_test_suffix(entry) == 1 {
+                        push(test_files, full_path)
+                        print("  Test file: " + full_path + "\n")
+                    } else {
+                        push(source_files, full_path)
+                        print("  Source file: " + full_path + "\n")
+                    }
+                }
+            }
+            estart = epos + 1
+        }
+        epos = epos + 1
+    }
+
+    if len(test_files) == 0 {
+        print("No test files found (expecting *_test.ease)\n")
+        return 0
+    }
+
+    print("\n")
+
+    // Parse all source and test files
+    nodes := []AstNode{}
+    func_names := []string{}
+    func_indices := []int{}
+    global_var_names := []string{}
+
+    // Parse source files (skip main — test runner replaces it)
+    sf_i := 0
+    for sf_i < len(source_files) {
+        print("Parsing source: " + source_files[sf_i] + "\n")
+        src := os.ReadFile(source_files[sf_i])
+        parse_source_file(src, nodes, func_names, func_indices, global_var_names, 1)
+        sf_i = sf_i + 1
+    }
+
+    // Parse test files (also skip any main)
+    test_func_names := []string{}
+    tf_i := 0
+    for tf_i < len(test_files) {
+        print("Parsing tests: " + test_files[tf_i] + "\n")
+        tsrc := os.ReadFile(test_files[tf_i])
+        // Track func count before parsing to identify new test funcs
+        before_count := len(func_names)
+        parse_source_file(tsrc, nodes, func_names, func_indices, global_var_names, 1)
+        // Identify test functions from newly parsed ones
+        tfi := before_count
+        for tfi < len(func_names) {
+            if is_test_func(func_names[tfi]) == 1 {
+                push(test_func_names, func_names[tfi])
+            }
+            tfi = tfi + 1
+        }
+        tf_i = tf_i + 1
+    }
+
+    print("\nFound " + strconv.Itoa(len(test_func_names)) + " test function(s)\n")
+    if len(test_func_names) == 0 {
+        print("No test functions found (expecting fn TestXxx())\n")
+        return 0
+    }
+
+    // Process imports from parsed DECL_IMPORT nodes
+    imp_i := 0
+    main_node_count := len(nodes)
+    for imp_i < main_node_count {
+        if nodes[imp_i].tag == DECL_IMPORT() {
+            import_path := nodes[imp_i].str_val
+            if len(import_path) >= 2 && str_char_at(import_path, 0) == 46 && str_char_at(import_path, 1) == 47 {
+                mod_name := extract_module_name(import_path)
+                resolved := resolve_import_path(dir + "/dummy.ease", import_path)
+                is_dir_flag := os.IsDir(resolved)
+
+                mod_func_names := []string{}
+                mod_func_indices := []int{}
+
+                if is_dir_flag == 1 {
+                    print("Importing package: " + mod_name + " from " + resolved + "/\n")
+                    push(g_import_paths, resolved)
+                    push(g_import_names, mod_name)
+
+                    dir_entries := os.ListDir(resolved)
+                    depos := 0
+                    destart := 0
+                    dir_entries_len := len(dir_entries)
+                    for depos <= dir_entries_len {
+                        if depos == dir_entries_len || str_char_at(dir_entries, depos) == 10 {
+                            if depos > destart {
+                                dentry := str_substring(dir_entries, destart, depos)
+                                if has_ease_suffix(dentry) == 1 {
+                                    file_path := resolved + "/" + dentry
+                                    dir_source := os.ReadFile(file_path)
+                                    dir_pos := 0
+                                    dir_pos = lex_skip(dir_source, dir_pos)
+                                    for {
+                                        dir_pos = lex_skip(dir_source, dir_pos)
+                                        dir_kind := lex_kind(dir_source, dir_pos)
+                                        if dir_kind == TK_EOF() { break }
+                                        if dir_kind == TK_PACKAGE() {
+                                            dir_pos = lex_end(dir_source, dir_pos, dir_kind)
+                                            dir_pos = lex_skip(dir_source, dir_pos)
+                                            dir_pos = lex_end(dir_source, dir_pos, lex_kind(dir_source, dir_pos))
+                                        } else if dir_kind == TK_IMPORT() {
+                                            dir_imp := parse_import_decl(dir_source, dir_pos, nodes)
+                                            dir_pos = dir_imp.new_pos
+                                            dir_pos = lex_skip(dir_source, dir_pos)
+                                        } else if dir_kind == TK_STRUCT() {
+                                            dir_struct := parse_struct_decl(dir_source, dir_pos, nodes)
+                                            dir_pos = dir_struct.new_pos
+                                        } else if dir_kind == TK_IDENT() {
+                                            dir_ce_end := lex_end(dir_source, dir_pos, dir_kind)
+                                            dir_ce_next := lex_skip(dir_source, dir_ce_end)
+                                            if lex_kind(dir_source, dir_ce_next) == TK_COLONEQUAL() {
+                                                dir_ce := parse_colonequal_stmt(dir_source, dir_pos, nodes)
+                                                if dir_ce.node_idx >= 0 {
+                                                    dir_ce_node := nodes[dir_ce.node_idx]
+                                                    push(global_var_names, dir_ce_node.str_val)
+                                                    if dir_ce_node.right >= 0 {
+                                                        dir_ce_init := nodes[dir_ce_node.right]
+                                                        if dir_ce_init.tag == EXPR_INT() {
+                                                            push(g_scalar_globals, dir_ce_node.str_val)
+                                                        }
+                                                        if dir_ce_init.tag == EXPR_UNARY() {
+                                                            push(g_scalar_globals, dir_ce_node.str_val)
+                                                        }
+                                                    }
+                                                }
+                                                dir_pos = dir_ce.new_pos
+                                            } else {
+                                                break
+                                            }
+                                        } else if dir_kind == TK_FN() {
+                                            dir_func := parse_func_decl(dir_source, dir_pos, nodes)
+                                            if dir_func.node_idx < 0 { break }
+                                            dir_func_idx := dir_func.node_idx
+                                            dir_orig := nodes[dir_func_idx].str_val
+                                            push(mod_func_names, dir_orig)
+                                            push(mod_func_indices, dir_func_idx)
+                                            dir_pos = dir_func.new_pos
+                                            dir_pos = lex_skip(dir_source, dir_pos)
+                                        } else {
+                                            break
+                                        }
+                                    }
+                                }
+                            }
+                            destart = depos + 1
+                        }
+                        depos = depos + 1
+                    }
+
+                    mfi := 0
+                    for mfi < len(mod_func_names) {
+                        qualified := mod_name + "." + mod_func_names[mfi]
+                        push(func_names, qualified)
+                        push(func_indices, mod_func_indices[mfi])
+                        if is_exported(mod_func_names[mfi]) == 1 {
+                            push(g_rename_from, mod_func_names[mfi])
+                            push(g_rename_to, qualified)
+                        }
+                        mfi = mfi + 1
+                    }
+                    ipfi := 0
+                    for ipfi < len(mod_func_names) {
+                        if is_exported(mod_func_names[ipfi]) == 0 {
+                            push(g_rename_from, mod_func_names[ipfi])
+                            push(g_rename_to, mod_name + "." + mod_func_names[ipfi])
+                        }
+                        ipfi = ipfi + 1
+                    }
+                } else {
+                    // Single file import
+                    mod_source := os.ReadFile(resolved)
+                    push(g_import_paths, resolved)
+                    push(g_import_names, mod_name)
+
+                    mod_pos := 0
+                    mod_pos = lex_skip(mod_source, mod_pos)
+                    for {
+                        mod_pos = lex_skip(mod_source, mod_pos)
+                        mod_kind := lex_kind(mod_source, mod_pos)
+                        if mod_kind == TK_EOF() { break }
+                        if mod_kind == TK_PACKAGE() {
+                            mod_pos = lex_end(mod_source, mod_pos, mod_kind)
+                            mod_pos = lex_skip(mod_source, mod_pos)
+                            mod_pos = lex_end(mod_source, mod_pos, lex_kind(mod_source, mod_pos))
+                        } else if mod_kind == TK_IMPORT() {
+                            mod_import_result := parse_import_decl(mod_source, mod_pos, nodes)
+                            mod_pos = mod_import_result.new_pos
+                            mod_pos = lex_skip(mod_source, mod_pos)
+                        } else if mod_kind == TK_STRUCT() {
+                            mod_struct_result := parse_struct_decl(mod_source, mod_pos, nodes)
+                            mod_pos = mod_struct_result.new_pos
+                        } else if mod_kind == TK_IDENT() {
+                            mod_ce_end := lex_end(mod_source, mod_pos, mod_kind)
+                            mod_ce_next := lex_skip(mod_source, mod_ce_end)
+                            if lex_kind(mod_source, mod_ce_next) == TK_COLONEQUAL() {
+                                mod_ce := parse_colonequal_stmt(mod_source, mod_pos, nodes)
+                                if mod_ce.node_idx >= 0 {
+                                    mod_ce_node := nodes[mod_ce.node_idx]
+                                    push(global_var_names, mod_ce_node.str_val)
+                                    if mod_ce_node.right >= 0 {
+                                        mod_ce_init := nodes[mod_ce_node.right]
+                                        if mod_ce_init.tag == EXPR_INT() {
+                                            push(g_scalar_globals, mod_ce_node.str_val)
+                                        }
+                                        if mod_ce_init.tag == EXPR_UNARY() {
+                                            push(g_scalar_globals, mod_ce_node.str_val)
+                                        }
+                                    }
+                                }
+                                mod_pos = mod_ce.new_pos
+                            } else {
+                                break
+                            }
+                        } else if mod_kind == TK_FN() {
+                            mod_func_result := parse_func_decl(mod_source, mod_pos, nodes)
+                            if mod_func_result.node_idx < 0 { break }
+                            mod_func_idx := mod_func_result.node_idx
+                            orig_name := nodes[mod_func_idx].str_val
+                            push(mod_func_names, orig_name)
+                            push(mod_func_indices, mod_func_idx)
+                            mod_pos = mod_func_result.new_pos
+                            mod_pos = lex_skip(mod_source, mod_pos)
+                        } else {
+                            break
+                        }
+                    }
+
+                    mfi := 0
+                    for mfi < len(mod_func_names) {
+                        qualified := mod_name + "." + mod_func_names[mfi]
+                        push(func_names, qualified)
+                        push(func_indices, mod_func_indices[mfi])
+                        push(g_rename_from, mod_func_names[mfi])
+                        push(g_rename_to, qualified)
+                        mfi = mfi + 1
+                    }
+                }
+            }
+        }
+        imp_i = imp_i + 1
+    }
+
+    // Load stdlib modules (io, strings, os, strconv, testing)
+    stdlib_mods := []string{"./ease/io", "./ease/strings", "./ease/os", "./ease/strconv", "./ease/testing"}
+    smi := 0
+    for smi < len(stdlib_mods) {
+        smod_path := stdlib_mods[smi]
+        smod_name := extract_module_name(smod_path)
+
+        already_loaded := 0
+        ali := 0
+        for ali < len(g_import_names) {
+            if g_import_names[ali] == smod_name {
+                already_loaded = 1
+                break
+            }
+            ali = ali + 1
+        }
+        if already_loaded == 0 {
+
+        // Try bootstrap/ease/{name} for stdlib
+        smod_resolved := "bootstrap/ease/" + smod_name
+        smod_is_dir := os.IsDir(smod_resolved)
+        if smod_is_dir == 0 {
+            smod_resolved = smod_resolved + ".ease"
+        }
+
+        print("Loading stdlib: " + smod_name + " from " + smod_resolved + "\n")
+        push(g_import_paths, smod_resolved)
+        push(g_import_names, smod_name)
+
+        smod_files := []string{}
+        if smod_is_dir == 1 {
+            smod_entries := os.ListDir(smod_resolved)
+            sepos := 0
+            sestart := 0
+            smod_entries_len := len(smod_entries)
+            for sepos <= smod_entries_len {
+                if sepos == smod_entries_len || str_char_at(smod_entries, sepos) == 10 {
+                    if sepos > sestart {
+                        smod_entry := str_substring(smod_entries, sestart, sepos)
+                        if has_ease_suffix(smod_entry) == 1 {
+                            push(smod_files, smod_resolved + "/" + smod_entry)
+                        }
+                    }
+                    sestart = sepos + 1
+                }
+                sepos = sepos + 1
+            }
+        } else {
+            push(smod_files, smod_resolved)
+        }
+
+        sfi := 0
+        for sfi < len(smod_files) {
+            smod_file := smod_files[sfi]
+            smod_source := os.ReadFile(smod_file)
+            smod_pos := 0
+            smod_pos = lex_skip(smod_source, smod_pos)
+            for {
+                smod_pos = lex_skip(smod_source, smod_pos)
+                smod_kind := lex_kind(smod_source, smod_pos)
+                if smod_kind == TK_EOF() { break }
+                if smod_kind == TK_PACKAGE() {
+                    smod_pos = lex_end(smod_source, smod_pos, smod_kind)
+                    smod_pos = lex_skip(smod_source, smod_pos)
+                    smod_pos = lex_end(smod_source, smod_pos, lex_kind(smod_source, smod_pos))
+                    smod_pos = lex_skip(smod_source, smod_pos)
+                } else if smod_kind == TK_FN() {
+                    smod_result := parse_func_decl(smod_source, smod_pos, nodes)
+                    if smod_result.node_idx < 0 { break }
+                    smod_func_idx := smod_result.node_idx
+                    smod_orig := nodes[smod_func_idx].str_val
+                    smod_qualified := smod_name + "." + smod_orig
+                    push(func_names, smod_qualified)
+                    push(func_indices, smod_func_idx)
+                    push(g_rename_from, smod_orig)
+                    push(g_rename_to, smod_qualified)
+                    smod_pos = smod_result.new_pos
+                    smod_pos = lex_skip(smod_source, smod_pos)
+                } else {
+                    smod_pos = lex_end(smod_source, smod_pos, smod_kind)
+                    smod_pos = lex_skip(smod_source, smod_pos)
+                }
+            }
+            sfi = sfi + 1
+        }
+
+        } // end if not already_loaded
+        smi = smi + 1
+    }
+
+    // Bridge print -> io.Print
+    push(g_rename_from, "print")
+    push(g_rename_to, "io.Print")
+
+    // Build struct field type registry
+    sfi := 0
+    nodes_len := len(nodes)
+    for sfi < nodes_len {
+        if nodes[sfi].tag == DECL_STRUCT() {
+            struct_name := nodes[sfi].str_val
+            field_names_list := []string{}
+            fi := nodes[sfi].left
+            if fi >= 0 {
+                field_idx := 0
+                for fi < nodes_len {
+                    if nodes[fi].tag != DECL_FIELD() { break }
+                    push(field_names_list, nodes[fi].str_val)
+                    if nodes[fi].type_tag != TYPE_UNKNOWN() {
+                        register_field_type(nodes[fi].str_val, nodes[fi].type_tag, nodes[fi].int_val)
+                    }
+                    RegisterFieldOffset(nodes[fi].str_val, field_idx * 8)
+                    field_idx = field_idx + 1
+                    fi = fi + 1
+                }
+            }
+            RegisterStruct(struct_name, field_names_list)
+        }
+        sfi = sfi + 1
+    }
+
+    // Build function return type registry
+    register_func_return_type("os.Argv", TYPE_STRING(), 0)
+    register_func_return_type("os.IsDir", TYPE_INT(), 0)
+    register_func_return_type("os.ListDir", TYPE_STRING(), 0)
+
+    reg_i := 0
+    for reg_i < len(func_indices) {
+        fn_node := nodes[func_indices[reg_i]]
+        register_func_return_type(func_names[reg_i], fn_node.type_tag, fn_node.int_val)
+        reg_i = reg_i + 1
+    }
+
+    // IR Generation — compile all user functions
+    print("\nPhase: IR Generation\n")
+    instrs := []IRInstr{}
+
+    fn_count := len(func_names)
+    gen_all_i := 0
+    for gen_all_i < fn_count {
+        g_string_vars_start = len(g_string_vars)
+        g_string_array_vars_start = len(g_string_array_vars)
+
+        func_idx := func_indices[gen_all_i]
+        func_name := func_names[gen_all_i]
+        param_count := count_func_params(nodes, func_idx)
+
+        func_label := 5000 + gen_all_i
+        label_instr := IRInstr {
+            op: OP_LABEL(),
+            dest: func_label,
+            arg1: param_count,
+            arg2: 0,
+            arg3: 0,
+            str_val: func_name
+        }
+        push(instrs, label_instr)
+
+        symtab_names := []string{}
+        symtab_vregs := []int{}
+        gvi := 0
+        for gvi < len(global_var_names) {
+            push(symtab_names, global_var_names[gvi])
+            push(symtab_vregs, -1000 - gvi)
+            gvi = gvi + 1
+        }
+        gen_ir_from_ast_with_symtab(func_idx, nodes, instrs, symtab_names, symtab_vregs)
+        gen_all_i = gen_all_i + 1
+    }
+
+    print("Generated " + strconv.Itoa(len(instrs)) + " IR instructions for " + strconv.Itoa(fn_count) + " functions\n")
+
+    // Generate synthetic test runner main()
+    // This replaces the user's main() with a test harness
+    print("\nGenerating test runner main()\n")
+
+    // Emit function label for main
+    main_label := 5000 + fn_count
+    push(instrs, IRInstr { op: OP_LABEL(), dest: main_label, arg1: 0, arg2: 0, arg3: 0, str_val: "main" })
+
+    // Initialize failed counter: failed = 0
+    failed_vreg := len(instrs)
+    push(instrs, IRInstr { op: OP_LOADCONST(), dest: failed_vreg, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
+
+    zero_vreg := len(instrs)
+    push(instrs, IRInstr { op: OP_LOADCONST(), dest: zero_vreg, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
+
+    one_vreg := len(instrs)
+    push(instrs, IRInstr { op: OP_LOADCONST(), dest: one_vreg, arg1: 1, arg2: 0, arg3: 0, str_val: "" })
+
+    // For each test function, generate:
+    //   io.Print("=== RUN   TestXxx\n")
+    //   result = setjmp()
+    //   if result == 0 { call TestXxx(); io.Print("--- PASS: TestXxx\n"); jump next }
+    //   else { io.Print("--- FAIL: TestXxx\n"); failed++ ; jump next }
+    //   next:
+    ti := 0
+    for ti < len(test_func_names) {
+        tname := test_func_names[ti]
+
+        // Print "=== RUN   TestXxx\n" via io.Print
+        run_msg_vreg := len(instrs)
+        push(instrs, IRInstr { op: OP_LOADCONST(), dest: run_msg_vreg, arg1: 0, arg2: 0, arg3: 0, str_val: "=== RUN   " + tname + "\n" })
+        push(instrs, IRInstr { op: OP_ARG(), dest: 0, arg1: run_msg_vreg, arg2: -1, arg3: 0, str_val: "" })
+        run_call := len(instrs)
+        push(instrs, IRInstr { op: OP_CALL(), dest: run_call, arg1: 0, arg2: 1, arg3: 0, str_val: "io.Print" })
+
+        // setjmp
+        sjmp_vreg := len(instrs)
+        push(instrs, IRInstr { op: OP_SETJMP(), dest: sjmp_vreg, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
+
+        // Compare: sjmp_vreg == 0 ?
+        cmp_vreg := len(instrs)
+        push(instrs, IRInstr { op: OP_CMP_EQ(), dest: cmp_vreg, arg1: sjmp_vreg, arg2: zero_vreg, arg3: 0, str_val: "" })
+
+        // Branch: if cmp_vreg == 0 (i.e., setjmp returned non-zero = failure), go to fail label
+        fail_label := g_next_label
+        g_next_label = g_next_label + 1
+        next_label := g_next_label
+        g_next_label = g_next_label + 1
+
+        push(instrs, IRInstr { op: OP_BRANCH(), dest: cmp_vreg, arg1: fail_label, arg2: 0, arg3: 0, str_val: "" })
+
+        // Pass path: call TestXxx()
+        call_vreg := len(instrs)
+        push(instrs, IRInstr { op: OP_CALL(), dest: call_vreg, arg1: 0, arg2: 0, arg3: 0, str_val: tname })
+
+        // Print "--- PASS: TestXxx\n" via io.Print
+        pass_msg_vreg := len(instrs)
+        push(instrs, IRInstr { op: OP_LOADCONST(), dest: pass_msg_vreg, arg1: 0, arg2: 0, arg3: 0, str_val: "--- PASS: " + tname + "\n" })
+        push(instrs, IRInstr { op: OP_ARG(), dest: 0, arg1: pass_msg_vreg, arg2: -1, arg3: 0, str_val: "" })
+        pass_call := len(instrs)
+        push(instrs, IRInstr { op: OP_CALL(), dest: pass_call, arg1: 0, arg2: 1, arg3: 0, str_val: "io.Print" })
+
+        // Jump to next
+        push(instrs, IRInstr { op: OP_JUMP(), dest: next_label, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
+
+        // Fail path
+        push(instrs, IRInstr { op: OP_LABEL(), dest: fail_label, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
+
+        // Print "--- FAIL: TestXxx\n" via io.Print
+        fail_msg_vreg := len(instrs)
+        push(instrs, IRInstr { op: OP_LOADCONST(), dest: fail_msg_vreg, arg1: 0, arg2: 0, arg3: 0, str_val: "--- FAIL: " + tname + "\n" })
+        push(instrs, IRInstr { op: OP_ARG(), dest: 0, arg1: fail_msg_vreg, arg2: -1, arg3: 0, str_val: "" })
+        fail_call := len(instrs)
+        push(instrs, IRInstr { op: OP_CALL(), dest: fail_call, arg1: 0, arg2: 1, arg3: 0, str_val: "io.Print" })
+
+        // Increment failed counter: failed = failed + 1
+        new_failed := len(instrs)
+        push(instrs, IRInstr { op: OP_ADD(), dest: new_failed, arg1: failed_vreg, arg2: one_vreg, arg3: 0, str_val: "" })
+        push(instrs, IRInstr { op: OP_COPY(), dest: failed_vreg, arg1: new_failed, arg2: 0, arg3: 0, str_val: "" })
+
+        // Jump to next
+        push(instrs, IRInstr { op: OP_JUMP(), dest: next_label, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
+
+        // Next label
+        push(instrs, IRInstr { op: OP_LABEL(), dest: next_label, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
+
+        ti = ti + 1
+    }
+
+    // Print summary via io.Print
+    // if failed > 0: print "FAIL\n" and return 1; else print "ok\n" and return 0
+    summary_cmp := len(instrs)
+    push(instrs, IRInstr { op: OP_CMP_GT(), dest: summary_cmp, arg1: failed_vreg, arg2: zero_vreg, arg3: 0, str_val: "" })
+
+    summary_fail_label := g_next_label
+    g_next_label = g_next_label + 1
+
+    push(instrs, IRInstr { op: OP_BRANCH(), dest: summary_cmp, arg1: summary_fail_label, arg2: 0, arg3: 0, str_val: "" })
+
+    // failed > 0 path: print FAIL, return 1
+    fail_str_vreg := len(instrs)
+    push(instrs, IRInstr { op: OP_LOADCONST(), dest: fail_str_vreg, arg1: 0, arg2: 0, arg3: 0, str_val: "FAIL\n" })
+    push(instrs, IRInstr { op: OP_ARG(), dest: 0, arg1: fail_str_vreg, arg2: -1, arg3: 0, str_val: "" })
+    fail_sum_call := len(instrs)
+    push(instrs, IRInstr { op: OP_CALL(), dest: fail_sum_call, arg1: 0, arg2: 1, arg3: 0, str_val: "io.Print" })
+    push(instrs, IRInstr { op: OP_RET(), dest: one_vreg, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
+
+    // failed == 0 path: print ok, return 0
+    push(instrs, IRInstr { op: OP_LABEL(), dest: summary_fail_label, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
+    ok_str_vreg := len(instrs)
+    push(instrs, IRInstr { op: OP_LOADCONST(), dest: ok_str_vreg, arg1: 0, arg2: 0, arg3: 0, str_val: "ok\n" })
+    push(instrs, IRInstr { op: OP_ARG(), dest: 0, arg1: ok_str_vreg, arg2: -1, arg3: 0, str_val: "" })
+    ok_sum_call := len(instrs)
+    push(instrs, IRInstr { op: OP_CALL(), dest: ok_sum_call, arg1: 0, arg2: 1, arg3: 0, str_val: "io.Print" })
+    push(instrs, IRInstr { op: OP_RET(), dest: zero_vreg, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
+
+    print("Generated test runner with " + strconv.Itoa(len(test_func_names)) + " tests\n\n")
+
+    // LLVM IR Generation
+    print("Phase: LLVM IR Generation\n")
+    output_ll := "./tmp/output.ll"
+    result := emit_llvm_ir(instrs, output_ll)
+    if result != 0 {
+        return 1
+    }
+
+    print("\n=== Test Compilation Complete ===\n")
+    print("To run tests:\n")
+    print("  clang -O1 runtime/ease_runtime.c " + output_ll + " -o tmp/test_bin\n")
+    print("  ./tmp/test_bin\n")
+
+    return 0
+}
+
 fn main() -> int {
+    // Check for test mode: ease test <path>
+    argc := os.Argc()
+    if argc > 1 {
+        if os.Argv(1) == "test" {
+            test_path := "."
+            if argc > 2 {
+                test_path = os.Argv(2)
+            }
+            return run_test_mode(test_path)
+        }
+    }
+
     print("=== Bootstrap Ease Compiler (LLVM IR) ===\n\n")
 
     // Get command-line arguments
-    argc := os.Argc()
     source := ""
     filename := ""
 

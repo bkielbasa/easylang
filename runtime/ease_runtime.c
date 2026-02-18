@@ -8,6 +8,7 @@
 #include <unistd.h>
 #include <sys/stat.h>
 #include <dirent.h>
+#include <setjmp.h>
 
 // ============================================================================
 // String operations (null-terminated C strings, represented as char*)
@@ -461,6 +462,19 @@ long ease_map_len(void *map_ptr) {
     EaseMap *m = (EaseMap *)map_ptr;
     if (!m) return 0;
     return m->len;
+}
+
+// ============================================================================
+// Testing support (setjmp/longjmp for test failure recovery)
+// ============================================================================
+
+// Exposed as external global so LLVM IR can call setjmp() directly on it.
+// setjmp must be called from the function whose stack frame persists
+// through the test — wrapping it in a helper would invalidate the jmp_buf.
+jmp_buf ease_test_jmp_buf;
+
+void ease_test_fail(void) {
+    longjmp(ease_test_jmp_buf, 1);
 }
 
 // ============================================================================

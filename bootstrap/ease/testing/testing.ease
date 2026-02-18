@@ -1,0 +1,6 @@
+package testing
+
+fn Fatal(msg: string) {
+    print("    " + msg + "\n")
+    test_fail()
+}

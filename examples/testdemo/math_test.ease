@@ -1,0 +1,36 @@
+package main
+
+fn TestAdd() {
+    result := add(2, 3)
+    if result != 5 {
+        testing.Fatal("add(2,3) should be 5")
+    }
+}
+
+fn TestAddZero() {
+    result := add(0, 0)
+    if result != 0 {
+        testing.Fatal("add(0,0) should be 0")
+    }
+}
+
+fn TestMultiply() {
+    result := multiply(6, 7)
+    if result != 42 {
+        testing.Fatal("multiply(6,7) should be 42")
+    }
+}
+
+fn TestFactorial() {
+    result := factorial(5)
+    if result != 120 {
+        testing.Fatal("factorial(5) should be 120")
+    }
+}
+
+fn TestNegative() {
+    result := add(-10, 3)
+    if result != -7 {
+        testing.Fatal("add(-10,3) should be -7")
+    }
+}

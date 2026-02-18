@@ -18,7 +18,7 @@ COMPILER_SRC := bootstrap/compiler.ease
 BUILD_DIR := tmp
 EASE      := $(BUILD_DIR)/ease
 
-.PHONY: all clean verify update-seed test
+.PHONY: all clean verify update-seed test ease-test
 
 all: $(EASE)
 
@@ -76,6 +76,14 @@ test: $(EASE)
 	echo "Results: $$passed passed, $$failed failed"; \
 	echo "================================"; \
 	[ $$failed -eq 0 ]
+
+# Run Go-style tests (fn TestXxx in *_test.ease files)
+# Usage: make ease-test DIR=path/to/dir (default: examples/testdemo)
+DIR ?= examples/testdemo
+ease-test: $(EASE)
+	$(EASE) test $(DIR)
+	$(CC) $(CFLAGS) $(RUNTIME) $(BUILD_DIR)/output.ll -o $(BUILD_DIR)/test_bin
+	$(BUILD_DIR)/test_bin
 
 clean:
 	rm -f $(BUILD_DIR)/ease $(BUILD_DIR)/ease_gen1
