@@ -1,3 +1,5 @@
+package main
+
 // Advanced recursion and algorithm demonstration
 import ("strconv")
 

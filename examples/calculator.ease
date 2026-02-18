@@ -1,3 +1,5 @@
+package main
+
 // Simple calculator demonstrating arithmetic and functions
 
 fn add(a: int, b: int) -> int {

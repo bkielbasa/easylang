@@ -1,3 +1,5 @@
+package main
+
 // Test 6: Loops and control flow
 fn sum_range(start: int, end: int) -> int {
     let mut sum = 0

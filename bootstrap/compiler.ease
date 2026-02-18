@@ -1,3 +1,5 @@
+package main
+
 // Bootstrap Ease Compiler (LLVM IR backend)
 // Main entry point — imports domain modules and orchestrates compilation pipeline
 
@@ -322,7 +324,12 @@ fn main() -> int {
         let kind = lex_kind(source, parse_pos)
         if kind == TK_EOF() { break }
 
-        if kind == TK_IMPORT() {
+        if kind == TK_PACKAGE() {
+            // Skip: package <name>
+            parse_pos = lex_end(source, parse_pos, kind)
+            parse_pos = lex_skip(source, parse_pos)
+            parse_pos = lex_end(source, parse_pos, lex_kind(source, parse_pos))
+        } else if kind == TK_IMPORT() {
             let import_result = parse_import_decl(source, parse_pos, nodes)
             if import_result.node_idx >= 0 {
                 import_count = import_count + 1

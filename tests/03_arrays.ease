@@ -1,3 +1,5 @@
+package main
+
 // Test 3: Array operations
 fn main() -> int {
     // Test array literal and indexing

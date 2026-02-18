@@ -1,3 +1,5 @@
+package main
+
 // Test 1: Basic arithmetic operations
 fn main() -> int {
     let a = 10

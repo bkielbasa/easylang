@@ -1,3 +1,5 @@
+package main
+
 // Data structures demonstration - structs and arrays
 
 import ("strconv")

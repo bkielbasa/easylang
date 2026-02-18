@@ -1,3 +1,5 @@
+package main
+
 // Enum and pattern matching examples.
 //
 // Demonstrates:

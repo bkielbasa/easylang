@@ -1,3 +1,5 @@
+package main
+
 // Test different expressions with the integrated compiler
 
 // Copy all the code from compiler.ease...

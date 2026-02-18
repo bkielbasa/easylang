@@ -1,3 +1,5 @@
+package main
+
 // Test 5: Struct operations
 struct Point {
     x: int,

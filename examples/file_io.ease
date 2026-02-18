@@ -1,3 +1,5 @@
+package main
+
 // Example: File I/O operations in Ease
 import ("strconv")
 
