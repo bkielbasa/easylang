@@ -1,3 +1,5 @@
+package token
+
 // Token type constants for the Ease bootstrap compiler
 
 fn TK_IDENT() -> int { return 1 }
@@ -18,6 +20,7 @@ fn TK_STRUCT() -> int { return 19 }
 fn TK_TRUE() -> int { return 20 }
 fn TK_FALSE() -> int { return 21 }
 fn TK_IMPORT() -> int { return 22 }
+fn TK_PACKAGE() -> int { return 23 }
 
 // Arithmetic operators
 fn TK_PLUS() -> int { return 30 }

@@ -1,3 +1,5 @@
+package ir
+
 // IR types, opcodes, symbol table, and struct layout for the Ease bootstrap compiler
 
 struct IRInstr {
@@ -89,6 +91,9 @@ fn OP_STR_CONCAT() -> int { return 48 }
 fn OP_COPY() -> int { return 49 }
 fn OP_LOAD_GLOBAL() -> int { return 50 }
 fn OP_STR_LEN() -> int { return 51 }
+fn OP_SYSCALL_READ() -> int { return 52 }
+fn OP_IS_DIR() -> int { return 53 }
+fn OP_LIST_DIR() -> int { return 54 }
 
 // Struct definitions and offsets (hardcoded for known structs)
 // AstNode: tag(8), int_val(8), str_val(8), left(8), right(8), extra(8), type_tag(8) = 56 bytes

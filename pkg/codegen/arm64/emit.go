@@ -704,6 +704,10 @@ func (e *Emitter) emitInstr(instr *ir.Instr) {
 		e.emitArgc(instr)
 	case ir.OpArgv:
 		e.emitArgv(instr)
+	case ir.OpIsDir:
+		e.emitIsDir(instr)
+	case ir.OpListDir:
+		e.emitListDir(instr)
 	case ir.OpIntToStr:
 		e.emitIntToStr(instr)
 	case ir.OpStrToInt:
@@ -3037,6 +3041,25 @@ func (e *Emitter) emitArgv(instr *ir.Instr) {
 	// Load the string pointer from argv[index]
 	e.asm.LDRx(X16, X16)
 	e.storeToVReg(instr.Dest.VReg, X16)
+}
+
+// emitIsDir checks if a path is a directory.
+// ARM64 backend stub: always returns 0. Full implementation in LLVM backend via C runtime.
+func (e *Emitter) emitIsDir(instr *ir.Instr) {
+	e.asm.MOVimm(X0, 0)
+	e.storeToVReg(instr.Dest.VReg, X0)
+}
+
+// emitListDir lists directory entries.
+// ARM64 backend stub: returns empty string. Full implementation in LLVM backend via C runtime.
+func (e *Emitter) emitListDir(instr *ir.Instr) {
+	// Allocate 1 byte for empty null-terminated string
+	e.asm.MOVimm(X0, 1)
+	e.emitBumpAlloc(X0, X1)
+	// Store null terminator at the allocated byte
+	e.asm.MOVimm(X0, 0)
+	e.asm.STRB(X0, X1, 0)
+	e.storeToVReg(instr.Dest.VReg, X1)
 }
 
 // emitIntToStr converts an integer to a decimal string

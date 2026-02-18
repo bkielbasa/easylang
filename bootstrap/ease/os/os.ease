@@ -1,3 +1,5 @@
+package os
+
 // OS functions for the Ease bootstrap compiler
 
 fn ReadFile(path: string) -> string {

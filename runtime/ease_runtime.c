@@ -7,6 +7,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <sys/stat.h>
+#include <dirent.h>
 
 // ============================================================================
 // String operations (null-terminated C strings, represented as char*)
@@ -309,6 +310,39 @@ long ease_syscall_write(long fd, const char *buf, long size) {
 
 long ease_syscall_close(long fd) {
     return (long)close((int)fd);
+}
+
+// ============================================================================
+// Directory operations
+// ============================================================================
+
+long ease_is_dir(const char *path) {
+    if (!path) return 0;
+    struct stat st;
+    if (stat(path, &st) != 0) return 0;
+    return S_ISDIR(st.st_mode) ? 1 : 0;
+}
+
+char* ease_list_dir(const char *path) {
+    if (!path) return strdup("");
+    DIR *d = opendir(path);
+    if (!d) return strdup("");
+    char *result = strdup("");
+    struct dirent *entry;
+    while ((entry = readdir(d)) != NULL) {
+        if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0) continue;
+        size_t rlen = strlen(result);
+        size_t nlen = strlen(entry->d_name);
+        char *new_result = (char *)malloc(rlen + nlen + 2);
+        memcpy(new_result, result, rlen);
+        memcpy(new_result + rlen, entry->d_name, nlen);
+        new_result[rlen + nlen] = '\n';
+        new_result[rlen + nlen + 1] = '\0';
+        free(result);
+        result = new_result;
+    }
+    closedir(d);
+    return result;
 }
 
 // ============================================================================

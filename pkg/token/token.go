@@ -100,8 +100,9 @@ const (
 	None
 	Some
 	Move
-	Pub  // reserved but not used (Go-style visibility)
-	Test // test keyword for testing
+	Pub     // reserved but not used (Go-style visibility)
+	Package // package declaration
+	Test    // test keyword for testing
 	keywordEnd
 )
 
@@ -204,6 +205,7 @@ var tokenNames = map[Type]string{
 	Some:     "Some",
 	Move:        "move",
 	Pub:         "pub",
+	Package:     "package",
 	Test:        "test",
 	Hash:        "#",
 	HashBracket: "#[",
@@ -247,6 +249,7 @@ var keywords = map[string]Type{
 	"Some":     Some,
 	"move":     Move,
 	"pub":      Pub,
+	"package":  Package,
 	// Note: "test" is NOT a keyword - it's handled contextually in the parser
 	// This allows "test" to be used as an identifier (e.g., function name)
 }

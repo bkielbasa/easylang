@@ -196,6 +196,17 @@ func (a *Analyzer) loadModule(spec ast.ImportSpec) {
 		return
 	}
 
+	// Determine module name (last path segment or alias)
+	moduleName := a.getModuleName(spec)
+
+	isLocal := len(spec.Path) > 0 && spec.Path[0] == '.'
+
+	// Check if the resolved path is a directory (directory = package)
+	if info, err := os.Stat(filePath); err == nil && info.IsDir() {
+		a.loadDirectoryPackage(spec, filePath, moduleName)
+		return
+	}
+
 	// Parse the module
 	prog, err := a.parseModule(filePath)
 	if err != nil {
@@ -205,13 +216,9 @@ func (a *Analyzer) loadModule(spec ast.ImportSpec) {
 
 	a.loadedFiles[filePath] = prog
 
-	// Determine module name (last path segment or alias)
-	moduleName := a.getModuleName(spec)
-
 	// Local imports (./...) use flat merge: all declarations are merged into
 	// the main program as if #included. This supports the bootstrap compiler's
 	// module system where cross-module calls use unqualified names.
-	isLocal := len(spec.Path) > 0 && spec.Path[0] == '.'
 	if isLocal {
 		// Add ALL declarations to main program (flat merge)
 		for _, decl := range prog.Decls {
@@ -284,6 +291,93 @@ func (a *Analyzer) loadModule(spec ast.ImportSpec) {
 	}
 }
 
+// loadDirectoryPackage loads all .ease files from a directory as one package.
+// Only uppercase-named symbols are exported (accessible from outside the package).
+func (a *Analyzer) loadDirectoryPackage(spec ast.ImportSpec, dirPath string, moduleName string) {
+	a.loadedFiles[dirPath] = nil // Mark as loaded to prevent re-entry
+
+	entries, err := os.ReadDir(dirPath)
+	if err != nil {
+		a.error(spec.Token.Pos, "cannot read directory '%s': %v", dirPath, err)
+		return
+	}
+
+	// Parse all .ease files and merge into one combined program
+	combinedProg := &ast.Program{}
+	for _, entry := range entries {
+		if entry.IsDir() {
+			continue
+		}
+		name := entry.Name()
+		if len(name) < 5 || name[len(name)-5:] != ".ease" {
+			continue
+		}
+		filePath := dirPath + "/" + name
+		prog, err := a.parseModule(filePath)
+		if err != nil {
+			a.error(spec.Token.Pos, "cannot load '%s': %v", filePath, err)
+			continue
+		}
+		combinedProg.Decls = append(combinedProg.Decls, prog.Decls...)
+	}
+
+	// Add ALL declarations to the main program for compilation.
+	// Private (lowercase) functions are needed for intra-package calls.
+	// Visibility is enforced at the module symbol level: only uppercase names
+	// are exported to the module's Symbols map, so external code can't call
+	// lowercase functions via qualified names.
+	for _, decl := range combinedProg.Decls {
+		a.prog.Decls = append(a.prog.Decls, decl)
+	}
+
+	// Build exported symbols map from function declarations.
+	// Only uppercase-named functions are accessible via qualified names.
+	// We create placeholder symbols here; they'll be fully resolved during
+	// the main program's collectDeclarations pass.
+	exported := make(map[string]*symbols.Symbol)
+	for _, decl := range combinedProg.Decls {
+		if fnDecl, ok := decl.(*ast.FnDecl); ok {
+			name := fnDecl.Name.Name
+			if len(name) > 0 && 'A' <= name[0] && name[0] <= 'Z' {
+				// Build function type from declaration
+				params := make([]*types.Param, len(fnDecl.Params))
+				for i, p := range fnDecl.Params {
+					params[i] = &types.Param{
+						Name: p.Name.Name,
+						Type: a.resolveType(p.Type),
+					}
+				}
+				retType := types.Type(types.Typ[types.Unit])
+				if fnDecl.ReturnType != nil {
+					retType = a.resolveType(fnDecl.ReturnType)
+				}
+				fnType := types.NewFunction(params, retType)
+				exported[name] = &symbols.Symbol{
+					Name: name,
+					Type: fnType,
+					Kind: symbols.FuncSymbol,
+				}
+			}
+		}
+	}
+
+	// Store module info
+	a.modules[moduleName] = &ModuleInfo{
+		Name:    moduleName,
+		Path:    spec.Path,
+		Program: combinedProg,
+		Symbols: exported,
+	}
+	// Mark as used — declarations are flat-merged into the main program,
+	// so unqualified calls won't trigger the qualified-access usage tracker
+	a.usedModules[moduleName] = true
+
+	// Store alias mapping if present
+	if spec.Alias != "" {
+		a.importAliases[spec.Alias] = moduleName
+	}
+}
+
 // resolveImportPath converts an import path to a file path.
 func (a *Analyzer) resolveImportPath(importPath string, currentFile string) string {
 	// Local imports (start with ./ or ../)
@@ -296,6 +390,11 @@ func (a *Analyzer) resolveImportPath(importPath string, currentFile string) stri
 				dir = currentFile[:i+1]
 				break
 			}
+		}
+		// Check if path is a directory first
+		dirPath := dir + importPath
+		if info, err := os.Stat(dirPath); err == nil && info.IsDir() {
+			return dirPath // return directory path (no .ease extension)
 		}
 		// Append import path and .ease extension
 		return dir + importPath + ".ease"
@@ -2097,6 +2196,30 @@ func (a *Analyzer) analyzeOsArgv(e *ast.MethodExpr) types.Type {
 	return types.Typ[types.String]
 }
 
+func (a *Analyzer) analyzeOsIsDir(e *ast.MethodExpr) types.Type {
+	if len(e.Args) != 1 {
+		a.error(e.Pos(), "os.IsDir requires exactly 1 argument (path)")
+		return types.Typ[types.Int]
+	}
+	argType := a.analyzeExpr(e.Args[0])
+	if !isString(argType) {
+		a.error(e.Args[0].Pos(), "os.IsDir argument must be string; got %s", argType)
+	}
+	return types.Typ[types.Int]
+}
+
+func (a *Analyzer) analyzeOsListDir(e *ast.MethodExpr) types.Type {
+	if len(e.Args) != 1 {
+		a.error(e.Pos(), "os.ListDir requires exactly 1 argument (path)")
+		return types.Typ[types.String]
+	}
+	argType := a.analyzeExpr(e.Args[0])
+	if !isString(argType) {
+		a.error(e.Args[0].Pos(), "os.ListDir argument must be string; got %s", argType)
+	}
+	return types.Typ[types.String]
+}
+
 func (a *Analyzer) analyzeStrconvItoa(e *ast.MethodExpr) types.Type {
 	if len(e.Args) != 1 {
 		a.error(e.Pos(), "strconv.Itoa requires exactly 1 argument")
@@ -2230,8 +2353,8 @@ func (a *Analyzer) analyzeFieldExpr(e *ast.FieldExpr) types.Type {
 			a.usedModules[ident.Name] = true
 
 			symbol, found := module.Symbols[e.Field.Name]
-			if !found {
-				// For flat-merged local modules, symbols are in global scope
+			if !found && len(module.Symbols) == 0 {
+				// For flat-merged local modules (empty Symbols map), symbols are in global scope
 				symbol = a.table.Global.Lookup(e.Field.Name)
 				found = symbol != nil
 			}
@@ -3015,8 +3138,8 @@ func (a *Analyzer) analyzeMethodExpr(e *ast.MethodExpr) types.Type {
 			a.usedModules[ident.Name] = true
 
 			symbol, found := module.Symbols[e.Method.Name]
-			if !found {
-				// For flat-merged local modules, symbols are in global scope
+			if !found && len(module.Symbols) == 0 {
+				// For flat-merged local modules (empty Symbols map), symbols are in global scope
 				symbol = a.table.Global.Lookup(e.Method.Name)
 				found = symbol != nil
 			}
@@ -3065,6 +3188,10 @@ func (a *Analyzer) analyzeMethodExpr(e *ast.MethodExpr) types.Type {
 				return a.analyzeOsArgc(e)
 			case "Argv":
 				return a.analyzeOsArgv(e)
+			case "IsDir":
+				return a.analyzeOsIsDir(e)
+			case "ListDir":
+				return a.analyzeOsListDir(e)
 			}
 		case "strconv":
 			switch e.Method.Name {

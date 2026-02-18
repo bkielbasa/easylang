@@ -413,7 +413,12 @@ fn main() -> int {
                                         dir_pos = lex_skip(dir_source, dir_pos)
                                         let dir_kind = lex_kind(dir_source, dir_pos)
                                         if dir_kind == TK_EOF() { break }
-                                        if dir_kind == TK_IMPORT() {
+                                        if dir_kind == TK_PACKAGE() {
+                                            // Skip: package <name>
+                                            dir_pos = lex_end(dir_source, dir_pos, dir_kind)
+                                            dir_pos = lex_skip(dir_source, dir_pos)
+                                            dir_pos = lex_end(dir_source, dir_pos, lex_kind(dir_source, dir_pos))
+                                        } else if dir_kind == TK_IMPORT() {
                                             let dir_imp = parse_import_decl(dir_source, dir_pos, nodes)
                                             dir_pos = dir_imp.new_pos
                                             dir_pos = lex_skip(dir_source, dir_pos)
@@ -507,7 +512,12 @@ fn main() -> int {
                         let mod_kind = lex_kind(mod_source, mod_pos)
                         if mod_kind == TK_EOF() { break }
 
-                        if mod_kind == TK_IMPORT() {
+                        if mod_kind == TK_PACKAGE() {
+                            // Skip: package <name>
+                            mod_pos = lex_end(mod_source, mod_pos, mod_kind)
+                            mod_pos = lex_skip(mod_source, mod_pos)
+                            mod_pos = lex_end(mod_source, mod_pos, lex_kind(mod_source, mod_pos))
+                        } else if mod_kind == TK_IMPORT() {
                             let mod_import_result = parse_import_decl(mod_source, mod_pos, nodes)
                             mod_pos = mod_import_result.new_pos
                             mod_pos = lex_skip(mod_source, mod_pos)
@@ -581,33 +591,69 @@ fn main() -> int {
         let smod_name = extract_module_name(smod_path)
         let smod_resolved = resolve_import_path(filename, smod_path)
         print("Loading stdlib: " + smod_name + " from " + smod_resolved + "\n")
-        let smod_source = os.ReadFile(smod_resolved)
         push(g_import_paths, smod_resolved)
         push(g_import_names, smod_name)
-        let mut smod_pos = 0
-        smod_pos = lex_skip(smod_source, smod_pos)
-        for {
-            smod_pos = lex_skip(smod_source, smod_pos)
-            let smod_kind = lex_kind(smod_source, smod_pos)
-            if smod_kind == TK_EOF() { break }
-            if smod_kind == TK_FN() {
-                let smod_result = parse_func_decl(smod_source, smod_pos, nodes)
-                if smod_result.node_idx < 0 { break }
-                let smod_func_idx = smod_result.node_idx
-                let smod_orig = nodes[smod_func_idx].str_val
-                let smod_qualified = smod_name + "." + smod_orig
-                push(func_names, smod_qualified)
-                push(func_indices, smod_func_idx)
-                push(g_rename_from, smod_orig)
-                push(g_rename_to, smod_qualified)
-                print("  " + smod_qualified + " (" + strconv.Itoa(len(func_names)) + ")\n")
-                smod_pos = smod_result.new_pos
-                smod_pos = lex_skip(smod_source, smod_pos)
-            } else {
-                // Skip comments and non-function declarations
-                smod_pos = lex_end(smod_source, smod_pos, smod_kind)
-                smod_pos = lex_skip(smod_source, smod_pos)
+
+        // Collect files to parse: if directory, list .ease files; otherwise single file
+        let mut smod_files = []string{}
+        let smod_is_dir = os.IsDir(smod_resolved)
+        if smod_is_dir == 1 {
+            let smod_entries = os.ListDir(smod_resolved)
+            let mut sepos = 0
+            let mut sestart = 0
+            let smod_entries_len = len(smod_entries)
+            for sepos <= smod_entries_len {
+                if sepos == smod_entries_len || str_char_at(smod_entries, sepos) == 10 {
+                    if sepos > sestart {
+                        let smod_entry = str_substring(smod_entries, sestart, sepos)
+                        if has_ease_suffix(smod_entry) == 1 {
+                            push(smod_files, smod_resolved + "/" + smod_entry)
+                        }
+                    }
+                    sestart = sepos + 1
+                }
+                sepos = sepos + 1
             }
+        } else {
+            push(smod_files, smod_resolved)
+        }
+
+        let mut sfi = 0
+        for sfi < len(smod_files) {
+            let smod_file = smod_files[sfi]
+            let smod_source = os.ReadFile(smod_file)
+            let mut smod_pos = 0
+            smod_pos = lex_skip(smod_source, smod_pos)
+            for {
+                smod_pos = lex_skip(smod_source, smod_pos)
+                let smod_kind = lex_kind(smod_source, smod_pos)
+                if smod_kind == TK_EOF() { break }
+                if smod_kind == TK_PACKAGE() {
+                    // Skip: package <name>
+                    smod_pos = lex_end(smod_source, smod_pos, smod_kind)
+                    smod_pos = lex_skip(smod_source, smod_pos)
+                    smod_pos = lex_end(smod_source, smod_pos, lex_kind(smod_source, smod_pos))
+                    smod_pos = lex_skip(smod_source, smod_pos)
+                } else if smod_kind == TK_FN() {
+                    let smod_result = parse_func_decl(smod_source, smod_pos, nodes)
+                    if smod_result.node_idx < 0 { break }
+                    let smod_func_idx = smod_result.node_idx
+                    let smod_orig = nodes[smod_func_idx].str_val
+                    let smod_qualified = smod_name + "." + smod_orig
+                    push(func_names, smod_qualified)
+                    push(func_indices, smod_func_idx)
+                    push(g_rename_from, smod_orig)
+                    push(g_rename_to, smod_qualified)
+                    print("  " + smod_qualified + " (" + strconv.Itoa(len(func_names)) + ")\n")
+                    smod_pos = smod_result.new_pos
+                    smod_pos = lex_skip(smod_source, smod_pos)
+                } else {
+                    // Skip comments and non-function declarations
+                    smod_pos = lex_end(smod_source, smod_pos, smod_kind)
+                    smod_pos = lex_skip(smod_source, smod_pos)
+                }
+            }
+            sfi = sfi + 1
         }
         smi = smi + 1
     }

@@ -1,3 +1,5 @@
+package parser
+
 // Parser - recursive descent parser for the Ease bootstrap compiler
 
 fn parse_primary(src: string, pos: int, nodes: []AstNode) -> int {
@@ -836,15 +838,25 @@ fn parse_field(src: string, pos: int, nodes: []AstNode) -> ParseResult {
         p = lex_end(src, p, comma)
     }
 
+    // Resolve type_name to type_tag and is_array
+    let mut field_type_tag = TYPE_UNKNOWN()
+    let mut field_is_array = 0
+    if type_name == "int" { field_type_tag = TYPE_INT() }
+    if type_name == "bool" { field_type_tag = TYPE_BOOL() }
+    if type_name == "string" { field_type_tag = TYPE_STRING() }
+    if type_name == "[]int" { field_type_tag = TYPE_INT() field_is_array = 1 }
+    if type_name == "[]bool" { field_type_tag = TYPE_BOOL() field_is_array = 1 }
+    if type_name == "[]string" { field_type_tag = TYPE_STRING() field_is_array = 1 }
+
     // Create field node
     let field = AstNode {
         tag: DECL_FIELD(),
-        int_val: 0,
+        int_val: field_is_array,
         str_val: field_name,
         left: -1,
         right: -1,
         extra: -1,
-        type_tag: TYPE_UNKNOWN()
+        type_tag: field_type_tag
     }
     push(nodes, field)
     return ParseResult { node_idx: len(nodes) - 1, new_pos: p }

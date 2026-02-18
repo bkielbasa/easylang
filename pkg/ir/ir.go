@@ -87,6 +87,8 @@ const (
 	OpWriteFile // write string to file (arg0=path, arg1=content) -> int (0=success, -1=error)
 	OpArgc      // get argument count
 	OpArgv      // get argument at index (arg0=index) -> string
+	OpIsDir     // check if path is a directory (arg0=path) -> int (1=dir, 0=not)
+	OpListDir   // list directory entries (arg0=path) -> string (newline-separated)
 
 	// Conversion operations
 	OpIntToStr // convert int to string (arg0=int) -> string
@@ -171,6 +173,8 @@ var opNames = [...]string{
 	OpWriteFile: "writefile",
 	OpArgc:      "argc",
 	OpArgv:      "argv",
+	OpIsDir:     "isdir",
+	OpListDir:   "listdir",
 	OpIntToStr:  "inttostr",
 	OpStrToInt:  "strtoint",
 	OpHeapAlloc:    "heapalloc",

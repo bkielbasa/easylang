@@ -1677,6 +1677,34 @@ func (b *Builder) buildOsArgv(e *ast.MethodExpr) Operand {
 	return dest
 }
 
+func (b *Builder) buildOsIsDir(e *ast.MethodExpr) Operand {
+	if len(e.Args) != 1 {
+		return None()
+	}
+	path := b.buildExpr(e.Args[0])
+	dest := b.fn.NewVReg(types.Typ[types.Int])
+	b.emit(&Instr{
+		Op:   OpIsDir,
+		Dest: dest,
+		Args: []Operand{path},
+	})
+	return dest
+}
+
+func (b *Builder) buildOsListDir(e *ast.MethodExpr) Operand {
+	if len(e.Args) != 1 {
+		return None()
+	}
+	path := b.buildExpr(e.Args[0])
+	dest := b.fn.NewVReg(types.Typ[types.String])
+	b.emit(&Instr{
+		Op:   OpListDir,
+		Dest: dest,
+		Args: []Operand{path},
+	})
+	return dest
+}
+
 func (b *Builder) buildStrconvItoa(e *ast.MethodExpr) Operand {
 	if len(e.Args) != 1 {
 		return None()
@@ -2756,6 +2784,10 @@ func (b *Builder) buildMethodExpr(e *ast.MethodExpr) Operand {
 				return b.buildOsArgc(e)
 			case "Argv":
 				return b.buildOsArgv(e)
+			case "IsDir":
+				return b.buildOsIsDir(e)
+			case "ListDir":
+				return b.buildOsListDir(e)
 			}
 		case "strconv":
 			switch e.Method.Name {

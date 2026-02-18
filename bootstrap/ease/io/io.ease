@@ -1,3 +1,5 @@
+package io
+
 // I/O functions for the Ease bootstrap compiler
 
 fn Print(s: string) {

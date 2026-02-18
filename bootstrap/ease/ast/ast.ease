@@ -1,3 +1,5 @@
+package ast
+
 // AST node types, structs, and constructors for the Ease bootstrap compiler
 
 struct AstNode {

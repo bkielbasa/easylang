@@ -1,3 +1,5 @@
+package lexer
+
 // Lexer - tokenizer functions for the Ease bootstrap compiler
 
 fn is_digit(ch: int) -> bool {
@@ -129,6 +131,7 @@ fn lex_kind(src: string, pos: int) -> int {
         if word == "true" { return TK_TRUE() }
         if word == "false" { return TK_FALSE() }
         if word == "import" { return TK_IMPORT() }
+        if word == "package" { return TK_PACKAGE() }
         return TK_IDENT()
     }
 
@@ -193,7 +196,8 @@ fn lex_end(src: string, pos: int, kind: int) -> int {
     if kind == TK_IDENT() || kind == TK_FN() || kind == TK_LET() || kind == TK_MUT() ||
        kind == TK_IF() || kind == TK_ELSE() || kind == TK_FOR() || kind == TK_IN() ||
        kind == TK_RETURN() || kind == TK_BREAK() || kind == TK_STRUCT() ||
-       kind == TK_TRUE() || kind == TK_FALSE() || kind == TK_IMPORT() {
+       kind == TK_TRUE() || kind == TK_FALSE() || kind == TK_IMPORT() ||
+       kind == TK_PACKAGE() {
         let mut end = pos
         for end < len(src) && (is_alpha(lex_peek(src, end)) || is_digit(lex_peek(src, end))) {
             end = end + 1
@@ -215,7 +219,8 @@ fn lex_string_value(src: string, pos: int, kind: int) -> string {
     if kind == TK_IDENT() || kind == TK_FN() || kind == TK_LET() || kind == TK_MUT() ||
        kind == TK_IF() || kind == TK_ELSE() || kind == TK_FOR() || kind == TK_IN() ||
        kind == TK_RETURN() || kind == TK_BREAK() || kind == TK_STRUCT() ||
-       kind == TK_TRUE() || kind == TK_FALSE() || kind == TK_IMPORT() {
+       kind == TK_TRUE() || kind == TK_FALSE() || kind == TK_IMPORT() ||
+       kind == TK_PACKAGE() {
         let end = lex_end(src, pos, kind)
         return str_substring(src, pos, end)
     }

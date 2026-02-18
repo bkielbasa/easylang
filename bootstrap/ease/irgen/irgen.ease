@@ -1,3 +1,5 @@
+package irgen
+
 // IR generation - translates AST to IR instructions for the Ease bootstrap compiler
 
 // Helper: check if an AST expression produces a string value
@@ -26,8 +28,9 @@ fn is_string_expr(idx: int, nodes: []AstNode) -> int {
         return 0
     }
     if node.tag == EXPR_FIELD() {
-        // Field access: check if the field name is known to be a string
-        if node.str_val == "str_val" { return 1 }
+        // Field access: look up field type in the struct field type registry
+        let ft = lookup_field_type(node.str_val)
+        if ft == TYPE_STRING() && lookup_field_is_array(node.str_val) == 0 { return 1 }
         return 0
     }
     if node.tag == EXPR_INDEX() {
@@ -76,6 +79,12 @@ fn is_string_array_expr(idx: int, nodes: []AstNode) -> int {
         if ret_type == TYPE_STRING() && lookup_func_return_is_array(call_name) == 1 {
             return 1
         }
+        return 0
+    }
+    if node.tag == EXPR_FIELD() {
+        // Field access: check if the field is a []string array
+        let ft = lookup_field_type(node.str_val)
+        if ft == TYPE_STRING() && lookup_field_is_array(node.str_val) == 1 { return 1 }
         return 0
     }
     return 0
@@ -150,19 +159,6 @@ fn gen_ir_call_heap_alloc(ast_idx: int, nodes: []AstNode, instrs: []IRInstr, sym
     return result_vreg  // heap_alloc returns the allocated pointer
 }
 
-fn gen_ir_call_readfile(ast_idx: int, nodes: []AstNode, instrs: []IRInstr, symtab_names: []string, symtab_vregs: []int) -> int {
-    // os.ReadFile(path) -> string
-    let arg_indices = get_call_args(ast_idx)
-    if len(arg_indices) != 1 {
-        return -1
-    }
-    let path_vreg = gen_ir_from_ast_with_symtab(arg_indices[0], nodes, instrs, symtab_names, symtab_vregs)
-    let result_vreg = len(instrs)
-    let readfile_instr = IRInstr { op: OP_READFILE(), dest: result_vreg, arg1: path_vreg, arg2: 0, arg3: 0, str_val: "" }
-    push(instrs, readfile_instr)
-    return result_vreg  // ReadFile returns the file content as string
-}
-
 fn gen_ir_call_argc(ast_idx: int, nodes: []AstNode, instrs: []IRInstr, symtab_names: []string, symtab_vregs: []int) -> int {
     // os.Argc() -> int
     let result_vreg = len(instrs)
@@ -185,18 +181,6 @@ fn gen_ir_call_argv(ast_idx: int, nodes: []AstNode, instrs: []IRInstr, symtab_na
 }
 
 
-fn gen_ir_call_print(ast_idx: int, nodes: []AstNode, instrs: []IRInstr, symtab_names: []string, symtab_vregs: []int) -> int {
-    // print(string) -> ()
-    let arg_indices = get_call_args(ast_idx)
-    if len(arg_indices) != 1 {
-        return -1
-    }
-    let str_vreg = gen_ir_from_ast_with_symtab(arg_indices[0], nodes, instrs, symtab_names, symtab_vregs)
-    let print_instr = IRInstr { op: OP_PRINT(), dest: 0, arg1: str_vreg, arg2: 0, arg3: 0, str_val: "" }
-    push(instrs, print_instr)
-    return 0  // print returns nothing
-}
-
 fn gen_ir_call_str_char_at(ast_idx: int, nodes: []AstNode, instrs: []IRInstr, symtab_names: []string, symtab_vregs: []int) -> int {
     let arg_indices = get_call_args(ast_idx)
     if len(arg_indices) != 2 { return -1 }
@@ -204,17 +188,6 @@ fn gen_ir_call_str_char_at(ast_idx: int, nodes: []AstNode, instrs: []IRInstr, sy
     let idx_vreg = gen_ir_from_ast_with_symtab(arg_indices[1], nodes, instrs, symtab_names, symtab_vregs)
     let result_vreg = len(instrs)
     push(instrs, IRInstr { op: OP_STR_CHAR_AT(), dest: result_vreg, arg1: str_vreg, arg2: idx_vreg, arg3: 0, str_val: "" })
-    return result_vreg
-}
-
-fn gen_ir_call_str_substring(ast_idx: int, nodes: []AstNode, instrs: []IRInstr, symtab_names: []string, symtab_vregs: []int) -> int {
-    let arg_indices = get_call_args(ast_idx)
-    if len(arg_indices) != 3 { return -1 }
-    let str_vreg = gen_ir_from_ast_with_symtab(arg_indices[0], nodes, instrs, symtab_names, symtab_vregs)
-    let start_vreg = gen_ir_from_ast_with_symtab(arg_indices[1], nodes, instrs, symtab_names, symtab_vregs)
-    let end_vreg = gen_ir_from_ast_with_symtab(arg_indices[2], nodes, instrs, symtab_names, symtab_vregs)
-    let result_vreg = len(instrs)
-    push(instrs, IRInstr { op: OP_STR_SUBSTRING(), dest: result_vreg, arg1: str_vreg, arg2: start_vreg, arg3: end_vreg, str_val: "" })
     return result_vreg
 }
 
@@ -246,6 +219,35 @@ fn gen_ir_call_syscall_close(ast_idx: int, nodes: []AstNode, instrs: []IRInstr, 
     let fd_vreg = gen_ir_from_ast_with_symtab(arg_indices[0], nodes, instrs, symtab_names, symtab_vregs)
     let result_vreg = len(instrs)
     push(instrs, IRInstr { op: OP_SYSCALL_CLOSE(), dest: result_vreg, arg1: fd_vreg, arg2: 0, arg3: 0, str_val: "" })
+    return result_vreg
+}
+
+fn gen_ir_call_syscall_read(ast_idx: int, nodes: []AstNode, instrs: []IRInstr, symtab_names: []string, symtab_vregs: []int) -> int {
+    let arg_indices = get_call_args(ast_idx)
+    if len(arg_indices) != 3 { return -1 }
+    let fd_vreg = gen_ir_from_ast_with_symtab(arg_indices[0], nodes, instrs, symtab_names, symtab_vregs)
+    let buf_vreg = gen_ir_from_ast_with_symtab(arg_indices[1], nodes, instrs, symtab_names, symtab_vregs)
+    let size_vreg = gen_ir_from_ast_with_symtab(arg_indices[2], nodes, instrs, symtab_names, symtab_vregs)
+    let result_vreg = len(instrs)
+    push(instrs, IRInstr { op: OP_SYSCALL_READ(), dest: result_vreg, arg1: fd_vreg, arg2: buf_vreg, arg3: size_vreg, str_val: "" })
+    return result_vreg
+}
+
+fn gen_ir_call_is_dir(ast_idx: int, nodes: []AstNode, instrs: []IRInstr, symtab_names: []string, symtab_vregs: []int) -> int {
+    let arg_indices = get_call_args(ast_idx)
+    if len(arg_indices) != 1 { return -1 }
+    let path_vreg = gen_ir_from_ast_with_symtab(arg_indices[0], nodes, instrs, symtab_names, symtab_vregs)
+    let result_vreg = len(instrs)
+    push(instrs, IRInstr { op: OP_IS_DIR(), dest: result_vreg, arg1: path_vreg, arg2: 0, arg3: 0, str_val: "" })
+    return result_vreg
+}
+
+fn gen_ir_call_list_dir(ast_idx: int, nodes: []AstNode, instrs: []IRInstr, symtab_names: []string, symtab_vregs: []int) -> int {
+    let arg_indices = get_call_args(ast_idx)
+    if len(arg_indices) != 1 { return -1 }
+    let path_vreg = gen_ir_from_ast_with_symtab(arg_indices[0], nodes, instrs, symtab_names, symtab_vregs)
+    let result_vreg = len(instrs)
+    push(instrs, IRInstr { op: OP_LIST_DIR(), dest: result_vreg, arg1: path_vreg, arg2: 0, arg3: 0, str_val: "" })
     return result_vreg
 }
 
@@ -705,23 +707,14 @@ fn gen_ir_from_ast_with_symtab(ast_idx: int, nodes: []AstNode, instrs: []IRInstr
         if func_name == "heap_alloc" {
             return gen_ir_call_heap_alloc(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
         }
-        if func_name == "os.ReadFile" {
-            return gen_ir_call_readfile(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
-        }
         if func_name == "os.Argc" {
             return gen_ir_call_argc(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
         }
         if func_name == "os.Argv" {
             return gen_ir_call_argv(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
         }
-        if func_name == "print" {
-            return gen_ir_call_print(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
-        }
         if func_name == "str_char_at" {
             return gen_ir_call_str_char_at(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
-        }
-        if func_name == "str_substring" {
-            return gen_ir_call_str_substring(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
         }
         if func_name == "syscall.open" {
             return gen_ir_call_syscall_open(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
@@ -731,6 +724,15 @@ fn gen_ir_from_ast_with_symtab(ast_idx: int, nodes: []AstNode, instrs: []IRInstr
         }
         if func_name == "syscall.close" {
             return gen_ir_call_syscall_close(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
+        }
+        if func_name == "syscall.read" {
+            return gen_ir_call_syscall_read(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
+        }
+        if func_name == "os.IsDir" {
+            return gen_ir_call_is_dir(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
+        }
+        if func_name == "os.ListDir" {
+            return gen_ir_call_list_dir(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
         }
         return gen_ir_call_user(node, ast_idx, nodes, instrs, symtab_names, symtab_vregs)
     }

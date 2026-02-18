@@ -1,3 +1,5 @@
+package strings
+
 // String functions for the Ease bootstrap compiler
 
 fn str_substring(s: string, start: int, end_pos: int) -> string {

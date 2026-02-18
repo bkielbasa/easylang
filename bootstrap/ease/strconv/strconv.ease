@@ -1,3 +1,5 @@
+package strconv
+
 // String conversion functions for the Ease bootstrap compiler
 
 fn Itoa(n: int) -> string {
@@ -25,5 +27,27 @@ fn Itoa(n: int) -> string {
         result = ch + result
     }
     if negative { result = "-" + result }
+    return result
+}
+
+fn Atoi(s: string) -> int {
+    let mut result = 0
+    let mut negative = 0
+    let slen = len(s)
+    let mut i = 0
+    if slen > 0 && str_char_at(s, 0) == 45 {
+        negative = 1
+        i = 1
+    }
+    for i < slen {
+        let ch = str_char_at(s, i)
+        if ch >= 48 && ch <= 57 {
+            result = result * 10 + (ch - 48)
+        } else {
+            break
+        }
+        i = i + 1
+    }
+    if negative == 1 { result = 0 - result }
     return result
 }

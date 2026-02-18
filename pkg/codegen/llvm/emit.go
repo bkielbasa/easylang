@@ -228,6 +228,10 @@ func (e *Emitter) emitRuntimeDecls() {
 		// Argc/Argv
 		"declare i64 @ease_argc()",
 		"declare ptr @ease_argv(i64)",
+
+		// Directory operations
+		"declare i64 @ease_is_dir(ptr)",
+		"declare ptr @ease_list_dir(ptr)",
 	}
 	for _, d := range decls {
 		e.printf("%s\n", d)
@@ -447,6 +451,10 @@ func (e *Emitter) emitInstr(instr *ir.Instr) {
 		e.emitArgc(instr)
 	case ir.OpArgv:
 		e.emitArgv(instr)
+	case ir.OpIsDir:
+		e.emitIsDir(instr)
+	case ir.OpListDir:
+		e.emitListDir(instr)
 
 	// Conversion
 	case ir.OpIntToStr:
@@ -880,6 +888,22 @@ func (e *Emitter) emitArgv(instr *ir.Instr) {
 	idx := e.loadVal(instr.Args[0])
 	p := e.temp()
 	e.printf("  %s = call ptr @ease_argv(i64 %s)\n", p, idx)
+	t := e.temp()
+	e.printf("  %s = ptrtoint ptr %s to i64\n", t, p)
+	e.storeToVReg(instr.Dest.VReg, t)
+}
+
+func (e *Emitter) emitIsDir(instr *ir.Instr) {
+	path := e.loadPtr(instr.Args[0])
+	t := e.temp()
+	e.printf("  %s = call i64 @ease_is_dir(ptr %s)\n", t, path)
+	e.storeToVReg(instr.Dest.VReg, t)
+}
+
+func (e *Emitter) emitListDir(instr *ir.Instr) {
+	path := e.loadPtr(instr.Args[0])
+	p := e.temp()
+	e.printf("  %s = call ptr @ease_list_dir(ptr %s)\n", p, path)
 	t := e.temp()
 	e.printf("  %s = ptrtoint ptr %s to i64\n", t, p)
 	e.storeToVReg(instr.Dest.VReg, t)

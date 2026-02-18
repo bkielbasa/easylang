@@ -81,6 +81,12 @@ func (p *Parser) ParseProgram() *ast.Program {
 		p.nextToken()
 	}
 
+	// Skip package declaration if present
+	if p.curTokenIs(token.Package) {
+		p.nextToken() // consume 'package'
+		p.nextToken() // consume package name (identifier)
+	}
+
 	// Parse imports
 	for p.curTokenIs(token.Import) {
 		imp := p.parseImport()
