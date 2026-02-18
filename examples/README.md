@@ -5,7 +5,11 @@ This directory contains example programs demonstrating various features of the E
 ## Running Examples
 
 ```bash
-./ease run examples/<filename>.ease
+# Compile to LLVM IR
+./tmp/ease examples/<filename>.ease
+
+# Link and run
+clang -O1 runtime/ease_runtime.c tmp/output.ll -o tmp/example && ./tmp/example
 ```
 
 ## Examples
@@ -15,20 +19,12 @@ This directory contains example programs demonstrating various features of the E
 
 Demonstrates basic arithmetic operations, recursive algorithms (factorial, fibonacci), and function definitions.
 
-```bash
-./ease run examples/calculator.ease
-```
-
 **Output**: Calculates arithmetic expressions, 5!, and fib(10)
 
 ### string_demo.ease
 **Features**: String operations, module imports, stdlib usage
 
 Shows string manipulation using the `strings` and `strconv` stdlib modules including concatenation, searching, replacement, and conversions.
-
-```bash
-./ease run examples/string_demo.ease
-```
 
 **Output**: Various string operation results
 
@@ -37,20 +33,12 @@ Shows string manipulation using the `strings` and `strconv` stdlib modules inclu
 
 Demonstrates struct definitions, nested structs, array operations, and algorithms like sum and find_max.
 
-```bash
-./ease run examples/data_structures.ease
-```
-
 **Output**: Point/rectangle calculations, array operations
 
 ### file_io.ease
 **Features**: File I/O, syscalls, error handling
 
 Shows low-level syscall usage and high-level file operations for reading and writing files.
-
-```bash
-./ease run examples/file_io.ease
-```
 
 **Output**: Creates and reads test files
 
@@ -89,11 +77,13 @@ Shows low-level syscall usage and high-level file operations for reading and wri
 1. Create a new `.ease` file in this directory
 2. Add documentation comment at the top
 3. Implement your example
-4. Test it: `./ease run examples/your_example.ease`
+4. Test it: `./tmp/ease examples/your_example.ease && clang -O1 runtime/ease_runtime.c tmp/output.ll -o tmp/example && ./tmp/example`
 5. Add entry to this README
 
 Example template:
 ```ease
+package main
+
 // Brief description of what this example demonstrates
 
 fn main() -> int {

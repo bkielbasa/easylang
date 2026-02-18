@@ -91,9 +91,9 @@ Debug when things break:
 ## Related Code
 
 The concepts in these documents are implemented in:
-- `bootstrap/compiler.ease` - Self-hosting compiler
-- `pkg/codegen/arm64/` - Go reference implementation
-- `tmp/test_*.ease` - Example test programs
+- `bootstrap/compiler.ease` - The Ease compiler (self-hosting)
+- `bootstrap/ease/` - Compiler modules (lexer, parser, irgen, llvm, etc.)
+- `tests/` - Integration test programs
 
 ## Contributing
 

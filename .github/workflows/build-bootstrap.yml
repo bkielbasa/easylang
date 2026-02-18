@@ -1,83 +1,65 @@
-name: Build Bootstrap Compiler
+name: Build Ease Compiler
 
 on:
   push:
     branches: [ master, main ]
     tags:
-      - 'v*'  # Trigger on version tags (v0.1.0, v1.0.0, etc.)
+      - 'v*'
     paths:
       - 'bootstrap/**'
-      - 'pkg/**'
-      - 'cmd/**'
+      - 'runtime/**'
+      - 'tests/**'
+      - 'Makefile'
       - '.github/workflows/build-bootstrap.yml'
   pull_request:
     branches: [ master, main ]
-  workflow_dispatch:  # Allow manual trigger
+  workflow_dispatch:
 
 jobs:
-  build-bootstrap:
-    name: Build Bootstrap Compiler
-    runs-on: macos-latest  # Required for ARM64 macOS binary
+  build:
+    name: Build & Test
+    runs-on: macos-latest
     permissions:
-      contents: write  # Required for creating releases
+      contents: write
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up Go
-        uses: actions/setup-go@v5
-        with:
-          go-version: '1.21'
-
-      - name: Build ease CLI tool
-        run: |
-          go build -o ease cmd/ease/main.go
-          chmod +x ease
-          ./ease version
-
-      - name: Build bootstrap compiler
-        run: |
-          ./ease build bootstrap/compiler.ease -o bootstrap_compiler
-          chmod +x bootstrap_compiler
-          ls -lh bootstrap_compiler
-
-      - name: Test bootstrap compiler
-        run: |
-          # Create simple test program
-          cat > test_sample.ease << 'EOF'
-          fn main() -> int {
-              return 42
-          }
-          EOF
-
-          # Create tmp directory
-          mkdir -p tmp
-
-          # Compile with bootstrap (may crash on exit, but binary is valid)
-          ./bootstrap_compiler test_sample.ease || true
-
-          # Verify binary was created (this is the real success check)
-          if [ ! -f tmp/test_output ]; then
-            echo "ERROR: Binary was not generated"
-            exit 1
-          fi
-          ls -lh tmp/test_output
-          echo "✓ Binary generated successfully"
-
-          # Test execution in lldb
-          lldb tmp/test_output -o "process launch" -o "exit" | grep "exited with status = 42"
-          echo "✓ Binary executes correctly"
+      - name: Build compiler from seed
+        run: make
 
       - name: Run integration tests
-        run: |
-          ./tests/run_tests.sh
+        run: make test
 
-      - name: Upload bootstrap compiler artifact
+      - name: Verify self-hosting convergence
+        run: make verify
+
+      - name: Compile sample program
+        run: |
+          cat > tmp/sample.ease << 'EASE'
+          package main
+
+          fn main() -> int {
+              let a = 10
+              let b = 32
+              if a + b == 42 {
+                  return 0
+              }
+              return 1
+          }
+          EASE
+
+          ./tmp/ease tmp/sample.ease
+          clang -O1 runtime/ease_runtime.c tmp/output.ll -o tmp/sample
+          ./tmp/sample
+          echo "Sample program compiled and ran successfully"
+
+      - name: Upload compiler artifact
         uses: actions/upload-artifact@v4
         with:
-          name: bootstrap-compiler-macos-arm64
-          path: bootstrap_compiler
+          name: ease-compiler-macos-arm64
+          path: tmp/ease
           if-no-files-found: error
           retention-days: 90
 
@@ -85,32 +67,36 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v1
         with:
-          files: bootstrap_compiler
+          files: tmp/ease
           body: |
-            ## Ease Bootstrap Compiler
+            ## Ease Compiler
 
-            Self-hosting Ease compiler (written in Ease, compiled by Go).
+            Self-hosting Ease compiler (written in Ease, compiled via LLVM IR).
 
             ### Platform
             - macOS ARM64 (Apple Silicon)
-            - Generates ARM64 Mach-O binaries
+            - Generates LLVM IR, linked with clang
 
             ### Usage
             ```bash
             # Download and make executable
-            chmod +x bootstrap_compiler
+            chmod +x ease
 
-            # Compile Ease programs
-            ./bootstrap_compiler your_program.ease
+            # Compile an Ease program to LLVM IR
+            ./ease myprogram.ease
 
-            # Run generated binary (in lldb due to macOS security)
-            lldb ./tmp/test_output -o "process launch" -o "exit"
+            # Link with the C runtime to produce an executable
+            clang -O1 runtime/ease_runtime.c tmp/output.ll -o myprogram
+
+            # Run
+            ./myprogram
             ```
 
-            ### Capabilities
-            - Compiles Ease source (up to 384KB)
-            - Supports imports, functions, structs, arrays, loops, conditionals
-            - Generates working ARM64 binaries with code signatures
-            - Parser capacity: ~250 functions
+            ### Build from source
+            ```bash
+            make          # Build from seed
+            make test     # Run integration tests
+            make verify   # Verify self-hosting convergence
+            ```
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

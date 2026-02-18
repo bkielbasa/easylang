@@ -1,67 +1,51 @@
-# Bootstrap Compiler Components
+# Ease Compiler
 
-This directory contains the Ease compiler implemented in Ease itself, as part of the self-hosting effort.
+This directory contains the Ease compiler, written in Ease. The compiler is fully self-hosting — it compiles itself with byte-identical convergence via the LLVM IR backend.
+
+## Building
+
+```bash
+make                # Build from seed LLVM IR (no external compilers needed besides clang)
+make verify         # Verify self-hosting convergence (gen1 == gen2)
+make update-seed    # Update seed.ll after modifying compiler source
+```
 
 ## Components
 
-### Individual Modules (Proof-of-Concept)
+### Compiler Main
+- **compiler.ease** — Full compilation pipeline (~4,200 lines)
+  - Chains all phases: Lexer → Parser → IR → LLVM IR
+  - Compiles itself and all Ease programs
+  - Outputs LLVM IR to `tmp/output.ll`
 
-Each module implements a phase of compilation and includes its own tests:
+### Modules (Go-style directory packages in `ease/`)
 
-- **token.ease** - Token type definitions (constants for token kinds)
-- **lexer.ease** - Tokenization (converts source text to tokens)
-- **ast.ease** - AST node definitions (tree structure for representing code)
-- **parser.ease** - Syntax analysis (converts tokens to AST)
-  - ✅ All 5 tests passing
-- **sema.ease** - Semantic analysis (type checking, name resolution)
-  - ✅ 6/8 tests passing (2 logic issues, no crashes)
-- **ir.ease** - Intermediate representation (3-address code generation)
-- **codegen.ease** - ARM64 machine code generation (instruction encoding)
+Each module is a directory package with a `package` declaration:
 
-### Integrated Compiler
+- **token/token.ease** — Token type definitions (constants for token kinds)
+- **lexer/lexer.ease** — Tokenization (converts source text to tokens)
+- **ast/ast.ease** — AST node definitions (tree structure for representing code)
+- **parser/parser.ease** — Syntax analysis (converts tokens to AST)
+- **ir/ir.ease** — IR opcodes and symbol table
+- **irgen/irgen.ease** — AST → IR translation
+- **llvm/llvm.ease** — LLVM IR code generation
+- **strconv/strconv.ease** — String conversion (Itoa, Atoi)
+- **io/io.ease** — I/O (print via syscall)
+- **strings/strings.ease** — String functions (Contains, HasPrefix, HasSuffix, Index, etc.)
+- **os/os.ease** — OS functions (ReadFile, IsDir, ListDir via syscall)
 
-- **compiler.ease** - Full compilation pipeline demonstration
-  - Chains all phases: Lexer → Parser → IR → Codegen
-  - Successfully compiles simple expressions like `1 + 2`
-  - Generates correct ARM64 machine code
-  - ✅ All phases working together
-
-## Running the Components
-
-### Individual Module Tests
-
-```bash
-# Test individual components
-./ease run bootstrap/token.ease      # Token definitions (all pass)
-./ease run bootstrap/lexer.ease      # Lexer tests (all pass)
-./ease run bootstrap/parser.ease     # Parser tests (5/5 pass)
-./ease run bootstrap/sema.ease       # Semantic analysis (6/8 pass)
-./ease run bootstrap/ir.ease         # IR generation (passes)
-./ease run bootstrap/codegen.ease    # Code generation (passes)
-```
-
-### Integrated Compiler Demo
-
-```bash
-# Run the full compilation pipeline
-./ease run bootstrap/compiler.ease
-
-# Output shows all phases:
-# Phase 1: Lexing - converts "1 + 2" to tokens
-# Phase 2: Parsing - builds AST from tokens
-# Phase 3: IR Generation - generates intermediate instructions
-# Phase 4: Code Generation - emits ARM64 machine code (0x8b010002)
-```
+### Seed
+- **seed.ll** — Pre-compiled LLVM IR of the compiler, used to bootstrap without needing an existing Ease binary
 
 ## Architecture
 
-The bootstrap compiler uses a traditional multi-phase architecture:
+The compiler uses a traditional multi-phase architecture:
 
 ```
-Source Code
+Source Code (.ease)
     ↓
 ┌─────────────┐
-│   Lexer     │ → Stream of tokens (INT, PLUS, etc.)
+│   Lexer     │ → Stream of tokens (INT, PLUS, IDENT, etc.)
 └─────────────┘
     ↓
 ┌─────────────┐
@@ -69,92 +53,42 @@ Source Code
 └─────────────┘
     ↓
 ┌─────────────┐
-│   Sema      │ → Type-checked AST + Symbol Table
-└─────────────┘
-    ↓
-┌─────────────┐
 │   IR Gen    │ → Intermediate Representation (3-address code)
 └─────────────┘
     ↓
 ┌─────────────┐
-│   Codegen   │ → ARM64 Machine Code
+│  LLVM Gen   │ → LLVM IR (.ll file)
 └─────────────┘
     ↓
-Executable Binary
+  clang → Executable Binary
 ```
 
 ## Design Decisions
 
-### No Import System Yet
+### No Type System (Heuristic-Based)
+The compiler uses heuristics (`is_string_expr`) to determine whether `+`/`==`/`!=` should use string or integer operations. A function return type registry and per-function variable tracking make this reliable.
 
-Since Ease doesn't have a module/import system yet, each component is self-contained:
-- Token constants duplicated across lexer/parser
-- Shared definitions copied into each file
-- `compiler.ease` includes simplified versions of all components
-
-This will be refactored once the import system is implemented.
-
-### Simplified Data Structures
-
-The bootstrap compiler uses simplified representations:
-- **Tokens**: No token struct, just position + kind + value functions
-- **AST**: Single `AstNode` struct with `tag` field to distinguish node types
-- **IR**: Simple `IRInstr` struct with op/dest/args
-- **No pointers**: Uses array indices instead of pointers
+### Array-Index Data Structures
+Uses array indices instead of pointers throughout. AST nodes, IR instructions, and symbol table entries are all stored in flat arrays and referenced by index.
 
 ### Integer Constants Instead of Enums
-
 Token kinds and node tags use integer constants (functions returning int):
 ```ease
 fn TK_PLUS() -> int { return 30 }
 fn EXPR_BINARY() -> int { return 6 }
 ```
 
-This avoids needing enum support in the bootstrap phase.
+### Pure Ease Standard Library
+The stdlib (io, strings, os, strconv) is implemented in pure Ease using syscalls — no C runtime wrappers needed for print, ReadFile, or string operations.
 
-## Current Status
+## Self-Hosting
 
-**Milestone Achieved**: All compilation phases working and integrated! ✅
+The compiler achieves full self-hosting convergence:
 
-The bootstrap compiler successfully:
-1. ✅ Lexes source code into tokens
-2. ✅ Parses tokens into AST
-3. ✅ Performs type checking (mostly working)
-4. ✅ Generates IR from AST
-5. ✅ Emits ARM64 machine code from IR
+1. `seed.ll` is compiled by `clang` → `ease` binary
+2. `ease` compiles `compiler.ease` → `gen1.ll`
+3. `clang` compiles `gen1.ll` → `ease_gen1` binary
+4. `ease_gen1` compiles `compiler.ease` → `gen2.ll`
+5. `gen1.ll` == `gen2.ll` (byte-identical) — convergence!
 
-**Example**: `1 + 2` compiles to ARM64 instruction `0x8b010002` (ADD x2, x0, x1)
-
-## Next Steps
-
-### Short Term
-1. Fix remaining sema test failures (type inference edge cases)
-2. Add more IR operations (control flow, function calls)
-3. Implement register allocation in codegen
-4. Add more complex parsing (function declarations, structs)
-
-### Long Term
-1. Implement module/import system
-2. Refactor components to use imports
-3. Complete Mach-O binary generation
-4. Full self-hosting: compile the bootstrap compiler with itself
-
-## Testing
-
-Each component includes comprehensive tests:
-- **Lexer**: Tests tokenization of various language constructs
-- **Parser**: Tests parsing of expressions, statements, declarations
-- **Sema**: Tests type checking, error detection
-- **IR**: Tests instruction generation
-- **Codegen**: Tests ARM64 instruction encoding
-
-All tests can be run with `./ease run bootstrap/<component>.ease`
-
-## Performance Notes
-
-The bootstrap compiler is intentionally simple and not optimized:
-- No optimization passes
-- Naive code generation
-- Simple data structures
-
-Performance will be improved in later iterations once correctness is established.
+This means the compiler's output is a fixed point: compiling itself always produces the same result.

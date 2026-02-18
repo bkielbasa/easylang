@@ -5,12 +5,14 @@ This directory contains integration tests that verify end-to-end compiler functi
 ## Running Tests
 
 ```bash
-./tests/run_tests.sh
+make test
 ```
 
-Or run individual tests:
+Or run individual tests manually:
 ```bash
-./ease run tests/01_basic_math.ease
+./tmp/ease tests/01_basic_math.ease
+clang -O1 runtime/ease_runtime.c tmp/output.ll -o tmp/test_bin
+./tmp/test_bin
 ```
 
 ## Test Coverage
@@ -64,10 +66,12 @@ Or run individual tests:
 1. Create a new `.ease` file in this directory
 2. Name it with a number prefix (e.g., `07_new_feature.ease`)
 3. Return 0 for success, non-zero for failure
-4. Test will be automatically included when running `run_tests.sh`
+4. Test will be automatically included when running `make test`
 
 Example:
 ```ease
+package main
+
 fn main() -> int {
     let x = some_operation()
     if x != expected_value {

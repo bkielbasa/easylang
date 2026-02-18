@@ -50,7 +50,7 @@ update-seed: verify
 	cp $(BUILD_DIR)/verify_gen1.ll $(SEED)
 	@echo "=== Seed updated ==="
 
-# Run integration tests (requires the Go compiler for 'ease run')
+# Run integration tests
 test: $(EASE)
 	@echo "================================"
 	@echo "  Ease Compiler Test Suite"
