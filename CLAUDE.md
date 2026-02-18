@@ -133,7 +133,7 @@ ease/
 │   ├── codegen/arm64/    # ARM64 code generation
 │   └── macho/            # Mach-O binary writer
 └── bootstrap/            # Self-hosting compiler in Ease
-    └── compiler.ease     # Bootstrap compiler (3,543 lines)
+    └── compiler.ease     # Bootstrap compiler (~4,150 lines)
 ```
 
 ## CLI Usage
@@ -176,9 +176,9 @@ See `tests/README.md` for test coverage and `examples/README.md` for example pro
 
 **Goal**: Ease compiler that can compile itself (written in Ease, compiles Ease)
 
-**Current Status**: 98% complete - **Generates working ARM64 executables!**
+**Current Status**: 100% self-hosting via LLVM IR backend! Full convergence achieved.
 
-The Go compiler successfully compiles `bootstrap/compiler.ease` (3,900+ lines) into a working 233KB ARM64 binary. The bootstrap compiler can:
+The Go compiler successfully compiles `bootstrap/compiler.ease` (4,100+ lines) into a working binary. The bootstrap compiler can:
 - ✅ Read source files from disk (os.ReadFile, os.Argc, os.Argv)
 - ✅ Lex files (10,646+ tokens including comments)
 - ✅ Parse functions, structs, imports, globals, conditionals, loops
@@ -201,6 +201,8 @@ The Go compiler successfully compiles `bootstrap/compiler.ease` (3,900+ lines) i
 - [x] File I/O (reading source from disk)
 - [x] Complete Mach-O binary generation
 - [x] SHA-256 code signatures (bootstrap/sha256.ease)
+- [x] LLVM IR backend with full self-hosting convergence
+- [x] Function return type registry (replaces hardcoded `is_string_expr` list)
 
 **Test Results**:
 ```bash
@@ -282,16 +284,39 @@ Generated binaries are blocked by macOS 15.x security (exit code 137/SIGKILL) wh
     - Traits and implementations
     - Generics
 
-**Estimated Progress**: 98% complete 🎉
+**Estimated Progress**: 100% self-hosting 🎉
 - Core infrastructure: ✅ Done
 - Basic code generation: ✅ Done
 - Binary generation: ✅ Done
 - Code signatures: ✅ Done
 - Working executables: ✅ Done
-- Multi-arg functions: 📋 TODO
-- Full self-compilation: 📋 TODO (estimated 1-2 weeks)
+- LLVM IR backend: ✅ Done
+- Full self-compilation: ✅ Done (byte-identical convergence)
 
 ## Recent Fixes
+
+**String `==`/`!=` Auto-Dispatch - COMPLETE (Feb 18, 2026):**
+- **Achievement**: Replaced explicit `str_eq(a, b)` / `str_ne(a, b)` function calls with native `a == b` / `a != b` operators
+- **Problem**: ~99 `str_eq()` and ~5 `str_ne()` calls required throughout compiler.ease; every string comparison needed explicit function calls
+- **Solution**:
+  - Added auto-dispatch in `gen_ir_binary`: for `==` (TK_EQ) and `!=` (TK_NE), check `is_string_expr` on both operands; if either is string, use `OP_STR_EQ`/`OP_STR_NE`
+  - Replaced all `str_eq(a, b)` → `a == b` and `str_ne(a, b)` → `a != b` throughout compiler.ease
+  - Removed dead `gen_ir_call_str_eq`/`gen_ir_call_str_ne` functions and dispatch cases
+- **Bug Found & Fixed**: `g_string_vars`/`g_string_array_vars` accumulated across ALL functions without scoping. Variable `op` (a `string` parameter in `emit_llvm_binop`) contaminated later functions where `op` was an `int`. Fixed by adding `g_string_vars_start`/`g_string_array_vars_start` per-function scope markers.
+- **Results**: Self-hosting convergence verified (gen1 == gen2 == gen3, byte-identical LLVM IR, 235 functions, 13836 IR instructions)
+- **Status**: ✅ RESOLVED
+
+**Function Return Type Registry - COMPLETE (Feb 18, 2026):**
+- **Achievement**: Replaced fragile hardcoded `is_string_expr` function name list with automatic registry
+- **Problem**: `is_string_expr` had 13 hardcoded function names to detect string-returning calls; every new string function had to be manually added (caused bugs like missing `hex_digit_char`)
+- **Solution**:
+  - `parse_func_decl` now stores return type (`type_tag`) and is-array flag (`int_val`) on DECL_FUNC nodes
+  - Added 3 global registry arrays and 3 helper functions (`register_func_return_type`, `lookup_func_return_type`, `lookup_func_return_is_array`)
+  - Registry built in `main()` between parsing and IR generation: 7 built-in functions pre-registered, all user functions registered from their DECL_FUNC nodes
+  - `is_string_expr` EXPR_CALL: replaced 13 `str_eq` checks with single `lookup_func_return_type` call
+  - `is_string_array_expr` EXPR_CALL: replaced 3 `str_eq` checks with registry lookup
+- **Results**: Self-hosting convergence verified (gen1 == gen2, byte-identical LLVM IR, 237 functions, 13905 IR instructions)
+- **Status**: ✅ RESOLVED
 
 **XOR Operator Implementation - COMPLETE (Feb 10, 2026):**
 - **Achievement**: Eliminated the "200 function parsing limit"! Bootstrap compiler now parses 250/250 functions!
@@ -463,11 +488,11 @@ Generated binaries are blocked by macOS 15.x security (exit code 137/SIGKILL) wh
 ## Known Issues
 
 **Critical:**
-- None currently! If statement parsing bug resolved.
+- None currently!
 
 **Minor:**
-- Bootstrap compiler parses 182/207 functions (88%) - 25 functions still need investigation
 - Struct literals disabled as postfix operators (causes ambiguity with blocks)
+- `EXPR_FIELD` string detection still uses `str_val` heuristic (needs struct field type registry)
 
 ## Future Work
 
@@ -481,10 +506,12 @@ Generated binaries are blocked by macOS 15.x security (exit code 137/SIGKILL) wh
 ### Additional Backends
 - [ ] WebAssembly backend for browser execution
 - [ ] x86_64 backend for Intel Macs and Linux
-- [ ] LLVM backend for optimization and portability
+- [x] LLVM backend for optimization and portability
 
 ### Bootstrap Compiler Improvements
-- [ ] **Add type tracking to bootstrap compiler** so `==`/`!=` on strings auto-dispatches to `OP_STR_EQ`/`OP_STR_NE` (currently uses explicit `str_eq()`/`str_ne()` calls as workaround because the bootstrap compiler has no type system)
+- [x] **Function return type registry** — `is_string_expr` / `is_string_array_expr` now use a registry built from parsed `-> type` annotations instead of hardcoded function name lists. 7 built-in functions pre-registered; all user functions registered automatically after parsing.
+- [x] **String `==`/`!=` auto-dispatch** — `gen_ir_binary` auto-dispatches `==`/`!=` to `OP_STR_EQ`/`OP_STR_NE` for string operands. All `str_eq()`/`str_ne()` calls replaced with native operators. Per-function scoping via `g_string_vars_start`/`g_string_array_vars_start` prevents cross-function contamination.
+- [ ] **Struct field type registry** — Replace the `str_val` heuristic in `EXPR_FIELD` with proper struct field type lookups
 - [ ] **Implement proper strconv.Itoa** in bootstrap codegen (currently placeholder returns "0")
 
 ### Language Features

@@ -192,19 +192,19 @@ fn lex_kind(src: string, pos: int) -> int {
             end = end + 1
         }
         let word = str_substring(src, pos, end)
-        if str_eq(word, "fn") { return TK_FN() }
-        if str_eq(word, "let") { return TK_LET() }
-        if str_eq(word, "mut") { return TK_MUT() }
-        if str_eq(word, "if") { return TK_IF() }
-        if str_eq(word, "else") { return TK_ELSE() }
-        if str_eq(word, "for") { return TK_FOR() }
-        if str_eq(word, "in") { return TK_IN() }
-        if str_eq(word, "return") { return TK_RETURN() }
-        if str_eq(word, "break") { return TK_BREAK() }
-        if str_eq(word, "struct") { return TK_STRUCT() }
-        if str_eq(word, "true") { return TK_TRUE() }
-        if str_eq(word, "false") { return TK_FALSE() }
-        if str_eq(word, "import") { return TK_IMPORT() }
+        if word == "fn" { return TK_FN() }
+        if word == "let" { return TK_LET() }
+        if word == "mut" { return TK_MUT() }
+        if word == "if" { return TK_IF() }
+        if word == "else" { return TK_ELSE() }
+        if word == "for" { return TK_FOR() }
+        if word == "in" { return TK_IN() }
+        if word == "return" { return TK_RETURN() }
+        if word == "break" { return TK_BREAK() }
+        if word == "struct" { return TK_STRUCT() }
+        if word == "true" { return TK_TRUE() }
+        if word == "false" { return TK_FALSE() }
+        if word == "import" { return TK_IMPORT() }
         return TK_IDENT()
     }
 
@@ -452,6 +452,8 @@ fn get_call_args(call_node_idx: int) -> []int {
 let mut g_struct_fields = []int{}
 let mut g_string_vars = []string{}
 let mut g_string_array_vars = []string{}
+let mut g_string_vars_start = 0
+let mut g_string_array_vars_start = 0
 let mut g_scalar_globals = []string{}
 let mut g_break_label = -1
 let mut g_next_label = 100000
@@ -468,7 +470,7 @@ fn register_func_return_type(name: string, ret_type: int, is_array: int) {
 fn lookup_func_return_type(name: string) -> int {
     let mut i = len(g_func_ret_names) - 1
     for i >= 0 {
-        if str_eq(g_func_ret_names[i], name) {
+        if g_func_ret_names[i] == name {
             return g_func_ret_types[i]
         }
         i = i - 1
@@ -479,7 +481,7 @@ fn lookup_func_return_type(name: string) -> int {
 fn lookup_func_return_is_array(name: string) -> int {
     let mut i = len(g_func_ret_names) - 1
     for i >= 0 {
-        if str_eq(g_func_ret_names[i], name) {
+        if g_func_ret_names[i] == name {
             return g_func_ret_is_array[i]
         }
         i = i - 1
@@ -1059,10 +1061,10 @@ fn parse_param(src: string, pos: int, nodes: []AstNode) -> ParseResult {
     // int_val: 1 = array type, 0 = scalar type
     let mut param_type_tag = TYPE_UNKNOWN()
     let mut param_is_array = 0
-    if str_eq(type_name, "string") { param_type_tag = TYPE_STRING() }
-    if str_eq(type_name, "int") { param_type_tag = TYPE_INT() }
-    if str_eq(type_name, "[]string") { param_type_tag = TYPE_STRING() param_is_array = 1 }
-    if str_eq(type_name, "[]int") { param_type_tag = TYPE_INT() param_is_array = 1 }
+    if type_name == "string" { param_type_tag = TYPE_STRING() }
+    if type_name == "int" { param_type_tag = TYPE_INT() }
+    if type_name == "[]string" { param_type_tag = TYPE_STRING() param_is_array = 1 }
+    if type_name == "[]int" { param_type_tag = TYPE_INT() param_is_array = 1 }
     let param = AstNode {
         tag: DECL_PARAM(),
         int_val: param_is_array,
@@ -1372,13 +1374,13 @@ fn parse_func_decl(src: string, pos: int, nodes: []AstNode) -> ParseResult {
     // type_tag = return type, int_val = is_array_return flag
     let mut ret_type_tag = TYPE_UNKNOWN()
     let mut ret_is_array = 0
-    if str_eq(ret_type, "int") { ret_type_tag = TYPE_INT() }
-    if str_eq(ret_type, "string") { ret_type_tag = TYPE_STRING() }
-    if str_eq(ret_type, "bool") { ret_type_tag = TYPE_BOOL() }
-    if str_eq(ret_type, "[]int") { ret_type_tag = TYPE_INT()
+    if ret_type == "int" { ret_type_tag = TYPE_INT() }
+    if ret_type == "string" { ret_type_tag = TYPE_STRING() }
+    if ret_type == "bool" { ret_type_tag = TYPE_BOOL() }
+    if ret_type == "[]int" { ret_type_tag = TYPE_INT()
         ret_is_array = 1
     }
-    if str_eq(ret_type, "[]string") { ret_type_tag = TYPE_STRING()
+    if ret_type == "[]string" { ret_type_tag = TYPE_STRING()
         ret_is_array = 1
     }
 
@@ -2225,7 +2227,7 @@ fn symtab_lookup(st: SymbolTable, name: string) -> int {
     // Search backwards to find the most recent binding (handles shadowing)
     let mut i = len(st.names) - 1
     for i >= 0 {
-        if str_eq(st.names[i], name) {
+        if st.names[i] == name {
             return st.vregs[i]
         }
         i = i - 1
@@ -2284,36 +2286,36 @@ fn OP_HEAP_ALLOC() -> int { return 32 }  // Allocate memory: size -> pointer
 // ParseResult: node_idx(8), new_pos(8) = 16 bytes
 
 fn struct_size(struct_name: string) -> int {
-    if str_eq(struct_name, "AstNode") { return 56 }
-    if str_eq(struct_name, "IRInstr") { return 48 }
-    if str_eq(struct_name, "ParseResult") { return 16 }
+    if struct_name == "AstNode" { return 56 }
+    if struct_name == "IRInstr" { return 48 }
+    if struct_name == "ParseResult" { return 16 }
     return 64  // Default: 8 fields * 8 bytes
 }
 
 fn field_offset(struct_name: string, field_name: string) -> int {
     // AstNode fields
-    if str_eq(struct_name, "AstNode") {
-        if str_eq(field_name, "tag") { return 0 }
-        if str_eq(field_name, "int_val") { return 8 }
-        if str_eq(field_name, "str_val") { return 16 }
-        if str_eq(field_name, "left") { return 24 }
-        if str_eq(field_name, "right") { return 32 }
-        if str_eq(field_name, "extra") { return 40 }
-        if str_eq(field_name, "type_tag") { return 48 }
+    if struct_name == "AstNode" {
+        if field_name == "tag" { return 0 }
+        if field_name == "int_val" { return 8 }
+        if field_name == "str_val" { return 16 }
+        if field_name == "left" { return 24 }
+        if field_name == "right" { return 32 }
+        if field_name == "extra" { return 40 }
+        if field_name == "type_tag" { return 48 }
     }
     // IRInstr fields
-    if str_eq(struct_name, "IRInstr") {
-        if str_eq(field_name, "op") { return 0 }
-        if str_eq(field_name, "dest") { return 8 }
-        if str_eq(field_name, "arg1") { return 16 }
-        if str_eq(field_name, "arg2") { return 24 }
-        if str_eq(field_name, "arg3") { return 32 }
-        if str_eq(field_name, "str_val") { return 40 }
+    if struct_name == "IRInstr" {
+        if field_name == "op" { return 0 }
+        if field_name == "dest" { return 8 }
+        if field_name == "arg1" { return 16 }
+        if field_name == "arg2" { return 24 }
+        if field_name == "arg3" { return 32 }
+        if field_name == "str_val" { return 40 }
     }
     // ParseResult fields
-    if str_eq(struct_name, "ParseResult") {
-        if str_eq(field_name, "node_idx") { return 0 }
-        if str_eq(field_name, "new_pos") { return 8 }
+    if struct_name == "ParseResult" {
+        if field_name == "node_idx" { return 0 }
+        if field_name == "new_pos" { return 8 }
     }
     return 0  // Unknown field, return 0
 }
@@ -2340,7 +2342,7 @@ fn OP_STR_LEN() -> int { return 51 }
 fn is_scalar_global(name: string) -> int {
     let mut i = 0
     for i < len(g_scalar_globals) {
-        if str_eq(g_scalar_globals[i], name) { return 1 }
+        if g_scalar_globals[i] == name { return 1 }
         i = i + 1
     }
     return 0
@@ -2352,11 +2354,11 @@ fn is_string_expr(idx: int, nodes: []AstNode) -> int {
     let node = nodes[idx]
     if node.tag == EXPR_STRING() { return 1 }
     if node.tag == EXPR_IDENT() {
-        // Check if this variable was tracked as holding a string
-        let mut si = 0
+        // Check if this variable was tracked as holding a string (current function scope only)
+        let mut si = g_string_vars_start
         let slen = len(g_string_vars)
         for si < slen {
-            if str_eq(g_string_vars[si], node.str_val) { return 1 }
+            if g_string_vars[si] == node.str_val { return 1 }
             si = si + 1
         }
         return 0
@@ -2372,16 +2374,16 @@ fn is_string_expr(idx: int, nodes: []AstNode) -> int {
     }
     if node.tag == EXPR_FIELD() {
         // Field access: check if the field name is known to be a string
-        if str_eq(node.str_val, "str_val") { return 1 }
+        if node.str_val == "str_val" { return 1 }
         return 0
     }
     if node.tag == EXPR_INDEX() {
-        // Array indexing: check if base array is a known string array
+        // Array indexing: check if base array is a known string array (current function scope only)
         let base = nodes[node.left]
         if base.tag == EXPR_IDENT() {
-            let mut sai = 0
+            let mut sai = g_string_array_vars_start
             for sai < len(g_string_array_vars) {
-                if str_eq(g_string_array_vars[sai], base.str_val) { return 1 }
+                if g_string_array_vars[sai] == base.str_val { return 1 }
                 sai = sai + 1
             }
         }
@@ -2404,13 +2406,13 @@ fn is_string_array_expr(idx: int, nodes: []AstNode) -> int {
     if idx < 0 { return 0 }
     let node = nodes[idx]
     if node.tag == EXPR_ARRAY_LIT() {
-        if str_eq(node.str_val, "string") { return 1 }
+        if node.str_val == "string" { return 1 }
         return 0
     }
     if node.tag == EXPR_IDENT() {
-        let mut i = 0
+        let mut i = g_string_array_vars_start
         for i < len(g_string_array_vars) {
-            if str_eq(g_string_array_vars[i], node.str_val) { return 1 }
+            if g_string_array_vars[i] == node.str_val { return 1 }
             i = i + 1
         }
         return 0
@@ -2574,26 +2576,6 @@ fn gen_ir_call_str_substring(ast_idx: int, nodes: []AstNode, instrs: []IRInstr, 
     return result_vreg
 }
 
-fn gen_ir_call_str_eq(ast_idx: int, nodes: []AstNode, instrs: []IRInstr, symtab_names: []string, symtab_vregs: []int) -> int {
-    let arg_indices = get_call_args(ast_idx)
-    if len(arg_indices) != 2 { return -1 }
-    let a_vreg = gen_ir_from_ast_with_symtab(arg_indices[0], nodes, instrs, symtab_names, symtab_vregs)
-    let b_vreg = gen_ir_from_ast_with_symtab(arg_indices[1], nodes, instrs, symtab_names, symtab_vregs)
-    let result_vreg = len(instrs)
-    push(instrs, IRInstr { op: OP_STR_EQ(), dest: result_vreg, arg1: a_vreg, arg2: b_vreg, arg3: 0, str_val: "" })
-    return result_vreg
-}
-
-fn gen_ir_call_str_ne(ast_idx: int, nodes: []AstNode, instrs: []IRInstr, symtab_names: []string, symtab_vregs: []int) -> int {
-    let arg_indices = get_call_args(ast_idx)
-    if len(arg_indices) != 2 { return -1 }
-    let a_vreg = gen_ir_from_ast_with_symtab(arg_indices[0], nodes, instrs, symtab_names, symtab_vregs)
-    let b_vreg = gen_ir_from_ast_with_symtab(arg_indices[1], nodes, instrs, symtab_names, symtab_vregs)
-    let result_vreg = len(instrs)
-    push(instrs, IRInstr { op: OP_STR_NE(), dest: result_vreg, arg1: a_vreg, arg2: b_vreg, arg3: 0, str_val: "" })
-    return result_vreg
-}
-
 fn gen_ir_call_syscall_open(ast_idx: int, nodes: []AstNode, instrs: []IRInstr, symtab_names: []string, symtab_vregs: []int) -> int {
     let arg_indices = get_call_args(ast_idx)
     if len(arg_indices) != 3 { return -1 }
@@ -2628,22 +2610,22 @@ fn gen_ir_call_syscall_close(ast_idx: int, nodes: []AstNode, instrs: []IRInstr, 
 fn get_field_offset(name: string) -> int {
     let mut off = 0
     // AstNode fields
-    if str_eq(name, "tag") { off = 0 }
-    if str_eq(name, "int_val") { off = 8 }
-    if str_eq(name, "str_val") { off = 16 }
-    if str_eq(name, "left") { off = 24 }
-    if str_eq(name, "right") { off = 32 }
-    if str_eq(name, "extra") { off = 40 }
-    if str_eq(name, "type_tag") { off = 48 }
+    if name == "tag" { off = 0 }
+    if name == "int_val" { off = 8 }
+    if name == "str_val" { off = 16 }
+    if name == "left" { off = 24 }
+    if name == "right" { off = 32 }
+    if name == "extra" { off = 40 }
+    if name == "type_tag" { off = 48 }
     // ParseResult fields (unique names)
-    if str_eq(name, "node_idx") { off = 0 }
-    if str_eq(name, "new_pos") { off = 8 }
+    if name == "node_idx" { off = 0 }
+    if name == "new_pos" { off = 8 }
     // IRInstr fields (unique names only - str_val collision handled in gen_ir_field)
-    if str_eq(name, "op") { off = 0 }
-    if str_eq(name, "dest") { off = 8 }
-    if str_eq(name, "arg1") { off = 16 }
-    if str_eq(name, "arg2") { off = 24 }
-    if str_eq(name, "arg3") { off = 32 }
+    if name == "op" { off = 0 }
+    if name == "dest" { off = 8 }
+    if name == "arg1" { off = 16 }
+    if name == "arg2" { off = 24 }
+    if name == "arg3" { off = 32 }
     return off
 }
 
@@ -2673,14 +2655,14 @@ fn gen_ir_field(node: AstNode, nodes: []AstNode, instrs: []IRInstr, st_names: []
     let mut off = get_field_offset(node.str_val)
     // Handle str_val collision: AstNode.str_val is at offset 16, IRInstr.str_val is at offset 40
     // Detect IRInstr access by checking the base expression variable name
-    if str_eq(node.str_val, "str_val") {
+    if node.str_val == "str_val" {
         let left = nodes[node.left]
-        if left.tag == EXPR_IDENT() && str_eq(left.str_val, "instr") {
+        if left.tag == EXPR_IDENT() && left.str_val == "instr" {
             off = 40
         }
         if left.tag == EXPR_INDEX() {
             let arr = nodes[left.left]
-            if arr.tag == EXPR_IDENT() && str_eq(arr.str_val, "instrs") {
+            if arr.tag == EXPR_IDENT() && arr.str_val == "instrs" {
                 off = 40
             }
         }
@@ -2714,9 +2696,9 @@ fn gen_ir_array_lit(node: AstNode, nodes: []AstNode, instrs: []IRInstr, st_n: []
 
 fn get_struct_field_names(name: string) -> []string {
     let f = []string{}
-    if str_eq(name, "AstNode") { push(f, "tag") push(f, "int_val") push(f, "str_val") push(f, "left") push(f, "right") push(f, "extra") push(f, "type_tag") }
-    if str_eq(name, "IRInstr") { push(f, "op") push(f, "dest") push(f, "arg1") push(f, "arg2") push(f, "arg3") push(f, "str_val") }
-    if str_eq(name, "ParseResult") { push(f, "node_idx") push(f, "new_pos") }
+    if name == "AstNode" { push(f, "tag") push(f, "int_val") push(f, "str_val") push(f, "left") push(f, "right") push(f, "extra") push(f, "type_tag") }
+    if name == "IRInstr" { push(f, "op") push(f, "dest") push(f, "arg1") push(f, "arg2") push(f, "arg3") push(f, "str_val") }
+    if name == "ParseResult" { push(f, "node_idx") push(f, "new_pos") }
     return f
 }
 
@@ -2786,6 +2768,18 @@ fn gen_ir_binary(node: AstNode, nodes: []AstNode, instrs: []IRInstr, symtab_name
             op = OP_STR_CONCAT()
         }
     }
+    // Detect string equality: if == and either operand is string-typed
+    if node.int_val == TK_EQ() {
+        if is_string_expr(node.left, nodes) == 1 || is_string_expr(node.right, nodes) == 1 {
+            op = OP_STR_EQ()
+        }
+    }
+    // Detect string inequality: if != and either operand is string-typed
+    if node.int_val == TK_NE() {
+        if is_string_expr(node.left, nodes) == 1 || is_string_expr(node.right, nodes) == 1 {
+            op = OP_STR_NE()
+        }
+    }
     let dest_vreg = len(instrs)
     let instr = IRInstr { op: op, dest: dest_vreg, arg1: left_vreg, arg2: right_vreg, arg3: 0, str_val: "" }
     push(instrs, instr)
@@ -2814,7 +2808,7 @@ fn gen_ir_expr(node: AstNode, ast_idx: int, nodes: []AstNode, instrs: []IRInstr,
         let symtab_len = len(symtab_names)
         let mut idx1 = symtab_len - 1
         for idx1 >= 0 {
-            if str_eq(symtab_names[idx1], node.str_val) {
+            if symtab_names[idx1] == node.str_val {
                 found_vreg = symtab_vregs[idx1]
                 break
             }
@@ -2890,7 +2884,7 @@ fn gen_ir_stmt_assign(node: AstNode, nodes: []AstNode, instrs: []IRInstr, st_n: 
     let mut si = 0
     let st_len = len(st_n)
     for si < st_len {
-        if str_eq(st_n[si], target_name) {
+        if st_n[si] == target_name {
             var_vreg = st_v[si]
         }
         si = si + 1
@@ -3062,55 +3056,49 @@ fn gen_ir_from_ast_with_symtab(ast_idx: int, nodes: []AstNode, instrs: []IRInstr
 
     if node.tag == EXPR_CALL() {
         let func_name = node.str_val
-        if str_eq(func_name, "len") {
+        if func_name == "len" {
             return gen_ir_call_len(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
         }
-        if str_eq(func_name, "push") {
+        if func_name == "push" {
             return gen_ir_call_push(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
         }
-        if str_eq(func_name, "poke") {
+        if func_name == "poke" {
             return gen_ir_call_poke(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
         }
-        if str_eq(func_name, "peek") {
+        if func_name == "peek" {
             return gen_ir_call_peek(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
         }
-        if str_eq(func_name, "heap_alloc") {
+        if func_name == "heap_alloc" {
             return gen_ir_call_heap_alloc(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
         }
-        if str_eq(func_name, "ReadFile") || str_eq(func_name, "os.ReadFile") {
+        if func_name == "ReadFile" || func_name == "os.ReadFile" {
             return gen_ir_call_readfile(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
         }
-        if str_eq(func_name, "Argc") || str_eq(func_name, "os.Argc") {
+        if func_name == "Argc" || func_name == "os.Argc" {
             return gen_ir_call_argc(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
         }
-        if str_eq(func_name, "Argv") || str_eq(func_name, "os.Argv") {
+        if func_name == "Argv" || func_name == "os.Argv" {
             return gen_ir_call_argv(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
         }
-        if str_eq(func_name, "Itoa") || str_eq(func_name, "strconv.Itoa") {
+        if func_name == "Itoa" || func_name == "strconv.Itoa" {
             return gen_ir_call_itoa(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
         }
-        if str_eq(func_name, "print") {
+        if func_name == "print" {
             return gen_ir_call_print(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
         }
-        if str_eq(func_name, "str_char_at") {
+        if func_name == "str_char_at" {
             return gen_ir_call_str_char_at(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
         }
-        if str_eq(func_name, "str_substring") {
+        if func_name == "str_substring" {
             return gen_ir_call_str_substring(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
         }
-        if str_eq(func_name, "str_eq") {
-            return gen_ir_call_str_eq(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
-        }
-        if str_eq(func_name, "str_ne") {
-            return gen_ir_call_str_ne(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
-        }
-        if str_eq(func_name, "open") || str_eq(func_name, "syscall.open") {
+        if func_name == "open" || func_name == "syscall.open" {
             return gen_ir_call_syscall_open(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
         }
-        if str_eq(func_name, "write") || str_eq(func_name, "syscall.write") {
+        if func_name == "write" || func_name == "syscall.write" {
             return gen_ir_call_syscall_write(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
         }
-        if str_eq(func_name, "close") || str_eq(func_name, "syscall.close") {
+        if func_name == "close" || func_name == "syscall.close" {
             return gen_ir_call_syscall_close(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
         }
         return gen_ir_call_user(node, ast_idx, nodes, instrs, symtab_names, symtab_vregs)
@@ -3295,7 +3283,7 @@ fn llvm_mangle(name: string) -> string {
 }
 
 fn llvm_func_name(name: string) -> string {
-    if str_eq(name, "main") {
+    if name == "main" {
         return "ease_main"
     }
     return llvm_mangle(name)
@@ -3444,7 +3432,7 @@ fn emit_llvm_ir(instrs: []IRInstr, output_path: string) -> int {
     let mut si = 0
     for si < len(instrs) {
         if instrs[si].op == OP_LOADCONST() {
-            if str_ne(instrs[si].str_val, "") {
+            if instrs[si].str_val != "" {
                 push(string_table, instrs[si].str_val)
                 push(string_dests, instrs[si].dest)
             }
@@ -3474,7 +3462,7 @@ fn emit_llvm_ir(instrs: []IRInstr, output_path: string) -> int {
             let mut found = 0
             let mut gj = 0
             for gj < len(global_names) {
-                if str_eq(global_names[gj], gname) {
+                if global_names[gj] == gname {
                     found = 1
                     break
                 }
@@ -3508,7 +3496,7 @@ fn emit_llvm_ir(instrs: []IRInstr, output_path: string) -> int {
     let mut fi = 0
     let instrs_len = len(instrs)
     for fi < instrs_len {
-        if instrs[fi].op == OP_LABEL() && str_ne(instrs[fi].str_val, "") {
+        if instrs[fi].op == OP_LABEL() && instrs[fi].str_val != "" {
             let func_name = instrs[fi].str_val
             let param_count = instrs[fi].arg1
             let func_start = fi + 1
@@ -3517,7 +3505,7 @@ fn emit_llvm_ir(instrs: []IRInstr, output_path: string) -> int {
             let mut func_end = instrs_len
             let mut fj = fi + 1
             for fj < instrs_len {
-                if instrs[fj].op == OP_LABEL() && str_ne(instrs[fj].str_val, "") {
+                if instrs[fj].op == OP_LABEL() && instrs[fj].str_val != "" {
                     func_end = fj
                     break
                 }
@@ -3592,7 +3580,7 @@ fn emit_llvm_function(fd: int, instrs: []IRInstr, start: int, end_pos: int, func
         let instr = instrs[ii]
         let ti = ii
 
-        if instr.op == OP_LABEL() && str_eq(instr.str_val, "") {
+        if instr.op == OP_LABEL() && instr.str_val == "" {
             // Basic block label
             if terminated == 0 {
                 write_str(fd, "  br label %L." + strconv.Itoa(instr.dest) + "\n")
@@ -3602,7 +3590,7 @@ fn emit_llvm_function(fd: int, instrs: []IRInstr, start: int, end_pos: int, func
         }
 
         if terminated == 0 && instr.op == OP_LOADCONST() {
-            if str_ne(instr.str_val, "") {
+            if instr.str_val != "" {
                 // String constant
                 let str_idx = find_string_index(instr.dest, string_dests)
                 if str_idx >= 0 {
@@ -3659,7 +3647,7 @@ fn emit_llvm_function(fd: int, instrs: []IRInstr, start: int, end_pos: int, func
             let base = emit_load_vreg(fd, instr.arg1, ti, 0)
             // arg2: if str_val is "array_index", arg2 is a vreg; otherwise immediate offset
             let mut addr_val = ""
-            if str_eq(instr.str_val, "array_index") {
+            if instr.str_val == "array_index" {
                 // Array indexing: base is fat pointer address, arg2 is index vreg
                 // 1. Extract data pointer from fat pointer (offset 0)
                 let fp = tmp_name(ti, 1)
@@ -4119,6 +4107,10 @@ fn main() -> int {
     let fn_count = len(func_names)
     let mut gen_all_i = 0
     for gen_all_i < fn_count {
+        // Scope string tracking to current function
+        g_string_vars_start = len(g_string_vars)
+        g_string_array_vars_start = len(g_string_array_vars)
+
         let func_idx = func_indices[gen_all_i]
         let func_name = func_names[gen_all_i]
         let param_count = count_func_params(nodes, func_idx)
