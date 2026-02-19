@@ -41,8 +41,8 @@ jobs:
           package main
 
           fn main() -> int {
-              let a = 10
-              let b = 32
+              a := 10
+              b := 32
               if a + b == 42 {
                   return 0
               }
