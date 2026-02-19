@@ -75,7 +75,7 @@ fn llvm_mangle(name: string) -> string {
 
 fn llvm_func_name(name: string) -> string {
     if name == "main" {
-        return "ease_main"
+        return "ease_user_main"
     }
     return llvm_mangle(name)
 }
@@ -110,6 +110,18 @@ fn emit_store_vreg(fd: int, vreg: int, val: string) {
     write_str(fd, "  store i64 " + val + ", ptr %v." + strconv.Itoa(vreg) + "\n")
 }
 
+fn emit_load_safe_str(fd: int, vreg: int, ti: int, s1: int, s2: int, s3: int) -> string {
+    // Load pointer from vreg, replace NULL with @.str.empty
+    val := emit_load_vreg(fd, vreg, ti, s1)
+    raw := tmp_name(ti, s2)
+    write_str(fd, "  " + raw + " = inttoptr i64 " + val + " to ptr\n")
+    is_null := "%ns." + strconv.Itoa(ti) + "." + strconv.Itoa(s3)
+    write_str(fd, "  " + is_null + " = icmp eq ptr " + raw + ", null\n")
+    safe := "%ss." + strconv.Itoa(ti) + "." + strconv.Itoa(s3)
+    write_str(fd, "  " + safe + " = select i1 " + is_null + ", ptr @.str.empty, ptr " + raw + "\n")
+    return safe
+}
+
 fn emit_ptrtoint_store(fd: int, vreg: int, ptr_val: string, ti: int, sub: int) {
     name := tmp_name(ti, sub)
     write_str(fd, "  " + name + " = ptrtoint ptr " + ptr_val + " to i64\n")
@@ -135,36 +147,36 @@ fn emit_llvm_cmp(fd: int, instr: IRInstr, pred: string, ti: int) {
 }
 
 fn emit_llvm_decls(fd: int) {
+    // Memory allocation
     write_str(fd, "declare ptr @malloc(i64)\n")
     write_str(fd, "declare ptr @calloc(i64, i64)\n")
     write_str(fd, "declare ptr @memcpy(ptr, ptr, i64)\n")
     write_str(fd, "declare ptr @memset(ptr, i32, i64)\n")
-    write_str(fd, "declare i64 @ease_str_eq(ptr, ptr)\n")
-    write_str(fd, "declare i64 @ease_str_ne(ptr, ptr)\n")
-    write_str(fd, "declare i64 @ease_str_len(ptr)\n")
-    write_str(fd, "declare ptr @ease_str_concat(ptr, ptr)\n")
-    write_str(fd, "declare ptr @ease_str_slice(ptr, i64, i64)\n")
-    write_str(fd, "declare i64 @ease_str_char_at(ptr, i64)\n")
-    write_str(fd, "declare void @ease_array_push(ptr, ptr, i64)\n")
-    write_str(fd, "declare i64 @ease_write_file(ptr, ptr)\n")
-    write_str(fd, "declare ptr @ease_int_to_str(i64)\n")
-    write_str(fd, "declare i64 @ease_str_to_int(ptr)\n")
-    write_str(fd, "declare void @ease_poke(ptr, i64)\n")
-    write_str(fd, "declare i64 @ease_peek(ptr)\n")
-    write_str(fd, "declare void @ease_memset(ptr, i64, i64)\n")
-    write_str(fd, "declare i64 @ease_syscall_open(ptr, i64, i64)\n")
-    write_str(fd, "declare i64 @ease_syscall_read(i64, ptr, i64)\n")
-    write_str(fd, "declare i64 @ease_syscall_write(i64, ptr, i64)\n")
-    write_str(fd, "declare i64 @ease_syscall_close(i64)\n")
-    write_str(fd, "declare i64 @ease_argc()\n")
-    write_str(fd, "declare ptr @ease_argv(i64)\n")
-    write_str(fd, "declare i64 @ease_is_dir(ptr)\n")
-    write_str(fd, "declare ptr @ease_list_dir(ptr)\n")
+    // String operations (libc)
+    write_str(fd, "declare i32 @strcmp(ptr, ptr)\n")
+    write_str(fd, "declare i64 @strlen(ptr)\n")
+    write_str(fd, "declare i32 @snprintf(ptr, i64, ptr, ...)\n")
+    // POSIX I/O (libc)
+    write_str(fd, "declare i32 @open(ptr, i32, ...)\n")
+    write_str(fd, "declare i64 @read(i32, ptr, i64)\n")
+    write_str(fd, "declare i64 @write(i32, ptr, i64)\n")
+    write_str(fd, "declare i32 @close(i32)\n")
+    // Directory operations (libc, macOS mangled names)
+    write_str(fd, "declare i32 @\"\\01_stat\"(ptr, ptr)\n")
+    write_str(fd, "declare ptr @\"\\01_opendir\"(ptr)\n")
+    write_str(fd, "declare ptr @\"\\01_readdir\"(ptr)\n")
+    write_str(fd, "declare i32 @\"\\01_closedir\"(ptr)\n")
+    // Testing support (libc)
     write_str(fd, "declare i32 @setjmp(ptr) #0\n")
-    write_str(fd, "declare void @ease_test_fail()\n")
-    write_str(fd, "declare i64 @ease_time_nanos()\n")
-    write_str(fd, "declare i64 @ease_time_wallclock_nanos()\n")
-    write_str(fd, "@ease_test_jmp_buf = external global [37 x i64]\n")
+    write_str(fd, "declare void @longjmp(ptr, i32)\n")
+    // Time (libc)
+    write_str(fd, "declare i32 @clock_gettime(i32, ptr)\n")
+    // Globals
+    write_str(fd, "@ease_test_jmp_buf = global [37 x i64] zeroinitializer\n")
+    write_str(fd, "@g_argc = global i64 0\n")
+    write_str(fd, "@g_argv = global ptr null\n")
+    write_str(fd, "@.fmt.ld = private unnamed_addr constant [4 x i8] c\"%ld\\00\"\n")
+    write_str(fd, "@.str.empty = private unnamed_addr constant [1 x i8] c\"\\00\"\n")
     write_str(fd, "attributes #0 = { returns_twice }\n")
     write_str(fd, "\n")
 }
@@ -283,6 +295,9 @@ fn emit_llvm_ir(instrs: []IRInstr, output_path: string) -> int {
     // Emit runtime declarations
     emit_llvm_decls(fd)
 
+    // Emit helper functions (dir ops)
+    emit_llvm_helpers(fd)
+
     // Pass 2: Emit functions
     fi := 0
     instrs_len := len(instrs)
@@ -312,9 +327,110 @@ fn emit_llvm_ir(instrs: []IRInstr, output_path: string) -> int {
         }
     }
 
+    // Emit @main wrapper that stores argc/argv and calls ease_user_main
+    emit_llvm_main_wrapper(fd)
+
     syscall.close(fd)
     // Generated LLVM IR
     return 0
+}
+
+fn emit_llvm_helpers(fd: int) {
+    // ease_is_dir: check if path is a directory using stat()
+    // macOS ARM64: struct stat = 144 bytes, st_mode at offset 4 (u16), S_IFDIR=0x4000, S_IFMT=0xF000
+    write_str(fd, "define i64 @ease_is_dir(ptr %path) {\n")
+    write_str(fd, "  %st = alloca [144 x i8]\n")
+    write_str(fd, "  %rc = call i32 @\"\\01_stat\"(ptr %path, ptr %st)\n")
+    write_str(fd, "  %fail = icmp ne i32 %rc, 0\n")
+    write_str(fd, "  br i1 %fail, label %ret0, label %check\n")
+    write_str(fd, "check:\n")
+    write_str(fd, "  %mode_ptr = getelementptr i8, ptr %st, i64 4\n")
+    write_str(fd, "  %mode16 = load i16, ptr %mode_ptr\n")
+    write_str(fd, "  %mode = zext i16 %mode16 to i32\n")
+    write_str(fd, "  %masked = and i32 %mode, 61440\n")
+    write_str(fd, "  %isdir = icmp eq i32 %masked, 16384\n")
+    write_str(fd, "  br i1 %isdir, label %ret1, label %ret0\n")
+    write_str(fd, "ret1:\n")
+    write_str(fd, "  ret i64 1\n")
+    write_str(fd, "ret0:\n")
+    write_str(fd, "  ret i64 0\n")
+    write_str(fd, "}\n\n")
+
+    // ease_list_dir: list directory entries separated by newlines
+    // macOS ARM64: struct dirent d_name at offset 21
+    write_str(fd, "define ptr @ease_list_dir(ptr %path) {\n")
+    write_str(fd, "  %d = call ptr @\"\\01_opendir\"(ptr %path)\n")
+    write_str(fd, "  %dnull = icmp eq ptr %d, null\n")
+    write_str(fd, "  br i1 %dnull, label %ld.empty, label %ld.loop\n")
+    write_str(fd, "ld.empty:\n")
+    write_str(fd, "  %empty = call ptr @malloc(i64 1)\n")
+    write_str(fd, "  store i8 0, ptr %empty\n")
+    write_str(fd, "  ret ptr %empty\n")
+    write_str(fd, "ld.loop:\n")
+    // Accumulate result string - start with empty
+    write_str(fd, "  %res0 = call ptr @malloc(i64 1)\n")
+    write_str(fd, "  store i8 0, ptr %res0\n")
+    write_str(fd, "  br label %ld.next\n")
+    write_str(fd, "ld.next:\n")
+    write_str(fd, "  %res = phi ptr [ %res0, %ld.loop ], [ %newres, %ld.append ], [ %res, %ld.dotcheck ], [ %res, %ld.dotdot2 ]\n")
+    write_str(fd, "  %ent = call ptr @\"\\01_readdir\"(ptr %d)\n")
+    write_str(fd, "  %enull = icmp eq ptr %ent, null\n")
+    write_str(fd, "  br i1 %enull, label %ld.done, label %ld.check\n")
+    write_str(fd, "ld.check:\n")
+    // Get d_name at offset 21
+    write_str(fd, "  %name = getelementptr i8, ptr %ent, i64 21\n")
+    // Skip "." and ".."
+    write_str(fd, "  %c0 = load i8, ptr %name\n")
+    write_str(fd, "  %isdot = icmp eq i8 %c0, 46\n")
+    write_str(fd, "  br i1 %isdot, label %ld.dotcheck, label %ld.append\n")
+    write_str(fd, "ld.dotcheck:\n")
+    write_str(fd, "  %c1ptr = getelementptr i8, ptr %name, i64 1\n")
+    write_str(fd, "  %c1 = load i8, ptr %c1ptr\n")
+    // "." entry: c1 == 0
+    write_str(fd, "  %isdot1 = icmp eq i8 %c1, 0\n")
+    write_str(fd, "  br i1 %isdot1, label %ld.next, label %ld.dotdot\n")
+    write_str(fd, "ld.dotdot:\n")
+    // ".." entry: c1 == '.' and c2 == 0
+    write_str(fd, "  %isdot2 = icmp eq i8 %c1, 46\n")
+    write_str(fd, "  br i1 %isdot2, label %ld.dotdot2, label %ld.append\n")
+    write_str(fd, "ld.dotdot2:\n")
+    write_str(fd, "  %c2ptr = getelementptr i8, ptr %name, i64 2\n")
+    write_str(fd, "  %c2 = load i8, ptr %c2ptr\n")
+    write_str(fd, "  %isdotdot = icmp eq i8 %c2, 0\n")
+    write_str(fd, "  br i1 %isdotdot, label %ld.next, label %ld.append\n")
+    // Append: result = result + name + "\n"
+    write_str(fd, "ld.append:\n")
+    write_str(fd, "  %rname = phi ptr [ %name, %ld.check ], [ %name, %ld.dotdot ], [ %name, %ld.dotdot2 ]\n")
+    write_str(fd, "  %rlen = call i64 @strlen(ptr %res)\n")
+    write_str(fd, "  %nlen = call i64 @strlen(ptr %rname)\n")
+    write_str(fd, "  %tlen = add i64 %rlen, %nlen\n")
+    write_str(fd, "  %tlen2 = add i64 %tlen, 2\n")
+    write_str(fd, "  %newres = call ptr @malloc(i64 %tlen2)\n")
+    write_str(fd, "  call ptr @memcpy(ptr %newres, ptr %res, i64 %rlen)\n")
+    write_str(fd, "  %ndst = getelementptr i8, ptr %newres, i64 %rlen\n")
+    write_str(fd, "  call ptr @memcpy(ptr %ndst, ptr %rname, i64 %nlen)\n")
+    write_str(fd, "  %nlpos = add i64 %rlen, %nlen\n")
+    write_str(fd, "  %nlptr = getelementptr i8, ptr %newres, i64 %nlpos\n")
+    write_str(fd, "  store i8 10, ptr %nlptr\n")
+    write_str(fd, "  %nulpos = add i64 %nlpos, 1\n")
+    write_str(fd, "  %nulptr = getelementptr i8, ptr %newres, i64 %nulpos\n")
+    write_str(fd, "  store i8 0, ptr %nulptr\n")
+    write_str(fd, "  br label %ld.next\n")
+    write_str(fd, "ld.done:\n")
+    write_str(fd, "  call i32 @\"\\01_closedir\"(ptr %d)\n")
+    write_str(fd, "  ret ptr %res\n")
+    write_str(fd, "}\n\n")
+}
+
+fn emit_llvm_main_wrapper(fd: int) {
+    write_str(fd, "define i32 @main(i32 %argc, ptr %argv) {\n")
+    write_str(fd, "  %argc.ext = sext i32 %argc to i64\n")
+    write_str(fd, "  store i64 %argc.ext, ptr @g_argc\n")
+    write_str(fd, "  store ptr %argv, ptr @g_argv\n")
+    write_str(fd, "  %r = call i64 @ease_user_main()\n")
+    write_str(fd, "  %r32 = trunc i64 %r to i32\n")
+    write_str(fd, "  ret i32 %r32\n")
+    write_str(fd, "}\n\n")
 }
 
 fn find_string_index(dest: int, string_dests: []int) -> int {
@@ -526,35 +642,88 @@ fn emit_llvm_function(fd: int, instrs: []IRInstr, start: int, end_pos: int, func
         }
 
         if terminated == 0 && instr.op == OP_STR_LEN() {
-            // String length via runtime call
-            str_val := emit_load_vreg(fd, instr.arg1, ti, 0)
-            str_ptr := tmp_name(ti, 1)
-            write_str(fd, "  " + str_ptr + " = inttoptr i64 " + str_val + " to ptr\n")
+            // Direct libc: i64 @strlen(ptr) with null guard
+            str_ptr := emit_load_safe_str(fd, instr.arg1, ti, 0, 1, 0)
             result := tmp_name(ti, 2)
-            write_str(fd, "  " + result + " = call i64 @ease_str_len(ptr " + str_ptr + ")\n")
+            write_str(fd, "  " + result + " = call i64 @strlen(ptr " + str_ptr + ")\n")
             emit_store_vreg(fd, instr.dest, result)
         }
 
         if terminated == 0 && instr.op == OP_ARRAY_PUSH() {
+            // Inline array push with grow logic
             // arg1=fat ptr vreg, arg2=element vreg
             fp := emit_load_ptr(fd, instr.arg1, ti, 0, 1)
             elem := emit_load_vreg(fd, instr.arg2, ti, 2)
-            tmp_alloca := tmp_name(ti, 3)
-            write_str(fd, "  " + tmp_alloca + " = alloca i64\n")
-            write_str(fd, "  store i64 " + elem + ", ptr " + tmp_alloca + "\n")
-            write_str(fd, "  call void @ease_array_push(ptr " + fp + ", ptr " + tmp_alloca + ", i64 8)\n")
+            tis := strconv.Itoa(ti)
+            // Load ptr/len/cap from fat pointer
+            ptr_val := "%ap.ptr." + tis
+            write_str(fd, "  " + ptr_val + " = load i64, ptr " + fp + "\n")
+            len_addr := "%ap.la." + tis
+            write_str(fd, "  " + len_addr + " = getelementptr i8, ptr " + fp + ", i64 8\n")
+            len_val := "%ap.len." + tis
+            write_str(fd, "  " + len_val + " = load i64, ptr " + len_addr + "\n")
+            cap_addr := "%ap.ca." + tis
+            write_str(fd, "  " + cap_addr + " = getelementptr i8, ptr " + fp + ", i64 16\n")
+            cap_val := "%ap.cap." + tis
+            write_str(fd, "  " + cap_val + " = load i64, ptr " + cap_addr + "\n")
+            // Check if needs grow
+            needs_grow := "%ap.ng." + tis
+            write_str(fd, "  " + needs_grow + " = icmp sge i64 " + len_val + ", " + cap_val + "\n")
+            write_str(fd, "  br i1 " + needs_grow + ", label %ap.grow." + tis + ", label %ap.do." + tis + "\n")
+            // Grow block
+            write_str(fd, "ap.grow." + tis + ":\n")
+            cap_is_zero := "%ap.cz." + tis
+            write_str(fd, "  " + cap_is_zero + " = icmp eq i64 " + cap_val + ", 0\n")
+            cap_double := "%ap.cd." + tis
+            write_str(fd, "  " + cap_double + " = mul i64 " + cap_val + ", 2\n")
+            new_cap := "%ap.nc." + tis
+            write_str(fd, "  " + new_cap + " = select i1 " + cap_is_zero + ", i64 4, i64 " + cap_double + "\n")
+            alloc_size := "%ap.as." + tis
+            write_str(fd, "  " + alloc_size + " = mul i64 " + new_cap + ", 8\n")
+            new_ptr := "%ap.np." + tis
+            write_str(fd, "  " + new_ptr + " = call ptr @malloc(i64 " + alloc_size + ")\n")
+            old_ptr := "%ap.op." + tis
+            write_str(fd, "  " + old_ptr + " = inttoptr i64 " + ptr_val + " to ptr\n")
+            copy_size := "%ap.cs." + tis
+            write_str(fd, "  " + copy_size + " = mul i64 " + len_val + ", 8\n")
+            write_str(fd, "  call ptr @memcpy(ptr " + new_ptr + ", ptr " + old_ptr + ", i64 " + copy_size + ")\n")
+            new_ptr_int := "%ap.ni." + tis
+            write_str(fd, "  " + new_ptr_int + " = ptrtoint ptr " + new_ptr + " to i64\n")
+            write_str(fd, "  store i64 " + new_ptr_int + ", ptr " + fp + "\n")
+            write_str(fd, "  store i64 " + new_cap + ", ptr " + cap_addr + "\n")
+            write_str(fd, "  br label %ap.do." + tis + "\n")
+            // Do block: store element and increment len
+            write_str(fd, "ap.do." + tis + ":\n")
+            cur_ptr := "%ap.cp." + tis
+            write_str(fd, "  " + cur_ptr + " = load i64, ptr " + fp + "\n")
+            elem_offset := "%ap.eo." + tis
+            write_str(fd, "  " + elem_offset + " = mul i64 " + len_val + ", 8\n")
+            elem_addr := "%ap.ea." + tis
+            write_str(fd, "  " + elem_addr + " = add i64 " + cur_ptr + ", " + elem_offset + "\n")
+            elem_ptr := "%ap.ep." + tis
+            write_str(fd, "  " + elem_ptr + " = inttoptr i64 " + elem_addr + " to ptr\n")
+            write_str(fd, "  store i64 " + elem + ", ptr " + elem_ptr + "\n")
+            new_len := "%ap.nl." + tis
+            write_str(fd, "  " + new_len + " = add i64 " + len_val + ", 1\n")
+            write_str(fd, "  store i64 " + new_len + ", ptr " + len_addr + "\n")
         }
 
         if terminated == 0 && instr.op == OP_POKE() {
+            // Inline: trunc i64 to i8, store i8 to ptr
             addr := emit_load_ptr(fd, instr.arg1, ti, 0, 1)
             val := emit_load_vreg(fd, instr.arg2, ti, 2)
-            write_str(fd, "  call void @ease_poke(ptr " + addr + ", i64 " + val + ")\n")
+            t := tmp_name(ti, 3)
+            write_str(fd, "  " + t + " = trunc i64 " + val + " to i8\n")
+            write_str(fd, "  store i8 " + t + ", ptr " + addr + "\n")
         }
 
         if terminated == 0 && instr.op == OP_PEEK() {
+            // Inline: load i8, zext to i64
             addr := emit_load_ptr(fd, instr.arg1, ti, 0, 1)
-            r := tmp_name(ti, 2)
-            write_str(fd, "  " + r + " = call i64 @ease_peek(ptr " + addr + ")\n")
+            b := tmp_name(ti, 2)
+            write_str(fd, "  " + b + " = load i8, ptr " + addr + "\n")
+            r := tmp_name(ti, 3)
+            write_str(fd, "  " + r + " = zext i8 " + b + " to i64\n")
             emit_store_vreg(fd, instr.dest, r)
         }
 
@@ -568,88 +737,146 @@ fn emit_llvm_function(fd: int, instrs: []IRInstr, start: int, end_pos: int, func
         }
 
         if terminated == 0 && instr.op == OP_ARGC() {
+            // Load from global @g_argc
             r := tmp_name(ti, 0)
-            write_str(fd, "  " + r + " = call i64 @ease_argc()\n")
+            write_str(fd, "  " + r + " = load i64, ptr @g_argc\n")
             emit_store_vreg(fd, instr.dest, r)
         }
 
         if terminated == 0 && instr.op == OP_ARGV() {
+            // Load argv[index] from global @g_argv
             idx := emit_load_vreg(fd, instr.arg1, ti, 0)
-            p := tmp_name(ti, 1)
-            write_str(fd, "  " + p + " = call ptr @ease_argv(i64 " + idx + ")\n")
-            emit_ptrtoint_store(fd, instr.dest, p, ti, 2)
+            argv_ptr := tmp_name(ti, 1)
+            write_str(fd, "  " + argv_ptr + " = load ptr, ptr @g_argv\n")
+            elem_ptr := tmp_name(ti, 2)
+            write_str(fd, "  " + elem_ptr + " = getelementptr ptr, ptr " + argv_ptr + ", i64 " + idx + "\n")
+            p := tmp_name(ti, 3)
+            write_str(fd, "  " + p + " = load ptr, ptr " + elem_ptr + "\n")
+            emit_ptrtoint_store(fd, instr.dest, p, ti, 4)
         }
 
         if terminated == 0 && instr.op == OP_INT_TO_STR() {
+            // Inline: malloc(21) + snprintf(buf, 21, "%ld", val)
             val := emit_load_vreg(fd, instr.arg1, ti, 0)
-            p := tmp_name(ti, 1)
-            write_str(fd, "  " + p + " = call ptr @ease_int_to_str(i64 " + val + ")\n")
-            emit_ptrtoint_store(fd, instr.dest, p, ti, 2)
+            buf := tmp_name(ti, 1)
+            write_str(fd, "  " + buf + " = call ptr @malloc(i64 21)\n")
+            write_str(fd, "  call i32 (ptr, i64, ptr, ...) @snprintf(ptr " + buf + ", i64 21, ptr @.fmt.ld, i64 " + val + ")\n")
+            emit_ptrtoint_store(fd, instr.dest, buf, ti, 2)
         }
 
         if terminated == 0 && instr.op == OP_STR_EQ() {
-            a := emit_load_ptr(fd, instr.arg1, ti, 0, 1)
-            b := emit_load_ptr(fd, instr.arg2, ti, 2, 3)
-            r := tmp_name(ti, 4)
-            write_str(fd, "  " + r + " = call i64 @ease_str_eq(ptr " + a + ", ptr " + b + ")\n")
+            // strcmp + icmp eq 0 (null-safe)
+            a := emit_load_safe_str(fd, instr.arg1, ti, 0, 1, 0)
+            b := emit_load_safe_str(fd, instr.arg2, ti, 2, 3, 1)
+            cmp := tmp_name(ti, 4)
+            write_str(fd, "  " + cmp + " = call i32 @strcmp(ptr " + a + ", ptr " + b + ")\n")
+            eq := tmp_name(ti, 5)
+            write_str(fd, "  " + eq + " = icmp eq i32 " + cmp + ", 0\n")
+            r := tmp_name(ti, 6)
+            write_str(fd, "  " + r + " = zext i1 " + eq + " to i64\n")
             emit_store_vreg(fd, instr.dest, r)
         }
 
         if terminated == 0 && instr.op == OP_STR_NE() {
-            a := emit_load_ptr(fd, instr.arg1, ti, 0, 1)
-            b := emit_load_ptr(fd, instr.arg2, ti, 2, 3)
-            r := tmp_name(ti, 4)
-            write_str(fd, "  " + r + " = call i64 @ease_str_ne(ptr " + a + ", ptr " + b + ")\n")
+            // strcmp + icmp ne 0 (null-safe)
+            a := emit_load_safe_str(fd, instr.arg1, ti, 0, 1, 0)
+            b := emit_load_safe_str(fd, instr.arg2, ti, 2, 3, 1)
+            cmp := tmp_name(ti, 4)
+            write_str(fd, "  " + cmp + " = call i32 @strcmp(ptr " + a + ", ptr " + b + ")\n")
+            ne := tmp_name(ti, 5)
+            write_str(fd, "  " + ne + " = icmp ne i32 " + cmp + ", 0\n")
+            r := tmp_name(ti, 6)
+            write_str(fd, "  " + r + " = zext i1 " + ne + " to i64\n")
             emit_store_vreg(fd, instr.dest, r)
         }
 
         if terminated == 0 && instr.op == OP_STR_CONCAT() {
-            a := emit_load_ptr(fd, instr.arg1, ti, 0, 1)
-            b := emit_load_ptr(fd, instr.arg2, ti, 2, 3)
-            r := tmp_name(ti, 4)
-            write_str(fd, "  " + r + " = call ptr @ease_str_concat(ptr " + a + ", ptr " + b + ")\n")
-            emit_ptrtoint_store(fd, instr.dest, r, ti, 5)
+            // Inline: strlen(a) + strlen(b) + malloc + memcpy + memcpy + null terminator (null-safe)
+            a := emit_load_safe_str(fd, instr.arg1, ti, 0, 1, 0)
+            b := emit_load_safe_str(fd, instr.arg2, ti, 2, 3, 1)
+            tis := strconv.Itoa(ti)
+            la := "%sc.la." + tis
+            write_str(fd, "  " + la + " = call i64 @strlen(ptr " + a + ")\n")
+            lb := "%sc.lb." + tis
+            write_str(fd, "  " + lb + " = call i64 @strlen(ptr " + b + ")\n")
+            total := "%sc.tot." + tis
+            write_str(fd, "  " + total + " = add i64 " + la + ", " + lb + "\n")
+            total1 := "%sc.tot1." + tis
+            write_str(fd, "  " + total1 + " = add i64 " + total + ", 1\n")
+            buf := "%sc.buf." + tis
+            write_str(fd, "  " + buf + " = call ptr @malloc(i64 " + total1 + ")\n")
+            write_str(fd, "  call ptr @memcpy(ptr " + buf + ", ptr " + a + ", i64 " + la + ")\n")
+            dst := "%sc.dst." + tis
+            write_str(fd, "  " + dst + " = getelementptr i8, ptr " + buf + ", i64 " + la + "\n")
+            write_str(fd, "  call ptr @memcpy(ptr " + dst + ", ptr " + b + ", i64 " + lb + ")\n")
+            term := "%sc.trm." + tis
+            write_str(fd, "  " + term + " = getelementptr i8, ptr " + buf + ", i64 " + total + "\n")
+            write_str(fd, "  store i8 0, ptr " + term + "\n")
+            emit_ptrtoint_store(fd, instr.dest, buf, ti, 4)
         }
 
         if terminated == 0 && instr.op == OP_STR_CHAR_AT() {
-            s := emit_load_ptr(fd, instr.arg1, ti, 0, 1)
+            // Inline: getelementptr + load i8 + zext (null-safe)
+            s := emit_load_safe_str(fd, instr.arg1, ti, 0, 1, 0)
             idx := emit_load_vreg(fd, instr.arg2, ti, 2)
-            r := tmp_name(ti, 3)
-            write_str(fd, "  " + r + " = call i64 @ease_str_char_at(ptr " + s + ", i64 " + idx + ")\n")
+            gep := tmp_name(ti, 3)
+            write_str(fd, "  " + gep + " = getelementptr i8, ptr " + s + ", i64 " + idx + "\n")
+            b := tmp_name(ti, 4)
+            write_str(fd, "  " + b + " = load i8, ptr " + gep + "\n")
+            r := tmp_name(ti, 5)
+            write_str(fd, "  " + r + " = zext i8 " + b + " to i64\n")
             emit_store_vreg(fd, instr.dest, r)
         }
 
         if terminated == 0 && instr.op == OP_SYSCALL_OPEN() {
+            // Direct libc: i32 @open(ptr, i32, ...)
             path := emit_load_ptr(fd, instr.arg1, ti, 0, 1)
             flags := emit_load_vreg(fd, instr.arg2, ti, 2)
             mode := emit_load_vreg(fd, instr.arg3, ti, 3)
-            r := tmp_name(ti, 4)
-            write_str(fd, "  " + r + " = call i64 @ease_syscall_open(ptr " + path + ", i64 " + flags + ", i64 " + mode + ")\n")
+            f32 := tmp_name(ti, 4)
+            write_str(fd, "  " + f32 + " = trunc i64 " + flags + " to i32\n")
+            m32 := tmp_name(ti, 5)
+            write_str(fd, "  " + m32 + " = trunc i64 " + mode + " to i32\n")
+            r32 := tmp_name(ti, 6)
+            write_str(fd, "  " + r32 + " = call i32 (ptr, i32, ...) @open(ptr " + path + ", i32 " + f32 + ", i32 " + m32 + ")\n")
+            r := tmp_name(ti, 7)
+            write_str(fd, "  " + r + " = sext i32 " + r32 + " to i64\n")
             emit_store_vreg(fd, instr.dest, r)
         }
 
         if terminated == 0 && instr.op == OP_SYSCALL_WRITE() {
+            // Direct libc: i64 @write(i32, ptr, i64)
             sfd := emit_load_vreg(fd, instr.arg1, ti, 0)
             buf := emit_load_ptr(fd, instr.arg2, ti, 1, 2)
             size := emit_load_vreg(fd, instr.arg3, ti, 3)
-            r := tmp_name(ti, 4)
-            write_str(fd, "  " + r + " = call i64 @ease_syscall_write(i64 " + sfd + ", ptr " + buf + ", i64 " + size + ")\n")
+            fd32 := tmp_name(ti, 4)
+            write_str(fd, "  " + fd32 + " = trunc i64 " + sfd + " to i32\n")
+            r := tmp_name(ti, 5)
+            write_str(fd, "  " + r + " = call i64 @write(i32 " + fd32 + ", ptr " + buf + ", i64 " + size + ")\n")
             emit_store_vreg(fd, instr.dest, r)
         }
 
         if terminated == 0 && instr.op == OP_SYSCALL_CLOSE() {
+            // Direct libc: i32 @close(i32)
             sfd := emit_load_vreg(fd, instr.arg1, ti, 0)
-            r := tmp_name(ti, 1)
-            write_str(fd, "  " + r + " = call i64 @ease_syscall_close(i64 " + sfd + ")\n")
+            fd32 := tmp_name(ti, 1)
+            write_str(fd, "  " + fd32 + " = trunc i64 " + sfd + " to i32\n")
+            r32 := tmp_name(ti, 2)
+            write_str(fd, "  " + r32 + " = call i32 @close(i32 " + fd32 + ")\n")
+            r := tmp_name(ti, 3)
+            write_str(fd, "  " + r + " = sext i32 " + r32 + " to i64\n")
             emit_store_vreg(fd, instr.dest, r)
         }
 
         if terminated == 0 && instr.op == OP_SYSCALL_READ() {
+            // Direct libc: i64 @read(i32, ptr, i64)
             sfd := emit_load_vreg(fd, instr.arg1, ti, 0)
             buf := emit_load_ptr(fd, instr.arg2, ti, 1, 2)
             size := emit_load_vreg(fd, instr.arg3, ti, 3)
-            r := tmp_name(ti, 4)
-            write_str(fd, "  " + r + " = call i64 @ease_syscall_read(i64 " + sfd + ", ptr " + buf + ", i64 " + size + ")\n")
+            fd32 := tmp_name(ti, 4)
+            write_str(fd, "  " + fd32 + " = trunc i64 " + sfd + " to i32\n")
+            r := tmp_name(ti, 5)
+            write_str(fd, "  " + r + " = call i64 @read(i32 " + fd32 + ", ptr " + buf + ", i64 " + size + ")\n")
             emit_store_vreg(fd, instr.dest, r)
         }
 
@@ -676,20 +903,45 @@ fn emit_llvm_function(fd: int, instrs: []IRInstr, start: int, end_pos: int, func
         }
 
         if terminated == 0 && instr.op == OP_TEST_FAIL() {
-            write_str(fd, "  call void @ease_test_fail()\n")
+            // Inline: longjmp(ease_test_jmp_buf, 1)
+            write_str(fd, "  call void @longjmp(ptr @ease_test_jmp_buf, i32 1)\n")
             write_str(fd, "  unreachable\n")
             terminated = 1
         }
 
         if terminated == 0 && instr.op == OP_TIME_NANOS() {
-            r := tmp_name(ti, 0)
-            write_str(fd, "  " + r + " = call i64 @ease_time_nanos()\n")
+            // Inline: clock_gettime(CLOCK_MONOTONIC=6, &ts) + sec*1e9 + nsec
+            ts := tmp_name(ti, 0)
+            write_str(fd, "  " + ts + " = alloca [16 x i8]\n")
+            write_str(fd, "  call i32 @clock_gettime(i32 6, ptr " + ts + ")\n")
+            sec := tmp_name(ti, 1)
+            write_str(fd, "  " + sec + " = load i64, ptr " + ts + "\n")
+            nsec_ptr := tmp_name(ti, 2)
+            write_str(fd, "  " + nsec_ptr + " = getelementptr i8, ptr " + ts + ", i64 8\n")
+            nsec := tmp_name(ti, 3)
+            write_str(fd, "  " + nsec + " = load i64, ptr " + nsec_ptr + "\n")
+            sec_ns := tmp_name(ti, 4)
+            write_str(fd, "  " + sec_ns + " = mul i64 " + sec + ", 1000000000\n")
+            r := tmp_name(ti, 5)
+            write_str(fd, "  " + r + " = add i64 " + sec_ns + ", " + nsec + "\n")
             emit_store_vreg(fd, instr.dest, r)
         }
 
         if terminated == 0 && instr.op == OP_TIME_WALLCLOCK() {
-            r := tmp_name(ti, 0)
-            write_str(fd, "  " + r + " = call i64 @ease_time_wallclock_nanos()\n")
+            // Inline: clock_gettime(CLOCK_REALTIME=0, &ts) + sec*1e9 + nsec
+            ts := tmp_name(ti, 0)
+            write_str(fd, "  " + ts + " = alloca [16 x i8]\n")
+            write_str(fd, "  call i32 @clock_gettime(i32 0, ptr " + ts + ")\n")
+            sec := tmp_name(ti, 1)
+            write_str(fd, "  " + sec + " = load i64, ptr " + ts + "\n")
+            nsec_ptr := tmp_name(ti, 2)
+            write_str(fd, "  " + nsec_ptr + " = getelementptr i8, ptr " + ts + ", i64 8\n")
+            nsec := tmp_name(ti, 3)
+            write_str(fd, "  " + nsec + " = load i64, ptr " + nsec_ptr + "\n")
+            sec_ns := tmp_name(ti, 4)
+            write_str(fd, "  " + sec_ns + " = mul i64 " + sec + ", 1000000000\n")
+            r := tmp_name(ti, 5)
+            write_str(fd, "  " + r + " = add i64 " + sec_ns + ", " + nsec + "\n")
             emit_store_vreg(fd, instr.dest, r)
         }
 

@@ -7,7 +7,6 @@ on:
       - 'v*'
     paths:
       - 'bootstrap/**'
-      - 'runtime/**'
       - 'tests/**'
       - 'Makefile'
       - '.github/workflows/build-bootstrap.yml'
@@ -51,7 +50,7 @@ jobs:
           EASE
 
           ./tmp/ease tmp/sample.ease
-          clang -O1 runtime/ease_runtime.c tmp/output.ll -o tmp/sample
+          clang -O1 tmp/output.ll -o tmp/sample
           ./tmp/sample
           echo "Sample program compiled and ran successfully"
 
@@ -72,6 +71,7 @@ jobs:
             ## Ease Compiler
 
             Self-hosting Ease compiler (written in Ease, compiled via LLVM IR).
+            No C runtime dependency — all runtime functions are inlined as LLVM IR.
 
             ### Platform
             - macOS ARM64 (Apple Silicon)
@@ -85,8 +85,8 @@ jobs:
             # Compile an Ease program to LLVM IR
             ./ease myprogram.ease
 
-            # Link with the C runtime to produce an executable
-            clang -O1 runtime/ease_runtime.c tmp/output.ll -o myprogram
+            # Link to produce an executable
+            clang -O1 tmp/output.ll -o myprogram
 
             # Run
             ./myprogram

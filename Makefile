@@ -1,6 +1,6 @@
 # Ease Programming Language - Bootstrap Build System
 #
-# Build the Ease compiler from its seed (no Go required):
+# Build the Ease compiler from its seed (no external dependencies):
 #   make
 #
 # Verify self-hosting (compiler compiles itself identically):
@@ -11,7 +11,6 @@
 
 CC      ?= clang
 CFLAGS  := -O1
-RUNTIME := runtime/ease_runtime.c
 SEED    := bootstrap/seed.ll
 COMPILER_SRC := bootstrap/compiler.ease
 
@@ -22,9 +21,9 @@ EASE      := $(BUILD_DIR)/ease
 
 all: $(EASE)
 
-# Build the compiler from the seed LLVM IR + C runtime
-$(EASE): $(SEED) $(RUNTIME) | $(BUILD_DIR)
-	$(CC) $(CFLAGS) $(RUNTIME) $(SEED) -o $@
+# Build the compiler from the seed LLVM IR
+$(EASE): $(SEED) | $(BUILD_DIR)
+	$(CC) $(CFLAGS) $(SEED) -o $@
 
 $(BUILD_DIR):
 	mkdir -p $(BUILD_DIR)
@@ -38,7 +37,7 @@ verify: $(EASE) | $(BUILD_DIR)
 	@echo "=== Verifying self-hosting convergence ==="
 	$(EASE) $(COMPILER_SRC)
 	@cp $(BUILD_DIR)/output.ll $(BUILD_DIR)/verify_gen1.ll
-	$(CC) $(CFLAGS) $(RUNTIME) $(BUILD_DIR)/verify_gen1.ll -o $(BUILD_DIR)/ease_gen1
+	$(CC) $(CFLAGS) $(BUILD_DIR)/verify_gen1.ll -o $(BUILD_DIR)/ease_gen1
 	$(BUILD_DIR)/ease_gen1 $(COMPILER_SRC)
 	@cp $(BUILD_DIR)/output.ll $(BUILD_DIR)/verify_gen2.ll
 	@diff $(BUILD_DIR)/verify_gen1.ll $(BUILD_DIR)/verify_gen2.ll \
@@ -55,14 +54,14 @@ update-seed: verify
 DIR ?= tests
 test: $(EASE)
 	@$(EASE) test $(DIR) > /dev/null 2>&1
-	@$(CC) -O0 $(RUNTIME) $(BUILD_DIR)/output.ll -o $(BUILD_DIR)/test_bin 2>/dev/null
+	@$(CC) -O0 $(BUILD_DIR)/output.ll -o $(BUILD_DIR)/test_bin 2>/dev/null
 	@$(BUILD_DIR)/test_bin
 
 # Run tests + benchmarks
 # Usage: make bench [DIR=path/to/dir] (default: tests/)
 bench: $(EASE)
 	@$(EASE) test $(DIR) --bench > /dev/null 2>&1
-	@$(CC) -O0 $(RUNTIME) $(BUILD_DIR)/output.ll -o $(BUILD_DIR)/test_bin 2>/dev/null
+	@$(CC) -O0 $(BUILD_DIR)/output.ll -o $(BUILD_DIR)/test_bin 2>/dev/null
 	@$(BUILD_DIR)/test_bin
 
 clean:

@@ -219,7 +219,7 @@ fn BenchmarkAdd(b: B) {
 - **Output**: `BenchmarkXxx\t<iterations>\t<ns/op> ns/op`
 - **Skipped on failure**: Benchmarks only run if all tests pass
 - **Opt-in**: Benchmarks only run with `--bench` flag (`make bench` or `ease test dir/ --bench`)
-- **C runtime**: `ease_time_nanos()` via `clock_gettime(CLOCK_MONOTONIC)`
+- **Timing**: Inline `clock_gettime(CLOCK_MONOTONIC)` via LLVM IR
 
 **Example output:**
 ```
@@ -239,8 +239,6 @@ ease/
 ├── Makefile              # Build system (seed-based, no external dependencies)
 ├── grammar.ebnf          # Language specification (EBNF)
 ├── CLAUDE.md             # This file
-├── runtime/
-│   └── ease_runtime.c    # C runtime (memory, syscalls, string ops)
 ├── bootstrap/            # The Ease compiler (written in Ease)
 │   ├── compiler.ease     # Compiler main (~4,200 lines)
 │   ├── seed.ll           # Seed LLVM IR (bootstraps the compiler)
@@ -268,7 +266,7 @@ ease/
 
 ## Building and Usage
 
-The compiler is fully self-hosting. No Go or other compilers needed — just `clang` (for the C runtime and LLVM IR).
+The compiler is fully self-hosting. No Go or C runtime needed — just `clang` (to assemble LLVM IR and link libc).
 
 ```bash
 make                    # Build compiler from seed LLVM IR
@@ -286,8 +284,8 @@ make clean              # Remove build artifacts
 # Step 1: Compile .ease source to LLVM IR
 ./tmp/ease myprogram.ease               # Produces tmp/output.ll
 
-# Step 2: Link with C runtime to produce executable
-clang -O1 runtime/ease_runtime.c tmp/output.ll -o myprogram
+# Step 2: Link to produce executable (no C runtime needed)
+clang -O1 tmp/output.ll -o myprogram
 
 # Step 3: Run
 ./myprogram
