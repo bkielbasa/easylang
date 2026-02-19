@@ -129,7 +129,7 @@ fn TestMultiply(t: T) {
 - **Runner**: Synthetic main() wraps each test with setjmp for failure recovery
 - **Output**: Go-style `=== RUN` / `--- PASS` / `--- FAIL` / `ok` or `FAIL`
 - **Exit code**: 0 if all pass, 1 if any fail
-- **stdlib auto-loaded**: `testing`, `io`, `strings`, `os`, `strconv`, `time` available without import
+- **stdlib auto-loaded**: `testing`, `io`, `strings`, `os`, `strconv`, `time`, `result` available without import
 
 ```bash
 make test                           # run all tests in tests/
@@ -210,7 +210,8 @@ ease/
 │       ├── strings/strings.ease   # String functions
 │       ├── os/os.ease             # OS functions (ReadFile via syscall)
 │       ├── testing/testing.ease   # Testing framework (Fatal)
-│       └── time/time.ease         # Time package (Now, Unix, Add, Before, After)
+│       ├── time/time.ease         # Time package (Now, Unix, Add, Before, After)
+│       └── result/result.ease     # Result/Option types (Option, Result, StringOption)
 ├── tests/                # Go-style tests (30 passing)
 ├── examples/             # Example programs
 │   └── testdemo/         # Go-style test demo (math.ease + math_test.ease)
@@ -223,7 +224,7 @@ The compiler is fully self-hosting. No Go or other compilers needed — just `cl
 
 ```bash
 make                    # Build compiler from seed LLVM IR
-make test               # Run tests (30 passing)
+make test               # Run tests (36 passing)
 make test DIR=path      # Run tests in specific directory
 make bench              # Run tests + benchmarks
 make verify             # Verify self-hosting convergence (gen1 == gen2)
@@ -264,7 +265,7 @@ The Ease compiler is written in Ease and compiles itself with byte-identical con
 - Module/import system (local files, directory packages, stdlib imports)
 - Directory package imports with Go-style visibility (uppercase = public)
 - Package declarations (`package main`, `package token`, etc.)
-- Standard library (strings, strconv, io, os, testing, time — all pure Ease implementations)
+- Standard library (strings, strconv, io, os, testing, time, result — all pure Ease implementations)
 - Go-style testing framework (`fn TestXxx(t: T)` in `*_test.ease`, `testing.T` struct, `testing.Fatal(msg)`, setjmp/longjmp recovery)
 - Go-style benchmark framework (`fn BenchmarkXxx(b: B)` with auto-calibration and ns/op reporting)
 - Global variables (mutable and immutable)
@@ -272,7 +273,7 @@ The Ease compiler is written in Ease and compiles itself with byte-identical con
 - Function return type registry (automatic string/int dispatch)
 - String `==`/`!=` auto-dispatch (no explicit str_eq/str_ne needed)
 - Dynamic struct field registry for user-defined structs
-- Go-style test suite (30 tests passing, 2 benchmarks)
+- Go-style test suite (36 tests passing, 2 benchmarks)
 
 **Compiler Components** (all in `bootstrap/ease/`):
 - [x] Lexer with comment handling (// comments)
@@ -327,11 +328,12 @@ The Ease compiler is written in Ease and compiles itself with byte-identical con
 - [x] **Go-style `:=` declarations** — Replaced `let`/`let mut` with `:=`. All variables are mutable.
 - [ ] **`const` keyword** — Compile-time constants (e.g. `const MAX_SIZE = 1024`)
 - [x] Enums with pattern matching (heap-allocated tagged unions, `match` expressions)
+- [x] Result and Option types (stdlib enums: `Option`, `Result`, `StringOption` with helpers)
 - [ ] Traits (parser done, codegen TODO)
 - [ ] Generics (design TODO)
 - [ ] Closures and lambdas
 - [ ] Error propagation operator (`?`)
-- [ ] Result and Option types
+- [x] Result and Option types
 
 ### Tooling
 - [ ] Language server protocol (LSP) for IDE support
@@ -344,14 +346,14 @@ The Ease compiler is written in Ease and compiles itself with byte-identical con
 
 ```bash
 make                                    # Build from seed (no Go required)
-make test                               # Run tests (30 passing)
+make test                               # Run tests (36 passing)
 make test DIR=path                      # Run tests in specific directory
 make bench                              # Run tests + benchmarks
 make verify                             # Verify self-hosting convergence
 make update-seed                        # Update seed after source changes
 ```
 
-**Test Suite (30 tests, Go-style):**
+**Test Suite (36 tests, Go-style):**
 
 Tests live in `tests/` as `*_test.ease` files with `fn TestXxx(t: T)` functions:
 
@@ -364,6 +366,7 @@ Tests live in `tests/` as `*_test.ease` files with `fn TestXxx(t: T)` functions:
 | `structs_test.ease` | 3 | Struct literals, field access, pass to functions |
 | `loops_test.ease` | 3 | Range `for i in start..end`, condition loops, modulo |
 | `enum_test.ease` | 3 | Enum variants, match expressions, field destructuring |
+| `result_test.ease` | 6 | Option, Result, StringOption types, match arm string bindings |
 | `time_test.ease` | 6 | time.Now, Unix, UnixNano, Add, Before, After, Since |
 | `bench_test.ease` | 2 | Benchmark: add, factorial (auto-calibrating ns/op) |
 | `helpers.ease` | — | Shared helper functions, structs, enums |

@@ -218,8 +218,9 @@ g_enum_variant_names := []string{}
 g_enum_variant_field_counts := []int{}
 g_enum_variant_field_starts := []int{}
 g_enum_variant_field_names := []string{}
+g_enum_variant_field_types := []int{}
 
-fn RegisterEnum(name: string, variants: []string, field_counts: []int, field_names: []string) {
+fn RegisterEnum(name: string, variants: []string, field_counts: []int, field_names: []string, field_types: []int) {
     push(g_enum_names, name)
     push(g_enum_variant_counts, len(variants))
     push(g_enum_variant_starts, len(g_enum_variant_names))
@@ -239,6 +240,7 @@ fn RegisterEnum(name: string, variants: []string, field_counts: []int, field_nam
                 oi = oi + 1
             }
             push(g_enum_variant_field_names, field_names[offset + fi])
+            push(g_enum_variant_field_types, field_types[offset + fi])
             fi = fi + 1
         }
         vi = vi + 1
@@ -350,6 +352,33 @@ fn enum_variant_field_name(enum_name: string, variant_name: string, field_idx: i
         ei = ei + 1
     }
     return ""
+}
+
+fn enum_variant_field_type(enum_name: string, variant_name: string, field_name: string) -> int {
+    ei := 0
+    for ei < len(g_enum_names) {
+        if g_enum_names[ei] == enum_name {
+            start := g_enum_variant_starts[ei]
+            count := g_enum_variant_counts[ei]
+            vi := 0
+            for vi < count {
+                if g_enum_variant_names[start + vi] == variant_name {
+                    fstart := g_enum_variant_field_starts[start + vi]
+                    fcount := g_enum_variant_field_counts[start + vi]
+                    fi := 0
+                    for fi < fcount {
+                        if g_enum_variant_field_names[fstart + fi] == field_name {
+                            return g_enum_variant_field_types[fstart + fi]
+                        }
+                        fi = fi + 1
+                    }
+                }
+                vi = vi + 1
+            }
+        }
+        ei = ei + 1
+    }
+    return TYPE_UNKNOWN()
 }
 
 fn is_scalar_global(name: string) -> int {

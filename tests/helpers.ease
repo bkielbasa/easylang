@@ -53,22 +53,22 @@ fn count_even(arr: []int) -> int {
     return count
 }
 
-enum Color { Red, Green, Blue }
-enum Option { Some { value: int }, None }
+enum TestColor { Red, Green, Blue }
+enum TestOption { Some { value: int }, None }
 
-fn color_code(c: int) -> int {
+fn test_color_code(c: int) -> int {
     result := match c {
-        Color::Red => 1,
-        Color::Green => 2,
-        Color::Blue => 3,
+        TestColor::Red => 1,
+        TestColor::Green => 2,
+        TestColor::Blue => 3,
     }
     return result
 }
 
-fn unwrap_or(opt: int, def: int) -> int {
+fn test_unwrap_or(opt: int, def: int) -> int {
     result := match opt {
-        Option::Some { value } => value,
-        Option::None => def,
+        TestOption::Some { value } => value,
+        TestOption::None => def,
     }
     return result
 }

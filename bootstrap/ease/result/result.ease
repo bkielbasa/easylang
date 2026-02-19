@@ -1,0 +1,93 @@
+package result
+
+enum Option { Some { value: int }, None }
+enum Result { Ok { value: int }, Err { message: string } }
+enum StringOption { Some { value: string }, None }
+
+fn Unwrap(opt: int) -> int {
+    result := match opt {
+        Option::Some { value } => value,
+        Option::None => 0,
+    }
+    return result
+}
+
+fn UnwrapOr(opt: int, def: int) -> int {
+    result := match opt {
+        Option::Some { value } => value,
+        Option::None => def,
+    }
+    return result
+}
+
+fn IsSome(opt: int) -> int {
+    result := match opt {
+        Option::Some { value } => 1,
+        Option::None => 0,
+    }
+    return result
+}
+
+fn IsNone(opt: int) -> int {
+    result := match opt {
+        Option::Some { value } => 0,
+        Option::None => 1,
+    }
+    return result
+}
+
+fn IsOk(res: int) -> int {
+    result := match res {
+        Result::Ok { value } => 1,
+        Result::Err { message } => 0,
+    }
+    return result
+}
+
+fn IsErr(res: int) -> int {
+    result := match res {
+        Result::Ok { value } => 0,
+        Result::Err { message } => 1,
+    }
+    return result
+}
+
+fn UnwrapResult(res: int) -> int {
+    result := match res {
+        Result::Ok { value } => value,
+        Result::Err { message } => 0,
+    }
+    return result
+}
+
+fn ErrMessage(res: int) -> string {
+    result := match res {
+        Result::Ok { value } => "",
+        Result::Err { message } => message,
+    }
+    return result
+}
+
+fn UnwrapString(opt: int) -> string {
+    result := match opt {
+        StringOption::Some { value } => value,
+        StringOption::None => "",
+    }
+    return result
+}
+
+fn UnwrapStringOr(opt: int, def: string) -> string {
+    result := match opt {
+        StringOption::Some { value } => value,
+        StringOption::None => def,
+    }
+    return result
+}
+
+fn IsStringSome(opt: int) -> int {
+    result := match opt {
+        StringOption::Some { value } => 1,
+        StringOption::None => 0,
+    }
+    return result
+}

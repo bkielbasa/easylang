@@ -713,7 +713,7 @@ fn run_test_mode(test_path: string, run_bench: int) -> int {
     }
 
     // Load stdlib modules (io, strings, os, strconv, testing, time)
-    stdlib_mods := []string{"./ease/io", "./ease/strings", "./ease/os", "./ease/strconv", "./ease/testing", "./ease/time"}
+    stdlib_mods := []string{"./ease/io", "./ease/strings", "./ease/os", "./ease/strconv", "./ease/testing", "./ease/time", "./ease/result"}
     smi := 0
     for smi < len(stdlib_mods) {
         smod_path := stdlib_mods[smi]
@@ -847,6 +847,7 @@ fn run_test_mode(test_path: string, run_bench: int) -> int {
             evariants := []string{}
             efield_counts := []int{}
             efield_names := []string{}
+            efield_types := []int{}
             evi := nodes[efi].left
             evc := nodes[efi].int_val
             evci := 0
@@ -860,6 +861,7 @@ fn run_test_mode(test_path: string, run_bench: int) -> int {
                     for vfi < nodes_len {
                         if nodes[vfi].tag != DECL_FIELD() { break }
                         push(efield_names, nodes[vfi].str_val)
+                        push(efield_types, nodes[vfi].type_tag)
                         vfc = vfc + 1
                         vfi = vfi + 1
                     }
@@ -868,7 +870,7 @@ fn run_test_mode(test_path: string, run_bench: int) -> int {
                 evi = evi + 1
                 evci = evci + 1
             }
-            RegisterEnum(ename, evariants, efield_counts, efield_names)
+            RegisterEnum(ename, evariants, efield_counts, efield_names, efield_types)
         }
         efi = efi + 1
     }
@@ -1535,7 +1537,7 @@ fn main() -> int {
 
     // Load bootstrap stdlib modules programmatically (not via import declarations,
     // because the Go compiler's sema would reject them due to builtin conflicts)
-    stdlib_mods := []string{"./ease/io", "./ease/strings", "./ease/os", "./ease/strconv", "./ease/time"}
+    stdlib_mods := []string{"./ease/io", "./ease/strings", "./ease/os", "./ease/strconv", "./ease/time", "./ease/result"}
     smi := 0
     for smi < len(stdlib_mods) {
         smod_path := stdlib_mods[smi]
@@ -1679,6 +1681,7 @@ fn main() -> int {
             evariants := []string{}
             efield_counts := []int{}
             efield_names := []string{}
+            efield_types := []int{}
             // Walk consecutive DECL_VARIANT nodes starting at enum.left
             evi := nodes[efi].left
             evc := nodes[efi].int_val
@@ -1694,6 +1697,7 @@ fn main() -> int {
                     for vfi < nodes_len {
                         if nodes[vfi].tag != DECL_FIELD() { break }
                         push(efield_names, nodes[vfi].str_val)
+                        push(efield_types, nodes[vfi].type_tag)
                         vfc = vfc + 1
                         vfi = vfi + 1
                     }
@@ -1702,7 +1706,7 @@ fn main() -> int {
                 evi = evi + 1
                 evci = evci + 1
             }
-            RegisterEnum(ename, evariants, efield_counts, efield_names)
+            RegisterEnum(ename, evariants, efield_counts, efield_names, efield_types)
         }
         efi = efi + 1
     }

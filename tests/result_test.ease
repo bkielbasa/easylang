@@ -1,0 +1,45 @@
+package main
+
+fn TestOptionSome(t: T) {
+    opt := Option::Some { value: 42 }
+    if result.IsSome(opt) != 1 { testing.Fatal("expected IsSome == 1") }
+    if result.IsNone(opt) != 0 { testing.Fatal("expected IsNone == 0") }
+    if result.Unwrap(opt) != 42 { testing.Fatal("expected Unwrap == 42") }
+    if result.UnwrapOr(opt, 0) != 42 { testing.Fatal("expected UnwrapOr == 42") }
+}
+
+fn TestOptionNone(t: T) {
+    opt := Option::None
+    if result.IsNone(opt) != 1 { testing.Fatal("expected IsNone == 1") }
+    if result.IsSome(opt) != 0 { testing.Fatal("expected IsSome == 0") }
+    if result.UnwrapOr(opt, 99) != 99 { testing.Fatal("expected UnwrapOr == 99") }
+}
+
+fn TestResultOk(t: T) {
+    res := Result::Ok { value: 100 }
+    if result.IsOk(res) != 1 { testing.Fatal("expected IsOk == 1") }
+    if result.IsErr(res) != 0 { testing.Fatal("expected IsErr == 0") }
+    if result.UnwrapResult(res) != 100 { testing.Fatal("expected UnwrapResult == 100") }
+}
+
+fn TestResultErr(t: T) {
+    res := Result::Err { message: "something went wrong" }
+    if result.IsErr(res) != 1 { testing.Fatal("expected IsErr == 1") }
+    if result.IsOk(res) != 0 { testing.Fatal("expected IsOk == 0") }
+    msg := result.ErrMessage(res)
+    if msg != "something went wrong" { testing.Fatal("expected error message") }
+}
+
+fn TestStringOptionSome(t: T) {
+    opt := StringOption::Some { value: "hello" }
+    if result.IsStringSome(opt) != 1 { testing.Fatal("expected IsStringSome == 1") }
+    s := result.UnwrapString(opt)
+    if s != "hello" { testing.Fatal("expected UnwrapString == hello") }
+}
+
+fn TestStringOptionNone(t: T) {
+    opt := StringOption::None
+    if result.IsStringSome(opt) != 0 { testing.Fatal("expected IsStringSome == 0") }
+    s := result.UnwrapStringOr(opt, "default")
+    if s != "default" { testing.Fatal("expected UnwrapStringOr == default") }
+}

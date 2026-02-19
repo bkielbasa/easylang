@@ -883,6 +883,10 @@ fn gen_ir_match(node: AstNode, nodes: []AstNode, instrs: []IRInstr, st_n: []stri
             push(instrs, IRInstr { op: OP_LOAD(), dest: val, arg1: addr, arg2: 0, arg3: 0, str_val: "" })
             push(st_n, bname)
             push(st_v, val)
+            ftype := enum_variant_field_type(ename, vname, bname)
+            if ftype == TYPE_STRING() {
+                push(g_string_vars, bname)
+            }
             bi = bi + 1
         }
 
