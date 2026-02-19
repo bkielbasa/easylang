@@ -55,7 +55,7 @@ update-seed: verify
 DIR ?= tests
 test: $(EASE)
 	@$(EASE) test $(DIR) > /dev/null 2>&1
-	@$(CC) $(CFLAGS) $(RUNTIME) $(BUILD_DIR)/output.ll -o $(BUILD_DIR)/test_bin 2>/dev/null
+	@$(CC) -O0 $(RUNTIME) $(BUILD_DIR)/output.ll -o $(BUILD_DIR)/test_bin 2>/dev/null
 	@$(BUILD_DIR)/test_bin
 
 clean:

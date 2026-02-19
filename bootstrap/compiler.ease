@@ -299,6 +299,20 @@ fn is_test_func(name: string) -> int {
     return 1
 }
 
+fn is_benchmark_func(name: string) -> int {
+    if len(name) < 10 { return 0 }
+    if str_char_at(name, 0) != 66 { return 0 }
+    if str_char_at(name, 1) != 101 { return 0 }
+    if str_char_at(name, 2) != 110 { return 0 }
+    if str_char_at(name, 3) != 99 { return 0 }
+    if str_char_at(name, 4) != 104 { return 0 }
+    if str_char_at(name, 5) != 109 { return 0 }
+    if str_char_at(name, 6) != 97 { return 0 }
+    if str_char_at(name, 7) != 114 { return 0 }
+    if str_char_at(name, 8) != 107 { return 0 }
+    return 1
+}
+
 fn count_func_params(nodes: []AstNode, func_idx: int) -> int {
     node := nodes[func_idx]
     if node.left < 0 { return 0 }
@@ -453,18 +467,22 @@ fn run_test_mode(test_path: string) -> int {
 
     // Parse test files (also skip any main)
     test_func_names := []string{}
+    bench_func_names := []string{}
     tf_i := 0
     for tf_i < len(test_files) {
         print("Parsing tests: " + test_files[tf_i] + "\n")
         tsrc := os.ReadFile(test_files[tf_i])
-        // Track func count before parsing to identify new test funcs
+        // Track func count before parsing to identify new test/bench funcs
         before_count := len(func_names)
         parse_source_file(tsrc, nodes, func_names, func_indices, global_var_names, 1)
-        // Identify test functions from newly parsed ones
+        // Identify test and benchmark functions from newly parsed ones
         tfi := before_count
         for tfi < len(func_names) {
             if is_test_func(func_names[tfi]) == 1 && count_func_params(nodes, func_indices[tfi]) == 1 {
                 push(test_func_names, func_names[tfi])
+            }
+            if is_benchmark_func(func_names[tfi]) == 1 && count_func_params(nodes, func_indices[tfi]) == 1 {
+                push(bench_func_names, func_names[tfi])
             }
             tfi = tfi + 1
         }
@@ -472,8 +490,9 @@ fn run_test_mode(test_path: string) -> int {
     }
 
     print("\nFound " + strconv.Itoa(len(test_func_names)) + " test function(s)\n")
-    if len(test_func_names) == 0 {
-        print("No test functions found (expecting fn TestXxx(t: T))\n")
+    print("Found " + strconv.Itoa(len(bench_func_names)) + " benchmark function(s)\n")
+    if len(test_func_names) == 0 && len(bench_func_names) == 0 {
+        print("No test or benchmark functions found\n")
         return 0
     }
 
@@ -931,6 +950,136 @@ fn run_test_mode(test_path: string) -> int {
         ti = ti + 1
     }
 
+    // Benchmark runner — only runs if tests all passed and benchmarks exist
+    if len(bench_func_names) > 0 {
+        // Skip benchmarks if any test failed: CMP_EQ(failed, 0) → skip if != 0
+        bench_skip_cmp := len(instrs)
+        push(instrs, IRInstr { op: OP_CMP_EQ(), dest: bench_skip_cmp, arg1: failed_vreg, arg2: zero_vreg, arg3: 0, str_val: "" })
+        bench_skip_label := g_next_label
+        g_next_label = g_next_label + 1
+        push(instrs, IRInstr { op: OP_BRANCH(), dest: bench_skip_cmp, arg1: bench_skip_label, arg2: 0, arg3: 0, str_val: "" })
+
+        // Constants for benchmark calibration
+        billion_vreg := len(instrs)
+        push(instrs, IRInstr { op: OP_LOADCONST(), dest: billion_vreg, arg1: 1000000000, arg2: 0, arg3: 0, str_val: "" })
+        two_vreg := len(instrs)
+        push(instrs, IRInstr { op: OP_LOADCONST(), dest: two_vreg, arg1: 2, arg2: 0, arg3: 0, str_val: "" })
+
+        bi := 0
+        for bi < len(bench_func_names) {
+            bname := bench_func_names[bi]
+
+            // Print "BenchmarkXxx\t"
+            bname_vreg := len(instrs)
+            push(instrs, IRInstr { op: OP_LOADCONST(), dest: bname_vreg, arg1: 0, arg2: 0, arg3: 0, str_val: bname + "\t" })
+            push(instrs, IRInstr { op: OP_ARG(), dest: 0, arg1: bname_vreg, arg2: -1, arg3: 0, str_val: "" })
+            bname_call := len(instrs)
+            push(instrs, IRInstr { op: OP_CALL(), dest: bname_call, arg1: 0, arg2: 1, arg3: 0, str_val: "io.Print" })
+
+            // n = 1
+            n_vreg := len(instrs)
+            push(instrs, IRInstr { op: OP_LOADCONST(), dest: n_vreg, arg1: 1, arg2: 0, arg3: 0, str_val: "" })
+
+            // elapsed = 0
+            elapsed_vreg := len(instrs)
+            push(instrs, IRInstr { op: OP_LOADCONST(), dest: elapsed_vreg, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
+
+            // loop_start:
+            loop_start_label := g_next_label
+            g_next_label = g_next_label + 1
+            push(instrs, IRInstr { op: OP_LABEL(), dest: loop_start_label, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
+
+            // Allocate B struct (16 bytes): name at offset 0, n at offset 8
+            b_alloc := len(instrs)
+            push(instrs, IRInstr { op: OP_ALLOCA(), dest: b_alloc, arg1: 16, arg2: 0, arg3: 0, str_val: "" })
+            // Set B.name
+            b_name_const := len(instrs)
+            push(instrs, IRInstr { op: OP_LOADCONST(), dest: b_name_const, arg1: 0, arg2: 0, arg3: 0, str_val: bname })
+            b_name_addr := len(instrs)
+            push(instrs, IRInstr { op: OP_INDEXADDR(), dest: b_name_addr, arg1: b_alloc, arg2: 0, arg3: 0, str_val: "" })
+            push(instrs, IRInstr { op: OP_STORE(), dest: -1, arg1: b_name_addr, arg2: b_name_const, arg3: 0, str_val: "" })
+            // Set B.n = n_vreg
+            b_n_addr := len(instrs)
+            push(instrs, IRInstr { op: OP_INDEXADDR(), dest: b_n_addr, arg1: b_alloc, arg2: 8, arg3: 0, str_val: "" })
+            push(instrs, IRInstr { op: OP_STORE(), dest: -1, arg1: b_n_addr, arg2: n_vreg, arg3: 0, str_val: "" })
+
+            // start = TIME_NANOS()
+            start_vreg := len(instrs)
+            push(instrs, IRInstr { op: OP_TIME_NANOS(), dest: start_vreg, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
+
+            // Call BenchmarkXxx(b)
+            push(instrs, IRInstr { op: OP_ARG(), dest: 0, arg1: b_alloc, arg2: -1, arg3: 0, str_val: "" })
+            bench_call := len(instrs)
+            push(instrs, IRInstr { op: OP_CALL(), dest: bench_call, arg1: 0, arg2: 1, arg3: 0, str_val: bname })
+
+            // end = TIME_NANOS()
+            end_vreg := len(instrs)
+            push(instrs, IRInstr { op: OP_TIME_NANOS(), dest: end_vreg, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
+
+            // elapsed = end - start
+            new_elapsed := len(instrs)
+            push(instrs, IRInstr { op: OP_SUB(), dest: new_elapsed, arg1: end_vreg, arg2: start_vreg, arg3: 0, str_val: "" })
+            push(instrs, IRInstr { op: OP_COPY(), dest: elapsed_vreg, arg1: new_elapsed, arg2: 0, arg3: 0, str_val: "" })
+
+            // ge_cmp = CMP_GE(elapsed, 1_000_000_000)
+            ge_cmp := len(instrs)
+            push(instrs, IRInstr { op: OP_CMP_GE(), dest: ge_cmp, arg1: elapsed_vreg, arg2: billion_vreg, arg3: 0, str_val: "" })
+
+            // If elapsed < 1s (ge_cmp == 0), jump to double_label
+            double_label := g_next_label
+            g_next_label = g_next_label + 1
+            done_label := g_next_label
+            g_next_label = g_next_label + 1
+
+            push(instrs, IRInstr { op: OP_BRANCH(), dest: ge_cmp, arg1: double_label, arg2: 0, arg3: 0, str_val: "" })
+
+            // Falls through: elapsed >= 1s, jump to done
+            push(instrs, IRInstr { op: OP_JUMP(), dest: done_label, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
+
+            // double_label: n = n * 2, goto loop_start
+            push(instrs, IRInstr { op: OP_LABEL(), dest: double_label, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
+            new_n := len(instrs)
+            push(instrs, IRInstr { op: OP_MUL(), dest: new_n, arg1: n_vreg, arg2: two_vreg, arg3: 0, str_val: "" })
+            push(instrs, IRInstr { op: OP_COPY(), dest: n_vreg, arg1: new_n, arg2: 0, arg3: 0, str_val: "" })
+            push(instrs, IRInstr { op: OP_JUMP(), dest: loop_start_label, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
+
+            // done_label: compute and print results
+            push(instrs, IRInstr { op: OP_LABEL(), dest: done_label, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
+
+            // ns_per_op = elapsed / n
+            ns_per_op := len(instrs)
+            push(instrs, IRInstr { op: OP_DIV(), dest: ns_per_op, arg1: elapsed_vreg, arg2: n_vreg, arg3: 0, str_val: "" })
+
+            // Print: n_str + "\t" + ns_per_op_str + " ns/op\n"
+            n_str := len(instrs)
+            push(instrs, IRInstr { op: OP_INT_TO_STR(), dest: n_str, arg1: n_vreg, arg2: 0, arg3: 0, str_val: "" })
+            tab_vreg := len(instrs)
+            push(instrs, IRInstr { op: OP_LOADCONST(), dest: tab_vreg, arg1: 0, arg2: 0, arg3: 0, str_val: "\t" })
+            nsop_str := len(instrs)
+            push(instrs, IRInstr { op: OP_INT_TO_STR(), dest: nsop_str, arg1: ns_per_op, arg2: 0, arg3: 0, str_val: "" })
+            suffix_vreg := len(instrs)
+            push(instrs, IRInstr { op: OP_LOADCONST(), dest: suffix_vreg, arg1: 0, arg2: 0, arg3: 0, str_val: " ns/op\n" })
+
+            // Concatenate: n_str + "\t" + nsop_str + " ns/op\n"
+            cat1 := len(instrs)
+            push(instrs, IRInstr { op: OP_STR_CONCAT(), dest: cat1, arg1: n_str, arg2: tab_vreg, arg3: 0, str_val: "" })
+            cat2 := len(instrs)
+            push(instrs, IRInstr { op: OP_STR_CONCAT(), dest: cat2, arg1: cat1, arg2: nsop_str, arg3: 0, str_val: "" })
+            cat3 := len(instrs)
+            push(instrs, IRInstr { op: OP_STR_CONCAT(), dest: cat3, arg1: cat2, arg2: suffix_vreg, arg3: 0, str_val: "" })
+
+            // Print result line
+            push(instrs, IRInstr { op: OP_ARG(), dest: 0, arg1: cat3, arg2: -1, arg3: 0, str_val: "" })
+            bench_print_call := len(instrs)
+            push(instrs, IRInstr { op: OP_CALL(), dest: bench_print_call, arg1: 0, arg2: 1, arg3: 0, str_val: "io.Print" })
+
+            bi = bi + 1
+        }
+
+        // bench_skip_label — falls through to summary
+        push(instrs, IRInstr { op: OP_LABEL(), dest: bench_skip_label, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
+    }
+
     // Print summary via io.Print
     // if failed > 0: print "FAIL\n" and return 1; else print "ok\n" and return 0
     summary_cmp := len(instrs)
@@ -958,7 +1107,7 @@ fn run_test_mode(test_path: string) -> int {
     push(instrs, IRInstr { op: OP_CALL(), dest: ok_sum_call, arg1: 0, arg2: 1, arg3: 0, str_val: "io.Print" })
     push(instrs, IRInstr { op: OP_RET(), dest: zero_vreg, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
 
-    print("Generated test runner with " + strconv.Itoa(len(test_func_names)) + " tests\n\n")
+    print("Generated test runner with " + strconv.Itoa(len(test_func_names)) + " tests and " + strconv.Itoa(len(bench_func_names)) + " benchmarks\n\n")
 
     // LLVM IR Generation
     print("Phase: LLVM IR Generation\n")

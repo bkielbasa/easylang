@@ -1,0 +1,17 @@
+package main
+
+fn BenchmarkAdd(b: B) {
+    i := 0
+    for i < b.N {
+        add(2, 3)
+        i = i + 1
+    }
+}
+
+fn BenchmarkFactorial(b: B) {
+    i := 0
+    for i < b.N {
+        factorial(10)
+        i = i + 1
+    }
+}

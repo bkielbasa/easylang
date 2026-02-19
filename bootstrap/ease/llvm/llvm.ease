@@ -162,6 +162,7 @@ fn emit_llvm_decls(fd: int) {
     write_str(fd, "declare ptr @ease_list_dir(ptr)\n")
     write_str(fd, "declare i32 @setjmp(ptr) #0\n")
     write_str(fd, "declare void @ease_test_fail()\n")
+    write_str(fd, "declare i64 @ease_time_nanos()\n")
     write_str(fd, "@ease_test_jmp_buf = external global [37 x i64]\n")
     write_str(fd, "attributes #0 = { returns_twice }\n")
     write_str(fd, "\n")
@@ -179,7 +180,7 @@ fn collect_vregs(instrs: []IRInstr, start: int, end_pos: int, param_count: int) 
         instr := instrs[i]
         op := instr.op
         // dest is vreg for result-producing operations
-        if op == OP_LOADCONST() || op == OP_ADD() || op == OP_SUB() || op == OP_MUL() || op == OP_DIV() || op == OP_CMP_LT() || op == OP_CMP_GT() || op == OP_CMP_LE() || op == OP_CMP_GE() || op == OP_CMP_EQ() || op == OP_CMP_NE() || op == OP_AND() || op == OP_OR() || op == OP_NOT() || op == OP_XOR() || op == OP_BITAND() || op == OP_BITOR() || op == OP_ALLOCA() || op == OP_LOAD() || op == OP_INDEXADDR() || op == OP_ARRAY_LEN() || op == OP_STR_LEN() || op == OP_STR_CHAR_AT() || op == OP_PEEK() || op == OP_HEAP_ALLOC() || op == OP_CALL() || op == OP_ARGC() || op == OP_ARGV() || op == OP_INT_TO_STR() || op == OP_STR_EQ() || op == OP_STR_NE() || op == OP_STR_CONCAT() || op == OP_LOAD_GLOBAL() || op == OP_SYSCALL_OPEN() || op == OP_SYSCALL_WRITE() || op == OP_SYSCALL_CLOSE() || op == OP_SYSCALL_READ() || op == OP_IS_DIR() || op == OP_LIST_DIR() || op == OP_SETJMP() {
+        if op == OP_LOADCONST() || op == OP_ADD() || op == OP_SUB() || op == OP_MUL() || op == OP_DIV() || op == OP_CMP_LT() || op == OP_CMP_GT() || op == OP_CMP_LE() || op == OP_CMP_GE() || op == OP_CMP_EQ() || op == OP_CMP_NE() || op == OP_AND() || op == OP_OR() || op == OP_NOT() || op == OP_XOR() || op == OP_BITAND() || op == OP_BITOR() || op == OP_ALLOCA() || op == OP_LOAD() || op == OP_INDEXADDR() || op == OP_ARRAY_LEN() || op == OP_STR_LEN() || op == OP_STR_CHAR_AT() || op == OP_PEEK() || op == OP_HEAP_ALLOC() || op == OP_CALL() || op == OP_ARGC() || op == OP_ARGV() || op == OP_INT_TO_STR() || op == OP_STR_EQ() || op == OP_STR_NE() || op == OP_STR_CONCAT() || op == OP_LOAD_GLOBAL() || op == OP_SYSCALL_OPEN() || op == OP_SYSCALL_WRITE() || op == OP_SYSCALL_CLOSE() || op == OP_SYSCALL_READ() || op == OP_IS_DIR() || op == OP_LIST_DIR() || op == OP_SETJMP() || op == OP_TIME_NANOS() {
             if instr.dest >= 0 { add_unique(vregs, instr.dest) }
         }
         // RET dest is vreg
@@ -192,7 +193,7 @@ fn collect_vregs(instrs: []IRInstr, start: int, end_pos: int, param_count: int) 
             if instr.arg1 >= 0 { add_unique(vregs, instr.arg1) }
         }
         // arg1 is vreg for most ops (not LOADCONST, ALLOCA, LABEL, JUMP, BRANCH, ARGC, CALL)
-        if op != OP_LOADCONST() && op != OP_LOAD_GLOBAL() && op != OP_ALLOCA() && op != OP_LABEL() && op != OP_JUMP() && op != OP_BRANCH() && op != OP_ARGC() && op != OP_CALL() {
+        if op != OP_LOADCONST() && op != OP_LOAD_GLOBAL() && op != OP_ALLOCA() && op != OP_LABEL() && op != OP_JUMP() && op != OP_BRANCH() && op != OP_ARGC() && op != OP_TIME_NANOS() && op != OP_CALL() {
             if instr.arg1 >= 0 { add_unique(vregs, instr.arg1) }
         }
         // arg2 is vreg for binary ops, STORE, ARRAY_PUSH, POKE, STR_EQ/NE, STR_CHAR_AT, etc
@@ -677,6 +678,12 @@ fn emit_llvm_function(fd: int, instrs: []IRInstr, start: int, end_pos: int, func
             write_str(fd, "  call void @ease_test_fail()\n")
             write_str(fd, "  unreachable\n")
             terminated = 1
+        }
+
+        if terminated == 0 && instr.op == OP_TIME_NANOS() {
+            r := tmp_name(ti, 0)
+            write_str(fd, "  " + r + " = call i64 @ease_time_nanos()\n")
+            emit_store_vreg(fd, instr.dest, r)
         }
 
         if terminated == 0 && instr.op == OP_ARG() {

@@ -4,6 +4,11 @@ struct T {
     name: string,
 }
 
+struct B {
+    name: string,
+    N: int,
+}
+
 fn Fatal(msg: string) {
     print("    " + msg + "\n")
     test_fail()

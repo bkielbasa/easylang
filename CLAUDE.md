@@ -133,6 +133,35 @@ ease test dir/                      # compile tests (then clang + run)
 FAIL
 ```
 
+### Benchmarks (Go-style, implemented)
+Benchmark functions live in `*_test.ease` files alongside tests. They start with `Benchmark` and accept a `b: B` parameter.
+
+```ease
+// math_test.ease
+package main
+
+fn BenchmarkAdd(b: B) {
+    i := 0
+    for i < b.N {
+        add(2, 3)
+        i = i + 1
+    }
+}
+```
+
+- **Convention**: `fn BenchmarkXxx(b: B)` in `*_test.ease` files
+- **B struct**: `testing.B` with `name: string` and `N: int` fields
+- **Auto-calibration**: Framework doubles `b.N` until benchmark runs >= 1 second
+- **Output**: `BenchmarkXxx\t<iterations>\t<ns/op> ns/op`
+- **Skipped on failure**: Benchmarks only run if all tests pass
+- **C runtime**: `ease_time_nanos()` via `clock_gettime(CLOCK_MONOTONIC)`
+
+**Example output:**
+```
+BenchmarkAdd	536870912	2 ns/op
+BenchmarkFactorial	33554432	35 ns/op
+```
+
 ### Concurrency
 - **Goroutines**: `go expression`
 - **Channels**: `chan<T>()`, `ch <- value`, `<-ch`
@@ -217,12 +246,13 @@ The Ease compiler is written in Ease and compiles itself with byte-identical con
 - Package declarations (`package main`, `package token`, etc.)
 - Standard library (strings, strconv, io, os, testing — all pure Ease implementations)
 - Go-style testing framework (`fn TestXxx(t: T)` in `*_test.ease`, `testing.T` struct, `testing.Fatal(msg)`, setjmp/longjmp recovery)
+- Go-style benchmark framework (`fn BenchmarkXxx(b: B)` with auto-calibration and ns/op reporting)
 - Global variables (mutable and immutable)
 - File I/O and command-line arguments
 - Function return type registry (automatic string/int dispatch)
 - String `==`/`!=` auto-dispatch (no explicit str_eq/str_ne needed)
 - Dynamic struct field registry for user-defined structs
-- Go-style test suite (21 tests passing)
+- Go-style test suite (21 tests passing, 2 benchmarks)
 
 **Compiler Components** (all in `bootstrap/ease/`):
 - [x] Lexer with comment handling (// comments)
@@ -271,6 +301,7 @@ The Ease compiler is written in Ease and compiles itself with byte-identical con
 - [x] **Modulo operator** — `%` → `OP_MOD` → LLVM `srem`.
 - [x] **Dynamic struct field registry** — `RegisterStruct` + `RegisterFieldOffset` for user-defined structs.
 - [x] **Go-style testing framework** — `fn TestXxx(t: T)` in `*_test.ease`, `testing.T` struct with name field, `testing.Fatal(msg)`, setjmp/longjmp for test recovery, synthetic runner with `=== RUN` / `--- PASS/FAIL` output.
+- [x] **Go-style benchmark framework** — `fn BenchmarkXxx(b: B)` with `testing.B` struct (`name: string`, `N: int`), auto-calibration (doubles N until >= 1s elapsed), `ease_time_nanos()` C runtime + `OP_TIME_NANOS` IR opcode, reports `iterations\tns/op`.
 
 ### Language Features
 - [x] **Go-style `:=` declarations** — Replaced `let`/`let mut` with `:=`. All variables are mutable.
@@ -312,6 +343,7 @@ Tests live in `tests/` as `*_test.ease` files with `fn TestXxx(t: T)` functions:
 | `strings_test.ease` | 6 | Concat, Contains, StartsWith, EndsWith, IndexOf, strconv |
 | `structs_test.ease` | 3 | Struct literals, field access, pass to functions |
 | `loops_test.ease` | 3 | Range `for i in start..end`, condition loops, modulo |
+| `bench_test.ease` | 2 | Benchmark: add, factorial (auto-calibrating ns/op) |
 | `helpers.ease` | — | Shared helper functions and struct definitions |
 
 ## Example Programs

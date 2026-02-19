@@ -9,6 +9,7 @@
 #include <sys/stat.h>
 #include <dirent.h>
 #include <setjmp.h>
+#include <time.h>
 
 // ============================================================================
 // String operations (null-terminated C strings, represented as char*)
@@ -475,6 +476,12 @@ jmp_buf ease_test_jmp_buf;
 
 void ease_test_fail(void) {
     longjmp(ease_test_jmp_buf, 1);
+}
+
+long ease_time_nanos(void) {
+    struct timespec ts;
+    clock_gettime(CLOCK_MONOTONIC, &ts);
+    return (long)ts.tv_sec * 1000000000L + (long)ts.tv_nsec;
 }
 
 // ============================================================================
