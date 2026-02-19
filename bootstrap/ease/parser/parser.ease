@@ -2,6 +2,24 @@ package parser
 
 // Parser - recursive descent parser for the Ease bootstrap compiler
 
+// Type name side table: maps AST node indices to struct type names
+g_type_name_node_idx := []int{}
+g_type_name_str := []string{}
+
+// Method declaration side table
+g_method_decl_node_idx := []int{}
+g_method_decl_struct := []string{}
+g_method_decl_name := []string{}
+
+fn lookup_type_name(node_idx: int) -> string {
+    i := 0
+    for i < len(g_type_name_node_idx) {
+        if g_type_name_node_idx[i] == node_idx { return g_type_name_str[i] }
+        i = i + 1
+    }
+    return ""
+}
+
 fn parse_primary(src: string, pos: int, nodes: []AstNode) -> int {
     kind := lex_kind(src, pos)
 
@@ -402,11 +420,19 @@ fn parse_param(src: string, pos: int, nodes: []AstNode) -> ParseResult {
     p = lex_end(src, p, colon_kind)
     p = lex_skip(src, p)
 
-    // Parse type name (simple or array type)
+    // Parse type name (simple, array, or pointer type)
     type_name := ""
     type_kind := lex_kind(src, p)
 
-    if type_kind == TK_LBRACKET() {
+    if type_kind == TK_STAR() {
+        // Pointer type: *TypeName
+        p = lex_end(src, p, type_kind)
+        p = lex_skip(src, p)
+        if lex_kind(src, p) == TK_IDENT() {
+            type_name = lex_string_value(src, p, TK_IDENT())
+            p = lex_end(src, p, TK_IDENT())
+        }
+    } else if type_kind == TK_LBRACKET() {
         // Array type: []ElementType
         type_name = "[]"
         p = lex_end(src, p, type_kind)  // Skip '['
@@ -438,8 +464,12 @@ fn parse_param(src: string, pos: int, nodes: []AstNode) -> ParseResult {
     param_is_array := 0
     if type_name == "string" { param_type_tag = TYPE_STRING() }
     if type_name == "int" { param_type_tag = TYPE_INT() }
+    if type_name == "bool" { param_type_tag = TYPE_BOOL() }
     if type_name == "[]string" { param_type_tag = TYPE_STRING() param_is_array = 1 }
     if type_name == "[]int" { param_type_tag = TYPE_INT() param_is_array = 1 }
+    if param_type_tag == TYPE_UNKNOWN() && type_name != "" {
+        param_type_tag = TYPE_STRUCT()
+    }
     param := AstNode {
         tag: DECL_PARAM(),
         int_val: param_is_array,
@@ -450,6 +480,10 @@ fn parse_param(src: string, pos: int, nodes: []AstNode) -> ParseResult {
         type_tag: param_type_tag
     }
     push(nodes, param)
+    if param_type_tag == TYPE_STRUCT() {
+        push(g_type_name_node_idx, len(nodes) - 1)
+        push(g_type_name_str, type_name)
+    }
     return ParseResult { node_idx: len(nodes) - 1, new_pos: p }
 }
 
@@ -645,6 +679,7 @@ fn parse_import_decl(src: string, pos: int, nodes: []AstNode) -> ParseResult {
 }
 
 // Parse function declaration: fn name(params) -> type { body }
+// Also handles method receivers: fn (recv: [*]Type) name(params) -> type { body }
 fn parse_func_decl(src: string, pos: int, nodes: []AstNode) -> ParseResult {
     p := pos
     p = lex_skip(src, p)
@@ -657,18 +692,73 @@ fn parse_func_decl(src: string, pos: int, nodes: []AstNode) -> ParseResult {
     p = lex_end(src, p, fn_kind)
     p = lex_skip(src, p)
 
-    // Parse function name
+    // Check for method receiver: fn (recv: [*]Type) Name(params)
+    recv_name := ""
+    recv_type := ""
+    first_param_idx := -1
+
     name_kind := lex_kind(src, p)
+    if name_kind == TK_LPAREN() {
+        // Method receiver
+        p = lex_end(src, p, TK_LPAREN())
+        p = lex_skip(src, p)
+        recv_name = lex_string_value(src, p, TK_IDENT())
+        p = lex_end(src, p, TK_IDENT())
+        p = lex_skip(src, p)
+        p = lex_end(src, p, TK_COLON())
+        p = lex_skip(src, p)
+        if lex_kind(src, p) == TK_STAR() {
+            p = lex_end(src, p, TK_STAR())
+            p = lex_skip(src, p)
+        }
+        recv_type = lex_string_value(src, p, TK_IDENT())
+        p = lex_end(src, p, TK_IDENT())
+        p = lex_skip(src, p)
+        p = lex_end(src, p, TK_RPAREN())
+        p = lex_skip(src, p)
+
+        // Create receiver DECL_PARAM node
+        recv_param := AstNode {
+            tag: DECL_PARAM(),
+            int_val: 0,
+            str_val: recv_name,
+            left: -1,
+            right: -1,
+            extra: -1,
+            type_tag: TYPE_STRUCT()
+        }
+        push(nodes, recv_param)
+        recv_param_idx := len(nodes) - 1
+        first_param_idx = recv_param_idx
+        push(g_type_name_node_idx, recv_param_idx)
+        push(g_type_name_str, recv_type)
+
+        name_kind = lex_kind(src, p)
+    }
+
+    // Parse function name
     if name_kind != TK_IDENT() {
         return ParseResult { node_idx: -1, new_pos: p }
     }
     func_name := lex_string_value(src, p, name_kind)
     p = lex_end(src, p, name_kind)
 
+    // Mangle method name: Type_Method
+    original_method_name := ""
+    if recv_type != "" {
+        original_method_name = func_name
+        func_name = recv_type + "_" + func_name
+    }
+
     // Parse parameter list
     params_result := parse_param_list(src, p, nodes)
     p = params_result.new_pos
     p = lex_skip(src, p)
+
+    // Set first param: receiver if present, otherwise first from param list
+    if first_param_idx < 0 {
+        first_param_idx = params_result.node_idx
+    }
 
     // Check for '->' (return type is optional)
     ret_type := ""
@@ -677,10 +767,18 @@ fn parse_func_decl(src: string, pos: int, nodes: []AstNode) -> ParseResult {
         p = lex_end(src, p, arrow)
         p = lex_skip(src, p)
 
-        // Parse return type (simple or array type)
+        // Parse return type (simple, array, or pointer type)
         ret_type_kind := lex_kind(src, p)
 
-        if ret_type_kind == TK_LBRACKET() {
+        if ret_type_kind == TK_STAR() {
+            // Pointer return type: *TypeName
+            p = lex_end(src, p, ret_type_kind)
+            p = lex_skip(src, p)
+            if lex_kind(src, p) == TK_IDENT() {
+                ret_type = lex_string_value(src, p, TK_IDENT())
+                p = lex_end(src, p, TK_IDENT())
+            }
+        } else if ret_type_kind == TK_LBRACKET() {
             // Array type: []ElementType
             ret_type = "[]"
             p = lex_end(src, p, ret_type_kind)  // Skip '['
@@ -715,7 +813,7 @@ fn parse_func_decl(src: string, pos: int, nodes: []AstNode) -> ParseResult {
 
     // Create function declaration node
     // str_val = function name
-    // left = parameters (first param node)
+    // left = parameters (first param node, receiver if method)
     // right = body (block node)
     // type_tag = return type, int_val = is_array_return flag
     ret_type_tag := TYPE_UNKNOWN()
@@ -729,18 +827,36 @@ fn parse_func_decl(src: string, pos: int, nodes: []AstNode) -> ParseResult {
     if ret_type == "[]string" { ret_type_tag = TYPE_STRING()
         ret_is_array = 1
     }
+    if ret_type_tag == TYPE_UNKNOWN() && ret_type != "" {
+        ret_type_tag = TYPE_STRUCT()
+    }
 
     func := AstNode {
         tag: DECL_FUNC(),
         int_val: ret_is_array,
         str_val: func_name,
-        left: params_result.node_idx,
+        left: first_param_idx,
         right: body_result.node_idx,
         extra: -1,
         type_tag: ret_type_tag
     }
     push(nodes, func)
-    return ParseResult { node_idx: len(nodes) - 1, new_pos: body_result.new_pos }
+    func_node_idx := len(nodes) - 1
+
+    // Store struct return type name in side table
+    if ret_type_tag == TYPE_STRUCT() {
+        push(g_type_name_node_idx, func_node_idx)
+        push(g_type_name_str, ret_type)
+    }
+
+    // Store method declaration info
+    if recv_type != "" {
+        push(g_method_decl_node_idx, func_node_idx)
+        push(g_method_decl_struct, recv_type)
+        push(g_method_decl_name, original_method_name)
+    }
+
+    return ParseResult { node_idx: func_node_idx, new_pos: body_result.new_pos }
 }
 
 // Parse struct field: name: type
@@ -765,11 +881,19 @@ fn parse_field(src: string, pos: int, nodes: []AstNode) -> ParseResult {
     p = lex_end(src, p, colon)
     p = lex_skip(src, p)
 
-    // Parse type (including array types like []int or []string)
+    // Parse type (including array, pointer, and struct types)
     type_kind := lex_kind(src, p)
     type_name := ""
 
-    if type_kind == TK_LBRACKET() {
+    if type_kind == TK_STAR() {
+        // Pointer type: *TypeName
+        p = lex_end(src, p, type_kind)
+        p = lex_skip(src, p)
+        if lex_kind(src, p) == TK_IDENT() {
+            type_name = lex_string_value(src, p, TK_IDENT())
+            p = lex_end(src, p, TK_IDENT())
+        }
+    } else if type_kind == TK_LBRACKET() {
         // Array type: []ElementType
         type_name = "[]"
         p = lex_end(src, p, TK_LBRACKET())
@@ -809,6 +933,9 @@ fn parse_field(src: string, pos: int, nodes: []AstNode) -> ParseResult {
     if type_name == "[]int" { field_type_tag = TYPE_INT() field_is_array = 1 }
     if type_name == "[]bool" { field_type_tag = TYPE_BOOL() field_is_array = 1 }
     if type_name == "[]string" { field_type_tag = TYPE_STRING() field_is_array = 1 }
+    if field_type_tag == TYPE_UNKNOWN() && type_name != "" {
+        field_type_tag = TYPE_STRUCT()
+    }
 
     // Create field node
     field := AstNode {
@@ -821,6 +948,10 @@ fn parse_field(src: string, pos: int, nodes: []AstNode) -> ParseResult {
         type_tag: field_type_tag
     }
     push(nodes, field)
+    if field_type_tag == TYPE_STRUCT() {
+        push(g_type_name_node_idx, len(nodes) - 1)
+        push(g_type_name_str, type_name)
+    }
     return ParseResult { node_idx: len(nodes) - 1, new_pos: p }
 }
 
@@ -1407,6 +1538,26 @@ fn parse_unary(src: string, start_pos: int, nodes: []AstNode) -> ParseResult {
     }
 
     if kind == TK_NOT() {
+        new_pos := lex_end(src, pos, kind)
+        operand_result := parse_unary(src, new_pos, nodes)
+        if operand_result.node_idx < 0 {
+            return operand_result
+        }
+        unary_idx := new_unary_node(kind, operand_result.node_idx, nodes)
+        return ParseResult { node_idx: unary_idx, new_pos: operand_result.new_pos }
+    }
+
+    if kind == TK_AMPERSAND() {
+        new_pos := lex_end(src, pos, kind)
+        operand_result := parse_unary(src, new_pos, nodes)
+        if operand_result.node_idx < 0 {
+            return operand_result
+        }
+        unary_idx := new_unary_node(kind, operand_result.node_idx, nodes)
+        return ParseResult { node_idx: unary_idx, new_pos: operand_result.new_pos }
+    }
+
+    if kind == TK_STAR() {
         new_pos := lex_end(src, pos, kind)
         operand_result := parse_unary(src, new_pos, nodes)
         if operand_result.node_idx < 0 {

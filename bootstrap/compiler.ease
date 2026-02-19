@@ -79,6 +79,10 @@ g_rename_to := []string{}
 g_field_reg_names := []string{}
 g_field_reg_types := []int{}
 g_field_reg_is_array := []int{}
+g_func_ret_struct_names := []string{}
+g_method_struct_names := []string{}
+g_method_names := []string{}
+g_method_func_names := []string{}
 
 fn register_field_type(name: string, field_type: int, is_array: int) {
     // Only register if not already present (first definition wins)
@@ -114,10 +118,11 @@ fn lookup_field_is_array(name: string) -> int {
     return 0
 }
 
-fn register_func_return_type(name: string, ret_type: int, is_array: int) {
+fn register_func_return_type(name: string, ret_type: int, is_array: int, struct_name: string) {
     push(g_func_ret_names, name)
     push(g_func_ret_types, ret_type)
     push(g_func_ret_is_array, is_array)
+    push(g_func_ret_struct_names, struct_name)
 }
 
 fn lookup_func_return_type(name: string) -> int {
@@ -140,6 +145,28 @@ fn lookup_func_return_is_array(name: string) -> int {
         i = i - 1
     }
     return 0
+}
+
+fn lookup_func_return_struct_name(name: string) -> string {
+    i := len(g_func_ret_names) - 1
+    for i >= 0 {
+        if g_func_ret_names[i] == name {
+            return g_func_ret_struct_names[i]
+        }
+        i = i - 1
+    }
+    return ""
+}
+
+fn lookup_method(struct_name: string, method_name: string) -> string {
+    i := 0
+    for i < len(g_method_struct_names) {
+        if g_method_struct_names[i] == struct_name && g_method_names[i] == method_name {
+            return g_method_func_names[i]
+        }
+        i = i + 1
+    }
+    return ""
 }
 
 // Find the position of '.' in a string, returns -1 if not found
@@ -895,14 +922,27 @@ fn run_test_mode(test_path: string, run_bench: int) -> int {
     }
 
     // Build function return type registry
-    register_func_return_type("os.Argv", TYPE_STRING(), 0)
-    register_func_return_type("os.IsDir", TYPE_INT(), 0)
-    register_func_return_type("os.ListDir", TYPE_STRING(), 0)
+    register_func_return_type("os.Argv", TYPE_STRING(), 0, "")
+    register_func_return_type("os.IsDir", TYPE_INT(), 0, "")
+    register_func_return_type("os.ListDir", TYPE_STRING(), 0, "")
+
+    // Build method registry from parser side table
+    mri := 0
+    for mri < len(g_method_decl_node_idx) {
+        mstruct := g_method_decl_struct[mri]
+        mmethod := g_method_decl_name[mri]
+        mfunc := mstruct + "_" + mmethod
+        push(g_method_struct_names, mstruct)
+        push(g_method_names, mmethod)
+        push(g_method_func_names, mfunc)
+        mri = mri + 1
+    }
 
     reg_i := 0
     for reg_i < len(func_indices) {
         fn_node := nodes[func_indices[reg_i]]
-        register_func_return_type(func_names[reg_i], fn_node.type_tag, fn_node.int_val)
+        ret_sname := lookup_type_name(func_indices[reg_i])
+        register_func_return_type(func_names[reg_i], fn_node.type_tag, fn_node.int_val, ret_sname)
         reg_i = reg_i + 1
     }
 
@@ -913,6 +953,7 @@ fn run_test_mode(test_path: string, run_bench: int) -> int {
     gen_all_i := 0
     for gen_all_i < fn_count {
         g_param_types_start = len(g_param_types)
+        g_param_struct_names_start = len(g_param_struct_names)
 
         func_idx := func_indices[gen_all_i]
         func_name := func_names[gen_all_i]
@@ -1734,16 +1775,29 @@ fn main() -> int {
 
     // Build function return type registry
     // Pre-register built-in functions (no DECL_FUNC nodes for these)
-    register_func_return_type("os.Argv", TYPE_STRING(), 0)
-    register_func_return_type("os.IsDir", TYPE_INT(), 0)
-    register_func_return_type("os.ListDir", TYPE_STRING(), 0)
+    register_func_return_type("os.Argv", TYPE_STRING(), 0, "")
+    register_func_return_type("os.IsDir", TYPE_INT(), 0, "")
+    register_func_return_type("os.ListDir", TYPE_STRING(), 0, "")
+
+    // Build method registry from parser side table
+    mri := 0
+    for mri < len(g_method_decl_node_idx) {
+        mstruct := g_method_decl_struct[mri]
+        mmethod := g_method_decl_name[mri]
+        mfunc := mstruct + "_" + mmethod
+        push(g_method_struct_names, mstruct)
+        push(g_method_names, mmethod)
+        push(g_method_func_names, mfunc)
+        mri = mri + 1
+    }
 
     // Register all user-defined functions from parsed declarations
     // Use func_names[i] for the name (which has qualified names for imported functions)
     reg_i := 0
     for reg_i < len(func_indices) {
         fn_node := nodes[func_indices[reg_i]]
-        register_func_return_type(func_names[reg_i], fn_node.type_tag, fn_node.int_val)
+        ret_sname := lookup_type_name(func_indices[reg_i])
+        register_func_return_type(func_names[reg_i], fn_node.type_tag, fn_node.int_val, ret_sname)
         reg_i = reg_i + 1
     }
 
@@ -1754,6 +1808,7 @@ fn main() -> int {
     gen_all_i := 0
     for gen_all_i < fn_count {
         g_param_types_start = len(g_param_types)
+        g_param_struct_names_start = len(g_param_struct_names)
 
         func_idx := func_indices[gen_all_i]
         func_name := func_names[gen_all_i]

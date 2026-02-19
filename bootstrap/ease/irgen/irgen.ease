@@ -66,6 +66,47 @@ fn make_type(type_tag: int, is_array: int) -> int {
     return type_tag
 }
 
+// Struct name tracking: parallel arrays mapping vregs to struct type names
+g_vreg_struct_names := []string{}
+g_param_struct_names := []string{}
+g_param_struct_names_start := 0
+
+fn set_vreg_struct_name(vreg: int, name: string) {
+    if vreg < 0 { return }
+    if name == "" { return }
+    if vreg >= 90000 {
+        pidx := (vreg - 90000) + g_param_struct_names_start
+        for len(g_param_struct_names) < pidx {
+            push(g_param_struct_names, "")
+        }
+        if len(g_param_struct_names) == pidx {
+            push(g_param_struct_names, name)
+        }
+        return
+    }
+    for len(g_vreg_struct_names) < vreg {
+        push(g_vreg_struct_names, "")
+    }
+    if len(g_vreg_struct_names) == vreg {
+        push(g_vreg_struct_names, name)
+    }
+}
+
+fn get_vreg_struct_name(vreg: int) -> string {
+    if vreg < 0 { return "" }
+    if vreg >= 90000 {
+        pidx := (vreg - 90000) + g_param_struct_names_start
+        if pidx < len(g_param_struct_names) {
+            return g_param_struct_names[pidx]
+        }
+        return ""
+    }
+    if vreg < len(g_vreg_struct_names) {
+        return g_vreg_struct_names[vreg]
+    }
+    return ""
+}
+
 fn is_type_string(t: int) -> int {
     if t == TYPE_STRING() { return 1 }
     return 0
@@ -426,6 +467,7 @@ fn gen_ir_struct_lit(node: AstNode, ast_idx: int, nodes: []AstNode, instrs: []IR
     alloc := IRInstr { op: OP_ALLOCA(), dest: ptr, arg1: size, arg2: 0, arg3: 0, str_val: node.str_val }
     push(instrs, alloc)
     set_vreg_type(ptr, TYPE_STRUCT())
+    set_vreg_struct_name(ptr, node.str_val)
     gen_ir_store_struct_fields(ptr, node.str_val, ast_idx, nodes, instrs, st_names, st_vregs)
     return ptr
 }
@@ -441,6 +483,25 @@ fn gen_ir_call_user(node: AstNode, ast_idx: int, nodes: []AstNode, instrs: []IRI
     res := len(instrs)
     push(instrs, IRInstr { op: OP_CALL(), dest: res, arg1: 0, arg2: node.int_val, arg3: 0, str_val: call_name })
     set_vreg_type(res, make_type(lookup_func_return_type(call_name), lookup_func_return_is_array(call_name)))
+    set_vreg_struct_name(res, lookup_func_return_struct_name(call_name))
+    return res
+}
+
+fn gen_ir_method_call(recv_vreg: int, func_name: string, ast_idx: int, nodes: []AstNode, instrs: []IRInstr, st_n: []string, st_v: []int) -> int {
+    // First argument is the receiver
+    push(instrs, IRInstr { op: OP_ARG(), dest: 0, arg1: recv_vreg, arg2: -1, arg3: 0, str_val: "" })
+    // Remaining arguments from the call
+    args := gen_ir_eval_args(ast_idx, nodes, instrs, st_n, st_v)
+    i := 0
+    for i < len(args) {
+        push(instrs, IRInstr { op: OP_ARG(), dest: i + 1, arg1: args[i], arg2: -1, arg3: 0, str_val: "" })
+        i = i + 1
+    }
+    res := len(instrs)
+    arg_count := len(args) + 1
+    push(instrs, IRInstr { op: OP_CALL(), dest: res, arg1: 0, arg2: arg_count, arg3: 0, str_val: func_name })
+    set_vreg_type(res, make_type(lookup_func_return_type(func_name), lookup_func_return_is_array(func_name)))
+    set_vreg_struct_name(res, lookup_func_return_struct_name(func_name))
     return res
 }
 
@@ -587,6 +648,7 @@ fn gen_ir_stmt_let(node: AstNode, nodes: []AstNode, instrs: []IRInstr, st_n: []s
     new_vreg := len(instrs)
     push(instrs, IRInstr { op: OP_COPY(), dest: new_vreg, arg1: v, arg2: 0, arg3: 0, str_val: "" })
     set_vreg_type(new_vreg, get_vreg_type(v))
+    set_vreg_struct_name(new_vreg, get_vreg_struct_name(v))
     push(st_n, node.str_val)
     push(st_v, new_vreg)
     return new_vreg
@@ -971,6 +1033,15 @@ fn gen_ir_from_ast_with_symtab(ast_idx: int, nodes: []AstNode, instrs: []IRInstr
             set_vreg_type(result_vreg, TYPE_BOOL())
             return result_vreg
         }
+        if node.int_val == TK_AMPERSAND() {
+            // Address-of: structs are already pointers, identity op
+            set_vreg_struct_name(operand, get_vreg_struct_name(operand))
+            return operand
+        }
+        if node.int_val == TK_STAR() {
+            // Dereference: structs are already pointers, identity op
+            return operand
+        }
         return operand
     }
 
@@ -1031,6 +1102,31 @@ fn gen_ir_from_ast_with_symtab(ast_idx: int, nodes: []AstNode, instrs: []IRInstr
             push(instrs, IRInstr { op: OP_TIME_WALLCLOCK(), dest: dest, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
             set_vreg_type(dest, TYPE_INT())
             return dest
+        }
+        // Check for method call: "varname.MethodName"
+        dot_pos := find_dot(func_name)
+        if dot_pos > 0 {
+            receiver_name := str_substring(func_name, 0, dot_pos)
+            method_name := str_substring(func_name, dot_pos + 1, len(func_name))
+            // Check if receiver is a local variable in the symbol table
+            recv_vreg := -1
+            rsi := len(symtab_names) - 1
+            for rsi >= 0 {
+                if symtab_names[rsi] == receiver_name {
+                    recv_vreg = symtab_vregs[rsi]
+                    break
+                }
+                rsi = rsi - 1
+            }
+            if recv_vreg >= 0 && recv_vreg > -1000 {
+                struct_name := get_vreg_struct_name(recv_vreg)
+                if struct_name != "" {
+                    internal_name := lookup_method(struct_name, method_name)
+                    if internal_name != "" {
+                        return gen_ir_method_call(recv_vreg, internal_name, ast_idx, nodes, instrs, symtab_names, symtab_vregs)
+                    }
+                }
+            }
         }
         return gen_ir_call_user(node, ast_idx, nodes, instrs, symtab_names, symtab_vregs)
     }
@@ -1122,6 +1218,11 @@ fn gen_ir_from_ast_with_symtab(ast_idx: int, nodes: []AstNode, instrs: []IRInstr
                     push(symtab_vregs, param_reg)
                     ptype := make_type(param_node.type_tag, param_node.int_val)
                     set_vreg_type(param_reg, ptype)
+                    // Set struct name for struct-typed params
+                    if param_node.type_tag == TYPE_STRUCT() {
+                        param_sname := lookup_type_name(param_i)
+                        set_vreg_struct_name(param_reg, param_sname)
+                    }
                     param_reg = param_reg + 1
                 } else {
                     // Stop when we hit a non-parameter node
