@@ -87,7 +87,7 @@ fn handle_initialize(id: int) {
 
     caps := json.New()
     caps.SetObject("textDocumentSync", sync_opts)
-    caps.SetInt("definitionProvider", 1)
+    caps.SetBool("definitionProvider", 1)
 
     result := json.New()
     result.SetObject("capabilities", caps)

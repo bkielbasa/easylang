@@ -104825,7 +104825,7 @@ B.body:
   %t.261350 = load i64, ptr %v.26124
   %t.261351 = load i64, ptr %v.26131
   %t.261352 = load i64, ptr %v.26132
-  %t.261359 = call i64 @json_Doc_SetInt(i64 %t.261350, i64 %t.261351, i64 %t.261352)
+  %t.261359 = call i64 @json_Doc_SetBool(i64 %t.261350, i64 %t.261351, i64 %t.261352)
   store i64 %t.261359, ptr %v.26135
   %t.261369 = call i64 @json_New()
   store i64 %t.261369, ptr %v.26136
