@@ -88,6 +88,7 @@ fn handle_initialize(id: int) {
     caps := json.New()
     caps.SetObject("textDocumentSync", sync_opts)
     caps.SetBool("definitionProvider", 1)
+    caps.SetBool("hoverProvider", 1)
 
     result := json.New()
     result.SetObject("capabilities", caps)
@@ -287,6 +288,73 @@ fn handle_definition(id: int, doc: Doc) {
     write_message(resp)
 }
 
+// Handle textDocument/hover request
+fn handle_hover(id: int, doc: Doc) {
+    params := doc.GetObject("params")
+    td := params.GetObject("textDocument")
+    uri := td.GetString("uri")
+    position := params.GetObject("position")
+    line := position.GetInt("line")
+    col := position.GetInt("character")
+
+    // Use cached source for the current document
+    if len(g_lsp_sources) == 0 {
+        resp := make_null_response(id)
+        write_message(resp)
+        return
+    }
+    src := g_lsp_sources[len(g_lsp_sources) - 1]
+    if len(src) == 0 {
+        resp := make_null_response(id)
+        write_message(resp)
+        return
+    }
+
+    // Convert 0-based line/col to byte offset
+    offset := strings.LineColToOffset(src, line, col)
+
+    // Extract the word at cursor position
+    word := get_word_at(src, offset)
+    if len(word) == 0 {
+        resp := make_null_response(id)
+        write_message(resp)
+        return
+    }
+
+    // Re-parse to populate symbol tables
+    parse_for_diagnostics(src)
+
+    // Search for matching symbol
+    sym_count := lsp_symbol_count()
+    found := -1
+    si := 0
+    for si < sym_count {
+        if lsp_symbol_name(si) == word {
+            found = si
+            break
+        }
+        si = si + 1
+    }
+
+    if found < 0 {
+        resp := make_null_response(id)
+        write_message(resp)
+        return
+    }
+
+    // Build hover response with signature
+    sig := lsp_symbol_sig(found)
+    content := json.New()
+    content.SetString("language", "ease")
+    content.SetString("value", sig)
+
+    result := json.New()
+    result.SetObject("contents", content)
+
+    resp := make_response(id, result)
+    write_message(resp)
+}
+
 // Handle a single JSON-RPC message
 // Returns 1 to continue, 0 to exit
 fn handle_message(msg: string) -> int {
@@ -305,6 +373,11 @@ fn handle_message(msg: string) -> int {
 
     if method == "textDocument/definition" {
         handle_definition(id, doc)
+        return 1
+    }
+
+    if method == "textDocument/hover" {
+        handle_hover(id, doc)
         return 1
     }
 

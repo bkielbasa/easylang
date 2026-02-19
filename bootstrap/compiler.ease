@@ -92,6 +92,7 @@ g_lsp_diag_cols := []int{}
 g_lsp_diag_msgs := []string{}
 g_lsp_sym_names := []string{}
 g_lsp_sym_offsets := []int{}
+g_lsp_sym_sigs := []string{}
 
 fn lsp_diagnostic_count() -> int {
     return len(g_lsp_diag_msgs)
@@ -119,6 +120,26 @@ fn lsp_symbol_name(i: int) -> string {
 
 fn lsp_symbol_offset(i: int) -> int {
     return g_lsp_sym_offsets[i]
+}
+
+fn lsp_symbol_sig(i: int) -> string {
+    return g_lsp_sym_sigs[i]
+}
+
+fn lsp_type_str(type_tag: int, is_array: int, node_idx: int) -> string {
+    if is_array == 1 {
+        if type_tag == TYPE_INT() { return "[]int" }
+        if type_tag == TYPE_STRING() { return "[]string" }
+        if type_tag == TYPE_BOOL() { return "[]bool" }
+    }
+    if type_tag == TYPE_INT() { return "int" }
+    if type_tag == TYPE_STRING() { return "string" }
+    if type_tag == TYPE_BOOL() { return "bool" }
+    if type_tag == TYPE_STRUCT() {
+        sname := lookup_type_name(node_idx)
+        if len(sname) > 0 { return sname }
+    }
+    return ""
 }
 
 fn register_field_type(name: string, field_type: int, is_array: int) {
@@ -339,6 +360,7 @@ fn parse_for_diagnostics(source: string) {
     g_lsp_diag_msgs = []string{}
     g_lsp_sym_names = []string{}
     g_lsp_sym_offsets = []int{}
+    g_lsp_sym_sigs = []string{}
     g_lsp_mode = 1
 
     // Phase 1: Lexing
@@ -384,6 +406,19 @@ fn parse_for_diagnostics(source: string) {
             if dstruct.node_idx >= 0 {
                 push(g_lsp_sym_names, diag_nodes[dstruct.node_idx].str_val)
                 push(g_lsp_sym_offsets, dpos)
+                // Build struct signature: struct Name { field1: type1, field2: type2 }
+                ssig := "struct " + diag_nodes[dstruct.node_idx].str_val + " { "
+                sfi := diag_nodes[dstruct.node_idx].left
+                sfirst := 1
+                for sfi >= 0 && sfi < len(diag_nodes) {
+                    if diag_nodes[sfi].tag != DECL_FIELD() { break }
+                    if sfirst == 0 { ssig = ssig + ", " }
+                    ssig = ssig + diag_nodes[sfi].str_val + ": " + lsp_type_str(diag_nodes[sfi].type_tag, diag_nodes[sfi].int_val, sfi)
+                    sfirst = 0
+                    sfi = sfi + 1
+                }
+                ssig = ssig + " }"
+                push(g_lsp_sym_sigs, ssig)
             }
             dpos = dstruct.new_pos
         } else if dkind == TK_ENUM() {
@@ -391,6 +426,34 @@ fn parse_for_diagnostics(source: string) {
             if denum.node_idx >= 0 {
                 push(g_lsp_sym_names, diag_nodes[denum.node_idx].str_val)
                 push(g_lsp_sym_offsets, dpos)
+                // Build enum signature: enum Name { V1, V2 { f: type } }
+                esig := "enum " + diag_nodes[denum.node_idx].str_val + " { "
+                evi := diag_nodes[denum.node_idx].left
+                efirst := 1
+                for evi >= 0 && evi < denum.node_idx {
+                    if diag_nodes[evi].tag == DECL_VARIANT() {
+                        if efirst == 0 { esig = esig + ", " }
+                        esig = esig + diag_nodes[evi].str_val
+                        // Check for variant fields
+                        evfi := diag_nodes[evi].left
+                        if evfi >= 0 {
+                            esig = esig + " { "
+                            evffirst := 1
+                            for evfi >= 0 && evfi < evi {
+                                if diag_nodes[evfi].tag != DECL_FIELD() { break }
+                                if evffirst == 0 { esig = esig + ", " }
+                                esig = esig + diag_nodes[evfi].str_val + ": " + lsp_type_str(diag_nodes[evfi].type_tag, diag_nodes[evfi].int_val, evfi)
+                                evffirst = 0
+                                evfi = evfi + 1
+                            }
+                            esig = esig + " }"
+                        }
+                        efirst = 0
+                    }
+                    evi = evi + 1
+                }
+                esig = esig + " }"
+                push(g_lsp_sym_sigs, esig)
             }
             dpos = denum.new_pos
         } else if dkind == TK_IDENT() {
@@ -401,6 +464,7 @@ fn parse_for_diagnostics(source: string) {
                 if dce.node_idx >= 0 {
                     push(g_lsp_sym_names, diag_nodes[dce.node_idx].str_val)
                     push(g_lsp_sym_offsets, dpos)
+                    push(g_lsp_sym_sigs, diag_nodes[dce.node_idx].str_val + " := ...")
                 }
                 dpos = dce.new_pos
             } else {
@@ -414,6 +478,23 @@ fn parse_for_diagnostics(source: string) {
             }
             push(g_lsp_sym_names, diag_nodes[dfunc.node_idx].str_val)
             push(g_lsp_sym_offsets, dpos)
+            // Build function signature: fn name(p1: type1, p2: type2) -> rettype
+            fsig := "fn " + diag_nodes[dfunc.node_idx].str_val + "("
+            fpi := diag_nodes[dfunc.node_idx].left
+            fpfirst := 1
+            for fpi >= 0 && fpi < len(diag_nodes) {
+                if diag_nodes[fpi].tag != DECL_PARAM() { break }
+                if fpfirst == 0 { fsig = fsig + ", " }
+                fsig = fsig + diag_nodes[fpi].str_val + ": " + lsp_type_str(diag_nodes[fpi].type_tag, diag_nodes[fpi].int_val, fpi)
+                fpfirst = 0
+                fpi = fpi + 1
+            }
+            fsig = fsig + ")"
+            frt := lsp_type_str(diag_nodes[dfunc.node_idx].type_tag, diag_nodes[dfunc.node_idx].int_val, dfunc.node_idx)
+            if len(frt) > 0 {
+                fsig = fsig + " -> " + frt
+            }
+            push(g_lsp_sym_sigs, fsig)
             dpos = dfunc.new_pos
             dpos = lex_skip(source, dpos)
         } else {
