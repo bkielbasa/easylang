@@ -115,7 +115,7 @@ fn TestMultiply(t: T) {
 - **Runner**: Synthetic main() wraps each test with setjmp for failure recovery
 - **Output**: Go-style `=== RUN` / `--- PASS` / `--- FAIL` / `ok` or `FAIL`
 - **Exit code**: 0 if all pass, 1 if any fail
-- **stdlib auto-loaded**: `testing`, `io`, `strings`, `os`, `strconv` available without import
+- **stdlib auto-loaded**: `testing`, `io`, `strings`, `os`, `strconv`, `time` available without import
 
 ```bash
 make test                           # run all tests in tests/
@@ -191,8 +191,9 @@ ease/
 │       ├── io/io.ease             # I/O (print via syscall)
 │       ├── strings/strings.ease   # String functions
 │       ├── os/os.ease             # OS functions (ReadFile via syscall)
-│       └── testing/testing.ease   # Testing framework (Fatal)
-├── tests/                # Go-style tests (21 passing)
+│       ├── testing/testing.ease   # Testing framework (Fatal)
+│       └── time/time.ease         # Time package (Now, Unix, Add, Before, After)
+├── tests/                # Go-style tests (27 passing)
 ├── examples/             # Example programs
 │   └── testdemo/         # Go-style test demo (math.ease + math_test.ease)
 └── findings/             # Compiler engineering notes
@@ -204,7 +205,7 @@ The compiler is fully self-hosting. No Go or other compilers needed — just `cl
 
 ```bash
 make                    # Build compiler from seed LLVM IR
-make test               # Run tests (21 passing)
+make test               # Run tests (27 passing)
 make test DIR=path      # Run tests in specific directory
 make verify             # Verify self-hosting convergence (gen1 == gen2)
 make update-seed        # Update seed after modifying compiler source
@@ -244,7 +245,7 @@ The Ease compiler is written in Ease and compiles itself with byte-identical con
 - Module/import system (local files, directory packages, stdlib imports)
 - Directory package imports with Go-style visibility (uppercase = public)
 - Package declarations (`package main`, `package token`, etc.)
-- Standard library (strings, strconv, io, os, testing — all pure Ease implementations)
+- Standard library (strings, strconv, io, os, testing, time — all pure Ease implementations)
 - Go-style testing framework (`fn TestXxx(t: T)` in `*_test.ease`, `testing.T` struct, `testing.Fatal(msg)`, setjmp/longjmp recovery)
 - Go-style benchmark framework (`fn BenchmarkXxx(b: B)` with auto-calibration and ns/op reporting)
 - Global variables (mutable and immutable)
@@ -252,7 +253,7 @@ The Ease compiler is written in Ease and compiles itself with byte-identical con
 - Function return type registry (automatic string/int dispatch)
 - String `==`/`!=` auto-dispatch (no explicit str_eq/str_ne needed)
 - Dynamic struct field registry for user-defined structs
-- Go-style test suite (21 tests passing, 2 benchmarks)
+- Go-style test suite (27 tests passing, 2 benchmarks)
 
 **Compiler Components** (all in `bootstrap/ease/`):
 - [x] Lexer with comment handling (// comments)
@@ -325,13 +326,13 @@ The Ease compiler is written in Ease and compiles itself with byte-identical con
 
 ```bash
 make                                    # Build from seed (no Go required)
-make test                               # Run tests (21 passing)
+make test                               # Run tests (27 passing)
 make test DIR=path                      # Run tests in specific directory
 make verify                             # Verify self-hosting convergence
 make update-seed                        # Update seed after source changes
 ```
 
-**Test Suite (21 tests, Go-style):**
+**Test Suite (27 tests, Go-style):**
 
 Tests live in `tests/` as `*_test.ease` files with `fn TestXxx(t: T)` functions:
 
@@ -343,6 +344,7 @@ Tests live in `tests/` as `*_test.ease` files with `fn TestXxx(t: T)` functions:
 | `strings_test.ease` | 6 | Concat, Contains, StartsWith, EndsWith, IndexOf, strconv |
 | `structs_test.ease` | 3 | Struct literals, field access, pass to functions |
 | `loops_test.ease` | 3 | Range `for i in start..end`, condition loops, modulo |
+| `time_test.ease` | 6 | time.Now, Unix, UnixNano, Add, Before, After, Since |
 | `bench_test.ease` | 2 | Benchmark: add, factorial (auto-calibrating ns/op) |
 | `helpers.ease` | — | Shared helper functions and struct definitions |
 

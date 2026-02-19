@@ -403,8 +403,6 @@ fn parse_source_file(source: string, nodes: []AstNode, func_names: []string, fun
 }
 
 fn run_test_mode(test_path: string) -> int {
-    print("=== Ease Test Runner ===\n\n")
-
     // Determine directory to scan
     dir := test_path
     if len(dir) == 0 { dir = "." }
@@ -412,8 +410,6 @@ fn run_test_mode(test_path: string) -> int {
     if len(dir) > 1 && str_char_at(dir, len(dir) - 1) == 47 {
         dir = str_substring(dir, 0, len(dir) - 1)
     }
-
-    print("Test directory: " + dir + "\n")
 
     // List files in directory
     entries := os.ListDir(dir)
@@ -431,10 +427,8 @@ fn run_test_mode(test_path: string) -> int {
                     full_path := dir + "/" + entry
                     if has_test_suffix(entry) == 1 {
                         push(test_files, full_path)
-                        print("  Test file: " + full_path + "\n")
                     } else {
                         push(source_files, full_path)
-                        print("  Source file: " + full_path + "\n")
                     }
                 }
             }
@@ -448,8 +442,6 @@ fn run_test_mode(test_path: string) -> int {
         return 0
     }
 
-    print("\n")
-
     // Parse all source and test files
     nodes := []AstNode{}
     func_names := []string{}
@@ -459,7 +451,6 @@ fn run_test_mode(test_path: string) -> int {
     // Parse source files (skip main — test runner replaces it)
     sf_i := 0
     for sf_i < len(source_files) {
-        print("Parsing source: " + source_files[sf_i] + "\n")
         src := os.ReadFile(source_files[sf_i])
         parse_source_file(src, nodes, func_names, func_indices, global_var_names, 1)
         sf_i = sf_i + 1
@@ -470,7 +461,6 @@ fn run_test_mode(test_path: string) -> int {
     bench_func_names := []string{}
     tf_i := 0
     for tf_i < len(test_files) {
-        print("Parsing tests: " + test_files[tf_i] + "\n")
         tsrc := os.ReadFile(test_files[tf_i])
         // Track func count before parsing to identify new test/bench funcs
         before_count := len(func_names)
@@ -489,8 +479,6 @@ fn run_test_mode(test_path: string) -> int {
         tf_i = tf_i + 1
     }
 
-    print("\nFound " + strconv.Itoa(len(test_func_names)) + " test function(s)\n")
-    print("Found " + strconv.Itoa(len(bench_func_names)) + " benchmark function(s)\n")
     if len(test_func_names) == 0 && len(bench_func_names) == 0 {
         print("No test or benchmark functions found\n")
         return 0
@@ -511,7 +499,6 @@ fn run_test_mode(test_path: string) -> int {
                 mod_func_indices := []int{}
 
                 if is_dir_flag == 1 {
-                    print("Importing package: " + mod_name + " from " + resolved + "/\n")
                     push(g_import_paths, resolved)
                     push(g_import_names, mod_name)
 
@@ -678,8 +665,8 @@ fn run_test_mode(test_path: string) -> int {
         imp_i = imp_i + 1
     }
 
-    // Load stdlib modules (io, strings, os, strconv, testing)
-    stdlib_mods := []string{"./ease/io", "./ease/strings", "./ease/os", "./ease/strconv", "./ease/testing"}
+    // Load stdlib modules (io, strings, os, strconv, testing, time)
+    stdlib_mods := []string{"./ease/io", "./ease/strings", "./ease/os", "./ease/strconv", "./ease/testing", "./ease/time"}
     smi := 0
     for smi < len(stdlib_mods) {
         smod_path := stdlib_mods[smi]
@@ -703,7 +690,6 @@ fn run_test_mode(test_path: string) -> int {
             smod_resolved = smod_resolved + ".ease"
         }
 
-        print("Loading stdlib: " + smod_name + " from " + smod_resolved + "\n")
         push(g_import_paths, smod_resolved)
         push(g_import_names, smod_name)
 
@@ -815,7 +801,6 @@ fn run_test_mode(test_path: string) -> int {
     }
 
     // IR Generation — compile all user functions
-    print("\nPhase: IR Generation\n")
     instrs := []IRInstr{}
 
     fn_count := len(func_names)
@@ -851,11 +836,8 @@ fn run_test_mode(test_path: string) -> int {
         gen_all_i = gen_all_i + 1
     }
 
-    print("Generated " + strconv.Itoa(len(instrs)) + " IR instructions for " + strconv.Itoa(fn_count) + " functions\n")
-
     // Generate synthetic test runner main()
     // This replaces the user's main() with a test harness
-    print("\nGenerating test runner main()\n")
 
     // Emit function label for main
     main_label := 5000 + fn_count
@@ -1107,20 +1089,12 @@ fn run_test_mode(test_path: string) -> int {
     push(instrs, IRInstr { op: OP_CALL(), dest: ok_sum_call, arg1: 0, arg2: 1, arg3: 0, str_val: "io.Print" })
     push(instrs, IRInstr { op: OP_RET(), dest: zero_vreg, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
 
-    print("Generated test runner with " + strconv.Itoa(len(test_func_names)) + " tests and " + strconv.Itoa(len(bench_func_names)) + " benchmarks\n\n")
-
     // LLVM IR Generation
-    print("Phase: LLVM IR Generation\n")
     output_ll := "./tmp/output.ll"
     result := emit_llvm_ir(instrs, output_ll)
     if result != 0 {
         return 1
     }
-
-    print("\n=== Test Compilation Complete ===\n")
-    print("To run tests:\n")
-    print("  clang -O1 runtime/ease_runtime.c " + output_ll + " -o tmp/test_bin\n")
-    print("  ./tmp/test_bin\n")
 
     return 0
 }
@@ -1138,17 +1112,13 @@ fn main() -> int {
         }
     }
 
-    print("=== Bootstrap Ease Compiler (LLVM IR) ===\n\n")
-
     // Get command-line arguments
     source := ""
     filename := ""
 
     if argc > 1 {
         filename = os.Argv(1)
-        print("Reading file: " + filename + "\n")
         source = os.ReadFile(filename)
-        print("File loaded successfully\n\n")
     } else {
         print("ERROR: No input file specified\n")
         print("Usage: compiler <source.ease>\n")
@@ -1158,7 +1128,6 @@ fn main() -> int {
     push(g_current_file_list, filename)
 
     // Phase 1: Lexing
-    print("Phase 1: Lexing\n")
     pos := 0
     token_count := 0
     for {
@@ -1176,10 +1145,7 @@ fn main() -> int {
             pos = lex_end(source, pos, kind)
         }
     }
-    print("Lexed " + strconv.Itoa(token_count) + " tokens\n\n")
-
     // Phase 2: Parsing
-    print("Phase 2: Parsing\n")
     nodes := []AstNode{}
     parse_pos := 0
     parse_pos = lex_skip(source, parse_pos)
@@ -1246,15 +1212,12 @@ fn main() -> int {
             func_node := nodes[func_idx]
             push(func_names, func_node.str_val)
             push(func_indices, func_idx)
-            print("  " + func_node.str_val + " (" + strconv.Itoa(len(func_names)) + ")\n")
             parse_pos = parse_result.new_pos
             parse_pos = lex_skip(source, parse_pos)
         } else {
             break
         }
     }
-
-    print("Parsed " + strconv.Itoa(len(func_names)) + " functions\n\n")
 
     // Process imports: scan for DECL_IMPORT nodes, read and parse imported modules
     // Uses rename table approach (no AST node mutation) for bootstrap parser compatibility
@@ -1274,7 +1237,6 @@ fn main() -> int {
 
                 if is_dir == 1 {
                     // Directory package: load all .ease files
-                    print("Importing package: " + mod_name + " from " + resolved + "/\n")
                     push(g_import_paths, resolved)
                     push(g_import_names, mod_name)
 
@@ -1289,7 +1251,6 @@ fn main() -> int {
                                 entry := str_substring(entries, estart, epos)
                                 if has_ease_suffix(entry) == 1 {
                                     file_path := resolved + "/" + entry
-                                    print("  Loading: " + file_path + "\n")
                                     push(g_current_file_list, file_path)
                                     dir_source := os.ReadFile(file_path)
                                     dir_pos := 0
@@ -1371,7 +1332,6 @@ fn main() -> int {
                         // Intra-package calls: functions within the package use
                         // unqualified names that get resolved by the rename table
                         // built from within the package's own functions
-                        print("  " + qualified + " (" + strconv.Itoa(len(func_names)) + ")\n")
                         mfi = mfi + 1
                     }
 
@@ -1388,7 +1348,6 @@ fn main() -> int {
                     }
                 } else {
                     // Single file import (existing behavior)
-                    print("Importing module: " + mod_name + " from " + resolved + "\n")
                     push(g_current_file_list, resolved)
 
                     mod_source := os.ReadFile(resolved)
@@ -1464,7 +1423,6 @@ fn main() -> int {
                         push(func_indices, mod_func_indices[mfi])
                         push(g_rename_from, mod_func_names[mfi])
                         push(g_rename_to, qualified)
-                        print("  " + qualified + " (" + strconv.Itoa(len(func_names)) + ")\n")
                         mfi = mfi + 1
                     }
                 }
@@ -1473,13 +1431,9 @@ fn main() -> int {
         imp_i = imp_i + 1
     }
 
-    if len(g_import_names) > 0 {
-        print("Imported " + strconv.Itoa(len(g_import_names)) + " module(s)\n\n")
-    }
-
     // Load bootstrap stdlib modules programmatically (not via import declarations,
     // because the Go compiler's sema would reject them due to builtin conflicts)
-    stdlib_mods := []string{"./ease/io", "./ease/strings", "./ease/os", "./ease/strconv"}
+    stdlib_mods := []string{"./ease/io", "./ease/strings", "./ease/os", "./ease/strconv", "./ease/time"}
     smi := 0
     for smi < len(stdlib_mods) {
         smod_path := stdlib_mods[smi]
@@ -1509,7 +1463,6 @@ fn main() -> int {
             }
         }
 
-        print("Loading stdlib: " + smod_name + " from " + smod_resolved + "\n")
         push(g_import_paths, smod_resolved)
         push(g_import_names, smod_name)
 
@@ -1562,7 +1515,6 @@ fn main() -> int {
                     push(func_indices, smod_func_idx)
                     push(g_rename_from, smod_orig)
                     push(g_rename_to, smod_qualified)
-                    print("  " + smod_qualified + " (" + strconv.Itoa(len(func_names)) + ")\n")
                     smod_pos = smod_result.new_pos
                     smod_pos = lex_skip(smod_source, smod_pos)
                 } else {
@@ -1625,7 +1577,6 @@ fn main() -> int {
     }
 
     // Phase 3: IR Generation
-    print("Phase 3: IR Generation\n")
     instrs := []IRInstr{}
 
     fn_count := len(func_names)
@@ -1663,20 +1614,12 @@ fn main() -> int {
         gen_all_i = gen_all_i + 1
     }
 
-    print("Generated " + strconv.Itoa(len(instrs)) + " IR instructions\n\n")
-
     // Phase 4: LLVM IR Generation
-    print("Phase 4: LLVM IR Generation\n")
     output_ll := "./tmp/output.ll"
     result := emit_llvm_ir(instrs, output_ll)
     if result != 0 {
         return 1
     }
-
-    print("\n=== Compilation Complete ===\n")
-    print("To build the executable:\n")
-    print("  clang -O1 runtime/ease_runtime.c " + output_ll + " -o tmp/output\n")
-    print("  ./tmp/output\n")
 
     return 0
 }

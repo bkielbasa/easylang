@@ -98,6 +98,7 @@ fn OP_MOD() -> int { return 55 }
 fn OP_SETJMP() -> int { return 56 }
 fn OP_TEST_FAIL() -> int { return 57 }
 fn OP_TIME_NANOS() -> int { return 58 }
+fn OP_TIME_WALLCLOCK() -> int { return 59 }
 
 // Struct definitions and offsets (hardcoded for known structs)
 // AstNode: tag(8), int_val(8), str_val(8), left(8), right(8), extra(8), type_tag(8) = 56 bytes

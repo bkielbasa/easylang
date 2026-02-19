@@ -659,8 +659,6 @@ fn parse_func_decl(src: string, pos: int, nodes: []AstNode) -> ParseResult {
         return ParseResult { node_idx: -1, new_pos: p }
     }
     func_name := lex_string_value(src, p, name_kind)
-    print(func_name)
-    print("\n")
     p = lex_end(src, p, name_kind)
 
     // Parse parameter list

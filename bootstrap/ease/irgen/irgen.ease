@@ -843,6 +843,11 @@ fn gen_ir_from_ast_with_symtab(ast_idx: int, nodes: []AstNode, instrs: []IRInstr
             push(instrs, IRInstr { op: OP_TEST_FAIL(), dest: -1, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
             return -1
         }
+        if func_name == "time_wallclock_nanos" {
+            dest := len(instrs)
+            push(instrs, IRInstr { op: OP_TIME_WALLCLOCK(), dest: dest, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
+            return dest
+        }
         return gen_ir_call_user(node, ast_idx, nodes, instrs, symtab_names, symtab_vregs)
     }
 

@@ -484,6 +484,12 @@ long ease_time_nanos(void) {
     return (long)ts.tv_sec * 1000000000L + (long)ts.tv_nsec;
 }
 
+long ease_time_wallclock_nanos(void) {
+    struct timespec ts;
+    clock_gettime(CLOCK_REALTIME, &ts);
+    return (long)ts.tv_sec * 1000000000L + (long)ts.tv_nsec;
+}
+
 // ============================================================================
 // Program entry point wrapper
 // Saves argc/argv, then calls ease_main (the user's main function).
