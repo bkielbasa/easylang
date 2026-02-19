@@ -1,0 +1,25 @@
+package main
+
+fn TestSimpleEnum(t: T) {
+    r := Color::Red
+    g := Color::Green
+    b := Color::Blue
+    if color_code(r) != 1 { testing.Fatal("Red should be 1") }
+    if color_code(g) != 2 { testing.Fatal("Green should be 2") }
+    if color_code(b) != 3 { testing.Fatal("Blue should be 3") }
+}
+
+fn TestEnumWithData(t: T) {
+    some := Option::Some { value: 42 }
+    none := Option::None
+    if unwrap_or(some, 0) != 42 { testing.Fatal("Some should unwrap to 42") }
+    if unwrap_or(none, 10) != 10 { testing.Fatal("None should give default") }
+}
+
+fn TestMatchExpression(t: T) {
+    some := Option::Some { value: 7 }
+    none := Option::None
+    a := unwrap_or(some, 0)
+    b := unwrap_or(none, 99)
+    if a + b != 106 { testing.Fatal("expected 106") }
+}

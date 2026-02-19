@@ -41,6 +41,11 @@ fn DECL_STRUCT() -> int { return 41 }
 fn DECL_PARAM() -> int { return 42 }
 fn DECL_FIELD() -> int { return 43 }
 fn DECL_IMPORT() -> int { return 44 }
+fn DECL_ENUM() -> int { return 45 }
+fn DECL_VARIANT() -> int { return 46 }
+fn EXPR_ENUM_VARIANT() -> int { return 47 }
+fn STMT_MATCH() -> int { return 48 }
+fn STMT_MATCH_ARM() -> int { return 49 }
 
 // Type tags
 fn TYPE_UNKNOWN() -> int { return 0 }

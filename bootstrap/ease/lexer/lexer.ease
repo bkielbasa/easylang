@@ -76,6 +76,8 @@ fn lex_kind(src: string, pos: int) -> int {
     if ch == 38 && next == 38 { return TK_AND() }        // &&
     if ch == 124 && next == 124 { return TK_OR() }       // ||
     if ch == 46 && next == 46 { return TK_DOTDOT() }     // ..
+    if ch == 58 && next == 58 { return TK_COLONCOLON() }  // ::
+    if ch == 61 && next == 62 { return TK_FATARROW() }    // =>
 
     // Single-char tokens
     if ch == 40 { return TK_LPAREN() }    // (
@@ -127,6 +129,8 @@ fn lex_kind(src: string, pos: int) -> int {
         if word == "return" { return TK_RETURN() }
         if word == "break" { return TK_BREAK() }
         if word == "struct" { return TK_STRUCT() }
+        if word == "enum" { return TK_ENUM() }
+        if word == "match" { return TK_MATCH() }
         if word == "true" { return TK_TRUE() }
         if word == "false" { return TK_FALSE() }
         if word == "import" { return TK_IMPORT() }
@@ -143,7 +147,8 @@ fn lex_end(src: string, pos: int, kind: int) -> int {
     // Two-character tokens
     if kind == TK_ARROW() || kind == TK_LE() || kind == TK_GE() ||
        kind == TK_EQ() || kind == TK_NE() || kind == TK_AND() ||
-       kind == TK_OR() || kind == TK_DOTDOT() || kind == TK_COLONEQUAL() {
+       kind == TK_OR() || kind == TK_DOTDOT() || kind == TK_COLONEQUAL() ||
+       kind == TK_COLONCOLON() || kind == TK_FATARROW() {
         return pos + 2
     }
 
@@ -196,7 +201,7 @@ fn lex_end(src: string, pos: int, kind: int) -> int {
        kind == TK_IF() || kind == TK_ELSE() || kind == TK_FOR() || kind == TK_IN() ||
        kind == TK_RETURN() || kind == TK_BREAK() || kind == TK_STRUCT() ||
        kind == TK_TRUE() || kind == TK_FALSE() || kind == TK_IMPORT() ||
-       kind == TK_PACKAGE() {
+       kind == TK_PACKAGE() || kind == TK_ENUM() || kind == TK_MATCH() {
         end := pos
         for end < len(src) && (is_alpha(lex_peek(src, end)) || is_digit(lex_peek(src, end))) {
             end = end + 1
@@ -207,7 +212,8 @@ fn lex_end(src: string, pos: int, kind: int) -> int {
     // Two-character operators
     if kind == TK_ARROW() || kind == TK_LE() || kind == TK_GE() ||
        kind == TK_EQ() || kind == TK_NE() || kind == TK_AND() ||
-       kind == TK_OR() || kind == TK_DOTDOT() || kind == TK_COLONEQUAL() {
+       kind == TK_OR() || kind == TK_DOTDOT() || kind == TK_COLONEQUAL() ||
+       kind == TK_COLONCOLON() || kind == TK_FATARROW() {
         return pos + 2
     }
 
@@ -219,7 +225,7 @@ fn lex_string_value(src: string, pos: int, kind: int) -> string {
        kind == TK_IF() || kind == TK_ELSE() || kind == TK_FOR() || kind == TK_IN() ||
        kind == TK_RETURN() || kind == TK_BREAK() || kind == TK_STRUCT() ||
        kind == TK_TRUE() || kind == TK_FALSE() || kind == TK_IMPORT() ||
-       kind == TK_PACKAGE() {
+       kind == TK_PACKAGE() || kind == TK_ENUM() || kind == TK_MATCH() {
         end := lex_end(src, pos, kind)
         return str_substring(src, pos, end)
     }

@@ -279,6 +279,44 @@ fn get_struct_fields(struct_node_idx: int) -> []int {
     return []int{}
 }
 
+// Match arm bindings side table
+// Maps arm node index -> binding names
+// Layout: [arm_idx, count, name1_idx, name2_idx, ...]
+// But since we store strings, we use a parallel approach
+g_match_arm_bindings := []int{}
+g_match_arm_binding_names := []string{}
+
+fn store_match_arm_bindings(arm_node_idx: int, names: []string) {
+    push(g_match_arm_bindings, arm_node_idx)
+    push(g_match_arm_bindings, len(names))
+    start := len(g_match_arm_binding_names)
+    push(g_match_arm_bindings, start)
+    i := 0
+    for i < len(names) {
+        push(g_match_arm_binding_names, names[i])
+        i = i + 1
+    }
+}
+
+fn get_match_arm_bindings(arm_node_idx: int) -> []string {
+    i := 0
+    for i < len(g_match_arm_bindings) {
+        if g_match_arm_bindings[i] == arm_node_idx {
+            count := g_match_arm_bindings[i + 1]
+            start := g_match_arm_bindings[i + 2]
+            result := []string{}
+            j := 0
+            for j < count {
+                push(result, g_match_arm_binding_names[start + j])
+                j = j + 1
+            }
+            return result
+        }
+        i = i + 3
+    }
+    return []string{}
+}
+
 // Check if a string ends with "_test.ease"
 fn has_test_suffix(s: string) -> int {
     slen := len(s)
@@ -356,6 +394,9 @@ fn parse_source_file(source: string, nodes: []AstNode, func_names: []string, fun
         } else if kind == TK_STRUCT() {
             struct_result := parse_struct_decl(source, parse_pos, nodes)
             parse_pos = struct_result.new_pos
+        } else if kind == TK_ENUM() {
+            enum_result := parse_enum_decl(source, parse_pos, nodes)
+            parse_pos = enum_result.new_pos
         } else if kind == TK_IDENT() {
             ce_end := lex_end(source, parse_pos, kind)
             ce_next_pos := lex_skip(source, ce_end)
@@ -402,7 +443,7 @@ fn parse_source_file(source: string, nodes: []AstNode, func_names: []string, fun
     return 0
 }
 
-fn run_test_mode(test_path: string) -> int {
+fn run_test_mode(test_path: string, run_bench: int) -> int {
     // Determine directory to scan
     dir := test_path
     if len(dir) == 0 { dir = "." }
@@ -471,7 +512,7 @@ fn run_test_mode(test_path: string) -> int {
             if is_test_func(func_names[tfi]) == 1 && count_func_params(nodes, func_indices[tfi]) == 1 {
                 push(test_func_names, func_names[tfi])
             }
-            if is_benchmark_func(func_names[tfi]) == 1 && count_func_params(nodes, func_indices[tfi]) == 1 {
+            if run_bench == 1 && is_benchmark_func(func_names[tfi]) == 1 && count_func_params(nodes, func_indices[tfi]) == 1 {
                 push(bench_func_names, func_names[tfi])
             }
             tfi = tfi + 1
@@ -530,6 +571,9 @@ fn run_test_mode(test_path: string) -> int {
                                         } else if dir_kind == TK_STRUCT() {
                                             dir_struct := parse_struct_decl(dir_source, dir_pos, nodes)
                                             dir_pos = dir_struct.new_pos
+                                        } else if dir_kind == TK_ENUM() {
+                                            dir_enum := parse_enum_decl(dir_source, dir_pos, nodes)
+                                            dir_pos = dir_enum.new_pos
                                         } else if dir_kind == TK_IDENT() {
                                             dir_ce_end := lex_end(dir_source, dir_pos, dir_kind)
                                             dir_ce_next := lex_skip(dir_source, dir_ce_end)
@@ -614,6 +658,9 @@ fn run_test_mode(test_path: string) -> int {
                         } else if mod_kind == TK_STRUCT() {
                             mod_struct_result := parse_struct_decl(mod_source, mod_pos, nodes)
                             mod_pos = mod_struct_result.new_pos
+                        } else if mod_kind == TK_ENUM() {
+                            mod_enum_result := parse_enum_decl(mod_source, mod_pos, nodes)
+                            mod_pos = mod_enum_result.new_pos
                         } else if mod_kind == TK_IDENT() {
                             mod_ce_end := lex_end(mod_source, mod_pos, mod_kind)
                             mod_ce_next := lex_skip(mod_source, mod_ce_end)
@@ -746,6 +793,10 @@ fn run_test_mode(test_path: string) -> int {
                     smod_struct := parse_struct_decl(smod_source, smod_pos, nodes)
                     smod_pos = smod_struct.new_pos
                     smod_pos = lex_skip(smod_source, smod_pos)
+                } else if smod_kind == TK_ENUM() {
+                    smod_enum := parse_enum_decl(smod_source, smod_pos, nodes)
+                    smod_pos = smod_enum.new_pos
+                    smod_pos = lex_skip(smod_source, smod_pos)
                 } else {
                     smod_pos = lex_end(smod_source, smod_pos, smod_kind)
                     smod_pos = lex_skip(smod_source, smod_pos)
@@ -786,6 +837,40 @@ fn run_test_mode(test_path: string) -> int {
             RegisterStruct(struct_name, field_names_list)
         }
         sfi = sfi + 1
+    }
+
+    // Register enums
+    efi := 0
+    for efi < nodes_len {
+        if nodes[efi].tag == DECL_ENUM() {
+            ename := nodes[efi].str_val
+            evariants := []string{}
+            efield_counts := []int{}
+            efield_names := []string{}
+            evi := nodes[efi].left
+            evc := nodes[efi].int_val
+            evci := 0
+            for evci < evc {
+                if evi >= nodes_len { break }
+                if nodes[evi].tag != DECL_VARIANT() { break }
+                push(evariants, nodes[evi].str_val)
+                vfi := nodes[evi].left
+                vfc := 0
+                if vfi >= 0 {
+                    for vfi < nodes_len {
+                        if nodes[vfi].tag != DECL_FIELD() { break }
+                        push(efield_names, nodes[vfi].str_val)
+                        vfc = vfc + 1
+                        vfi = vfi + 1
+                    }
+                }
+                push(efield_counts, vfc)
+                evi = evi + 1
+                evci = evci + 1
+            }
+            RegisterEnum(ename, evariants, efield_counts, efield_names)
+        }
+        efi = efi + 1
     }
 
     // Build function return type registry
@@ -1100,15 +1185,23 @@ fn run_test_mode(test_path: string) -> int {
 }
 
 fn main() -> int {
-    // Check for test mode: ease test <path>
+    // Check for test mode: ease test <path> [--bench]
     argc := os.Argc()
     if argc > 1 {
         if os.Argv(1) == "test" {
             test_path := "."
-            if argc > 2 {
-                test_path = os.Argv(2)
+            run_bench := 0
+            argi := 2
+            for argi < argc {
+                arg := os.Argv(argi)
+                if arg == "--bench" {
+                    run_bench = 1
+                } else {
+                    test_path = arg
+                }
+                argi = argi + 1
             }
-            return run_test_mode(test_path)
+            return run_test_mode(test_path, run_bench)
         }
     }
 
@@ -1178,6 +1271,9 @@ fn main() -> int {
             struct_result := parse_struct_decl(source, parse_pos, nodes)
             struct_count = struct_count + 1
             parse_pos = struct_result.new_pos
+        } else if kind == TK_ENUM() {
+            enum_result := parse_enum_decl(source, parse_pos, nodes)
+            parse_pos = enum_result.new_pos
         } else if kind == TK_IDENT() {
             // Check for := global declaration
             ce_saved := parse_pos
@@ -1271,6 +1367,9 @@ fn main() -> int {
                                         } else if dir_kind == TK_STRUCT() {
                                             dir_struct := parse_struct_decl(dir_source, dir_pos, nodes)
                                             dir_pos = dir_struct.new_pos
+                                        } else if dir_kind == TK_ENUM() {
+                                            dir_enum := parse_enum_decl(dir_source, dir_pos, nodes)
+                                            dir_pos = dir_enum.new_pos
                                         } else if dir_kind == TK_IDENT() {
                                             dir_ce_end := lex_end(dir_source, dir_pos, dir_kind)
                                             dir_ce_next := lex_skip(dir_source, dir_ce_end)
@@ -1375,6 +1474,9 @@ fn main() -> int {
                         } else if mod_kind == TK_STRUCT() {
                             mod_struct_result := parse_struct_decl(mod_source, mod_pos, nodes)
                             mod_pos = mod_struct_result.new_pos
+                        } else if mod_kind == TK_ENUM() {
+                            mod_enum_result := parse_enum_decl(mod_source, mod_pos, nodes)
+                            mod_pos = mod_enum_result.new_pos
                         } else if mod_kind == TK_IDENT() {
                             mod_ce_end := lex_end(mod_source, mod_pos, mod_kind)
                             mod_ce_next := lex_skip(mod_source, mod_ce_end)
@@ -1517,6 +1619,14 @@ fn main() -> int {
                     push(g_rename_to, smod_qualified)
                     smod_pos = smod_result.new_pos
                     smod_pos = lex_skip(smod_source, smod_pos)
+                } else if smod_kind == TK_STRUCT() {
+                    smod_struct := parse_struct_decl(smod_source, smod_pos, nodes)
+                    smod_pos = smod_struct.new_pos
+                    smod_pos = lex_skip(smod_source, smod_pos)
+                } else if smod_kind == TK_ENUM() {
+                    smod_enum := parse_enum_decl(smod_source, smod_pos, nodes)
+                    smod_pos = smod_enum.new_pos
+                    smod_pos = lex_skip(smod_source, smod_pos)
                 } else {
                     // Skip comments and non-function declarations
                     smod_pos = lex_end(smod_source, smod_pos, smod_kind)
@@ -1559,6 +1669,42 @@ fn main() -> int {
             RegisterStruct(struct_name, field_names_list)
         }
         sfi = sfi + 1
+    }
+
+    // Register enums
+    efi := 0
+    for efi < nodes_len {
+        if nodes[efi].tag == DECL_ENUM() {
+            ename := nodes[efi].str_val
+            evariants := []string{}
+            efield_counts := []int{}
+            efield_names := []string{}
+            // Walk consecutive DECL_VARIANT nodes starting at enum.left
+            evi := nodes[efi].left
+            evc := nodes[efi].int_val
+            evci := 0
+            for evci < evc {
+                if evi >= nodes_len { break }
+                if nodes[evi].tag != DECL_VARIANT() { break }
+                push(evariants, nodes[evi].str_val)
+                // Count fields for this variant
+                vfi := nodes[evi].left
+                vfc := 0
+                if vfi >= 0 {
+                    for vfi < nodes_len {
+                        if nodes[vfi].tag != DECL_FIELD() { break }
+                        push(efield_names, nodes[vfi].str_val)
+                        vfc = vfc + 1
+                        vfi = vfi + 1
+                    }
+                }
+                push(efield_counts, vfc)
+                evi = evi + 1
+                evci = evci + 1
+            }
+            RegisterEnum(ename, evariants, efield_counts, efield_names)
+        }
+        efi = efi + 1
     }
 
     // Build function return type registry

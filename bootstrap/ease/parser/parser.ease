@@ -322,6 +322,10 @@ fn parse_stmt(src: string, pos: int, nodes: []AstNode) -> ParseResult {
         return parse_return_stmt(src, p, nodes)
     }
 
+    if kind == TK_MATCH() {
+        return parse_match_stmt(src, p, nodes)
+    }
+
     if kind == TK_BREAK() {
         p = lex_end(src, p, kind)
         stmt := AstNode {
@@ -891,12 +895,292 @@ fn parse_struct_decl(src: string, pos: int, nodes: []AstNode) -> ParseResult {
     return ParseResult { node_idx: len(nodes) - 1, new_pos: p }
 }
 
+// Parse enum declaration: enum Name { Variant1, Variant2 { field: type }, ... }
+fn parse_enum_decl(src: string, pos: int, nodes: []AstNode) -> ParseResult {
+    p := pos
+    p = lex_skip(src, p)
+
+    // Expect 'enum'
+    enum_kind := lex_kind(src, p)
+    if enum_kind != TK_ENUM() {
+        return ParseResult { node_idx: -1, new_pos: p }
+    }
+    p = lex_end(src, p, enum_kind)
+    p = lex_skip(src, p)
+
+    // Parse enum name
+    name_kind := lex_kind(src, p)
+    if name_kind != TK_IDENT() {
+        return ParseResult { node_idx: -1, new_pos: p }
+    }
+    enum_name := lex_string_value(src, p, name_kind)
+    p = lex_end(src, p, name_kind)
+    p = lex_skip(src, p)
+
+    // Expect '{'
+    lbrace := lex_kind(src, p)
+    if lbrace != TK_LBRACE() {
+        return ParseResult { node_idx: -1, new_pos: p }
+    }
+    p = lex_end(src, p, lbrace)
+    p = lex_skip(src, p)
+
+    // Parse variants
+    first_variant := -1
+    variant_count := 0
+    for {
+        next := lex_kind(src, p)
+        if next == TK_RBRACE() || next == TK_EOF() {
+            break
+        }
+
+        // Parse variant name
+        if lex_kind(src, p) != TK_IDENT() {
+            break
+        }
+        variant_name := lex_string_value(src, p, TK_IDENT())
+        p = lex_end(src, p, TK_IDENT())
+        p = lex_skip(src, p)
+
+        // Check for fields: { field: type, ... }
+        first_field := -1
+        if lex_kind(src, p) == TK_LBRACE() {
+            p = lex_end(src, p, TK_LBRACE())
+            p = lex_skip(src, p)
+
+            for {
+                if lex_kind(src, p) == TK_RBRACE() || lex_kind(src, p) == TK_EOF() {
+                    break
+                }
+                field_result := parse_field(src, p, nodes)
+                if field_result.node_idx < 0 {
+                    break
+                }
+                if first_field < 0 {
+                    first_field = field_result.node_idx
+                }
+                p = field_result.new_pos
+                p = lex_skip(src, p)
+            }
+
+            // Expect '}'
+            if lex_kind(src, p) == TK_RBRACE() {
+                p = lex_end(src, p, TK_RBRACE())
+                p = lex_skip(src, p)
+            }
+        }
+
+        // Create DECL_VARIANT node
+        variant := AstNode {
+            tag: DECL_VARIANT(),
+            int_val: variant_count,
+            str_val: variant_name,
+            left: first_field,
+            right: -1,
+            extra: -1,
+            type_tag: TYPE_UNKNOWN()
+        }
+        push(nodes, variant)
+        variant_idx := len(nodes) - 1
+
+        if first_variant < 0 {
+            first_variant = variant_idx
+        }
+        variant_count = variant_count + 1
+
+        // Skip optional comma
+        if lex_kind(src, p) == TK_COMMA() {
+            p = lex_end(src, p, TK_COMMA())
+            p = lex_skip(src, p)
+        }
+    }
+
+    // Expect '}'
+    rbrace := lex_kind(src, p)
+    if rbrace != TK_RBRACE() {
+        return ParseResult { node_idx: -1, new_pos: p }
+    }
+    p = lex_end(src, p, rbrace)
+
+    // Create DECL_ENUM node
+    enum_decl := AstNode {
+        tag: DECL_ENUM(),
+        int_val: variant_count,
+        str_val: enum_name,
+        left: first_variant,
+        right: -1,
+        extra: -1,
+        type_tag: TYPE_UNKNOWN()
+    }
+    push(nodes, enum_decl)
+    return ParseResult { node_idx: len(nodes) - 1, new_pos: p }
+}
+
+// Parse match statement: match expr { Pattern => body, ... }
+fn parse_match_stmt(src: string, pos: int, nodes: []AstNode) -> ParseResult {
+    p := pos
+    p = lex_skip(src, p)
+
+    // Expect 'match'
+    match_kind := lex_kind(src, p)
+    if match_kind != TK_MATCH() {
+        return ParseResult { node_idx: -1, new_pos: p }
+    }
+    p = lex_end(src, p, match_kind)
+    p = lex_skip(src, p)
+
+    // Parse the matched expression
+    match_expr := parse_expr_with_pos(src, p, nodes)
+    if match_expr.node_idx < 0 {
+        return ParseResult { node_idx: -1, new_pos: p }
+    }
+    p = match_expr.new_pos
+    p = lex_skip(src, p)
+
+    // Expect '{'
+    if lex_kind(src, p) != TK_LBRACE() {
+        return ParseResult { node_idx: -1, new_pos: p }
+    }
+    p = lex_end(src, p, TK_LBRACE())
+    p = lex_skip(src, p)
+
+    // Parse match arms
+    first_arm := -1
+    arm_count := 0
+    for {
+        if lex_kind(src, p) == TK_RBRACE() || lex_kind(src, p) == TK_EOF() {
+            break
+        }
+
+        // Parse pattern: EnumName::VariantName
+        if lex_kind(src, p) != TK_IDENT() {
+            break
+        }
+        pattern_enum := lex_string_value(src, p, TK_IDENT())
+        p = lex_end(src, p, TK_IDENT())
+        p = lex_skip(src, p)
+
+        // Expect '::'
+        if lex_kind(src, p) != TK_COLONCOLON() {
+            break
+        }
+        p = lex_end(src, p, TK_COLONCOLON())
+        p = lex_skip(src, p)
+
+        // Parse variant name
+        if lex_kind(src, p) != TK_IDENT() {
+            break
+        }
+        pattern_variant := lex_string_value(src, p, TK_IDENT())
+        p = lex_end(src, p, TK_IDENT())
+        p = lex_skip(src, p)
+
+        qualified := pattern_enum + "." + pattern_variant
+
+        // Parse optional bindings: { name1, name2, ... }
+        binding_names := []string{}
+        if lex_kind(src, p) == TK_LBRACE() {
+            p = lex_end(src, p, TK_LBRACE())
+            p = lex_skip(src, p)
+
+            for {
+                if lex_kind(src, p) == TK_RBRACE() || lex_kind(src, p) == TK_EOF() {
+                    break
+                }
+                if lex_kind(src, p) != TK_IDENT() {
+                    break
+                }
+                bname := lex_string_value(src, p, TK_IDENT())
+                push(binding_names, bname)
+                p = lex_end(src, p, TK_IDENT())
+                p = lex_skip(src, p)
+
+                if lex_kind(src, p) == TK_COMMA() {
+                    p = lex_end(src, p, TK_COMMA())
+                    p = lex_skip(src, p)
+                }
+            }
+
+            // Expect '}'
+            if lex_kind(src, p) == TK_RBRACE() {
+                p = lex_end(src, p, TK_RBRACE())
+                p = lex_skip(src, p)
+            }
+        }
+
+        // Expect '=>'
+        if lex_kind(src, p) != TK_FATARROW() {
+            break
+        }
+        p = lex_end(src, p, TK_FATARROW())
+        p = lex_skip(src, p)
+
+        // Parse body expression
+        body_result := parse_expr_with_pos(src, p, nodes)
+        if body_result.node_idx < 0 {
+            break
+        }
+        p = body_result.new_pos
+        p = lex_skip(src, p)
+
+        // Create STMT_MATCH_ARM node
+        arm := AstNode {
+            tag: STMT_MATCH_ARM(),
+            int_val: len(binding_names),
+            str_val: qualified,
+            left: body_result.node_idx,
+            right: -1,
+            extra: -1,
+            type_tag: TYPE_UNKNOWN()
+        }
+        push(nodes, arm)
+        arm_idx := len(nodes) - 1
+
+        if first_arm < 0 {
+            first_arm = arm_idx
+        }
+
+        // Store binding names for this arm
+        store_match_arm_bindings(arm_idx, binding_names)
+
+        arm_count = arm_count + 1
+
+        // Skip optional comma
+        if lex_kind(src, p) == TK_COMMA() {
+            p = lex_end(src, p, TK_COMMA())
+            p = lex_skip(src, p)
+        }
+    }
+
+    // Expect '}'
+    if lex_kind(src, p) != TK_RBRACE() {
+        return ParseResult { node_idx: -1, new_pos: p }
+    }
+    p = lex_end(src, p, TK_RBRACE())
+
+    // Create STMT_MATCH node
+    match_node := AstNode {
+        tag: STMT_MATCH(),
+        int_val: arm_count,
+        str_val: "",
+        left: match_expr.node_idx,
+        right: first_arm,
+        extra: -1,
+        type_tag: TYPE_UNKNOWN()
+    }
+    push(nodes, match_node)
+    return ParseResult { node_idx: len(nodes) - 1, new_pos: p }
+}
+
 // Parse atom (literal or identifier - no parentheses yet)
 fn parse_atom(src: string, pos: int, nodes: []AstNode) -> ParseResult {
     p := pos
     p = lex_skip(src, p)
     kind := lex_kind(src, p)
 
+    if kind == TK_MATCH() {
+        return parse_match_stmt(src, p, nodes)
+    }
     if kind == TK_INT() {
         val := lex_int_value(src, p)
         node := new_int_node(val, nodes)
@@ -930,8 +1214,97 @@ fn parse_atom(src: string, pos: int, nodes: []AstNode) -> ParseResult {
     }
     if kind == TK_IDENT() {
         name := lex_string_value(src, p, kind)
-        node := new_ident_node(name, nodes)
         p = lex_end(src, p, kind)
+        p_saved := p
+        p_check := lex_skip(src, p)
+
+        // Check for enum variant: Ident::Variant
+        if lex_kind(src, p_check) == TK_COLONCOLON() {
+            p = p_check
+            p = lex_end(src, p, TK_COLONCOLON())
+            p = lex_skip(src, p)
+
+            if lex_kind(src, p) == TK_IDENT() {
+                variant_name := lex_string_value(src, p, TK_IDENT())
+                p = lex_end(src, p, TK_IDENT())
+                p = lex_skip(src, p)
+                qualified := name + "." + variant_name
+
+                // Check for field values: { field: value, ... }
+                field_value_indices := []int{}
+                if lex_kind(src, p) == TK_LBRACE() {
+                    p = lex_end(src, p, TK_LBRACE())
+                    p = lex_skip(src, p)
+
+                    for {
+                        if lex_kind(src, p) == TK_RBRACE() || lex_kind(src, p) == TK_EOF() {
+                            break
+                        }
+
+                        // Parse field name
+                        if lex_kind(src, p) != TK_IDENT() {
+                            break
+                        }
+                        p = lex_end(src, p, TK_IDENT())
+                        p = lex_skip(src, p)
+
+                        // Expect ':'
+                        if lex_kind(src, p) != TK_COLON() {
+                            break
+                        }
+                        p = lex_end(src, p, TK_COLON())
+                        p = lex_skip(src, p)
+
+                        // Parse value expression
+                        val_result := parse_expr_with_pos(src, p, nodes)
+                        if val_result.node_idx < 0 {
+                            break
+                        }
+                        push(field_value_indices, val_result.node_idx)
+                        p = val_result.new_pos
+                        p = lex_skip(src, p)
+
+                        if lex_kind(src, p) == TK_COMMA() {
+                            p = lex_end(src, p, TK_COMMA())
+                            p = lex_skip(src, p)
+                        }
+                    }
+
+                    // Expect '}'
+                    if lex_kind(src, p) == TK_RBRACE() {
+                        p = lex_end(src, p, TK_RBRACE())
+                    }
+                }
+
+                // Create EXPR_ENUM_VARIANT node
+                first_field := -1
+                if len(field_value_indices) > 0 {
+                    first_field = field_value_indices[0]
+                }
+                ev_node := AstNode {
+                    tag: EXPR_ENUM_VARIANT(),
+                    int_val: len(field_value_indices),
+                    str_val: qualified,
+                    left: first_field,
+                    right: -1,
+                    extra: -1,
+                    type_tag: TYPE_UNKNOWN()
+                }
+                push(nodes, ev_node)
+                ev_idx := len(nodes) - 1
+
+                // Store field values using existing struct fields side table
+                store_struct_fields(ev_idx, field_value_indices)
+
+                return ParseResult { node_idx: ev_idx, new_pos: p }
+            }
+            // Failed to parse variant, restore
+            p = p_saved
+        } else {
+            p = p_saved
+        }
+
+        node := new_ident_node(name, nodes)
         return ParseResult { node_idx: node, new_pos: p }
     }
     if kind == TK_LBRACKET() {

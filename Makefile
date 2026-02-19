@@ -18,7 +18,7 @@ COMPILER_SRC := bootstrap/compiler.ease
 BUILD_DIR := tmp
 EASE      := $(BUILD_DIR)/ease
 
-.PHONY: all clean verify update-seed test
+.PHONY: all clean verify update-seed test bench
 
 all: $(EASE)
 
@@ -55,6 +55,13 @@ update-seed: verify
 DIR ?= tests
 test: $(EASE)
 	@$(EASE) test $(DIR) > /dev/null 2>&1
+	@$(CC) -O0 $(RUNTIME) $(BUILD_DIR)/output.ll -o $(BUILD_DIR)/test_bin 2>/dev/null
+	@$(BUILD_DIR)/test_bin
+
+# Run tests + benchmarks
+# Usage: make bench [DIR=path/to/dir] (default: tests/)
+bench: $(EASE)
+	@$(EASE) test $(DIR) --bench > /dev/null 2>&1
 	@$(CC) -O0 $(RUNTIME) $(BUILD_DIR)/output.ll -o $(BUILD_DIR)/test_bin 2>/dev/null
 	@$(BUILD_DIR)/test_bin
 

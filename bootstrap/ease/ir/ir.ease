@@ -210,6 +210,148 @@ fn get_struct_field_names(name: string) -> []string {
     return []string{}
 }
 
+// Enum registry
+g_enum_names := []string{}
+g_enum_variant_counts := []int{}
+g_enum_variant_starts := []int{}
+g_enum_variant_names := []string{}
+g_enum_variant_field_counts := []int{}
+g_enum_variant_field_starts := []int{}
+g_enum_variant_field_names := []string{}
+
+fn RegisterEnum(name: string, variants: []string, field_counts: []int, field_names: []string) {
+    push(g_enum_names, name)
+    push(g_enum_variant_counts, len(variants))
+    push(g_enum_variant_starts, len(g_enum_variant_names))
+    vi := 0
+    for vi < len(variants) {
+        push(g_enum_variant_names, variants[vi])
+        push(g_enum_variant_field_counts, field_counts[vi])
+        push(g_enum_variant_field_starts, len(g_enum_variant_field_names))
+        // Copy field names for this variant
+        fi := 0
+        for fi < field_counts[vi] {
+            // field_names is a flat array — compute offset from cumulative field counts
+            offset := 0
+            oi := 0
+            for oi < vi {
+                offset = offset + field_counts[oi]
+                oi = oi + 1
+            }
+            push(g_enum_variant_field_names, field_names[offset + fi])
+            fi = fi + 1
+        }
+        vi = vi + 1
+    }
+}
+
+fn enum_tag(enum_name: string, variant_name: string) -> int {
+    ei := 0
+    for ei < len(g_enum_names) {
+        if g_enum_names[ei] == enum_name {
+            start := g_enum_variant_starts[ei]
+            count := g_enum_variant_counts[ei]
+            vi := 0
+            for vi < count {
+                if g_enum_variant_names[start + vi] == variant_name {
+                    return vi
+                }
+                vi = vi + 1
+            }
+        }
+        ei = ei + 1
+    }
+    return -1
+}
+
+fn enum_max_size(enum_name: string) -> int {
+    ei := 0
+    for ei < len(g_enum_names) {
+        if g_enum_names[ei] == enum_name {
+            start := g_enum_variant_starts[ei]
+            count := g_enum_variant_counts[ei]
+            max_fields := 0
+            vi := 0
+            for vi < count {
+                fc := g_enum_variant_field_counts[start + vi]
+                if fc > max_fields {
+                    max_fields = fc
+                }
+                vi = vi + 1
+            }
+            return 8 + max_fields * 8
+        }
+        ei = ei + 1
+    }
+    return 8
+}
+
+fn enum_variant_field_offset(enum_name: string, variant_name: string, field_name: string) -> int {
+    ei := 0
+    for ei < len(g_enum_names) {
+        if g_enum_names[ei] == enum_name {
+            start := g_enum_variant_starts[ei]
+            count := g_enum_variant_counts[ei]
+            vi := 0
+            for vi < count {
+                if g_enum_variant_names[start + vi] == variant_name {
+                    fstart := g_enum_variant_field_starts[start + vi]
+                    fcount := g_enum_variant_field_counts[start + vi]
+                    fi := 0
+                    for fi < fcount {
+                        if g_enum_variant_field_names[fstart + fi] == field_name {
+                            return 8 + fi * 8
+                        }
+                        fi = fi + 1
+                    }
+                }
+                vi = vi + 1
+            }
+        }
+        ei = ei + 1
+    }
+    return 8
+}
+
+fn enum_variant_field_count(enum_name: string, variant_name: string) -> int {
+    ei := 0
+    for ei < len(g_enum_names) {
+        if g_enum_names[ei] == enum_name {
+            start := g_enum_variant_starts[ei]
+            count := g_enum_variant_counts[ei]
+            vi := 0
+            for vi < count {
+                if g_enum_variant_names[start + vi] == variant_name {
+                    return g_enum_variant_field_counts[start + vi]
+                }
+                vi = vi + 1
+            }
+        }
+        ei = ei + 1
+    }
+    return 0
+}
+
+fn enum_variant_field_name(enum_name: string, variant_name: string, field_idx: int) -> string {
+    ei := 0
+    for ei < len(g_enum_names) {
+        if g_enum_names[ei] == enum_name {
+            start := g_enum_variant_starts[ei]
+            count := g_enum_variant_counts[ei]
+            vi := 0
+            for vi < count {
+                if g_enum_variant_names[start + vi] == variant_name {
+                    fstart := g_enum_variant_field_starts[start + vi]
+                    return g_enum_variant_field_names[fstart + field_idx]
+                }
+                vi = vi + 1
+            }
+        }
+        ei = ei + 1
+    }
+    return ""
+}
+
 fn is_scalar_global(name: string) -> int {
     i := 0
     for i < len(g_scalar_globals) {

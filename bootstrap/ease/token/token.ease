@@ -21,6 +21,8 @@ fn TK_TRUE() -> int { return 20 }
 fn TK_FALSE() -> int { return 21 }
 fn TK_IMPORT() -> int { return 22 }
 fn TK_PACKAGE() -> int { return 23 }
+fn TK_ENUM() -> int { return 24 }
+fn TK_MATCH() -> int { return 25 }
 
 // Arithmetic operators
 fn TK_PLUS() -> int { return 30 }
@@ -63,6 +65,8 @@ fn TK_COMMA() -> int { return 57 }
 fn TK_COLON() -> int { return 58 }
 fn TK_SEMI() -> int { return 59 }
 fn TK_COLONEQUAL() -> int { return 60 }
+fn TK_COLONCOLON() -> int { return 61 }
+fn TK_FATARROW() -> int { return 62 }
 
 fn TK_EOF() -> int { return 100 }
 
@@ -84,6 +88,8 @@ fn TokenName(kind: int) -> string {
     if kind == 21 { return "'false'" }
     if kind == 22 { return "'import'" }
     if kind == 23 { return "'package'" }
+    if kind == 24 { return "'enum'" }
+    if kind == 25 { return "'match'" }
     if kind == 30 { return "'+'" }
     if kind == 31 { return "'-'" }
     if kind == 32 { return "'*'" }
@@ -115,6 +121,8 @@ fn TokenName(kind: int) -> string {
     if kind == 58 { return "':'" }
     if kind == 59 { return "';'" }
     if kind == 60 { return "':='" }
+    if kind == 61 { return "'::'" }
+    if kind == 62 { return "'=>'" }
     if kind == 100 { return "end of file" }
     return "unknown"
 }

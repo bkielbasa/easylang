@@ -73,18 +73,32 @@ for condition { }          // condition-based (like while)
 for x in collection { }    // range iteration
 ```
 
-### Enums (Rust-style with named fields)
+### Enums with Pattern Matching (implemented)
 ```
-enum Option<T> {
-    Some { value: T },
-    None,
+enum Color { Red, Green, Blue }
+enum Option { Some { value: int }, None }
+
+fn color_code(c: int) -> int {
+    result := match c {
+        Color::Red => 1,
+        Color::Green => 2,
+        Color::Blue => 3,
+    }
+    return result
 }
 
-enum Message {
-    Quit,
-    Move { x: int, y: int },
+fn unwrap_or(opt: int, def: int) -> int {
+    result := match opt {
+        Option::Some { value } => value,
+        Option::None => def,
+    }
+    return result
 }
 ```
+- Enum values are heap-allocated tagged unions: `[tag: i64 | field1: i64 | ...]`
+- Variant construction: `Color::Red`, `Option::Some { value: 42 }`
+- Pattern matching with `match` expression and field destructuring
+- `match` works as expression: `result := match expr { ... }`
 
 ### Testing (Go-style, implemented)
 Tests live in `*_test.ease` files alongside source code. Test functions start with `Test` (uppercase T) and accept a `t: T` parameter (Go-style).
@@ -120,7 +134,10 @@ fn TestMultiply(t: T) {
 ```bash
 make test                           # run all tests in tests/
 make test DIR=path/to/dir           # run tests in a specific directory
+make bench                          # run tests + benchmarks
+make bench DIR=path/to/dir          # benchmarks in a specific directory
 ease test dir/                      # compile tests (then clang + run)
+ease test dir/ --bench              # compile tests + benchmarks
 ```
 
 **Example output:**
@@ -154,6 +171,7 @@ fn BenchmarkAdd(b: B) {
 - **Auto-calibration**: Framework doubles `b.N` until benchmark runs >= 1 second
 - **Output**: `BenchmarkXxx\t<iterations>\t<ns/op> ns/op`
 - **Skipped on failure**: Benchmarks only run if all tests pass
+- **Opt-in**: Benchmarks only run with `--bench` flag (`make bench` or `ease test dir/ --bench`)
 - **C runtime**: `ease_time_nanos()` via `clock_gettime(CLOCK_MONOTONIC)`
 
 **Example output:**
@@ -193,7 +211,7 @@ ease/
 │       ├── os/os.ease             # OS functions (ReadFile via syscall)
 │       ├── testing/testing.ease   # Testing framework (Fatal)
 │       └── time/time.ease         # Time package (Now, Unix, Add, Before, After)
-├── tests/                # Go-style tests (27 passing)
+├── tests/                # Go-style tests (30 passing)
 ├── examples/             # Example programs
 │   └── testdemo/         # Go-style test demo (math.ease + math_test.ease)
 └── findings/             # Compiler engineering notes
@@ -205,8 +223,9 @@ The compiler is fully self-hosting. No Go or other compilers needed — just `cl
 
 ```bash
 make                    # Build compiler from seed LLVM IR
-make test               # Run tests (27 passing)
+make test               # Run tests (30 passing)
 make test DIR=path      # Run tests in specific directory
+make bench              # Run tests + benchmarks
 make verify             # Verify self-hosting convergence (gen1 == gen2)
 make update-seed        # Update seed after modifying compiler source
 make clean              # Remove build artifacts
@@ -253,7 +272,7 @@ The Ease compiler is written in Ease and compiles itself with byte-identical con
 - Function return type registry (automatic string/int dispatch)
 - String `==`/`!=` auto-dispatch (no explicit str_eq/str_ne needed)
 - Dynamic struct field registry for user-defined structs
-- Go-style test suite (27 tests passing, 2 benchmarks)
+- Go-style test suite (30 tests passing, 2 benchmarks)
 
 **Compiler Components** (all in `bootstrap/ease/`):
 - [x] Lexer with comment handling (// comments)
@@ -307,10 +326,9 @@ The Ease compiler is written in Ease and compiles itself with byte-identical con
 ### Language Features
 - [x] **Go-style `:=` declarations** — Replaced `let`/`let mut` with `:=`. All variables are mutable.
 - [ ] **`const` keyword** — Compile-time constants (e.g. `const MAX_SIZE = 1024`)
-- [ ] Enums (parser done, codegen TODO)
+- [x] Enums with pattern matching (heap-allocated tagged unions, `match` expressions)
 - [ ] Traits (parser done, codegen TODO)
 - [ ] Generics (design TODO)
-- [ ] Pattern matching
 - [ ] Closures and lambdas
 - [ ] Error propagation operator (`?`)
 - [ ] Result and Option types
@@ -326,13 +344,14 @@ The Ease compiler is written in Ease and compiles itself with byte-identical con
 
 ```bash
 make                                    # Build from seed (no Go required)
-make test                               # Run tests (27 passing)
+make test                               # Run tests (30 passing)
 make test DIR=path                      # Run tests in specific directory
+make bench                              # Run tests + benchmarks
 make verify                             # Verify self-hosting convergence
 make update-seed                        # Update seed after source changes
 ```
 
-**Test Suite (27 tests, Go-style):**
+**Test Suite (30 tests, Go-style):**
 
 Tests live in `tests/` as `*_test.ease` files with `fn TestXxx(t: T)` functions:
 
@@ -344,9 +363,10 @@ Tests live in `tests/` as `*_test.ease` files with `fn TestXxx(t: T)` functions:
 | `strings_test.ease` | 6 | Concat, Contains, StartsWith, EndsWith, IndexOf, strconv |
 | `structs_test.ease` | 3 | Struct literals, field access, pass to functions |
 | `loops_test.ease` | 3 | Range `for i in start..end`, condition loops, modulo |
+| `enum_test.ease` | 3 | Enum variants, match expressions, field destructuring |
 | `time_test.ease` | 6 | time.Now, Unix, UnixNano, Add, Before, After, Since |
 | `bench_test.ease` | 2 | Benchmark: add, factorial (auto-calibrating ns/op) |
-| `helpers.ease` | — | Shared helper functions and struct definitions |
+| `helpers.ease` | — | Shared helper functions, structs, enums |
 
 ## Example Programs
 

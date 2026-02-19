@@ -52,3 +52,23 @@ fn count_even(arr: []int) -> int {
     }
     return count
 }
+
+enum Color { Red, Green, Blue }
+enum Option { Some { value: int }, None }
+
+fn color_code(c: int) -> int {
+    result := match c {
+        Color::Red => 1,
+        Color::Green => 2,
+        Color::Blue => 3,
+    }
+    return result
+}
+
+fn unwrap_or(opt: int, def: int) -> int {
+    result := match opt {
+        Option::Some { value } => value,
+        Option::None => def,
+    }
+    return result
+}

@@ -693,6 +693,17 @@ fn gen_ir_stmt_block(node: AstNode, nodes: []AstNode, instrs: []IRInstr, st_n: [
     for scan_i < e {
         if scan_i >= nodes_len { break }
         scan_tag := nodes[scan_i].tag
+        if scan_tag == STMT_MATCH() {
+            // Mark matched expression and all nodes from first_arm to the match node as children
+            scan_node := nodes[scan_i]
+            if scan_node.left >= 0 { push(child_indices, scan_node.left) }
+            // Mark everything between first_arm and the match node itself
+            mark_i := scan_node.right
+            for mark_i < scan_i {
+                push(child_indices, mark_i)
+                mark_i = mark_i + 1
+            }
+        }
         if scan_tag == STMT_IF() || scan_tag == STMT_FOR() {
             scan_node := nodes[scan_i]
             // Mark direct children
@@ -756,6 +767,144 @@ fn gen_ir_stmt_block(node: AstNode, nodes: []AstNode, instrs: []IRInstr, st_n: [
         i = i + 1
     }
     return last
+}
+
+// Helper: split "Enum.Variant" at the dot → returns the part before dot
+fn split_dot_left(s: string) -> string {
+    i := 0
+    for i < len(s) {
+        if str_char_at(s, i) == 46 { return str_substring(s, 0, i) }
+        i = i + 1
+    }
+    return s
+}
+
+// Helper: split "Enum.Variant" at the dot → returns the part after dot
+fn split_dot_right(s: string) -> string {
+    i := 0
+    for i < len(s) {
+        if str_char_at(s, i) == 46 { return str_substring(s, i + 1, len(s)) }
+        i = i + 1
+    }
+    return s
+}
+
+fn gen_ir_enum_variant(node: AstNode, ast_idx: int, nodes: []AstNode, instrs: []IRInstr, st_n: []string, st_v: []int) -> int {
+    // node.str_val = "Enum.Variant", node.int_val = field count
+    ename := split_dot_left(node.str_val)
+    vname := split_dot_right(node.str_val)
+
+    // Allocate consistent size for the enum type
+    alloc_size := enum_max_size(ename)
+    size_vreg := len(instrs)
+    push(instrs, IRInstr { op: OP_LOADCONST(), dest: size_vreg, arg1: alloc_size, arg2: 0, arg3: 0, str_val: "" })
+    ptr := len(instrs)
+    push(instrs, IRInstr { op: OP_HEAP_ALLOC(), dest: ptr, arg1: size_vreg, arg2: 0, arg3: 0, str_val: "" })
+
+    // Store tag at offset 0
+    tag_val := enum_tag(ename, vname)
+    tag_vreg := len(instrs)
+    push(instrs, IRInstr { op: OP_LOADCONST(), dest: tag_vreg, arg1: tag_val, arg2: 0, arg3: 0, str_val: "" })
+    push(instrs, IRInstr { op: OP_STORE(), dest: -1, arg1: ptr, arg2: tag_vreg, arg3: 0, str_val: "" })
+
+    // Store field values
+    field_vals := get_struct_fields(ast_idx)
+    fi := 0
+    for fi < len(field_vals) {
+        fname := enum_variant_field_name(ename, vname, fi)
+        foff := enum_variant_field_offset(ename, vname, fname)
+        v := gen_ir_from_ast_with_symtab(field_vals[fi], nodes, instrs, st_n, st_v)
+        addr := len(instrs)
+        push(instrs, IRInstr { op: OP_INDEXADDR(), dest: addr, arg1: ptr, arg2: foff, arg3: 0, str_val: "" })
+        push(instrs, IRInstr { op: OP_STORE(), dest: -1, arg1: addr, arg2: v, arg3: 0, str_val: "" })
+        fi = fi + 1
+    }
+
+    return ptr
+}
+
+fn gen_ir_match(node: AstNode, nodes: []AstNode, instrs: []IRInstr, st_n: []string, st_v: []int) -> int {
+    // node.left = matched expr, node.right = first arm, node.int_val = arm count
+    match_ptr := gen_ir_from_ast_with_symtab(node.left, nodes, instrs, st_n, st_v)
+
+    // Load tag from offset 0
+    tag_vreg := len(instrs)
+    push(instrs, IRInstr { op: OP_LOAD(), dest: tag_vreg, arg1: match_ptr, arg2: 0, arg3: 0, str_val: "" })
+
+    // Allocate result vreg
+    result_vreg := len(instrs)
+    push(instrs, IRInstr { op: OP_LOADCONST(), dest: result_vreg, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
+
+    match_end_label := g_next_label
+    g_next_label = g_next_label + 1
+
+    // Collect arm node indices by scanning from first_arm for STMT_MATCH_ARM nodes
+    arm_indices := []int{}
+    scan := node.right
+    nodes_count := len(nodes)
+    for scan < nodes_count {
+        if nodes[scan].tag == STMT_MATCH_ARM() {
+            push(arm_indices, scan)
+            if len(arm_indices) == node.int_val { break }
+        }
+        scan = scan + 1
+    }
+
+    // Process arms
+    ai := 0
+    for ai < len(arm_indices) {
+        arm_idx := arm_indices[ai]
+        arm := nodes[arm_idx]
+        ename := split_dot_left(arm.str_val)
+        vname := split_dot_right(arm.str_val)
+
+        // Compare tag
+        arm_tag := enum_tag(ename, vname)
+        tag_const := len(instrs)
+        push(instrs, IRInstr { op: OP_LOADCONST(), dest: tag_const, arg1: arm_tag, arg2: 0, arg3: 0, str_val: "" })
+        cmp := len(instrs)
+        push(instrs, IRInstr { op: OP_CMP_EQ(), dest: cmp, arg1: tag_vreg, arg2: tag_const, arg3: 0, str_val: "" })
+
+        next_arm_label := g_next_label
+        g_next_label = g_next_label + 1
+
+        // Branch: CBZ semantics — jump to next_arm_label if cmp==0 (not equal)
+        push(instrs, IRInstr { op: OP_BRANCH(), dest: cmp, arg1: next_arm_label, arg2: 0, arg3: 0, str_val: "" })
+
+        // Bind fields: load from match_ptr and add to symtab
+        binding_names := get_match_arm_bindings(arm_idx)
+        bi := 0
+        for bi < len(binding_names) {
+            bname := binding_names[bi]
+            foff := enum_variant_field_offset(ename, vname, bname)
+            addr := len(instrs)
+            push(instrs, IRInstr { op: OP_INDEXADDR(), dest: addr, arg1: match_ptr, arg2: foff, arg3: 0, str_val: "" })
+            val := len(instrs)
+            push(instrs, IRInstr { op: OP_LOAD(), dest: val, arg1: addr, arg2: 0, arg3: 0, str_val: "" })
+            push(st_n, bname)
+            push(st_v, val)
+            bi = bi + 1
+        }
+
+        // Evaluate arm body
+        body_result := gen_ir_from_ast_with_symtab(arm.left, nodes, instrs, st_n, st_v)
+
+        // Copy result
+        push(instrs, IRInstr { op: OP_COPY(), dest: result_vreg, arg1: body_result, arg2: 0, arg3: 0, str_val: "" })
+
+        // Jump to end
+        push(instrs, IRInstr { op: OP_JUMP(), dest: match_end_label, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
+
+        // Next arm label
+        push(instrs, IRInstr { op: OP_LABEL(), dest: next_arm_label, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
+
+        ai = ai + 1
+    }
+
+    // Match end label
+    push(instrs, IRInstr { op: OP_LABEL(), dest: match_end_label, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
+
+    return result_vreg
 }
 
 fn gen_ir_from_ast_with_symtab(ast_idx: int, nodes: []AstNode, instrs: []IRInstr, symtab_names: []string, symtab_vregs: []int) -> int {
@@ -865,6 +1014,14 @@ fn gen_ir_from_ast_with_symtab(ast_idx: int, nodes: []AstNode, instrs: []IRInstr
 
     if node.tag == EXPR_STRUCT_LIT() {
         return gen_ir_struct_lit(node, ast_idx, nodes, instrs, symtab_names, symtab_vregs)
+    }
+
+    if node.tag == EXPR_ENUM_VARIANT() {
+        return gen_ir_enum_variant(node, ast_idx, nodes, instrs, symtab_names, symtab_vregs)
+    }
+
+    if node.tag == STMT_MATCH() {
+        return gen_ir_match(node, nodes, instrs, symtab_names, symtab_vregs)
     }
 
     if node.tag == STMT_RETURN() {
