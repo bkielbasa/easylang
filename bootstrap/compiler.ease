@@ -59,11 +59,13 @@ fn get_call_args(call_node_idx: int) -> []int {
 // Maps struct_lit node index -> field value indices
 // Layout: same as g_call_args
 g_struct_fields := []int{}
-g_string_vars := []string{}
-g_string_array_vars := []string{}
-g_string_vars_start := 0
-g_string_array_vars_start := 0
 g_scalar_globals := []string{}
+g_vreg_types := []int{}
+g_param_types := []int{}
+g_param_types_start := 0
+g_global_var_types := []int{}
+g_vreg_type_patches_idx := []int{}
+g_vreg_type_patches_val := []int{}
 g_current_file_list := []string{}
 g_break_label := -1
 g_next_label := 100000
@@ -368,6 +370,20 @@ fn count_func_params(nodes: []AstNode, func_idx: int) -> int {
     return count
 }
 
+fn infer_init_type(nodes: []AstNode, init_idx: int) -> int {
+    if init_idx < 0 { return TYPE_UNKNOWN() }
+    init_node := nodes[init_idx]
+    if init_node.tag == EXPR_INT() { return TYPE_INT() }
+    if init_node.tag == EXPR_UNARY() { return TYPE_INT() }
+    if init_node.tag == EXPR_STRING() { return TYPE_STRING() }
+    if init_node.tag == EXPR_BOOL() { return TYPE_BOOL() }
+    if init_node.tag == EXPR_ARRAY_LIT() {
+        if init_node.str_val == "string" { return TYPE_STRING_ARRAY() }
+        return TYPE_INT_ARRAY()
+    }
+    return TYPE_UNKNOWN()
+}
+
 // Parse all top-level declarations from a source string into nodes/func arrays
 // Returns the parse position (or -1 on error)
 fn parse_source_file(source: string, nodes: []AstNode, func_names: []string, func_indices: []int, global_var_names: []string, skip_main: int) -> int {
@@ -405,6 +421,7 @@ fn parse_source_file(source: string, nodes: []AstNode, func_names: []string, fun
                 if ce_result.node_idx >= 0 {
                     ce_node := nodes[ce_result.node_idx]
                     push(global_var_names, ce_node.str_val)
+                    push(g_global_var_types, infer_init_type(nodes, ce_node.right))
                     if ce_node.right >= 0 {
                         ce_init := nodes[ce_node.right]
                         if ce_init.tag == EXPR_INT() {
@@ -582,6 +599,7 @@ fn run_test_mode(test_path: string, run_bench: int) -> int {
                                                 if dir_ce.node_idx >= 0 {
                                                     dir_ce_node := nodes[dir_ce.node_idx]
                                                     push(global_var_names, dir_ce_node.str_val)
+                                                    push(g_global_var_types, infer_init_type(nodes, dir_ce_node.right))
                                                     if dir_ce_node.right >= 0 {
                                                         dir_ce_init := nodes[dir_ce_node.right]
                                                         if dir_ce_init.tag == EXPR_INT() {
@@ -669,6 +687,7 @@ fn run_test_mode(test_path: string, run_bench: int) -> int {
                                 if mod_ce.node_idx >= 0 {
                                     mod_ce_node := nodes[mod_ce.node_idx]
                                     push(global_var_names, mod_ce_node.str_val)
+                                    push(g_global_var_types, infer_init_type(nodes, mod_ce_node.right))
                                     if mod_ce_node.right >= 0 {
                                         mod_ce_init := nodes[mod_ce_node.right]
                                         if mod_ce_init.tag == EXPR_INT() {
@@ -893,8 +912,7 @@ fn run_test_mode(test_path: string, run_bench: int) -> int {
     fn_count := len(func_names)
     gen_all_i := 0
     for gen_all_i < fn_count {
-        g_string_vars_start = len(g_string_vars)
-        g_string_array_vars_start = len(g_string_array_vars)
+        g_param_types_start = len(g_param_types)
 
         func_idx := func_indices[gen_all_i]
         func_name := func_names[gen_all_i]
@@ -1286,6 +1304,7 @@ fn main() -> int {
                 if ce_result.node_idx >= 0 {
                     ce_node := nodes[ce_result.node_idx]
                     push(global_var_names, ce_node.str_val)
+                    push(g_global_var_types, infer_init_type(nodes, ce_node.right))
                     if ce_node.right >= 0 {
                         ce_init := nodes[ce_node.right]
                         if ce_init.tag == EXPR_INT() {
@@ -1380,6 +1399,7 @@ fn main() -> int {
                                                 if dir_ce.node_idx >= 0 {
                                                     dir_ce_node := nodes[dir_ce.node_idx]
                                                     push(global_var_names, dir_ce_node.str_val)
+                                                    push(g_global_var_types, infer_init_type(nodes, dir_ce_node.right))
                                                     if dir_ce_node.right >= 0 {
                                                         dir_ce_init := nodes[dir_ce_node.right]
                                                         if dir_ce_init.tag == EXPR_INT() {
@@ -1487,6 +1507,7 @@ fn main() -> int {
                                 if mod_ce.node_idx >= 0 {
                                     mod_ce_node := nodes[mod_ce.node_idx]
                                     push(global_var_names, mod_ce_node.str_val)
+                                    push(g_global_var_types, infer_init_type(nodes, mod_ce_node.right))
                                     if mod_ce_node.right >= 0 {
                                         mod_ce_init := nodes[mod_ce_node.right]
                                         if mod_ce_init.tag == EXPR_INT() {
@@ -1732,9 +1753,7 @@ fn main() -> int {
     fn_count := len(func_names)
     gen_all_i := 0
     for gen_all_i < fn_count {
-        // Scope string tracking to current function
-        g_string_vars_start = len(g_string_vars)
-        g_string_array_vars_start = len(g_string_array_vars)
+        g_param_types_start = len(g_param_types)
 
         func_idx := func_indices[gen_all_i]
         func_name := func_names[gen_all_i]

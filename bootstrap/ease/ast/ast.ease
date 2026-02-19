@@ -52,6 +52,10 @@ fn TYPE_UNKNOWN() -> int { return 0 }
 fn TYPE_INT() -> int { return 1 }
 fn TYPE_BOOL() -> int { return 2 }
 fn TYPE_STRING() -> int { return 3 }
+fn TYPE_INT_ARRAY() -> int { return 4 }
+fn TYPE_STRING_ARRAY() -> int { return 5 }
+fn TYPE_BOOL_ARRAY() -> int { return 6 }
+fn TYPE_STRUCT() -> int { return 7 }
 
 struct ParseResult {
     node_idx: int,

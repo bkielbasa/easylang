@@ -270,8 +270,8 @@ The Ease compiler is written in Ease and compiles itself with byte-identical con
 - Go-style benchmark framework (`fn BenchmarkXxx(b: B)` with auto-calibration and ns/op reporting)
 - Global variables (mutable and immutable)
 - File I/O and command-line arguments
-- Function return type registry (automatic string/int dispatch)
-- String `==`/`!=` auto-dispatch (no explicit str_eq/str_ne needed)
+- **Vreg-based type system** — tracks types via `g_vreg_types`/`g_param_types` arrays, replaces `is_string_expr` heuristic
+- String `==`/`!=`/`+` auto-dispatch via vreg type lookups (no heuristic needed)
 - Dynamic struct field registry for user-defined structs
 - Go-style test suite (36 tests passing, 2 benchmarks)
 
@@ -312,9 +312,9 @@ The Ease compiler is written in Ease and compiles itself with byte-identical con
 - [x] LLVM backend for optimization and portability
 
 ### Compiler Improvements
-- [x] **Function return type registry** — `is_string_expr` / `is_string_array_expr` now use a registry built from parsed `-> type` annotations instead of hardcoded function name lists.
-- [x] **String `==`/`!=` auto-dispatch** — `gen_ir_binary` auto-dispatches `==`/`!=` to `OP_STR_EQ`/`OP_STR_NE` for string operands. Per-function scoping prevents cross-function contamination.
-- [x] **Struct field type registry** — `is_string_expr` / `is_string_array_expr` EXPR_FIELD now uses a registry built from parsed DECL_FIELD type annotations.
+- [x] **Vreg-based type system** — Every vreg gets a type recorded in `g_vreg_types` (regular vregs) / `g_param_types` (params, scoped per function via `g_param_types_start`). Replaces the old `is_string_expr`/`is_string_array_expr` heuristics and `g_string_vars`/`g_string_array_vars` tracking. Type lookups drive opcode dispatch for `+`/`==`/`!=`/`len()`.
+- [x] **Function return type registry** — Built from parsed `-> type` annotations, used by type system for EXPR_CALL type propagation.
+- [x] **Struct field type registry** — Built from parsed DECL_FIELD type annotations, used by type system for EXPR_FIELD type propagation.
 - [x] **Pure Ease stdlib** — `print`, `str_substring`, `os.ReadFile` replaced with pure Ease implementations. Added `syscall.read`, `strconv.Atoi`, string utility functions.
 - [x] **Go-style directory packages** — Modules organized as `bootstrap/ease/token/token.ease` with `package token` declarations.
 - [x] **NOT prefix operator** — `!expr` support in parser and IRgen.
