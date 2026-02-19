@@ -2,7 +2,7 @@ package main
 
 // Function calls and recursion
 
-fn TestFunctionCalls() {
+fn TestFunctionCalls(t: T) {
     sum := add(5, 3)
     if sum != 8 {
         testing.Fatal("add(5, 3) should be 8")
@@ -13,7 +13,7 @@ fn TestFunctionCalls() {
     }
 }
 
-fn TestRecursion() {
+fn TestRecursion(t: T) {
     fact := factorial(5)
     if fact != 120 {
         testing.Fatal("factorial(5) should be 120")

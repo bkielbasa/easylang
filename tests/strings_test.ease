@@ -5,7 +5,7 @@ import ("strconv")
 
 // String operations
 
-fn TestStringConcat() {
+fn TestStringConcat(t: T) {
     hello := "Hello"
     world := "World"
     greeting := strings.Concat(hello, " ")
@@ -15,21 +15,21 @@ fn TestStringConcat() {
     }
 }
 
-fn TestStringStartsWith() {
+fn TestStringStartsWith(t: T) {
     s := "Hello World"
     if !strings.StartsWith(s, "Hello") {
         testing.Fatal("should start with Hello")
     }
 }
 
-fn TestStringEndsWith() {
+fn TestStringEndsWith(t: T) {
     s := "Hello World"
     if !strings.EndsWith(s, "World") {
         testing.Fatal("should end with World")
     }
 }
 
-fn TestStringIndexOf() {
+fn TestStringIndexOf(t: T) {
     s := "Hello World"
     idx := strings.IndexOf(s, "World")
     if idx != 6 {
@@ -37,14 +37,14 @@ fn TestStringIndexOf() {
     }
 }
 
-fn TestStrconvItoa() {
+fn TestStrconvItoa(t: T) {
     num_str := strconv.Itoa(42)
     if num_str != "42" {
         testing.Fatal("Itoa(42) should be 42")
     }
 }
 
-fn TestStrconvAtoi() {
+fn TestStrconvAtoi(t: T) {
     num := strconv.Atoi("123")
     if num != 123 {
         testing.Fatal("Atoi(123) should be 123")

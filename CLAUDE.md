@@ -87,20 +87,20 @@ enum Message {
 ```
 
 ### Testing (Go-style, implemented)
-Tests live in `*_test.ease` files alongside source code. Test functions start with `Test` (uppercase T).
+Tests live in `*_test.ease` files alongside source code. Test functions start with `Test` (uppercase T) and accept a `t: T` parameter (Go-style).
 
 ```ease
 // math_test.ease
 package main
 
-fn TestAdd() {
+fn TestAdd(t: T) {
     result := add(2, 3)
     if result != 5 {
         testing.Fatal("expected 5")
     }
 }
 
-fn TestMultiply() {
+fn TestMultiply(t: T) {
     result := multiply(6, 7)
     if result != 42 {
         testing.Fatal("expected 42")
@@ -108,7 +108,8 @@ fn TestMultiply() {
 }
 ```
 
-- **Convention**: `fn TestXxx()` in `*_test.ease` files — Go-style naming
+- **Convention**: `fn TestXxx(t: T)` in `*_test.ease` files — Go-style naming
+- **T struct**: `testing.T` with `name: string` field (test name)
 - **Failure**: `testing.Fatal(msg)` prints the message and aborts the test (setjmp/longjmp)
 - **Discovery**: Compiler discovers `*_test.ease` files, identifies `TestXxx` functions
 - **Runner**: Synthetic main() wraps each test with setjmp for failure recovery
@@ -215,7 +216,7 @@ The Ease compiler is written in Ease and compiles itself with byte-identical con
 - Directory package imports with Go-style visibility (uppercase = public)
 - Package declarations (`package main`, `package token`, etc.)
 - Standard library (strings, strconv, io, os, testing — all pure Ease implementations)
-- Go-style testing framework (`fn TestXxx()` in `*_test.ease`, `testing.Fatal(msg)`, setjmp/longjmp recovery)
+- Go-style testing framework (`fn TestXxx(t: T)` in `*_test.ease`, `testing.T` struct, `testing.Fatal(msg)`, setjmp/longjmp recovery)
 - Global variables (mutable and immutable)
 - File I/O and command-line arguments
 - Function return type registry (automatic string/int dispatch)
@@ -269,7 +270,7 @@ The Ease compiler is written in Ease and compiles itself with byte-identical con
 - [x] **Range-based for loops** — `for i in start..end` parsed and desugared to init/compare/body/increment.
 - [x] **Modulo operator** — `%` → `OP_MOD` → LLVM `srem`.
 - [x] **Dynamic struct field registry** — `RegisterStruct` + `RegisterFieldOffset` for user-defined structs.
-- [x] **Go-style testing framework** — `fn TestXxx()` in `*_test.ease`, `testing.Fatal(msg)`, setjmp/longjmp for test recovery, synthetic runner with `=== RUN` / `--- PASS/FAIL` output.
+- [x] **Go-style testing framework** — `fn TestXxx(t: T)` in `*_test.ease`, `testing.T` struct with name field, `testing.Fatal(msg)`, setjmp/longjmp for test recovery, synthetic runner with `=== RUN` / `--- PASS/FAIL` output.
 
 ### Language Features
 - [x] **Go-style `:=` declarations** — Replaced `let`/`let mut` with `:=`. All variables are mutable.
@@ -301,7 +302,7 @@ make update-seed                        # Update seed after source changes
 
 **Test Suite (21 tests, Go-style):**
 
-Tests live in `tests/` as `*_test.ease` files with `fn TestXxx()` functions:
+Tests live in `tests/` as `*_test.ease` files with `fn TestXxx(t: T)` functions:
 
 | File | Tests | Features Covered |
 |------|-------|-----------------|

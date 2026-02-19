@@ -463,7 +463,7 @@ fn run_test_mode(test_path: string) -> int {
         // Identify test functions from newly parsed ones
         tfi := before_count
         for tfi < len(func_names) {
-            if is_test_func(func_names[tfi]) == 1 {
+            if is_test_func(func_names[tfi]) == 1 && count_func_params(nodes, func_indices[tfi]) == 1 {
                 push(test_func_names, func_names[tfi])
             }
             tfi = tfi + 1
@@ -473,7 +473,7 @@ fn run_test_mode(test_path: string) -> int {
 
     print("\nFound " + strconv.Itoa(len(test_func_names)) + " test function(s)\n")
     if len(test_func_names) == 0 {
-        print("No test functions found (expecting fn TestXxx())\n")
+        print("No test functions found (expecting fn TestXxx(t: T))\n")
         return 0
     }
 
@@ -737,6 +737,10 @@ fn run_test_mode(test_path: string) -> int {
                     push(g_rename_to, smod_qualified)
                     smod_pos = smod_result.new_pos
                     smod_pos = lex_skip(smod_source, smod_pos)
+                } else if smod_kind == TK_STRUCT() {
+                    smod_struct := parse_struct_decl(smod_source, smod_pos, nodes)
+                    smod_pos = smod_struct.new_pos
+                    smod_pos = lex_skip(smod_source, smod_pos)
                 } else {
                     smod_pos = lex_end(smod_source, smod_pos, smod_kind)
                     smod_pos = lex_skip(smod_source, smod_pos)
@@ -881,9 +885,17 @@ fn run_test_mode(test_path: string) -> int {
 
         push(instrs, IRInstr { op: OP_BRANCH(), dest: cmp_vreg, arg1: fail_label, arg2: 0, arg3: 0, str_val: "" })
 
-        // Pass path: call TestXxx()
+        // Pass path: create T struct and call TestXxx(t)
+        t_alloc := len(instrs)
+        push(instrs, IRInstr { op: OP_ALLOCA(), dest: t_alloc, arg1: 8, arg2: 0, arg3: 0, str_val: "" })
+        name_const := len(instrs)
+        push(instrs, IRInstr { op: OP_LOADCONST(), dest: name_const, arg1: 0, arg2: 0, arg3: 0, str_val: tname })
+        name_addr := len(instrs)
+        push(instrs, IRInstr { op: OP_INDEXADDR(), dest: name_addr, arg1: t_alloc, arg2: 0, arg3: 0, str_val: "" })
+        push(instrs, IRInstr { op: OP_STORE(), dest: -1, arg1: name_addr, arg2: name_const, arg3: 0, str_val: "" })
+        push(instrs, IRInstr { op: OP_ARG(), dest: 0, arg1: t_alloc, arg2: -1, arg3: 0, str_val: "" })
         call_vreg := len(instrs)
-        push(instrs, IRInstr { op: OP_CALL(), dest: call_vreg, arg1: 0, arg2: 0, arg3: 0, str_val: tname })
+        push(instrs, IRInstr { op: OP_CALL(), dest: call_vreg, arg1: 0, arg2: 1, arg3: 0, str_val: tname })
 
         // Print "--- PASS: TestXxx\n" via io.Print
         pass_msg_vreg := len(instrs)

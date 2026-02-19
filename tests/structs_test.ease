@@ -2,7 +2,7 @@ package main
 
 // Struct operations
 
-fn TestStructLiteral() {
+fn TestStructLiteral(t: T) {
     p1 := Point { x: 10, y: 20 }
     if p1.x != 10 {
         testing.Fatal("p1.x should be 10")
@@ -12,7 +12,7 @@ fn TestStructLiteral() {
     }
 }
 
-fn TestStructFromFunction() {
+fn TestStructFromFunction(t: T) {
     p2 := make_point(5, 15)
     if p2.x != 5 {
         testing.Fatal("p2.x should be 5")
@@ -22,7 +22,7 @@ fn TestStructFromFunction() {
     }
 }
 
-fn TestStructPassedToFunction() {
+fn TestStructPassedToFunction(t: T) {
     rect := Rectangle { width: 8, height: 12 }
     a := area(rect)
     if a != 96 {

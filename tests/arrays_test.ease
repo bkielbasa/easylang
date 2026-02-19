@@ -2,7 +2,7 @@ package main
 
 // Array operations
 
-fn TestArrayLiteralAndIndex() {
+fn TestArrayLiteralAndIndex(t: T) {
     arr := []int{10, 20, 30, 40, 50}
     if arr[0] != 10 {
         testing.Fatal("arr[0] should be 10")
@@ -15,14 +15,14 @@ fn TestArrayLiteralAndIndex() {
     }
 }
 
-fn TestArrayLen() {
+fn TestArrayLen(t: T) {
     arr := []int{10, 20, 30, 40, 50}
     if len(arr) != 5 {
         testing.Fatal("len should be 5")
     }
 }
 
-fn TestArrayPush() {
+fn TestArrayPush(t: T) {
     darr := []int{1, 2}
     push(darr, 3)
     push(darr, 4)

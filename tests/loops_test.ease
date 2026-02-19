@@ -2,14 +2,14 @@ package main
 
 // Loops and control flow
 
-fn TestRangeLoop() {
+fn TestRangeLoop(t: T) {
     s := sum_range(1, 6)
     if s != 15 {
         testing.Fatal("sum_range(1,6) should be 15")
     }
 }
 
-fn TestConditionLoop() {
+fn TestConditionLoop(t: T) {
     n := 0
     sum := 0
     for n < 10 {
@@ -21,7 +21,7 @@ fn TestConditionLoop() {
     }
 }
 
-fn TestCountEven() {
+fn TestCountEven(t: T) {
     arr := []int{1, 2, 3, 4, 5, 6}
     evens := count_even(arr)
     if evens != 3 {
