@@ -84,6 +84,52 @@ fn IndexOf(s: string, substr: string) -> int {
     return Index(s, substr)
 }
 
+fn OffsetToLineCol(src: string, offset: int) -> string {
+    line := 1
+    col := 1
+    i := 0
+    for i < offset {
+        if i >= len(src) { break }
+        if str_char_at(src, i) == 10 {
+            line = line + 1
+            col = 1
+        } else {
+            col = col + 1
+        }
+        i = i + 1
+    }
+    return strconv.Itoa(line) + ":" + strconv.Itoa(col)
+}
+
+fn GetSourceLine(src: string, offset: int) -> string {
+    slen := len(src)
+    if offset >= slen { return "" }
+    // Find start of line
+    start := offset
+    for start > 0 {
+        if str_char_at(src, start - 1) == 10 { break }
+        start = start - 1
+    }
+    // Find end of line
+    end := offset
+    for end < slen {
+        if str_char_at(src, end) == 10 { break }
+        end = end + 1
+    }
+    return str_substring(src, start, end)
+}
+
+fn GetColumn(src: string, offset: int) -> int {
+    col := 1
+    i := offset
+    for i > 0 {
+        if str_char_at(src, i - 1) == 10 { break }
+        col = col + 1
+        i = i - 1
+    }
+    return col
+}
+
 fn Index(s: string, sub: string) -> int {
     slen := len(s)
     sublen := len(sub)

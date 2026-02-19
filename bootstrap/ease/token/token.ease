@@ -65,3 +65,56 @@ fn TK_SEMI() -> int { return 59 }
 fn TK_COLONEQUAL() -> int { return 60 }
 
 fn TK_EOF() -> int { return 100 }
+
+fn TokenName(kind: int) -> string {
+    if kind == 1 { return "identifier" }
+    if kind == 2 { return "integer" }
+    if kind == 3 { return "string" }
+    if kind == 10 { return "'fn'" }
+    if kind == 11 { return "'let'" }
+    if kind == 12 { return "'mut'" }
+    if kind == 13 { return "'if'" }
+    if kind == 14 { return "'else'" }
+    if kind == 15 { return "'for'" }
+    if kind == 16 { return "'in'" }
+    if kind == 17 { return "'return'" }
+    if kind == 18 { return "'break'" }
+    if kind == 19 { return "'struct'" }
+    if kind == 20 { return "'true'" }
+    if kind == 21 { return "'false'" }
+    if kind == 22 { return "'import'" }
+    if kind == 23 { return "'package'" }
+    if kind == 30 { return "'+'" }
+    if kind == 31 { return "'-'" }
+    if kind == 32 { return "'*'" }
+    if kind == 33 { return "'/'" }
+    if kind == 34 { return "'%'" }
+    if kind == 35 { return "'<'" }
+    if kind == 36 { return "'>'" }
+    if kind == 37 { return "'<='" }
+    if kind == 38 { return "'>='" }
+    if kind == 39 { return "'=='" }
+    if kind == 40 { return "'!='" }
+    if kind == 41 { return "'&&'" }
+    if kind == 42 { return "'||'" }
+    if kind == 43 { return "'!'" }
+    if kind == 44 { return "'^'" }
+    if kind == 45 { return "'='" }
+    if kind == 46 { return "'&'" }
+    if kind == 47 { return "'->'" }
+    if kind == 48 { return "'.'" }
+    if kind == 49 { return "'..'" }
+    if kind == 50 { return "'|'" }
+    if kind == 51 { return "'('" }
+    if kind == 52 { return "')'" }
+    if kind == 53 { return "'{'" }
+    if kind == 54 { return "'}'" }
+    if kind == 55 { return "'['" }
+    if kind == 56 { return "']'" }
+    if kind == 57 { return "','" }
+    if kind == 58 { return "':'" }
+    if kind == 59 { return "';'" }
+    if kind == 60 { return "':='" }
+    if kind == 100 { return "end of file" }
+    return "unknown"
+}

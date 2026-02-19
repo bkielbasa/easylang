@@ -64,6 +64,7 @@ g_string_array_vars := []string{}
 g_string_vars_start := 0
 g_string_array_vars_start := 0
 g_scalar_globals := []string{}
+g_current_file_list := []string{}
 g_break_label := -1
 g_next_label := 100000
 g_func_ret_names := []string{}
@@ -224,6 +225,25 @@ fn lookup_rename(name: string) -> string {
         i = i + 1
     }
     return name
+}
+
+fn report_error(src: string, offset: int, msg: string) {
+    filename := "<unknown>"
+    cf_len := len(g_current_file_list)
+    if cf_len > 0 { filename = g_current_file_list[cf_len - 1] }
+    loc := strings.OffsetToLineCol(src, offset)
+    print(filename + ":" + loc + ": error: " + msg + "\n")
+    line_text := strings.GetSourceLine(src, offset)
+    if len(line_text) > 0 {
+        print("    " + line_text + "\n")
+        col := strings.GetColumn(src, offset)
+        spaces := "    "
+        si := 1
+        for si < col { spaces = spaces + " "
+            si = si + 1
+        }
+        print(spaces + "^\n")
+    }
 }
 
 fn store_struct_fields(struct_node_idx: int, field_indices: []int) {
@@ -974,6 +994,8 @@ fn main() -> int {
         return 1
     }
 
+    push(g_current_file_list, filename)
+
     // Phase 1: Lexing
     print("Phase 1: Lexing\n")
     pos := 0
@@ -981,9 +1003,17 @@ fn main() -> int {
     for {
         pos = lex_skip(source, pos)
         kind := lex_kind(source, pos)
-        if kind == TK_EOF() { break }
-        token_count = token_count + 1
-        pos = lex_end(source, pos, kind)
+        if kind == TK_EOF() {
+            if pos < len(source) {
+                report_error(source, pos, "unexpected character")
+                pos = pos + 1
+            } else {
+                break
+            }
+        } else {
+            token_count = token_count + 1
+            pos = lex_end(source, pos, kind)
+        }
     }
     print("Lexed " + strconv.Itoa(token_count) + " tokens\n\n")
 
@@ -1048,7 +1078,7 @@ fn main() -> int {
         } else if kind == TK_FN() {
             parse_result := parse_func_decl(source, parse_pos, nodes)
             if parse_result.node_idx < 0 {
-                print("ERROR: Failed to parse function at position " + strconv.Itoa(parse_pos) + "\n")
+                report_error(source, parse_pos, "failed to parse function")
                 break
             }
             func_idx := parse_result.node_idx
@@ -1099,6 +1129,7 @@ fn main() -> int {
                                 if has_ease_suffix(entry) == 1 {
                                     file_path := resolved + "/" + entry
                                     print("  Loading: " + file_path + "\n")
+                                    push(g_current_file_list, file_path)
                                     dir_source := os.ReadFile(file_path)
                                     dir_pos := 0
                                     dir_pos = lex_skip(dir_source, dir_pos)
@@ -1143,7 +1174,7 @@ fn main() -> int {
                                         } else if dir_kind == TK_FN() {
                                             dir_func := parse_func_decl(dir_source, dir_pos, nodes)
                                             if dir_func.node_idx < 0 {
-                                                print("ERROR: Failed to parse function in " + file_path + " at position " + strconv.Itoa(dir_pos) + "\n")
+                                                report_error(dir_source, dir_pos, "failed to parse function")
                                                 break
                                             }
                                             dir_func_idx := dir_func.node_idx
@@ -1197,6 +1228,7 @@ fn main() -> int {
                 } else {
                     // Single file import (existing behavior)
                     print("Importing module: " + mod_name + " from " + resolved + "\n")
+                    push(g_current_file_list, resolved)
 
                     mod_source := os.ReadFile(resolved)
                     push(g_import_paths, resolved)
@@ -1248,7 +1280,7 @@ fn main() -> int {
                         } else if mod_kind == TK_FN() {
                             mod_func_result := parse_func_decl(mod_source, mod_pos, nodes)
                             if mod_func_result.node_idx < 0 {
-                                print("ERROR: Failed to parse function in " + resolved + " at position " + strconv.Itoa(mod_pos) + "\n")
+                                report_error(mod_source, mod_pos, "failed to parse function")
                                 break
                             }
                             mod_func_idx := mod_func_result.node_idx

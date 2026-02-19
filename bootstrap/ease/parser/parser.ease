@@ -533,19 +533,7 @@ fn parse_block(src: string, pos: int, nodes: []AstNode) -> ParseResult {
 
         stmt_result := parse_stmt(src, p, nodes)
         if stmt_result.node_idx < 0 {
-            print("PARSE_BLOCK: stmt failed at pos ")
-            print(strconv.Itoa(p))
-            print(", token=")
-            print(strconv.Itoa(lex_kind(src, p)))
-            print(", stmts_so_far=")
-            print(strconv.Itoa(stmt_count))
-            print(", nodes=")
-            print(strconv.Itoa(len(nodes)))
-            print(", context=")
-            ctx_e := p + 60
-            if ctx_e > len(src) { ctx_e = len(src) }
-            print(str_substring(src, p, ctx_e))
-            print("\n")
+            report_error(src, p, "unexpected " + token.TokenName(lex_kind(src, p)) + " in block")
             break
         }
         stmt_count = stmt_count + 1
@@ -574,17 +562,7 @@ fn parse_block(src: string, pos: int, nodes: []AstNode) -> ParseResult {
     // Expect '}'
     rbrace := lex_kind(src, p)
     if rbrace != TK_RBRACE() {
-        print("PARSE_BLOCK: expected RBRACE at pos ")
-        print(strconv.Itoa(p))
-        print(", got token=")
-        print(strconv.Itoa(rbrace))
-        print(", stmt_count=")
-        print(strconv.Itoa(stmt_count))
-        print(", context=")
-        ctx_e2 := p + 60
-        if ctx_e2 > len(src) { ctx_e2 = len(src) }
-        print(str_substring(src, p, ctx_e2))
-        print("\n")
+        report_error(src, p, "expected '}' but found " + token.TokenName(rbrace))
         return ParseResult { node_idx: -1, new_pos: p }
     }
     p = lex_end(src, p, rbrace)
