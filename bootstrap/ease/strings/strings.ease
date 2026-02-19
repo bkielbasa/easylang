@@ -84,6 +84,28 @@ fn IndexOf(s: string, substr: string) -> int {
     return Index(s, substr)
 }
 
+fn LineColToOffset(src: string, line: int, col: int) -> int {
+    slen := len(src)
+    i := 0
+    cur_line := 0
+    for cur_line < line {
+        if i >= slen { return slen }
+        if str_char_at(src, i) == 10 {
+            cur_line = cur_line + 1
+        }
+        i = i + 1
+    }
+    // Now at the start of the target line, advance by col
+    cur_col := 0
+    for cur_col < col {
+        if i >= slen { return slen }
+        if str_char_at(src, i) == 10 { break }
+        cur_col = cur_col + 1
+        i = i + 1
+    }
+    return i
+}
+
 fn OffsetToLineCol(src: string, offset: int) -> string {
     line := 1
     col := 1

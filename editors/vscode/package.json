@@ -1,0 +1,43 @@
+{
+  "name": "ease-language",
+  "displayName": "Ease Language",
+  "description": "Language support for the Ease programming language",
+  "version": "0.1.0",
+  "publisher": "ease-lang",
+  "engines": {
+    "vscode": "^1.75.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "activationEvents": [
+    "onLanguage:ease"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "languages": [
+      {
+        "id": "ease",
+        "aliases": [
+          "Ease",
+          "ease"
+        ],
+        "extensions": [
+          ".ease"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ]
+  },
+  "scripts": {
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./"
+  },
+  "dependencies": {
+    "vscode-languageclient": "^9.0.1"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.75.0",
+    "typescript": "^5.0.0"
+  }
+}

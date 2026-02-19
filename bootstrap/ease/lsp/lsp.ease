@@ -1,0 +1,381 @@
+package lsp
+
+// LSP server for the Ease compiler
+// Protocol: LSP over stdio using JSON-RPC 2.0
+// Framing: Content-Length: N\r\n\r\n{JSON body}
+
+// Cached source for the currently open document (stored as last element of array)
+g_lsp_sources := []string{}
+g_lsp_uris := []string{}
+
+// Read an LSP message from stdin (fd 0)
+// Parses Content-Length header, reads that many bytes
+fn read_message() -> string {
+    // Read header lines until empty line
+    content_length := 0
+    for {
+        line := io.ReadLine(0)
+        if len(line) == 0 { break }
+        // Check for \r at end and strip it
+        llen := len(line)
+        if llen > 0 && str_char_at(line, llen - 1) == 13 {
+            line = str_substring(line, 0, llen - 1)
+            llen = llen - 1
+        }
+        if llen == 0 { break }
+        // Parse "Content-Length: N"
+        if strings.HasPrefix(line, "Content-Length: ") == 1 {
+            num_str := str_substring(line, 16, llen)
+            content_length = strconv.Atoi(num_str)
+        }
+    }
+    if content_length <= 0 { return "" }
+    return io.ReadN(0, content_length)
+}
+
+// Write an LSP message to stdout (fd 1)
+fn write_message(body: string) {
+    body_len := len(body)
+    // Build Content-Length header with \r\n\r\n
+    header := "Content-Length: " + strconv.Itoa(body_len)
+    // Append \r\n\r\n (CR=13, LF=10)
+    cr_lf := heap_alloc(5)
+    poke(cr_lf, 13)
+    poke(cr_lf + 1, 10)
+    poke(cr_lf + 2, 13)
+    poke(cr_lf + 3, 10)
+    poke(cr_lf + 4, 0)
+    header = header + cr_lf
+    io.Write(1, header)
+    io.Write(1, body)
+}
+
+// Build a JSON-RPC response with a result object
+fn make_response(id: int, result_doc: Doc) -> string {
+    resp := json.New()
+    resp.SetString("jsonrpc", "2.0")
+    resp.SetInt("id", id)
+    resp.SetObject("result", result_doc)
+    return resp.Marshal()
+}
+
+// Build a JSON-RPC response with null result
+fn make_null_response(id: int) -> string {
+    resp := json.New()
+    resp.SetString("jsonrpc", "2.0")
+    resp.SetInt("id", id)
+    resp.SetNull("result")
+    return resp.Marshal()
+}
+
+// Build a JSON-RPC notification (no id)
+fn make_notification(method: string, params_doc: Doc) -> string {
+    notif := json.New()
+    notif.SetString("jsonrpc", "2.0")
+    notif.SetString("method", method)
+    notif.SetObject("params", params_doc)
+    return notif.Marshal()
+}
+
+// Handle initialize request — return server capabilities
+fn handle_initialize(id: int) {
+    // textDocumentSync: 1 = Full (send full text on open/change/save)
+    sync_opts := json.New()
+    sync_opts.SetInt("openClose", 1)
+    sync_opts.SetInt("change", 1)
+    sync_opts.SetInt("save", 1)
+
+    caps := json.New()
+    caps.SetObject("textDocumentSync", sync_opts)
+    caps.SetInt("definitionProvider", 1)
+
+    result := json.New()
+    result.SetObject("capabilities", caps)
+
+    resp := make_response(id, result)
+    write_message(resp)
+}
+
+// Publish diagnostics for a given URI and source text
+fn publish_diagnostics(uri: string, source: string) {
+    // Run the parser in diagnostic mode
+    parse_for_diagnostics(source)
+
+    // Build diagnostics array
+    diag_array := json.NewArray()
+    count := lsp_diagnostic_count()
+    di := 0
+    for di < count {
+        line := lsp_diagnostic_line(di)
+        col := lsp_diagnostic_col(di)
+        msg := lsp_diagnostic_msg(di)
+
+        start_pos := json.New()
+        start_pos.SetInt("line", line)
+        start_pos.SetInt("character", col)
+
+        end_pos := json.New()
+        end_pos.SetInt("line", line)
+        end_pos.SetInt("character", col + 1)
+
+        range_obj := json.New()
+        range_obj.SetObject("start", start_pos)
+        range_obj.SetObject("end", end_pos)
+
+        diag := json.New()
+        diag.SetObject("range", range_obj)
+        diag.SetInt("severity", 1)
+        diag.SetString("source", "ease")
+        diag.SetString("message", msg)
+
+        diag_array.PushObject(diag)
+        di = di + 1
+    }
+
+    // Build notification params
+    params := json.New()
+    params.SetString("uri", uri)
+    params.SetArray("diagnostics", diag_array)
+
+    notif := make_notification("textDocument/publishDiagnostics", params)
+    write_message(notif)
+}
+
+// Clear diagnostics for a URI
+fn clear_diagnostics(uri: string) {
+    diag_array := json.NewArray()
+    params := json.New()
+    params.SetString("uri", uri)
+    params.SetArray("diagnostics", diag_array)
+    notif := make_notification("textDocument/publishDiagnostics", params)
+    write_message(notif)
+}
+
+// Extract the identifier word at the given byte offset
+fn get_word_at(src: string, offset: int) -> string {
+    slen := len(src)
+    if offset >= slen { return "" }
+    // Walk backward to find start of word
+    start := offset
+    for start > 0 {
+        ch := str_char_at(src, start - 1)
+        // is_alpha: A-Z (65-90), a-z (97-122), _ (95)
+        // is_digit: 0-9 (48-57)
+        is_word := 0
+        if ch >= 65 && ch <= 90 { is_word = 1 }
+        if ch >= 97 && ch <= 122 { is_word = 1 }
+        if ch == 95 { is_word = 1 }
+        if ch >= 48 && ch <= 57 { is_word = 1 }
+        if is_word == 0 { break }
+        start = start - 1
+    }
+    // Walk forward to find end of word
+    end := offset
+    for end < slen {
+        ch := str_char_at(src, end)
+        is_word := 0
+        if ch >= 65 && ch <= 90 { is_word = 1 }
+        if ch >= 97 && ch <= 122 { is_word = 1 }
+        if ch == 95 { is_word = 1 }
+        if ch >= 48 && ch <= 57 { is_word = 1 }
+        if is_word == 0 { break }
+        end = end + 1
+    }
+    if start == end { return "" }
+    return str_substring(src, start, end)
+}
+
+// Convert byte offset to 0-based line and column
+fn offset_to_line_col_0(src: string, offset: int) -> []int {
+    line := 0
+    col := 0
+    i := 0
+    for i < offset {
+        if i >= len(src) { break }
+        if str_char_at(src, i) == 10 {
+            line = line + 1
+            col = 0
+        } else {
+            col = col + 1
+        }
+        i = i + 1
+    }
+    result := []int{}
+    push(result, line)
+    push(result, col)
+    return result
+}
+
+// Handle textDocument/definition request
+fn handle_definition(id: int, doc: Doc) {
+    params := doc.GetObject("params")
+    td := params.GetObject("textDocument")
+    uri := td.GetString("uri")
+    position := params.GetObject("position")
+    line := position.GetInt("line")
+    col := position.GetInt("character")
+
+    // Use cached source for the current document
+    if len(g_lsp_sources) == 0 {
+        resp := make_null_response(id)
+        write_message(resp)
+        return
+    }
+    src := g_lsp_sources[len(g_lsp_sources) - 1]
+    if len(src) == 0 {
+        resp := make_null_response(id)
+        write_message(resp)
+        return
+    }
+
+    // Convert 0-based line/col to byte offset
+    offset := strings.LineColToOffset(src, line, col)
+
+    // Extract the word at cursor position
+    word := get_word_at(src, offset)
+    if len(word) == 0 {
+        resp := make_null_response(id)
+        write_message(resp)
+        return
+    }
+
+    // Re-parse to populate symbol tables
+    parse_for_diagnostics(src)
+
+    // Search for matching symbol
+    sym_count := lsp_symbol_count()
+    found := -1
+    si := 0
+    for si < sym_count {
+        if lsp_symbol_name(si) == word {
+            found = si
+            break
+        }
+        si = si + 1
+    }
+
+    if found < 0 {
+        resp := make_null_response(id)
+        write_message(resp)
+        return
+    }
+
+    // Convert symbol offset to 0-based line/col
+    sym_offset := lsp_symbol_offset(found)
+    lc := offset_to_line_col_0(src, sym_offset)
+    sym_line := lc[0]
+    sym_col := lc[1]
+
+    // Build LSP Location response
+    start_pos := json.New()
+    start_pos.SetInt("line", sym_line)
+    start_pos.SetInt("character", sym_col)
+
+    end_pos := json.New()
+    end_pos.SetInt("line", sym_line)
+    end_pos.SetInt("character", sym_col + len(word))
+
+    range_obj := json.New()
+    range_obj.SetObject("start", start_pos)
+    range_obj.SetObject("end", end_pos)
+
+    location := json.New()
+    location.SetString("uri", uri)
+    location.SetObject("range", range_obj)
+
+    resp := make_response(id, location)
+    write_message(resp)
+}
+
+// Handle a single JSON-RPC message
+// Returns 1 to continue, 0 to exit
+fn handle_message(msg: string) -> int {
+    doc := json.Parse(msg)
+    method := doc.GetString("method")
+    id := doc.GetInt("id")
+
+    if method == "initialize" {
+        handle_initialize(id)
+        return 1
+    }
+
+    if method == "initialized" {
+        return 1
+    }
+
+    if method == "textDocument/definition" {
+        handle_definition(id, doc)
+        return 1
+    }
+
+    if method == "textDocument/didOpen" {
+        params := doc.GetObject("params")
+        td := params.GetObject("textDocument")
+        uri := td.GetString("uri")
+        text := td.GetString("text")
+        push(g_lsp_uris, uri)
+        push(g_lsp_sources, text)
+        publish_diagnostics(uri, text)
+        return 1
+    }
+
+    if method == "textDocument/didChange" {
+        params := doc.GetObject("params")
+        td := params.GetObject("textDocument")
+        uri := td.GetString("uri")
+        // For full sync, the text is in contentChanges[0].text
+        changes := params.GetArray("contentChanges")
+        if changes.Len() > 0 {
+            first_change := changes.AtObject(0)
+            text := first_change.GetString("text")
+            push(g_lsp_uris, uri)
+            push(g_lsp_sources, text)
+            publish_diagnostics(uri, text)
+        }
+        return 1
+    }
+
+    if method == "textDocument/didSave" {
+        params := doc.GetObject("params")
+        td := params.GetObject("textDocument")
+        uri := td.GetString("uri")
+        // If text is included in save notification, use it
+        if params.Has("text") == 1 {
+            text := params.GetString("text")
+            publish_diagnostics(uri, text)
+        }
+        return 1
+    }
+
+    if method == "textDocument/didClose" {
+        params := doc.GetObject("params")
+        td := params.GetObject("textDocument")
+        uri := td.GetString("uri")
+        clear_diagnostics(uri)
+        return 1
+    }
+
+    if method == "shutdown" {
+        resp := make_null_response(id)
+        write_message(resp)
+        return 1
+    }
+
+    if method == "exit" {
+        return 0
+    }
+
+    // Unknown method — ignore
+    return 1
+}
+
+// Main LSP server loop
+fn Run() -> int {
+    for {
+        msg := read_message()
+        if len(msg) == 0 { break }
+        cont := handle_message(msg)
+        if cont == 0 { break }
+    }
+    return 0
+}

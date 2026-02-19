@@ -257,8 +257,11 @@ ease/
 │       ├── testing/testing.ease   # Testing framework (Fatal)
 │       ├── time/time.ease         # Time package (Now, Unix, Add, Before, After)
 │       ├── result/result.ease     # Result/Option types (Option, Result, StringOption)
-│       └── json/json.ease         # JSON document API (build, serialize, parse)
-├── tests/                # Go-style tests (30 passing)
+│       ├── json/json.ease         # JSON document API (build, serialize, parse)
+│       └── lsp/lsp.ease           # LSP server (diagnostics)
+├── editors/              # Editor integrations
+│   └── vscode/           # VS Code extension (LSP client)
+├── tests/                # Go-style tests (54 passing)
 ├── examples/             # Example programs
 │   └── testdemo/         # Go-style test demo (math.ease + math_test.ease)
 └── findings/             # Compiler engineering notes
@@ -270,7 +273,7 @@ The compiler is fully self-hosting. No Go or C runtime needed — just `clang` (
 
 ```bash
 make                    # Build compiler from seed LLVM IR
-make test               # Run tests (36 passing)
+make test               # Run tests (54 passing)
 make test DIR=path      # Run tests in specific directory
 make bench              # Run tests + benchmarks
 make verify             # Verify self-hosting convergence (gen1 == gen2)
@@ -290,6 +293,38 @@ clang -O1 tmp/output.ll -o myprogram
 # Step 3: Run
 ./myprogram
 ```
+
+### LSP Server
+
+The Ease compiler includes a built-in LSP server for IDE integration.
+
+```bash
+# Start the LSP server (communicates over stdin/stdout)
+./tmp/ease lsp
+```
+
+**Phase 1 (implemented)**: Diagnostics — reports syntax errors on file open/change.
+**Phase 2 (partial)**: Go-to-definition — jump to within-file definitions of functions, structs, enums, and global variables.
+
+**VS Code extension**: `editors/vscode/`
+```bash
+cd editors/vscode
+npm install
+npm run compile
+# Launch VS Code with the extension:
+code --extensionDevelopmentPath=.
+```
+
+Set `ease.serverPath` in VS Code settings to point to your `ease` binary.
+
+**Supported LSP methods**:
+- `initialize` — returns capabilities (textDocumentSync=Full, definitionProvider)
+- `textDocument/didOpen` — parse and publish diagnostics, cache source
+- `textDocument/didChange` — re-parse and publish diagnostics, update cache
+- `textDocument/didSave` — re-parse if text included
+- `textDocument/didClose` — clear diagnostics
+- `textDocument/definition` — go-to-definition for functions, structs, enums, globals (within-file)
+- `shutdown` / `exit` — clean shutdown
 
 ## Rules
 
@@ -311,7 +346,7 @@ The Ease compiler is written in Ease and compiles itself with byte-identical con
 - Module/import system (local files, directory packages, stdlib imports)
 - Directory package imports with Go-style visibility (uppercase = public)
 - Package declarations (`package main`, `package token`, etc.)
-- Standard library (strings, strconv, io, os, testing, time, result, json — all pure Ease implementations)
+- Standard library (strings, strconv, io, os, testing, time, result, json, lsp — all pure Ease implementations)
 - Go-style testing framework (`fn TestXxx(t: T)` in `*_test.ease`, `testing.T` struct, `testing.Fatal(msg)`, setjmp/longjmp recovery)
 - Go-style benchmark framework (`fn BenchmarkXxx(b: B)` with auto-calibration and ns/op reporting)
 - Global variables (mutable and immutable)
@@ -333,7 +368,8 @@ The Ease compiler is written in Ease and compiles itself with byte-identical con
 - [x] Top-level struct declarations and globals
 - [x] File I/O (reading source from disk)
 - [x] Function return type registry
-- [x] Pure Ease stdlib (io, strings, os, strconv)
+- [x] Pure Ease stdlib (io, strings, os, strconv, lsp)
+- [x] LSP server (`ease lsp` — syntax diagnostics)
 
 ## Known Issues
 
@@ -386,7 +422,9 @@ The Ease compiler is written in Ease and compiles itself with byte-identical con
 - [x] Result and Option types
 
 ### Tooling
-- [ ] Language server protocol (LSP) for IDE support
+- [x] LSP server (`ease lsp`) — Phase 1: diagnostics (syntax errors)
+- [x] LSP go-to-definition — within-file definitions (functions, structs, enums, globals)
+- [ ] LSP Phase 3: hover, completion
 - [ ] Formatter (`ease fmt`)
 - [ ] Linter (`ease lint`)
 - [ ] Package manager (`ease get`)

@@ -5,3 +5,38 @@ package io
 fn Print(s: string) {
     syscall.write(1, s, len(s))
 }
+
+fn Write(fd: int, s: string) {
+    syscall.write(fd, s, len(s))
+}
+
+fn ReadN(fd: int, n: int) -> string {
+    if n <= 0 { return "" }
+    buf := heap_alloc(n + 1)
+    total := 0
+    for total < n {
+        got := syscall.read(fd, buf + total, n - total)
+        if got <= 0 { break }
+        total = total + got
+    }
+    poke(buf + total, 0)
+    return buf
+}
+
+fn ReadLine(fd: int) -> string {
+    buf_size := 4096
+    buf := heap_alloc(buf_size + 1)
+    pos := 0
+    for pos < buf_size {
+        got := syscall.read(fd, buf + pos, 1)
+        if got <= 0 { break }
+        ch := peek(buf + pos)
+        if ch == 10 {
+            poke(buf + pos, 0)
+            return buf
+        }
+        pos = pos + 1
+    }
+    poke(buf + pos, 0)
+    return buf
+}

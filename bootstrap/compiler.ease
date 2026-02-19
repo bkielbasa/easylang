@@ -12,6 +12,7 @@ import (
     "./ease/ir"
     "./ease/irgen"
     "./ease/llvm"
+    "./ease/lsp"
 )
 
 // Global storage for function call arguments (workaround for immutability)
@@ -83,6 +84,42 @@ g_func_ret_struct_names := []string{}
 g_method_struct_names := []string{}
 g_method_names := []string{}
 g_method_func_names := []string{}
+
+// LSP mode globals
+g_lsp_mode := 0
+g_lsp_diag_lines := []int{}
+g_lsp_diag_cols := []int{}
+g_lsp_diag_msgs := []string{}
+g_lsp_sym_names := []string{}
+g_lsp_sym_offsets := []int{}
+
+fn lsp_diagnostic_count() -> int {
+    return len(g_lsp_diag_msgs)
+}
+
+fn lsp_diagnostic_line(i: int) -> int {
+    return g_lsp_diag_lines[i]
+}
+
+fn lsp_diagnostic_col(i: int) -> int {
+    return g_lsp_diag_cols[i]
+}
+
+fn lsp_diagnostic_msg(i: int) -> string {
+    return g_lsp_diag_msgs[i]
+}
+
+fn lsp_symbol_count() -> int {
+    return len(g_lsp_sym_names)
+}
+
+fn lsp_symbol_name(i: int) -> string {
+    return g_lsp_sym_names[i]
+}
+
+fn lsp_symbol_offset(i: int) -> int {
+    return g_lsp_sym_offsets[i]
+}
 
 fn register_field_type(name: string, field_type: int, is_array: int) {
     // Only register if not already present (first definition wins)
@@ -257,6 +294,26 @@ fn lookup_rename(name: string) -> string {
 }
 
 fn report_error(src: string, offset: int, msg: string) {
+    if g_lsp_mode == 1 {
+        // LSP mode: collect diagnostics (0-based line/col)
+        line := 0
+        col := 0
+        ri := 0
+        for ri < offset {
+            if ri >= len(src) { break }
+            if str_char_at(src, ri) == 10 {
+                line = line + 1
+                col = 0
+            } else {
+                col = col + 1
+            }
+            ri = ri + 1
+        }
+        push(g_lsp_diag_lines, line)
+        push(g_lsp_diag_cols, col)
+        push(g_lsp_diag_msgs, msg)
+        return
+    }
     filename := "<unknown>"
     cf_len := len(g_current_file_list)
     if cf_len > 0 { filename = g_current_file_list[cf_len - 1] }
@@ -273,6 +330,98 @@ fn report_error(src: string, offset: int, msg: string) {
         }
         print(spaces + "^\n")
     }
+}
+
+fn parse_for_diagnostics(source: string) {
+    // Clear previous diagnostics
+    g_lsp_diag_lines = []int{}
+    g_lsp_diag_cols = []int{}
+    g_lsp_diag_msgs = []string{}
+    g_lsp_sym_names = []string{}
+    g_lsp_sym_offsets = []int{}
+    g_lsp_mode = 1
+
+    // Phase 1: Lexing
+    lpos := 0
+    for {
+        lpos = lex_skip(source, lpos)
+        lkind := lex_kind(source, lpos)
+        if lkind == TK_EOF() {
+            if lpos < len(source) {
+                report_error(source, lpos, "unexpected character")
+                lpos = lpos + 1
+            } else {
+                break
+            }
+        } else {
+            lpos = lex_end(source, lpos, lkind)
+        }
+    }
+
+    // Phase 2: Parsing
+    diag_nodes := []AstNode{}
+    dpos := 0
+    dpos = lex_skip(source, dpos)
+    for {
+        dpos = lex_skip(source, dpos)
+        dkind := lex_kind(source, dpos)
+        if dkind == TK_EOF() { break }
+
+        if dkind == TK_PACKAGE() {
+            dpos = lex_end(source, dpos, dkind)
+            dpos = lex_skip(source, dpos)
+            dpos = lex_end(source, dpos, lex_kind(source, dpos))
+        } else if dkind == TK_IMPORT() {
+            dimp := parse_import_decl(source, dpos, diag_nodes)
+            if dimp.node_idx >= 0 {
+                dpos = dimp.new_pos
+                dpos = lex_skip(source, dpos)
+            } else {
+                break
+            }
+        } else if dkind == TK_STRUCT() {
+            dstruct := parse_struct_decl(source, dpos, diag_nodes)
+            if dstruct.node_idx >= 0 {
+                push(g_lsp_sym_names, diag_nodes[dstruct.node_idx].str_val)
+                push(g_lsp_sym_offsets, dpos)
+            }
+            dpos = dstruct.new_pos
+        } else if dkind == TK_ENUM() {
+            denum := parse_enum_decl(source, dpos, diag_nodes)
+            if denum.node_idx >= 0 {
+                push(g_lsp_sym_names, diag_nodes[denum.node_idx].str_val)
+                push(g_lsp_sym_offsets, dpos)
+            }
+            dpos = denum.new_pos
+        } else if dkind == TK_IDENT() {
+            dce_end := lex_end(source, dpos, dkind)
+            dce_next := lex_skip(source, dce_end)
+            if lex_kind(source, dce_next) == TK_COLONEQUAL() {
+                dce := parse_colonequal_stmt(source, dpos, diag_nodes)
+                if dce.node_idx >= 0 {
+                    push(g_lsp_sym_names, diag_nodes[dce.node_idx].str_val)
+                    push(g_lsp_sym_offsets, dpos)
+                }
+                dpos = dce.new_pos
+            } else {
+                break
+            }
+        } else if dkind == TK_FN() {
+            dfunc := parse_func_decl(source, dpos, diag_nodes)
+            if dfunc.node_idx < 0 {
+                report_error(source, dpos, "failed to parse function")
+                break
+            }
+            push(g_lsp_sym_names, diag_nodes[dfunc.node_idx].str_val)
+            push(g_lsp_sym_offsets, dpos)
+            dpos = dfunc.new_pos
+            dpos = lex_skip(source, dpos)
+        } else {
+            break
+        }
+    }
+
+    g_lsp_mode = 0
 }
 
 fn store_struct_fields(struct_node_idx: int, field_indices: []int) {
@@ -1289,6 +1438,9 @@ fn main() -> int {
             }
             return run_test_mode(test_path, run_bench)
         }
+        if os.Argv(1) == "lsp" {
+            return lsp.Run()
+        }
     }
 
     // Get command-line arguments
@@ -1624,7 +1776,7 @@ fn main() -> int {
 
     // Load bootstrap stdlib modules programmatically (not via import declarations,
     // because the Go compiler's sema would reject them due to builtin conflicts)
-    stdlib_mods := []string{"./ease/io", "./ease/strings", "./ease/os", "./ease/strconv", "./ease/time", "./ease/result", "./ease/json"}
+    stdlib_mods := []string{"./ease/io", "./ease/strings", "./ease/os", "./ease/strconv", "./ease/time", "./ease/result", "./ease/json", "./ease/lsp"}
     smi := 0
     for smi < len(stdlib_mods) {
         smod_path := stdlib_mods[smi]
