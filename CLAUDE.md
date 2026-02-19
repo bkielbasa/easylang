@@ -179,7 +179,7 @@ fn TestMultiply(t: T) {
 - **stdlib auto-loaded**: `testing`, `io`, `strings`, `os`, `strconv`, `time`, `result` available without import
 
 ```bash
-make test                           # run all tests in tests/
+make test                           # run all tests in tests/ (54 passing)
 make test DIR=path/to/dir           # run tests in a specific directory
 make bench                          # run tests + benchmarks
 make bench DIR=path/to/dir          # benchmarks in a specific directory
@@ -258,7 +258,8 @@ ease/
 │       ├── os/os.ease             # OS functions (ReadFile via syscall)
 │       ├── testing/testing.ease   # Testing framework (Fatal)
 │       ├── time/time.ease         # Time package (Now, Unix, Add, Before, After)
-│       └── result/result.ease     # Result/Option types (Option, Result, StringOption)
+│       ├── result/result.ease     # Result/Option types (Option, Result, StringOption)
+│       └── json/json.ease         # JSON document API (build, serialize, parse)
 ├── tests/                # Go-style tests (30 passing)
 ├── examples/             # Example programs
 │   └── testdemo/         # Go-style test demo (math.ease + math_test.ease)
@@ -312,7 +313,7 @@ The Ease compiler is written in Ease and compiles itself with byte-identical con
 - Module/import system (local files, directory packages, stdlib imports)
 - Directory package imports with Go-style visibility (uppercase = public)
 - Package declarations (`package main`, `package token`, etc.)
-- Standard library (strings, strconv, io, os, testing, time, result — all pure Ease implementations)
+- Standard library (strings, strconv, io, os, testing, time, result, json — all pure Ease implementations)
 - Go-style testing framework (`fn TestXxx(t: T)` in `*_test.ease`, `testing.T` struct, `testing.Fatal(msg)`, setjmp/longjmp recovery)
 - Go-style benchmark framework (`fn BenchmarkXxx(b: B)` with auto-calibration and ns/op reporting)
 - Global variables (mutable and immutable)
@@ -320,7 +321,7 @@ The Ease compiler is written in Ease and compiles itself with byte-identical con
 - **Vreg-based type system** — tracks types via `g_vreg_types`/`g_param_types` arrays, replaces `is_string_expr` heuristic
 - String `==`/`!=`/`+` auto-dispatch via vreg type lookups (no heuristic needed)
 - Dynamic struct field registry for user-defined structs
-- Go-style test suite (42 tests passing, 2 benchmarks)
+- Go-style test suite (54 tests passing, 2 benchmarks)
 
 **Compiler Components** (all in `bootstrap/ease/`):
 - [x] Lexer with comment handling (// comments)
@@ -350,7 +351,7 @@ The Ease compiler is written in Ease and compiles itself with byte-identical con
 - [ ] os - process, environment, command execution (partial: Argc, Argv, ReadFile done)
 - [ ] path - file path manipulation
 - [ ] net - networking support
-- [ ] json - JSON parsing and serialization
+- [x] json - JSON document API (build, serialize, parse)
 - [ ] http - HTTP client and server
 
 ### Additional Backends
@@ -397,14 +398,14 @@ The Ease compiler is written in Ease and compiles itself with byte-identical con
 
 ```bash
 make                                    # Build from seed (no Go required)
-make test                               # Run tests (42 passing)
+make test                               # Run tests (54 passing)
 make test DIR=path                      # Run tests in specific directory
 make bench                              # Run tests + benchmarks
 make verify                             # Verify self-hosting convergence
 make update-seed                        # Update seed after source changes
 ```
 
-**Test Suite (42 tests, Go-style):**
+**Test Suite (54 tests, Go-style):**
 
 Tests live in `tests/` as `*_test.ease` files with `fn TestXxx(t: T)` functions:
 
@@ -420,6 +421,7 @@ Tests live in `tests/` as `*_test.ease` files with `fn TestXxx(t: T)` functions:
 | `result_test.ease` | 6 | Option, Result, StringOption types, match arm string bindings |
 | `time_test.ease` | 6 | time.Now, Unix, UnixNano, Add, Before, After, Since |
 | `methods_test.ease` | 6 | Method receivers, value/pointer receivers, dispatch |
+| `json_test.ease` | 12 | JSON build, marshal, parse, nested objects, arrays, escaping |
 | `bench_test.ease` | 2 | Benchmark: add, factorial (auto-calibrating ns/op) |
 | `helpers.ease` | — | Shared helper functions, structs, enums, methods |
 

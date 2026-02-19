@@ -1,0 +1,685 @@
+package json
+
+// JSON type constants
+fn JSON_NULL() -> int { return 0 }
+fn JSON_STRING() -> int { return 1 }
+fn JSON_INT() -> int { return 2 }
+fn JSON_BOOL() -> int { return 3 }
+fn JSON_OBJECT() -> int { return 4 }
+fn JSON_ARRAY() -> int { return 5 }
+
+struct Doc {
+    id: int,
+}
+
+// Global parallel arrays for document storage
+g_doc_count := 0
+g_doc_is_array := []int{}
+
+g_entry_doc := []int{}
+g_entry_key := []string{}
+g_entry_type := []int{}
+g_entry_str := []string{}
+g_entry_int := []int{}
+
+// Global parse position (since functions return single values)
+g_parse_pos := 0
+
+// --- Constructors ---
+
+fn New() -> Doc {
+    doc_id := g_doc_count
+    g_doc_count = g_doc_count + 1
+    push(g_doc_is_array, 0)
+    return Doc { id: doc_id }
+}
+
+fn NewArray() -> Doc {
+    doc_id := g_doc_count
+    g_doc_count = g_doc_count + 1
+    push(g_doc_is_array, 1)
+    return Doc { id: doc_id }
+}
+
+// --- Object setters ---
+
+fn (d: Doc) SetString(key: string, val: string) {
+    push(g_entry_doc, d.id)
+    push(g_entry_key, key)
+    push(g_entry_type, JSON_STRING())
+    push(g_entry_str, val)
+    push(g_entry_int, 0)
+}
+
+fn (d: Doc) SetInt(key: string, val: int) {
+    push(g_entry_doc, d.id)
+    push(g_entry_key, key)
+    push(g_entry_type, JSON_INT())
+    push(g_entry_str, "")
+    push(g_entry_int, val)
+}
+
+fn (d: Doc) SetBool(key: string, val: int) {
+    push(g_entry_doc, d.id)
+    push(g_entry_key, key)
+    push(g_entry_type, JSON_BOOL())
+    push(g_entry_str, "")
+    push(g_entry_int, val)
+}
+
+fn (d: Doc) SetNull(key: string) {
+    push(g_entry_doc, d.id)
+    push(g_entry_key, key)
+    push(g_entry_type, JSON_NULL())
+    push(g_entry_str, "")
+    push(g_entry_int, 0)
+}
+
+fn (d: Doc) SetObject(key: string, child: Doc) {
+    push(g_entry_doc, d.id)
+    push(g_entry_key, key)
+    push(g_entry_type, JSON_OBJECT())
+    push(g_entry_str, "")
+    push(g_entry_int, child.id)
+}
+
+fn (d: Doc) SetArray(key: string, child: Doc) {
+    push(g_entry_doc, d.id)
+    push(g_entry_key, key)
+    push(g_entry_type, JSON_ARRAY())
+    push(g_entry_str, "")
+    push(g_entry_int, child.id)
+}
+
+// --- Array pushers ---
+
+fn (d: Doc) PushString(val: string) {
+    push(g_entry_doc, d.id)
+    push(g_entry_key, "")
+    push(g_entry_type, JSON_STRING())
+    push(g_entry_str, val)
+    push(g_entry_int, 0)
+}
+
+fn (d: Doc) PushInt(val: int) {
+    push(g_entry_doc, d.id)
+    push(g_entry_key, "")
+    push(g_entry_type, JSON_INT())
+    push(g_entry_str, "")
+    push(g_entry_int, val)
+}
+
+fn (d: Doc) PushBool(val: int) {
+    push(g_entry_doc, d.id)
+    push(g_entry_key, "")
+    push(g_entry_type, JSON_BOOL())
+    push(g_entry_str, "")
+    push(g_entry_int, val)
+}
+
+fn (d: Doc) PushNull() {
+    push(g_entry_doc, d.id)
+    push(g_entry_key, "")
+    push(g_entry_type, JSON_NULL())
+    push(g_entry_str, "")
+    push(g_entry_int, 0)
+}
+
+fn (d: Doc) PushObject(child: Doc) {
+    push(g_entry_doc, d.id)
+    push(g_entry_key, "")
+    push(g_entry_type, JSON_OBJECT())
+    push(g_entry_str, "")
+    push(g_entry_int, child.id)
+}
+
+fn (d: Doc) PushArray(child: Doc) {
+    push(g_entry_doc, d.id)
+    push(g_entry_key, "")
+    push(g_entry_type, JSON_ARRAY())
+    push(g_entry_str, "")
+    push(g_entry_int, child.id)
+}
+
+// --- Object getters ---
+
+fn (d: Doc) GetString(key: string) -> string {
+    i := 0
+    elen := len(g_entry_doc)
+    for i < elen {
+        if g_entry_doc[i] == d.id && g_entry_key[i] == key && g_entry_type[i] == JSON_STRING() {
+            return g_entry_str[i]
+        }
+        i = i + 1
+    }
+    return ""
+}
+
+fn (d: Doc) GetInt(key: string) -> int {
+    i := 0
+    elen := len(g_entry_doc)
+    for i < elen {
+        if g_entry_doc[i] == d.id && g_entry_key[i] == key && g_entry_type[i] == JSON_INT() {
+            return g_entry_int[i]
+        }
+        i = i + 1
+    }
+    return 0
+}
+
+fn (d: Doc) GetBool(key: string) -> int {
+    i := 0
+    elen := len(g_entry_doc)
+    for i < elen {
+        if g_entry_doc[i] == d.id && g_entry_key[i] == key && g_entry_type[i] == JSON_BOOL() {
+            return g_entry_int[i]
+        }
+        i = i + 1
+    }
+    return 0
+}
+
+fn (d: Doc) GetObject(key: string) -> Doc {
+    i := 0
+    elen := len(g_entry_doc)
+    for i < elen {
+        if g_entry_doc[i] == d.id && g_entry_key[i] == key && g_entry_type[i] == JSON_OBJECT() {
+            return Doc { id: g_entry_int[i] }
+        }
+        i = i + 1
+    }
+    return Doc { id: -1 }
+}
+
+fn (d: Doc) GetArray(key: string) -> Doc {
+    i := 0
+    elen := len(g_entry_doc)
+    for i < elen {
+        if g_entry_doc[i] == d.id && g_entry_key[i] == key && g_entry_type[i] == JSON_ARRAY() {
+            return Doc { id: g_entry_int[i] }
+        }
+        i = i + 1
+    }
+    return Doc { id: -1 }
+}
+
+fn (d: Doc) Has(key: string) -> int {
+    i := 0
+    elen := len(g_entry_doc)
+    for i < elen {
+        if g_entry_doc[i] == d.id && g_entry_key[i] == key {
+            return 1
+        }
+        i = i + 1
+    }
+    return 0
+}
+
+fn (d: Doc) TypeOf(key: string) -> int {
+    i := 0
+    elen := len(g_entry_doc)
+    for i < elen {
+        if g_entry_doc[i] == d.id && g_entry_key[i] == key {
+            return g_entry_type[i]
+        }
+        i = i + 1
+    }
+    return -1
+}
+
+// --- Array getters ---
+
+fn (d: Doc) Len() -> int {
+    count := 0
+    i := 0
+    elen := len(g_entry_doc)
+    for i < elen {
+        if g_entry_doc[i] == d.id {
+            count = count + 1
+        }
+        i = i + 1
+    }
+    return count
+}
+
+fn (d: Doc) AtString(idx: int) -> string {
+    count := 0
+    i := 0
+    elen := len(g_entry_doc)
+    for i < elen {
+        if g_entry_doc[i] == d.id {
+            if count == idx {
+                return g_entry_str[i]
+            }
+            count = count + 1
+        }
+        i = i + 1
+    }
+    return ""
+}
+
+fn (d: Doc) AtInt(idx: int) -> int {
+    count := 0
+    i := 0
+    elen := len(g_entry_doc)
+    for i < elen {
+        if g_entry_doc[i] == d.id {
+            if count == idx {
+                return g_entry_int[i]
+            }
+            count = count + 1
+        }
+        i = i + 1
+    }
+    return 0
+}
+
+fn (d: Doc) AtBool(idx: int) -> int {
+    return d.AtInt(idx)
+}
+
+fn (d: Doc) AtObject(idx: int) -> Doc {
+    count := 0
+    i := 0
+    elen := len(g_entry_doc)
+    for i < elen {
+        if g_entry_doc[i] == d.id {
+            if count == idx {
+                return Doc { id: g_entry_int[i] }
+            }
+            count = count + 1
+        }
+        i = i + 1
+    }
+    return Doc { id: -1 }
+}
+
+// --- Marshal ---
+
+fn EscapeString(s: string) -> string {
+    slen := len(s)
+    // Worst case: every char becomes 2 chars (escape sequences)
+    buf := heap_alloc(slen * 2 + 1)
+    out := 0
+    i := 0
+    for i < slen {
+        ch := str_char_at(s, i)
+        if ch == 92 {
+            // backslash
+            poke(buf + out, 92)
+            out = out + 1
+            poke(buf + out, 92)
+            out = out + 1
+        } else if ch == 34 {
+            // double quote
+            poke(buf + out, 92)
+            out = out + 1
+            poke(buf + out, 34)
+            out = out + 1
+        } else if ch == 10 {
+            // newline -> \n
+            poke(buf + out, 92)
+            out = out + 1
+            poke(buf + out, 110)
+            out = out + 1
+        } else if ch == 9 {
+            // tab -> \t
+            poke(buf + out, 92)
+            out = out + 1
+            poke(buf + out, 116)
+            out = out + 1
+        } else {
+            poke(buf + out, ch)
+            out = out + 1
+        }
+        i = i + 1
+    }
+    poke(buf + out, 0)
+    return buf
+}
+
+fn MarshalValue(doc_id: int) -> string {
+    is_arr := g_doc_is_array[doc_id]
+    result := ""
+    if is_arr == 1 {
+        result = "["
+    } else {
+        result = "{"
+    }
+    first := 1
+    i := 0
+    elen := len(g_entry_doc)
+    for i < elen {
+        if g_entry_doc[i] == doc_id {
+            if first == 0 {
+                result = result + ","
+            }
+            first = 0
+            etype := g_entry_type[i]
+            if is_arr == 0 {
+                result = result + "\"" + EscapeString(g_entry_key[i]) + "\":"
+            }
+            if etype == JSON_STRING() {
+                result = result + "\"" + EscapeString(g_entry_str[i]) + "\""
+            } else if etype == JSON_INT() {
+                result = result + strconv.Itoa(g_entry_int[i])
+            } else if etype == JSON_BOOL() {
+                if g_entry_int[i] != 0 {
+                    result = result + "true"
+                } else {
+                    result = result + "false"
+                }
+            } else if etype == JSON_NULL() {
+                result = result + "null"
+            } else if etype == JSON_OBJECT() {
+                result = result + MarshalValue(g_entry_int[i])
+            } else if etype == JSON_ARRAY() {
+                result = result + MarshalValue(g_entry_int[i])
+            }
+        }
+        i = i + 1
+    }
+    if is_arr == 1 {
+        result = result + "]"
+    } else {
+        result = result + "}"
+    }
+    return result
+}
+
+fn (d: Doc) Marshal() -> string {
+    return MarshalValue(d.id)
+}
+
+// --- Parse ---
+
+fn SkipWs(input: string, pos: int) -> int {
+    ilen := len(input)
+    p := pos
+    for p < ilen {
+        ch := str_char_at(input, p)
+        if ch == 32 || ch == 9 || ch == 10 || ch == 13 {
+            p = p + 1
+        } else {
+            return p
+        }
+    }
+    return p
+}
+
+fn ParseStringVal(input: string, pos: int) -> string {
+    // pos points at the opening quote
+    ilen := len(input)
+    p := pos + 1
+    buf := heap_alloc(ilen + 1)
+    out := 0
+    for p < ilen {
+        ch := str_char_at(input, p)
+        if ch == 34 {
+            // closing quote
+            poke(buf + out, 0)
+            g_parse_pos = p + 1
+            return buf
+        }
+        if ch == 92 {
+            // escape sequence
+            p = p + 1
+            if p < ilen {
+                ech := str_char_at(input, p)
+                if ech == 110 {
+                    poke(buf + out, 10)
+                } else if ech == 116 {
+                    poke(buf + out, 9)
+                } else if ech == 34 {
+                    poke(buf + out, 34)
+                } else if ech == 92 {
+                    poke(buf + out, 92)
+                } else {
+                    poke(buf + out, ech)
+                }
+                out = out + 1
+            }
+        } else {
+            poke(buf + out, ch)
+            out = out + 1
+        }
+        p = p + 1
+    }
+    poke(buf + out, 0)
+    g_parse_pos = p
+    return buf
+}
+
+fn ParseNumber(input: string, pos: int) -> int {
+    ilen := len(input)
+    p := pos
+    negative := 0
+    if p < ilen && str_char_at(input, p) == 45 {
+        negative = 1
+        p = p + 1
+    }
+    result := 0
+    for p < ilen {
+        ch := str_char_at(input, p)
+        if ch >= 48 && ch <= 57 {
+            result = result * 10 + (ch - 48)
+            p = p + 1
+        } else {
+            break
+        }
+    }
+    g_parse_pos = p
+    if negative == 1 {
+        return 0 - result
+    }
+    return result
+}
+
+fn ParseValue(input: string, pos: int) -> Doc {
+    ilen := len(input)
+    p := SkipWs(input, pos)
+    if p >= ilen {
+        g_parse_pos = p
+        return New()
+    }
+    ch := str_char_at(input, p)
+
+    // Object
+    if ch == 123 {
+        return ParseObject(input, p)
+    }
+
+    // Array
+    if ch == 91 {
+        return ParseArray(input, p)
+    }
+
+    // String
+    if ch == 34 {
+        val := ParseStringVal(input, p)
+        doc := New()
+        // Store as single-value doc: push a string entry with empty key
+        push(g_entry_doc, doc.id)
+        push(g_entry_key, "")
+        push(g_entry_type, JSON_STRING())
+        push(g_entry_str, val)
+        push(g_entry_int, 0)
+        return doc
+    }
+
+    // Number
+    if ch >= 48 && ch <= 57 || ch == 45 {
+        val := ParseNumber(input, p)
+        doc := New()
+        push(g_entry_doc, doc.id)
+        push(g_entry_key, "")
+        push(g_entry_type, JSON_INT())
+        push(g_entry_str, "")
+        push(g_entry_int, val)
+        return doc
+    }
+
+    // true
+    if ch == 116 {
+        g_parse_pos = p + 4
+        doc := New()
+        push(g_entry_doc, doc.id)
+        push(g_entry_key, "")
+        push(g_entry_type, JSON_BOOL())
+        push(g_entry_str, "")
+        push(g_entry_int, 1)
+        return doc
+    }
+
+    // false
+    if ch == 102 {
+        g_parse_pos = p + 5
+        doc := New()
+        push(g_entry_doc, doc.id)
+        push(g_entry_key, "")
+        push(g_entry_type, JSON_BOOL())
+        push(g_entry_str, "")
+        push(g_entry_int, 0)
+        return doc
+    }
+
+    // null
+    if ch == 110 {
+        g_parse_pos = p + 4
+        doc := New()
+        push(g_entry_doc, doc.id)
+        push(g_entry_key, "")
+        push(g_entry_type, JSON_NULL())
+        push(g_entry_str, "")
+        push(g_entry_int, 0)
+        return doc
+    }
+
+    // Unknown — skip and return empty doc
+    g_parse_pos = p + 1
+    return New()
+}
+
+fn ParseObject(input: string, pos: int) -> Doc {
+    doc := New()
+    ilen := len(input)
+    p := pos + 1
+    p = SkipWs(input, p)
+    if p < ilen && str_char_at(input, p) == 125 {
+        g_parse_pos = p + 1
+        return doc
+    }
+    for p < ilen {
+        p = SkipWs(input, p)
+        if p >= ilen { break }
+        if str_char_at(input, p) == 125 {
+            p = p + 1
+            break
+        }
+        // Parse key
+        key := ParseStringVal(input, p)
+        p = g_parse_pos
+        p = SkipWs(input, p)
+        if p < ilen && str_char_at(input, p) == 58 {
+            p = p + 1
+        }
+        p = SkipWs(input, p)
+        // Save entry count before parsing value
+        entry_before := len(g_entry_doc)
+        // Parse value
+        child := ParseValue(input, p)
+        p = g_parse_pos
+        entry_after := len(g_entry_doc)
+        // Check if ParseValue added exactly one wrapper entry for child.id
+        found_wrapper := 0
+        if entry_after == entry_before + 1 {
+            if g_entry_doc[entry_before] == child.id && g_entry_key[entry_before] == "" {
+                found_wrapper = 1
+                ctype := g_entry_type[entry_before]
+                if ctype == JSON_STRING() {
+                    doc.SetString(key, g_entry_str[entry_before])
+                } else if ctype == JSON_INT() {
+                    doc.SetInt(key, g_entry_int[entry_before])
+                } else if ctype == JSON_BOOL() {
+                    doc.SetBool(key, g_entry_int[entry_before])
+                } else if ctype == JSON_NULL() {
+                    doc.SetNull(key)
+                }
+            }
+        }
+        if found_wrapper == 0 {
+            // child is a parsed object/array itself
+            if g_doc_is_array[child.id] == 1 {
+                doc.SetArray(key, child)
+            } else {
+                doc.SetObject(key, child)
+            }
+        }
+        p = SkipWs(input, p)
+        if p < ilen && str_char_at(input, p) == 44 {
+            p = p + 1
+        }
+    }
+    g_parse_pos = p
+    return doc
+}
+
+fn ParseArray(input: string, pos: int) -> Doc {
+    doc := NewArray()
+    ilen := len(input)
+    p := pos + 1
+    p = SkipWs(input, p)
+    if p < ilen && str_char_at(input, p) == 93 {
+        g_parse_pos = p + 1
+        return doc
+    }
+    for p < ilen {
+        p = SkipWs(input, p)
+        if p >= ilen { break }
+        if str_char_at(input, p) == 93 {
+            p = p + 1
+            break
+        }
+        // Save entry count before parsing value
+        entry_before := len(g_entry_doc)
+        // Parse value
+        child := ParseValue(input, p)
+        p = g_parse_pos
+        entry_after := len(g_entry_doc)
+        // Check if ParseValue added exactly one wrapper entry for child.id
+        found_wrapper := 0
+        if entry_after == entry_before + 1 {
+            if g_entry_doc[entry_before] == child.id && g_entry_key[entry_before] == "" {
+                found_wrapper = 1
+                ctype := g_entry_type[entry_before]
+                if ctype == JSON_STRING() {
+                    doc.PushString(g_entry_str[entry_before])
+                } else if ctype == JSON_INT() {
+                    doc.PushInt(g_entry_int[entry_before])
+                } else if ctype == JSON_BOOL() {
+                    doc.PushBool(g_entry_int[entry_before])
+                } else if ctype == JSON_NULL() {
+                    doc.PushNull()
+                }
+            }
+        }
+        if found_wrapper == 0 {
+            if g_doc_is_array[child.id] == 1 {
+                doc.PushArray(child)
+            } else {
+                doc.PushObject(child)
+            }
+        }
+        p = SkipWs(input, p)
+        if p < ilen && str_char_at(input, p) == 44 {
+            p = p + 1
+        }
+    }
+    g_parse_pos = p
+    return doc
+}
+
+fn Parse(input: string) -> Doc {
+    g_parse_pos = 0
+    return ParseValue(input, 0)
+}

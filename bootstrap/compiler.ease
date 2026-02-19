@@ -759,7 +759,7 @@ fn run_test_mode(test_path: string, run_bench: int) -> int {
     }
 
     // Load stdlib modules (io, strings, os, strconv, testing, time)
-    stdlib_mods := []string{"./ease/io", "./ease/strings", "./ease/os", "./ease/strconv", "./ease/testing", "./ease/time", "./ease/result"}
+    stdlib_mods := []string{"./ease/io", "./ease/strings", "./ease/os", "./ease/strconv", "./ease/testing", "./ease/time", "./ease/result", "./ease/json"}
     smi := 0
     for smi < len(stdlib_mods) {
         smod_path := stdlib_mods[smi]
@@ -843,6 +843,31 @@ fn run_test_mode(test_path: string, run_bench: int) -> int {
                     smod_enum := parse_enum_decl(smod_source, smod_pos, nodes)
                     smod_pos = smod_enum.new_pos
                     smod_pos = lex_skip(smod_source, smod_pos)
+                } else if smod_kind == TK_IDENT() {
+                    smod_ce_end := lex_end(smod_source, smod_pos, smod_kind)
+                    smod_ce_next := lex_skip(smod_source, smod_ce_end)
+                    if lex_kind(smod_source, smod_ce_next) == TK_COLONEQUAL() {
+                        smod_ce := parse_colonequal_stmt(smod_source, smod_pos, nodes)
+                        if smod_ce.node_idx >= 0 {
+                            smod_ce_node := nodes[smod_ce.node_idx]
+                            push(global_var_names, smod_ce_node.str_val)
+                            push(g_global_var_types, infer_init_type(nodes, smod_ce_node.right))
+                            if smod_ce_node.right >= 0 {
+                                smod_ce_init := nodes[smod_ce_node.right]
+                                if smod_ce_init.tag == EXPR_INT() {
+                                    push(g_scalar_globals, smod_ce_node.str_val)
+                                }
+                                if smod_ce_init.tag == EXPR_UNARY() {
+                                    push(g_scalar_globals, smod_ce_node.str_val)
+                                }
+                            }
+                        }
+                        smod_pos = smod_ce.new_pos
+                        smod_pos = lex_skip(smod_source, smod_pos)
+                    } else {
+                        smod_pos = lex_end(smod_source, smod_pos, smod_kind)
+                        smod_pos = lex_skip(smod_source, smod_pos)
+                    }
                 } else {
                     smod_pos = lex_end(smod_source, smod_pos, smod_kind)
                     smod_pos = lex_skip(smod_source, smod_pos)
@@ -1599,7 +1624,7 @@ fn main() -> int {
 
     // Load bootstrap stdlib modules programmatically (not via import declarations,
     // because the Go compiler's sema would reject them due to builtin conflicts)
-    stdlib_mods := []string{"./ease/io", "./ease/strings", "./ease/os", "./ease/strconv", "./ease/time", "./ease/result"}
+    stdlib_mods := []string{"./ease/io", "./ease/strings", "./ease/os", "./ease/strconv", "./ease/time", "./ease/result", "./ease/json"}
     smi := 0
     for smi < len(stdlib_mods) {
         smod_path := stdlib_mods[smi]
@@ -1691,6 +1716,31 @@ fn main() -> int {
                     smod_enum := parse_enum_decl(smod_source, smod_pos, nodes)
                     smod_pos = smod_enum.new_pos
                     smod_pos = lex_skip(smod_source, smod_pos)
+                } else if smod_kind == TK_IDENT() {
+                    smod_ce_end := lex_end(smod_source, smod_pos, smod_kind)
+                    smod_ce_next := lex_skip(smod_source, smod_ce_end)
+                    if lex_kind(smod_source, smod_ce_next) == TK_COLONEQUAL() {
+                        smod_ce := parse_colonequal_stmt(smod_source, smod_pos, nodes)
+                        if smod_ce.node_idx >= 0 {
+                            smod_ce_node := nodes[smod_ce.node_idx]
+                            push(global_var_names, smod_ce_node.str_val)
+                            push(g_global_var_types, infer_init_type(nodes, smod_ce_node.right))
+                            if smod_ce_node.right >= 0 {
+                                smod_ce_init := nodes[smod_ce_node.right]
+                                if smod_ce_init.tag == EXPR_INT() {
+                                    push(g_scalar_globals, smod_ce_node.str_val)
+                                }
+                                if smod_ce_init.tag == EXPR_UNARY() {
+                                    push(g_scalar_globals, smod_ce_node.str_val)
+                                }
+                            }
+                        }
+                        smod_pos = smod_ce.new_pos
+                        smod_pos = lex_skip(smod_source, smod_pos)
+                    } else {
+                        smod_pos = lex_end(smod_source, smod_pos, smod_kind)
+                        smod_pos = lex_skip(smod_source, smod_pos)
+                    }
                 } else {
                     // Skip comments and non-function declarations
                     smod_pos = lex_end(smod_source, smod_pos, smod_kind)

@@ -1123,7 +1123,8 @@ fn gen_ir_from_ast_with_symtab(ast_idx: int, nodes: []AstNode, instrs: []IRInstr
                 if struct_name != "" {
                     internal_name := lookup_method(struct_name, method_name)
                     if internal_name != "" {
-                        return gen_ir_method_call(recv_vreg, internal_name, ast_idx, nodes, instrs, symtab_names, symtab_vregs)
+                        actual_name := lookup_rename(internal_name)
+                        return gen_ir_method_call(recv_vreg, actual_name, ast_idx, nodes, instrs, symtab_names, symtab_vregs)
                     }
                 }
             }

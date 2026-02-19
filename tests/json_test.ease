@@ -1,0 +1,154 @@
+package main
+
+fn TestJsonNewObject(t: T) {
+    doc := json.New()
+    doc.SetString("name", "ease")
+    result := doc.GetString("name")
+    if result != "ease" {
+        testing.Fatal("expected ease, got " + result)
+    }
+    if doc.Has("name") != 1 {
+        testing.Fatal("expected Has(name) == 1")
+    }
+    if doc.Has("missing") != 0 {
+        testing.Fatal("expected Has(missing) == 0")
+    }
+}
+
+fn TestJsonSetInt(t: T) {
+    doc := json.New()
+    doc.SetInt("version", 42)
+    v := doc.GetInt("version")
+    if v != 42 {
+        testing.Fatal("expected 42, got " + strconv.Itoa(v))
+    }
+}
+
+fn TestJsonSetBool(t: T) {
+    doc := json.New()
+    doc.SetBool("active", 1)
+    doc.SetBool("deleted", 0)
+    if doc.GetBool("active") != 1 {
+        testing.Fatal("expected active == 1")
+    }
+    if doc.GetBool("deleted") != 0 {
+        testing.Fatal("expected deleted == 0")
+    }
+}
+
+fn TestJsonSetNull(t: T) {
+    doc := json.New()
+    doc.SetNull("empty")
+    typ := doc.TypeOf("empty")
+    if typ != 0 {
+        testing.Fatal("expected type 0 (NULL), got " + strconv.Itoa(typ))
+    }
+}
+
+fn TestJsonNestedObject(t: T) {
+    doc := json.New()
+    meta := json.New()
+    meta.SetString("type", "compiler")
+    doc.SetObject("meta", meta)
+    inner := doc.GetObject("meta")
+    result := inner.GetString("type")
+    if result != "compiler" {
+        testing.Fatal("expected compiler, got " + result)
+    }
+}
+
+fn TestJsonArray(t: T) {
+    arr := json.NewArray()
+    arr.PushString("hello")
+    arr.PushInt(42)
+    arr.PushBool(1)
+    if arr.Len() != 3 {
+        testing.Fatal("expected len 3, got " + strconv.Itoa(arr.Len()))
+    }
+    s := arr.AtString(0)
+    if s != "hello" {
+        testing.Fatal("expected hello, got " + s)
+    }
+    n := arr.AtInt(1)
+    if n != 42 {
+        testing.Fatal("expected 42, got " + strconv.Itoa(n))
+    }
+}
+
+fn TestJsonMarshalSimple(t: T) {
+    doc := json.New()
+    doc.SetString("key", "value")
+    doc.SetInt("num", 42)
+    output := doc.Marshal()
+    expected := "{\"key\":\"value\",\"num\":42}"
+    if output != expected {
+        testing.Fatal("expected " + expected + ", got " + output)
+    }
+}
+
+fn TestJsonMarshalNested(t: T) {
+    doc := json.New()
+    doc.SetString("name", "ease")
+    meta := json.New()
+    meta.SetString("type", "lang")
+    doc.SetObject("meta", meta)
+    arr := json.NewArray()
+    arr.PushInt(1)
+    arr.PushInt(2)
+    doc.SetArray("items", arr)
+    output := doc.Marshal()
+    expected := "{\"name\":\"ease\",\"meta\":{\"type\":\"lang\"},\"items\":[1,2]}"
+    if output != expected {
+        testing.Fatal("expected " + expected + ", got " + output)
+    }
+}
+
+fn TestJsonParseSimple(t: T) {
+    input := "{\"key\":\"value\",\"num\":42}"
+    doc := json.Parse(input)
+    v := doc.GetString("key")
+    if v != "value" {
+        testing.Fatal("expected value, got " + v)
+    }
+    n := doc.GetInt("num")
+    if n != 42 {
+        testing.Fatal("expected 42, got " + strconv.Itoa(n))
+    }
+}
+
+fn TestJsonParseNested(t: T) {
+    input := "{\"outer\":{\"inner\":\"deep\"}}"
+    doc := json.Parse(input)
+    inner := doc.GetObject("outer")
+    v := inner.GetString("inner")
+    if v != "deep" {
+        testing.Fatal("expected deep, got " + v)
+    }
+}
+
+fn TestJsonParseArray(t: T) {
+    input := "[1,2,3]"
+    doc := json.Parse(input)
+    if doc.Len() != 3 {
+        testing.Fatal("expected len 3, got " + strconv.Itoa(doc.Len()))
+    }
+    if doc.AtInt(0) != 1 {
+        testing.Fatal("expected 1 at index 0")
+    }
+    if doc.AtInt(1) != 2 {
+        testing.Fatal("expected 2 at index 1")
+    }
+    if doc.AtInt(2) != 3 {
+        testing.Fatal("expected 3 at index 2")
+    }
+}
+
+fn TestJsonEscaping(t: T) {
+    doc := json.New()
+    doc.SetString("msg", "hello \"world\"")
+    output := doc.Marshal()
+    expected := "{\"msg\":\"hello \\\"world\\\"\"}"
+    if output != expected {
+        testing.Fatal("expected " + expected + ", got " + output)
+    }
+}
