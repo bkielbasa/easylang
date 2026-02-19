@@ -100,6 +100,53 @@ fn unwrap_or(opt: int, def: int) -> int {
 - Pattern matching with `match` expression and field destructuring
 - `match` works as expression: `result := match expr { ... }`
 
+### Method Receivers (Go-style, implemented)
+Methods are functions with a receiver parameter, declared with Go-style syntax:
+
+```ease
+struct Counter {
+    count: int,
+}
+
+fn NewCounter(initial: int) -> Counter {
+    return Counter { count: initial }
+}
+
+fn (c: Counter) Value() -> int {
+    return c.count
+}
+
+fn (c: Counter) Add(n: int) -> int {
+    return c.count + n
+}
+
+fn (c: *Counter) Double() -> int {
+    return c.count * 2
+}
+
+fn main() {
+    c := NewCounter(42)
+    print(strconv.Itoa(c.Value()) + "\n")    // 42
+    print(strconv.Itoa(c.Add(8)) + "\n")     // 50
+    print(strconv.Itoa(c.Double()) + "\n")   // 84
+}
+```
+- **Value receivers**: `fn (c: Counter) Method()` — receiver passed by value (since structs are heap-allocated, effectively a pointer)
+- **Pointer receivers**: `fn (c: *Counter) Method()` — explicit pointer receiver syntax (same semantics currently, since all structs are already pointers)
+- **Name mangling**: `fn (c: Counter) Value()` compiles to internal function `Counter_Value(c)`
+- **Dispatch**: `c.Value()` checks if `c` is a local variable, looks up its struct type, finds the method, and calls `Counter_Value(c)` with receiver as first argument
+- **Struct type tracking**: Vreg-based struct name tracking (`g_vreg_struct_names`) propagates struct type info through assignments, function returns, and field accesses
+
+### Pointer Syntax (implemented)
+```ease
+*T          // pointer-to-T type (in type positions)
+&x          // address-of operator (identity op — structs are already heap pointers)
+*x          // dereference operator (identity op — structs are already heap pointers)
+```
+- Since all struct values are heap-allocated pointers internally (i64 at LLVM level), `&` and `*` are currently identity operations
+- Pointer types parsed in parameters, return types, and struct fields
+- `TYPE_PTR` (8) added to type system constants
+
 ### Testing (Go-style, implemented)
 Tests live in `*_test.ease` files alongside source code. Test functions start with `Test` (uppercase T) and accept a `t: T` parameter (Go-style).
 
@@ -273,7 +320,7 @@ The Ease compiler is written in Ease and compiles itself with byte-identical con
 - **Vreg-based type system** — tracks types via `g_vreg_types`/`g_param_types` arrays, replaces `is_string_expr` heuristic
 - String `==`/`!=`/`+` auto-dispatch via vreg type lookups (no heuristic needed)
 - Dynamic struct field registry for user-defined structs
-- Go-style test suite (36 tests passing, 2 benchmarks)
+- Go-style test suite (42 tests passing, 2 benchmarks)
 
 **Compiler Components** (all in `bootstrap/ease/`):
 - [x] Lexer with comment handling (// comments)
@@ -323,12 +370,16 @@ The Ease compiler is written in Ease and compiles itself with byte-identical con
 - [x] **Dynamic struct field registry** — `RegisterStruct` + `RegisterFieldOffset` for user-defined structs.
 - [x] **Go-style testing framework** — `fn TestXxx(t: T)` in `*_test.ease`, `testing.T` struct with name field, `testing.Fatal(msg)`, setjmp/longjmp for test recovery, synthetic runner with `=== RUN` / `--- PASS/FAIL` output.
 - [x] **Go-style benchmark framework** — `fn BenchmarkXxx(b: B)` with `testing.B` struct (`name: string`, `N: int`), auto-calibration (doubles N until >= 1s elapsed), `ease_time_nanos()` C runtime + `OP_TIME_NANOS` IR opcode, reports `iterations\tns/op`.
+- [x] **Struct type name tracking** — Parallel arrays (`g_vreg_struct_names`, `g_param_struct_names`) track which struct type each vreg holds, enabling method dispatch.
+- [x] **Method receivers** — Go-style `fn (recv: Type) Method()` syntax, name mangling (`Type_Method`), receiver injected as first parameter, method call dispatch via struct type lookup.
 
 ### Language Features
 - [x] **Go-style `:=` declarations** — Replaced `let`/`let mut` with `:=`. All variables are mutable.
 - [ ] **`const` keyword** — Compile-time constants (e.g. `const MAX_SIZE = 1024`)
 - [x] Enums with pattern matching (heap-allocated tagged unions, `match` expressions)
 - [x] Result and Option types (stdlib enums: `Option`, `Result`, `StringOption` with helpers)
+- [x] Method receivers (`fn (r: T) Method()`) with value and pointer receiver syntax
+- [x] Pointer syntax (`*T`, `&x`, `*x`) — parsed and recognized, identity ops since structs are heap pointers
 - [ ] Traits (parser done, codegen TODO)
 - [ ] Generics (design TODO)
 - [ ] Closures and lambdas
@@ -346,14 +397,14 @@ The Ease compiler is written in Ease and compiles itself with byte-identical con
 
 ```bash
 make                                    # Build from seed (no Go required)
-make test                               # Run tests (36 passing)
+make test                               # Run tests (42 passing)
 make test DIR=path                      # Run tests in specific directory
 make bench                              # Run tests + benchmarks
 make verify                             # Verify self-hosting convergence
 make update-seed                        # Update seed after source changes
 ```
 
-**Test Suite (36 tests, Go-style):**
+**Test Suite (42 tests, Go-style):**
 
 Tests live in `tests/` as `*_test.ease` files with `fn TestXxx(t: T)` functions:
 
@@ -368,8 +419,9 @@ Tests live in `tests/` as `*_test.ease` files with `fn TestXxx(t: T)` functions:
 | `enum_test.ease` | 3 | Enum variants, match expressions, field destructuring |
 | `result_test.ease` | 6 | Option, Result, StringOption types, match arm string bindings |
 | `time_test.ease` | 6 | time.Now, Unix, UnixNano, Add, Before, After, Since |
+| `methods_test.ease` | 6 | Method receivers, value/pointer receivers, dispatch |
 | `bench_test.ease` | 2 | Benchmark: add, factorial (auto-calibrating ns/op) |
-| `helpers.ease` | — | Shared helper functions, structs, enums |
+| `helpers.ease` | — | Shared helper functions, structs, enums, methods |
 
 ## Example Programs
 

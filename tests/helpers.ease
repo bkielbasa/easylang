@@ -72,3 +72,31 @@ fn test_unwrap_or(opt: int, def: int) -> int {
     }
     return result
 }
+
+struct Counter {
+    count: int,
+}
+
+fn NewCounter(initial: int) -> Counter {
+    return Counter { count: initial }
+}
+
+fn (c: Counter) Value() -> int {
+    return c.count
+}
+
+fn (c: Counter) Double() -> int {
+    return c.count * 2
+}
+
+fn (c: Counter) Add(n: int) -> int {
+    return c.count + n
+}
+
+fn (p: Point) Sum() -> int {
+    return p.x + p.y
+}
+
+fn (p: Point) Describe() -> string {
+    return "(" + strconv.Itoa(p.x) + ", " + strconv.Itoa(p.y) + ")"
+}
