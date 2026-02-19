@@ -1,6 +1,0 @@
-fn main() -> int {
-    x := -5
-    print(strconv.Itoa(x))
-    print("\n")
-    return x
-}

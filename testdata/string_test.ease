@@ -1,8 +1,0 @@
-fn get_string() -> string {
-    return "hello"
-}
-
-fn main() -> int {
-    s := get_string()
-    return 42
-}

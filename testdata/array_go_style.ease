@@ -1,7 +1,0 @@
-fn main() -> int {
-    arr := []int{10, 20, 30}
-    x := arr[0]
-    y := arr[1]
-    z := arr[2]
-    return x + y + z
-}
