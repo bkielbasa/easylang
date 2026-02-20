@@ -347,11 +347,16 @@ fn handle_hover(id: int, doc: Doc) {
         return
     }
 
-    // Build hover response with signature
+    // Build hover response with signature and doc comment
     sig := lsp_symbol_sig(found)
+    doc_text := lsp_symbol_doc(found)
+    hover_text := "```ease\n" + sig + "\n```"
+    if len(doc_text) > 0 {
+        hover_text = hover_text + "\n\n---\n\n" + doc_text
+    }
     content := json.New()
-    content.SetString("language", "ease")
-    content.SetString("value", sig)
+    content.SetString("kind", "markdown")
+    content.SetString("value", hover_text)
 
     result := json.New()
     result.SetObject("contents", content)
@@ -383,6 +388,7 @@ fn sym_kind_to_comp_kind(sk: int) -> int {
     if sk == 23 { return 22 }
     if sk == 10 { return 13 }
     if sk == 13 { return 6 }
+    if sk == 14 { return 21 }
     return 1
 }
 
