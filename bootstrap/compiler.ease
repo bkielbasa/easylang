@@ -85,6 +85,12 @@ g_method_struct_names := []string{}
 g_method_names := []string{}
 g_method_func_names := []string{}
 
+// Const storage: compile-time constants inlined at use sites
+g_const_names := []string{}
+g_const_int_values := []int{}
+g_const_str_values := []string{}
+g_const_types := []int{}
+
 // LSP mode globals
 g_lsp_mode := 0
 g_lsp_diag_lines := []int{}
@@ -651,6 +657,42 @@ fn infer_init_type(nodes: []AstNode, init_idx: int) -> int {
     return TYPE_UNKNOWN()
 }
 
+fn register_const(nodes: []AstNode, const_idx: int) {
+    cnode := nodes[const_idx]
+    push(g_const_names, cnode.str_val)
+    push(g_const_types, cnode.type_tag)
+    // Evaluate the literal value from the initializer
+    init_idx := cnode.left
+    if init_idx < 0 {
+        push(g_const_int_values, 0)
+        push(g_const_str_values, "")
+        return
+    }
+    init := nodes[init_idx]
+    if init.tag == EXPR_INT() {
+        push(g_const_int_values, init.int_val)
+        push(g_const_str_values, "")
+    } else if init.tag == EXPR_BOOL() {
+        push(g_const_int_values, init.int_val)
+        push(g_const_str_values, "")
+    } else if init.tag == EXPR_STRING() {
+        push(g_const_int_values, 0)
+        push(g_const_str_values, init.str_val)
+    } else if init.tag == EXPR_UNARY() {
+        // Negative int: -N => 0 - N (need to evaluate the child)
+        if init.left >= 0 {
+            child := nodes[init.left]
+            push(g_const_int_values, 0 - child.int_val)
+        } else {
+            push(g_const_int_values, 0)
+        }
+        push(g_const_str_values, "")
+    } else {
+        push(g_const_int_values, 0)
+        push(g_const_str_values, "")
+    }
+}
+
 // Parse all top-level declarations from a source string into nodes/func arrays
 // Returns the parse position (or -1 on error)
 fn parse_source_file(source: string, nodes: []AstNode, func_names: []string, func_indices: []int, global_var_names: []string, skip_main: int) -> int {
@@ -680,6 +722,12 @@ fn parse_source_file(source: string, nodes: []AstNode, func_names: []string, fun
         } else if kind == TK_ENUM() {
             enum_result := parse_enum_decl(source, parse_pos, nodes)
             parse_pos = enum_result.new_pos
+        } else if kind == TK_CONST() {
+            const_result := parse_const_decl(source, parse_pos, nodes)
+            if const_result.node_idx >= 0 {
+                register_const(nodes, const_result.node_idx)
+            }
+            parse_pos = const_result.new_pos
         } else if kind == TK_IDENT() {
             ce_end := lex_end(source, parse_pos, kind)
             ce_next_pos := lex_skip(source, ce_end)
@@ -858,6 +906,12 @@ fn run_test_mode(test_path: string, run_bench: int) -> int {
                                         } else if dir_kind == TK_ENUM() {
                                             dir_enum := parse_enum_decl(dir_source, dir_pos, nodes)
                                             dir_pos = dir_enum.new_pos
+                                        } else if dir_kind == TK_CONST() {
+                                            dir_const := parse_const_decl(dir_source, dir_pos, nodes)
+                                            if dir_const.node_idx >= 0 {
+                                                register_const(nodes, dir_const.node_idx)
+                                            }
+                                            dir_pos = dir_const.new_pos
                                         } else if dir_kind == TK_IDENT() {
                                             dir_ce_end := lex_end(dir_source, dir_pos, dir_kind)
                                             dir_ce_next := lex_skip(dir_source, dir_ce_end)
@@ -946,6 +1000,12 @@ fn run_test_mode(test_path: string, run_bench: int) -> int {
                         } else if mod_kind == TK_ENUM() {
                             mod_enum_result := parse_enum_decl(mod_source, mod_pos, nodes)
                             mod_pos = mod_enum_result.new_pos
+                        } else if mod_kind == TK_CONST() {
+                            mod_const := parse_const_decl(mod_source, mod_pos, nodes)
+                            if mod_const.node_idx >= 0 {
+                                register_const(nodes, mod_const.node_idx)
+                            }
+                            mod_pos = mod_const.new_pos
                         } else if mod_kind == TK_IDENT() {
                             mod_ce_end := lex_end(mod_source, mod_pos, mod_kind)
                             mod_ce_next := lex_skip(mod_source, mod_ce_end)
@@ -1082,6 +1142,13 @@ fn run_test_mode(test_path: string, run_bench: int) -> int {
                 } else if smod_kind == TK_ENUM() {
                     smod_enum := parse_enum_decl(smod_source, smod_pos, nodes)
                     smod_pos = smod_enum.new_pos
+                    smod_pos = lex_skip(smod_source, smod_pos)
+                } else if smod_kind == TK_CONST() {
+                    smod_const := parse_const_decl(smod_source, smod_pos, nodes)
+                    if smod_const.node_idx >= 0 {
+                        register_const(nodes, smod_const.node_idx)
+                    }
+                    smod_pos = smod_const.new_pos
                     smod_pos = lex_skip(smod_source, smod_pos)
                 } else if smod_kind == TK_IDENT() {
                     smod_ce_end := lex_end(smod_source, smod_pos, smod_kind)
@@ -1242,6 +1309,13 @@ fn run_test_mode(test_path: string, run_bench: int) -> int {
             push(symtab_names, global_var_names[gvi])
             push(symtab_vregs, -1000 - gvi)
             gvi = gvi + 1
+        }
+        // Add constants to symtab with sentinel vregs (<= -2000)
+        ci := 0
+        for ci < len(g_const_names) {
+            push(symtab_names, g_const_names[ci])
+            push(symtab_vregs, -2000 - ci)
+            ci = ci + 1
         }
         gen_ir_from_ast_with_symtab(func_idx, nodes, instrs, symtab_names, symtab_vregs)
         gen_all_i = gen_all_i + 1
@@ -1603,6 +1677,12 @@ fn main() -> int {
         } else if kind == TK_ENUM() {
             enum_result := parse_enum_decl(source, parse_pos, nodes)
             parse_pos = enum_result.new_pos
+        } else if kind == TK_CONST() {
+            const_result := parse_const_decl(source, parse_pos, nodes)
+            if const_result.node_idx >= 0 {
+                register_const(nodes, const_result.node_idx)
+            }
+            parse_pos = const_result.new_pos
         } else if kind == TK_IDENT() {
             // Check for := global declaration
             ce_saved := parse_pos
@@ -1700,6 +1780,12 @@ fn main() -> int {
                                         } else if dir_kind == TK_ENUM() {
                                             dir_enum := parse_enum_decl(dir_source, dir_pos, nodes)
                                             dir_pos = dir_enum.new_pos
+                                        } else if dir_kind == TK_CONST() {
+                                            dir_const := parse_const_decl(dir_source, dir_pos, nodes)
+                                            if dir_const.node_idx >= 0 {
+                                                register_const(nodes, dir_const.node_idx)
+                                            }
+                                            dir_pos = dir_const.new_pos
                                         } else if dir_kind == TK_IDENT() {
                                             dir_ce_end := lex_end(dir_source, dir_pos, dir_kind)
                                             dir_ce_next := lex_skip(dir_source, dir_ce_end)
@@ -1808,6 +1894,12 @@ fn main() -> int {
                         } else if mod_kind == TK_ENUM() {
                             mod_enum_result := parse_enum_decl(mod_source, mod_pos, nodes)
                             mod_pos = mod_enum_result.new_pos
+                        } else if mod_kind == TK_CONST() {
+                            mod_const := parse_const_decl(mod_source, mod_pos, nodes)
+                            if mod_const.node_idx >= 0 {
+                                register_const(nodes, mod_const.node_idx)
+                            }
+                            mod_pos = mod_const.new_pos
                         } else if mod_kind == TK_IDENT() {
                             mod_ce_end := lex_end(mod_source, mod_pos, mod_kind)
                             mod_ce_next := lex_skip(mod_source, mod_ce_end)
@@ -1958,6 +2050,13 @@ fn main() -> int {
                 } else if smod_kind == TK_ENUM() {
                     smod_enum := parse_enum_decl(smod_source, smod_pos, nodes)
                     smod_pos = smod_enum.new_pos
+                    smod_pos = lex_skip(smod_source, smod_pos)
+                } else if smod_kind == TK_CONST() {
+                    smod_const := parse_const_decl(smod_source, smod_pos, nodes)
+                    if smod_const.node_idx >= 0 {
+                        register_const(nodes, smod_const.node_idx)
+                    }
+                    smod_pos = smod_const.new_pos
                     smod_pos = lex_skip(smod_source, smod_pos)
                 } else if smod_kind == TK_IDENT() {
                     smod_ce_end := lex_end(smod_source, smod_pos, smod_kind)
@@ -2126,6 +2225,13 @@ fn main() -> int {
             push(symtab_names, global_var_names[gvi])
             push(symtab_vregs, -1000 - gvi)
             gvi = gvi + 1
+        }
+        // Add constants to symtab with sentinel vregs (<= -2000)
+        ci := 0
+        for ci < len(g_const_names) {
+            push(symtab_names, g_const_names[ci])
+            push(symtab_vregs, -2000 - ci)
+            ci = ci + 1
         }
         gen_ir_from_ast_with_symtab(func_idx, nodes, instrs, symtab_names, symtab_vregs)
         gen_all_i = gen_all_i + 1

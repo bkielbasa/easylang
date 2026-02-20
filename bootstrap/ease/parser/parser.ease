@@ -678,6 +678,65 @@ fn parse_import_decl(src: string, pos: int, nodes: []AstNode) -> ParseResult {
     return ParseResult { node_idx: last_import_idx, new_pos: p }
 }
 
+// Parse const declaration: const NAME = literal_expr
+fn parse_const_decl(src: string, pos: int, nodes: []AstNode) -> ParseResult {
+    p := pos
+    p = lex_skip(src, p)
+
+    // Expect 'const'
+    const_kind := lex_kind(src, p)
+    if const_kind != TK_CONST() {
+        return ParseResult { node_idx: -1, new_pos: p }
+    }
+    p = lex_end(src, p, const_kind)
+    p = lex_skip(src, p)
+
+    // Parse name
+    name_kind := lex_kind(src, p)
+    if name_kind != TK_IDENT() {
+        return ParseResult { node_idx: -1, new_pos: p }
+    }
+    const_name := lex_string_value(src, p, name_kind)
+    p = lex_end(src, p, name_kind)
+    p = lex_skip(src, p)
+
+    // Expect '='
+    eq_kind := lex_kind(src, p)
+    if eq_kind != TK_ASSIGN() {
+        return ParseResult { node_idx: -1, new_pos: p }
+    }
+    p = lex_end(src, p, eq_kind)
+    p = lex_skip(src, p)
+
+    // Parse initializer expression (literal only: int, string, bool, or unary minus)
+    init_result := parse_expr_with_pos(src, p, nodes)
+    if init_result.node_idx < 0 {
+        return ParseResult { node_idx: -1, new_pos: p }
+    }
+    p = init_result.new_pos
+
+    // Infer type from initializer
+    init_node := nodes[init_result.node_idx]
+    type_tag := TYPE_UNKNOWN()
+    if init_node.tag == EXPR_INT() { type_tag = TYPE_INT() }
+    if init_node.tag == EXPR_STRING() { type_tag = TYPE_STRING() }
+    if init_node.tag == EXPR_BOOL() { type_tag = TYPE_BOOL() }
+    if init_node.tag == EXPR_UNARY() { type_tag = TYPE_INT() }
+
+    // Create DECL_CONST node
+    const_node := AstNode {
+        tag: DECL_CONST(),
+        int_val: 0,
+        str_val: const_name,
+        left: init_result.node_idx,
+        right: -1,
+        extra: -1,
+        type_tag: type_tag
+    }
+    push(nodes, const_node)
+    return ParseResult { node_idx: len(nodes) - 1, new_pos: p }
+}
+
 // Parse function declaration: fn name(params) -> type { body }
 // Also handles method receivers: fn (recv: [*]Type) name(params) -> type { body }
 fn parse_func_decl(src: string, pos: int, nodes: []AstNode) -> ParseResult {

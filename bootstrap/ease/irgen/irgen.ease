@@ -593,6 +593,35 @@ fn gen_ir_expr(node: AstNode, ast_idx: int, nodes: []AstNode, instrs: []IRInstr,
             }
             idx1 = idx1 - 1
         }
+        if found_vreg <= -2000 {
+            // Const sentinel - inline the constant value directly
+            ci := -(found_vreg + 2000)
+            ctype := TYPE_UNKNOWN()
+            if ci < len(g_const_types) {
+                ctype = g_const_types[ci]
+            }
+            vreg := len(instrs)
+            if ctype == TYPE_STRING() {
+                cstr := ""
+                if ci < len(g_const_str_values) {
+                    cstr = g_const_str_values[ci]
+                }
+                push(instrs, IRInstr { op: OP_LOADCONST(), dest: vreg, arg1: 0, arg2: 0, arg3: 0, str_val: cstr })
+                set_vreg_type(vreg, TYPE_STRING())
+            } else {
+                cval := 0
+                if ci < len(g_const_int_values) {
+                    cval = g_const_int_values[ci]
+                }
+                push(instrs, IRInstr { op: OP_LOADCONST(), dest: vreg, arg1: cval, arg2: 0, arg3: 0, str_val: "" })
+                if ctype == TYPE_BOOL() {
+                    set_vreg_type(vreg, TYPE_BOOL())
+                } else {
+                    set_vreg_type(vreg, TYPE_INT())
+                }
+            }
+            return vreg
+        }
         if found_vreg <= -1000 {
             // Global variable sentinel - emit OP_LOAD_GLOBAL
             gvar_idx := -(found_vreg + 1000)
@@ -670,6 +699,11 @@ fn gen_ir_stmt_assign(node: AstNode, nodes: []AstNode, instrs: []IRInstr, st_n: 
         si = si + 1
     }
 
+    if var_vreg <= -2000 {
+        // Const - cannot assign
+        print("ERROR: cannot assign to constant '" + target_name + "'\n")
+        return -1
+    }
     if var_vreg <= -1000 {
         // Global variable - emit store through address
         if is_scalar_global(target_name) == 1 {

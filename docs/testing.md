@@ -32,7 +32,7 @@ fn TestMultiply(t: T) {
 - **stdlib auto-loaded**: `testing`, `io`, `strings`, `os`, `strconv`, `time`, `result` available without import
 
 ```bash
-make test                           # run all tests in tests/ (58 passing)
+make test                           # run all tests in tests/ (66 passing)
 make test DIR=path/to/dir           # run tests in a specific directory
 make bench                          # run tests + benchmarks
 make bench DIR=path/to/dir          # benchmarks in a specific directory

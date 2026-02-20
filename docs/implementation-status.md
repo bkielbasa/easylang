@@ -15,12 +15,13 @@ The Ease compiler is written in Ease and compiles itself with byte-identical con
 - Standard library (strings, strconv, io, os, testing, time, result, json, lsp — all pure Ease implementations)
 - Go-style testing framework (`fn TestXxx(t: T)` in `*_test.ease`, `testing.T` struct, `testing.Fatal(msg)`, setjmp/longjmp recovery)
 - Go-style benchmark framework (`fn BenchmarkXxx(b: B)` with auto-calibration and ns/op reporting)
+- Compile-time constants (`const NAME = value`, inlined at use sites)
 - Global variables (mutable and immutable)
 - File I/O and command-line arguments
 - **Vreg-based type system** — tracks types via `g_vreg_types`/`g_param_types` arrays, replaces `is_string_expr` heuristic
 - String `==`/`!=`/`+` auto-dispatch via vreg type lookups (no heuristic needed)
 - Dynamic struct field registry for user-defined structs
-- Go-style test suite (58 tests passing, 2 benchmarks)
+- Go-style test suite (66 tests passing, 2 benchmarks)
 
 **Compiler Components** (all in `bootstrap/ease/`):
 - [x] Lexer with comment handling (// comments)

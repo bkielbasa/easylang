@@ -69,6 +69,18 @@ import (
 
 **Status**: Local file imports, directory package imports, and stdlib imports all working! Directory imports enforce visibility (uppercase = public). External imports coming soon.
 
+## Constants (implemented)
+```ease
+const MAX_SIZE = 1024
+const APP_NAME = "myapp"
+const DEBUG = false
+const NEGATIVE = -1
+```
+- Top-level only, initializer must be a literal (int, string, bool, or negative int)
+- Zero overhead: values are inlined directly at use sites (no global variable allocation)
+- Assignment to constants is a compile error
+- Constants can be used in any expression context
+
 ## Loops (Go-style, only `for`)
 ```
 for { }                    // infinite loop

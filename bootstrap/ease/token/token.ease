@@ -23,6 +23,7 @@ fn TK_IMPORT() -> int { return 22 }
 fn TK_PACKAGE() -> int { return 23 }
 fn TK_ENUM() -> int { return 24 }
 fn TK_MATCH() -> int { return 25 }
+fn TK_CONST() -> int { return 26 }
 
 // Arithmetic operators
 fn TK_PLUS() -> int { return 30 }
@@ -91,6 +92,7 @@ fn TokenName(kind: int) -> string {
     if kind == 23 { return "'package'" }
     if kind == 24 { return "'enum'" }
     if kind == 25 { return "'match'" }
+    if kind == 26 { return "'const'" }
     if kind == 30 { return "'+'" }
     if kind == 31 { return "'-'" }
     if kind == 32 { return "'*'" }
