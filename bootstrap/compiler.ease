@@ -1959,7 +1959,7 @@ fn main() -> int {
 
     // Load bootstrap stdlib modules programmatically (not via import declarations,
     // because the Go compiler's sema would reject them due to builtin conflicts)
-    stdlib_mods := []string{"./ease/io", "./ease/strings", "./ease/os", "./ease/strconv", "./ease/time", "./ease/result", "./ease/json", "./ease/lsp"}
+    stdlib_mods := []string{"./ease/io", "./ease/strings", "./ease/os", "./ease/strconv", "./ease/time", "./ease/result", "./ease/json"}
     smi := 0
     for smi < len(stdlib_mods) {
         smod_path := stdlib_mods[smi]
