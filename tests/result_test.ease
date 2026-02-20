@@ -43,3 +43,53 @@ fn TestStringOptionNone(t: T) {
     s := result.UnwrapStringOr(opt, "default")
     if s != "default" { testing.Fatal("expected UnwrapStringOr == default") }
 }
+
+// Helper functions for ? operator tests
+
+fn try_result_ok_helper(v: int) -> Result {
+    ok := Result::Ok { value: v }
+    val := ok?
+    return Result::Ok { value: val + 1 }
+}
+
+fn try_result_err_helper() -> Result {
+    err := Result::Err { message: "fail" }
+    val := err?
+    return Result::Ok { value: val + 1 }
+}
+
+fn try_option_some_helper(v: int) -> Option {
+    opt := Option::Some { value: v }
+    val := opt?
+    return Option::Some { value: val + 1 }
+}
+
+fn try_option_none_helper() -> Option {
+    opt := Option::None
+    val := opt?
+    return Option::Some { value: val + 1 }
+}
+
+fn TestTryResultOk(t: T) {
+    res := try_result_ok_helper(10)
+    if result.IsOk(res) != 1 { testing.Fatal("expected Ok") }
+    if result.UnwrapResult(res) != 11 { testing.Fatal("expected 11") }
+}
+
+fn TestTryResultErr(t: T) {
+    res := try_result_err_helper()
+    if result.IsErr(res) != 1 { testing.Fatal("expected Err") }
+    msg := result.ErrMessage(res)
+    if msg != "fail" { testing.Fatal("expected fail message") }
+}
+
+fn TestTryOptionSome(t: T) {
+    opt := try_option_some_helper(20)
+    if result.IsSome(opt) != 1 { testing.Fatal("expected Some") }
+    if result.Unwrap(opt) != 21 { testing.Fatal("expected 21") }
+}
+
+fn TestTryOptionNone(t: T) {
+    opt := try_option_none_helper()
+    if result.IsNone(opt) != 1 { testing.Fatal("expected None") }
+}

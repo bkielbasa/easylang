@@ -30,9 +30,33 @@ Prefer defining stdlib instead of building new builtins. For example `strings.Sp
 ### Error Handling
 - **Result types**: `Result<T, Error>` for fallible operations
 - **No null**: Use `Option<T>` instead (Some/None)
-- **Try operator**: `?` for error propagation
+- **Try operator**: `?` for error propagation (implemented)
 - **Return inference**: `return value` infers Ok, `return error.New("msg")` infers Err
 - **Implicit success**: Functions returning `Result<(), Error>` succeed implicitly at end
+
+### Try Operator `?` (implemented)
+```ease
+// Before: verbose match
+fn read_config() -> Result {
+    res := parse_file("config.txt")
+    val := match res {
+        Result::Ok { value } => value,
+        Result::Err { message } => { return Result::Err { message: message } },
+    }
+    return Result::Ok { value: val + 1 }
+}
+
+// After: concise with ?
+fn read_config() -> Result {
+    val := parse_file("config.txt")?
+    return Result::Ok { value: val + 1 }
+}
+```
+- **Postfix operator**: `expr?` extracts the success value or early-returns the error/none
+- **Supported types**: `Result` (Ok/Err), `Option` (Some/None), `StringOption` (Some/None)
+- **Success variant**: `Ok` for Result-like enums, `Some` for Option-like enums
+- **Error path**: early `return` with the original enum value (Err or None variant)
+- **Implementation**: Compiles to tag check + branch + field extract (same IR ops as match)
 
 ### Visibility (Go-style)
 - **Uppercase** first letter = public (exported)
@@ -179,7 +203,7 @@ fn TestMultiply(t: T) {
 - **stdlib auto-loaded**: `testing`, `io`, `strings`, `os`, `strconv`, `time`, `result` available without import
 
 ```bash
-make test                           # run all tests in tests/ (54 passing)
+make test                           # run all tests in tests/ (58 passing)
 make test DIR=path/to/dir           # run tests in a specific directory
 make bench                          # run tests + benchmarks
 make bench DIR=path/to/dir          # benchmarks in a specific directory
@@ -261,7 +285,7 @@ ease/
 │       └── lsp/lsp.ease           # LSP server (diagnostics)
 ├── editors/              # Editor integrations
 │   └── vscode/           # VS Code extension (LSP client)
-├── tests/                # Go-style tests (54 passing)
+├── tests/                # Go-style tests (58 passing)
 ├── examples/             # Example programs
 │   └── testdemo/         # Go-style test demo (math.ease + math_test.ease)
 └── findings/             # Compiler engineering notes
@@ -273,7 +297,7 @@ The compiler is fully self-hosting. No Go or C runtime needed — just `clang` (
 
 ```bash
 make                    # Build compiler from seed LLVM IR
-make test               # Run tests (54 passing)
+make test               # Run tests (58 passing)
 make test DIR=path      # Run tests in specific directory
 make bench              # Run tests + benchmarks
 make verify             # Verify self-hosting convergence (gen1 == gen2)
@@ -360,7 +384,7 @@ The Ease compiler is written in Ease and compiles itself with byte-identical con
 - **Vreg-based type system** — tracks types via `g_vreg_types`/`g_param_types` arrays, replaces `is_string_expr` heuristic
 - String `==`/`!=`/`+` auto-dispatch via vreg type lookups (no heuristic needed)
 - Dynamic struct field registry for user-defined structs
-- Go-style test suite (54 tests passing, 2 benchmarks)
+- Go-style test suite (58 tests passing, 2 benchmarks)
 
 **Compiler Components** (all in `bootstrap/ease/`):
 - [x] Lexer with comment handling (// comments)
@@ -424,7 +448,7 @@ The Ease compiler is written in Ease and compiles itself with byte-identical con
 - [ ] Traits (parser done, codegen TODO)
 - [ ] Generics (design TODO)
 - [ ] Closures and lambdas
-- [ ] Error propagation operator (`?`)
+- [x] Error propagation operator (`?`) — postfix `expr?` extracts success value or early-returns error/none
 - [x] Result and Option types
 
 ### Tooling
@@ -442,14 +466,14 @@ The Ease compiler is written in Ease and compiles itself with byte-identical con
 
 ```bash
 make                                    # Build from seed (no Go required)
-make test                               # Run tests (54 passing)
+make test                               # Run tests (58 passing)
 make test DIR=path                      # Run tests in specific directory
 make bench                              # Run tests + benchmarks
 make verify                             # Verify self-hosting convergence
 make update-seed                        # Update seed after source changes
 ```
 
-**Test Suite (54 tests, Go-style):**
+**Test Suite (58 tests, Go-style):**
 
 Tests live in `tests/` as `*_test.ease` files with `fn TestXxx(t: T)` functions:
 
@@ -462,7 +486,7 @@ Tests live in `tests/` as `*_test.ease` files with `fn TestXxx(t: T)` functions:
 | `structs_test.ease` | 3 | Struct literals, field access, pass to functions |
 | `loops_test.ease` | 3 | Range `for i in start..end`, condition loops, modulo |
 | `enum_test.ease` | 3 | Enum variants, match expressions, field destructuring |
-| `result_test.ease` | 6 | Option, Result, StringOption types, match arm string bindings |
+| `result_test.ease` | 10 | Option, Result, StringOption types, match arm string bindings, `?` try operator |
 | `time_test.ease` | 6 | time.Now, Unix, UnixNano, Add, Before, After, Since |
 | `methods_test.ease` | 6 | Method receivers, value/pointer receivers, dispatch |
 | `json_test.ease` | 12 | JSON build, marshal, parse, nested objects, arrays, escaping |

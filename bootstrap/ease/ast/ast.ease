@@ -46,6 +46,7 @@ fn DECL_VARIANT() -> int { return 46 }
 fn EXPR_ENUM_VARIANT() -> int { return 47 }
 fn STMT_MATCH() -> int { return 48 }
 fn STMT_MATCH_ARM() -> int { return 49 }
+fn EXPR_TRY() -> int { return 50 }
 
 // Type tags
 fn TYPE_UNKNOWN() -> int { return 0 }

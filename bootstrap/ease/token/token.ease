@@ -67,6 +67,7 @@ fn TK_SEMI() -> int { return 59 }
 fn TK_COLONEQUAL() -> int { return 60 }
 fn TK_COLONCOLON() -> int { return 61 }
 fn TK_FATARROW() -> int { return 62 }
+fn TK_QUESTION() -> int { return 63 }
 
 fn TK_EOF() -> int { return 100 }
 
@@ -123,6 +124,7 @@ fn TokenName(kind: int) -> string {
     if kind == 60 { return "':='" }
     if kind == 61 { return "'::'" }
     if kind == 62 { return "'=>'" }
+    if kind == 63 { return "'?'" }
     if kind == 100 { return "end of file" }
     return "unknown"
 }

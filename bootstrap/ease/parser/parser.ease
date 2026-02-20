@@ -2080,6 +2080,20 @@ fn parse_primary_expr(src: string, pos: int, nodes: []AstNode) -> ParseResult {
                         push(nodes, field_node)
                         current_node = len(nodes) - 1
                         // Continue to check for more postfix operators
+                    } else if next_kind == TK_QUESTION() {
+                        // Try operator: expr?
+                        p = lex_end(src, p, next_kind)
+                        try_node := AstNode {
+                            tag: EXPR_TRY(),
+                            int_val: 0,
+                            str_val: "",
+                            left: current_node,
+                            right: -1,
+                            extra: -1,
+                            type_tag: TYPE_UNKNOWN()
+                        }
+                        push(nodes, try_node)
+                        current_node = len(nodes) - 1
                     } else {
                         // No more postfix operators, break the loop
                         break

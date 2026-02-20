@@ -103,6 +103,7 @@ fn lex_kind(src: string, pos: int) -> int {
     if ch == 62 { return TK_GT() }        // >
     if ch == 61 { return TK_ASSIGN() }    // =
     if ch == 33 { return TK_NOT() }       // !
+    if ch == 63 { return TK_QUESTION() }  // ?
 
     // Numbers
     if is_digit(ch) {
@@ -157,7 +158,7 @@ fn lex_end(src: string, pos: int, kind: int) -> int {
        kind == TK_RBRACE() || kind == TK_LBRACKET() || kind == TK_RBRACKET() ||
        kind == TK_COMMA() || kind == TK_COLON() || kind == TK_SEMI() || kind == TK_DOT() ||
        kind == TK_PLUS() || kind == TK_MINUS() || kind == TK_STAR() || kind == TK_SLASH() ||
-       kind == TK_PERCENT() || kind == TK_CARET() || kind == TK_AMPERSAND() || kind == TK_PIPE() || kind == TK_LT() || kind == TK_GT() || kind == TK_ASSIGN() || kind == TK_NOT() {
+       kind == TK_PERCENT() || kind == TK_CARET() || kind == TK_AMPERSAND() || kind == TK_PIPE() || kind == TK_LT() || kind == TK_GT() || kind == TK_ASSIGN() || kind == TK_NOT() || kind == TK_QUESTION() {
         return pos + 1
     }
 

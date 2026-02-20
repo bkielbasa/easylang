@@ -910,7 +910,66 @@ fn gen_ir_enum_variant(node: AstNode, ast_idx: int, nodes: []AstNode, instrs: []
     }
 
     set_vreg_type(ptr, TYPE_STRUCT())
+    set_vreg_struct_name(ptr, ename)
     return ptr
+}
+
+fn gen_ir_try_expr(node: AstNode, nodes: []AstNode, instrs: []IRInstr, st_n: []string, st_v: []int) -> int {
+    // Evaluate inner expression
+    expr_vreg := gen_ir_from_ast_with_symtab(node.left, nodes, instrs, st_n, st_v)
+
+    // Get enum type name
+    ename := get_vreg_struct_name(expr_vreg)
+
+    // Determine success variant: "Ok" for Result, "Some" for Option/StringOption
+    success_variant := "Some"
+    if enum_tag(ename, "Ok") >= 0 {
+        success_variant = "Ok"
+    }
+
+    // Load tag from expr at offset 0
+    tag_vreg := len(instrs)
+    push(instrs, IRInstr { op: OP_LOAD(), dest: tag_vreg, arg1: expr_vreg, arg2: 0, arg3: 0, str_val: "" })
+
+    // Load success tag constant
+    success_tag := enum_tag(ename, success_variant)
+    tag_const := len(instrs)
+    push(instrs, IRInstr { op: OP_LOADCONST(), dest: tag_const, arg1: success_tag, arg2: 0, arg3: 0, str_val: "" })
+
+    // Compare: tag == success_tag
+    cmp_vreg := len(instrs)
+    push(instrs, IRInstr { op: OP_CMP_EQ(), dest: cmp_vreg, arg1: tag_vreg, arg2: tag_const, arg3: 0, str_val: "" })
+
+    // Branch to error_label if cmp == 0 (tag != success_tag)
+    error_label := g_next_label
+    g_next_label = g_next_label + 1
+    continue_label := g_next_label
+    g_next_label = g_next_label + 1
+
+    push(instrs, IRInstr { op: OP_BRANCH(), dest: cmp_vreg, arg1: error_label, arg2: 0, arg3: 0, str_val: "" })
+
+    // OK path: extract "value" field
+    foff := enum_variant_field_offset(ename, success_variant, "value")
+    addr_vreg := len(instrs)
+    push(instrs, IRInstr { op: OP_INDEXADDR(), dest: addr_vreg, arg1: expr_vreg, arg2: foff, arg3: 0, str_val: "" })
+    value_vreg := len(instrs)
+    push(instrs, IRInstr { op: OP_LOAD(), dest: value_vreg, arg1: addr_vreg, arg2: 0, arg3: 0, str_val: "" })
+
+    // Set type of extracted value
+    ftype := enum_variant_field_type(ename, success_variant, "value")
+    set_vreg_type(value_vreg, ftype)
+
+    // Jump to continue
+    push(instrs, IRInstr { op: OP_JUMP(), dest: continue_label, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
+
+    // Error path: early return with the enum value
+    push(instrs, IRInstr { op: OP_LABEL(), dest: error_label, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
+    push(instrs, IRInstr { op: OP_RET(), dest: expr_vreg, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
+
+    // Continue label
+    push(instrs, IRInstr { op: OP_LABEL(), dest: continue_label, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
+
+    return value_vreg
 }
 
 fn gen_ir_match(node: AstNode, nodes: []AstNode, instrs: []IRInstr, st_n: []string, st_v: []int) -> int {
@@ -1150,6 +1209,10 @@ fn gen_ir_from_ast_with_symtab(ast_idx: int, nodes: []AstNode, instrs: []IRInstr
 
     if node.tag == EXPR_ENUM_VARIANT() {
         return gen_ir_enum_variant(node, ast_idx, nodes, instrs, symtab_names, symtab_vregs)
+    }
+
+    if node.tag == EXPR_TRY() {
+        return gen_ir_try_expr(node, nodes, instrs, symtab_names, symtab_vregs)
     }
 
     if node.tag == STMT_MATCH() {
