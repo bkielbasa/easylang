@@ -13,52 +13,52 @@ struct AstNode {
 }
 
 // Expression node types
-fn EXPR_INT() -> int { return 1 }
-fn EXPR_BOOL() -> int { return 2 }
-fn EXPR_IDENT() -> int { return 3 }
-fn EXPR_BINARY() -> int { return 4 }
-fn EXPR_UNARY() -> int { return 5 }
-fn EXPR_CALL() -> int { return 6 }
-fn EXPR_INDEX() -> int { return 7 }
-fn EXPR_FIELD() -> int { return 8 }
-fn EXPR_ARRAY_LIT() -> int { return 9 }
-fn EXPR_STRUCT_LIT() -> int { return 10 }
-fn EXPR_STRING() -> int { return 11 }
+const EXPR_INT = 1
+const EXPR_BOOL = 2
+const EXPR_IDENT = 3
+const EXPR_BINARY = 4
+const EXPR_UNARY = 5
+const EXPR_CALL = 6
+const EXPR_INDEX = 7
+const EXPR_FIELD = 8
+const EXPR_ARRAY_LIT = 9
+const EXPR_STRUCT_LIT = 10
+const EXPR_STRING = 11
 
 // Statement node types
-fn STMT_LET() -> int { return 20 }
-fn STMT_RETURN() -> int { return 21 }
-fn STMT_IF() -> int { return 22 }
-fn STMT_FOR() -> int { return 23 }
-fn STMT_ASSIGN() -> int { return 24 }
-fn STMT_EXPR() -> int { return 25 }
-fn STMT_BLOCK() -> int { return 26 }
-fn STMT_BREAK() -> int { return 27 }
+const STMT_LET = 20
+const STMT_RETURN = 21
+const STMT_IF = 22
+const STMT_FOR = 23
+const STMT_ASSIGN = 24
+const STMT_EXPR = 25
+const STMT_BLOCK = 26
+const STMT_BREAK = 27
 
 // Declaration node types
-fn DECL_FUNC() -> int { return 40 }
-fn DECL_STRUCT() -> int { return 41 }
-fn DECL_PARAM() -> int { return 42 }
-fn DECL_FIELD() -> int { return 43 }
-fn DECL_IMPORT() -> int { return 44 }
-fn DECL_ENUM() -> int { return 45 }
-fn DECL_VARIANT() -> int { return 46 }
-fn EXPR_ENUM_VARIANT() -> int { return 47 }
-fn STMT_MATCH() -> int { return 48 }
-fn STMT_MATCH_ARM() -> int { return 49 }
-fn EXPR_TRY() -> int { return 50 }
-fn DECL_CONST() -> int { return 51 }
+const DECL_FUNC = 40
+const DECL_STRUCT = 41
+const DECL_PARAM = 42
+const DECL_FIELD = 43
+const DECL_IMPORT = 44
+const DECL_ENUM = 45
+const DECL_VARIANT = 46
+const EXPR_ENUM_VARIANT = 47
+const STMT_MATCH = 48
+const STMT_MATCH_ARM = 49
+const EXPR_TRY = 50
+const DECL_CONST = 51
 
 // Type tags
-fn TYPE_UNKNOWN() -> int { return 0 }
-fn TYPE_INT() -> int { return 1 }
-fn TYPE_BOOL() -> int { return 2 }
-fn TYPE_STRING() -> int { return 3 }
-fn TYPE_INT_ARRAY() -> int { return 4 }
-fn TYPE_STRING_ARRAY() -> int { return 5 }
-fn TYPE_BOOL_ARRAY() -> int { return 6 }
-fn TYPE_STRUCT() -> int { return 7 }
-fn TYPE_PTR() -> int { return 8 }
+const TYPE_UNKNOWN = 0
+const TYPE_INT = 1
+const TYPE_BOOL = 2
+const TYPE_STRING = 3
+const TYPE_INT_ARRAY = 4
+const TYPE_STRING_ARRAY = 5
+const TYPE_BOOL_ARRAY = 6
+const TYPE_STRUCT = 7
+const TYPE_PTR = 8
 
 struct ParseResult {
     node_idx: int,
@@ -68,13 +68,13 @@ struct ParseResult {
 // Helper functions for creating AST nodes
 fn new_int_node(val: int, nodes: []AstNode) -> int {
     node := AstNode {
-        tag: EXPR_INT(),
+        tag: EXPR_INT,
         int_val: val,
         str_val: "",
         left: -1,
         right: -1,
         extra: -1,
-        type_tag: TYPE_INT()
+        type_tag: TYPE_INT
     }
     push(nodes, node)
     return len(nodes) - 1
@@ -82,13 +82,13 @@ fn new_int_node(val: int, nodes: []AstNode) -> int {
 
 fn new_bool_node(val: int, nodes: []AstNode) -> int {
     node := AstNode {
-        tag: EXPR_BOOL(),
+        tag: EXPR_BOOL,
         int_val: val,
         str_val: "",
         left: -1,
         right: -1,
         extra: -1,
-        type_tag: TYPE_BOOL()
+        type_tag: TYPE_BOOL
     }
     push(nodes, node)
     return len(nodes) - 1
@@ -96,13 +96,13 @@ fn new_bool_node(val: int, nodes: []AstNode) -> int {
 
 fn new_ident_node(name: string, nodes: []AstNode) -> int {
     node := AstNode {
-        tag: EXPR_IDENT(),
+        tag: EXPR_IDENT,
         int_val: 0,
         str_val: name,
         left: -1,
         right: -1,
         extra: -1,
-        type_tag: TYPE_UNKNOWN()
+        type_tag: TYPE_UNKNOWN
     }
     push(nodes, node)
     return len(nodes) - 1
@@ -110,13 +110,13 @@ fn new_ident_node(name: string, nodes: []AstNode) -> int {
 
 fn new_binary_node(op: int, left_idx: int, right_idx: int, nodes: []AstNode) -> int {
     node := AstNode {
-        tag: EXPR_BINARY(),
+        tag: EXPR_BINARY,
         int_val: op,
         str_val: "",
         left: left_idx,
         right: right_idx,
         extra: -1,
-        type_tag: TYPE_UNKNOWN()
+        type_tag: TYPE_UNKNOWN
     }
     push(nodes, node)
     return len(nodes) - 1
@@ -124,13 +124,13 @@ fn new_binary_node(op: int, left_idx: int, right_idx: int, nodes: []AstNode) -> 
 
 fn new_unary_node(op: int, operand: int, nodes: []AstNode) -> int {
     node := AstNode {
-        tag: EXPR_UNARY(),
+        tag: EXPR_UNARY,
         int_val: op,
         str_val: "",
         left: operand,
         right: -1,
         extra: -1,
-        type_tag: TYPE_UNKNOWN()
+        type_tag: TYPE_UNKNOWN
     }
     push(nodes, node)
     return len(nodes) - 1

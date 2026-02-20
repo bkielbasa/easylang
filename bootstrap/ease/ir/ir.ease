@@ -42,63 +42,63 @@ fn symtab_lookup(st: SymbolTable, name: string) -> int {
 }
 
 // IR Opcodes
-fn OP_LOADCONST() -> int { return 1 }
-fn OP_ADD() -> int { return 2 }
-fn OP_SUB() -> int { return 3 }
-fn OP_MUL() -> int { return 4 }
-fn OP_DIV() -> int { return 5 }
-fn OP_CMP_LT() -> int { return 6 }
-fn OP_CMP_GT() -> int { return 7 }
-fn OP_CMP_LE() -> int { return 8 }
-fn OP_CMP_GE() -> int { return 9 }
-fn OP_CMP_EQ() -> int { return 10 }
-fn OP_CMP_NE() -> int { return 11 }
-fn OP_AND() -> int { return 12 }
-fn OP_OR() -> int { return 13 }
-fn OP_NOT() -> int { return 14 }
-fn OP_XOR() -> int { return 15 }
-fn OP_BITAND() -> int { return 16 }
-fn OP_BITOR() -> int { return 17 }
-fn OP_ALLOCA() -> int { return 20 }
-fn OP_STORE() -> int { return 21 }
-fn OP_LOAD() -> int { return 22 }
-fn OP_INDEXADDR() -> int { return 23 }  // Pointer arithmetic: base + offset
-fn OP_MEMCOPY() -> int { return 24 }    // Memory copy: src, dest, size
-fn OP_ARRAY_PUSH() -> int { return 25 } // Array push: array, elem, elem_size
-fn OP_ARRAY_LEN() -> int { return 26 }  // Array length: returns len from fat pointer
-fn OP_STR_CHAR_AT() -> int { return 27 } // String char at: str, index -> char (int)
-fn OP_STR_SUBSTRING() -> int { return 28 } // String substring: str, start, end -> str
-fn OP_POKE() -> int { return 29 }  // Write byte to memory: addr, value
-fn OP_RET() -> int { return 30 }
-fn OP_PEEK() -> int { return 31 }  // Read byte from memory: addr -> value
-fn OP_HEAP_ALLOC() -> int { return 32 }  // Allocate memory: size -> pointer
-fn OP_CALL() -> int { return 33 }
-fn OP_ARG() -> int { return 34 }
-fn OP_READFILE() -> int { return 35 }  // Read file: path -> content string
-fn OP_ARGC() -> int { return 36 }     // Get argument count -> int
-fn OP_ARGV() -> int { return 37 }     // Get argument at index: index -> string
-fn OP_INT_TO_STR() -> int { return 38 } // Convert int to string: int -> string
-fn OP_PRINT() -> int { return 39 } // Print string to stdout: string -> ()
-fn OP_LABEL() -> int { return 40 }
-fn OP_JUMP() -> int { return 41 }
-fn OP_BRANCH() -> int { return 42 }
-fn OP_SYSCALL_OPEN() -> int { return 43 }
-fn OP_SYSCALL_WRITE() -> int { return 44 }
-fn OP_SYSCALL_CLOSE() -> int { return 45 }
-fn OP_STR_EQ() -> int { return 46 }
-fn OP_STR_NE() -> int { return 47 }
-fn OP_STR_CONCAT() -> int { return 48 }
-fn OP_COPY() -> int { return 49 }
-fn OP_LOAD_GLOBAL() -> int { return 50 }
-fn OP_STR_LEN() -> int { return 51 }
-fn OP_SYSCALL_READ() -> int { return 52 }
-fn OP_IS_DIR() -> int { return 53 }
-fn OP_LIST_DIR() -> int { return 54 }
-fn OP_MOD() -> int { return 55 }
-fn OP_SETJMP() -> int { return 56 }
-fn OP_TEST_FAIL() -> int { return 57 }
-fn OP_TIME_NANOS() -> int { return 58 }
-fn OP_TIME_WALLCLOCK() -> int { return 59 }
+const OP_LOADCONST = 1
+const OP_ADD = 2
+const OP_SUB = 3
+const OP_MUL = 4
+const OP_DIV = 5
+const OP_CMP_LT = 6
+const OP_CMP_GT = 7
+const OP_CMP_LE = 8
+const OP_CMP_GE = 9
+const OP_CMP_EQ = 10
+const OP_CMP_NE = 11
+const OP_AND = 12
+const OP_OR = 13
+const OP_NOT = 14
+const OP_XOR = 15
+const OP_BITAND = 16
+const OP_BITOR = 17
+const OP_ALLOCA = 20
+const OP_STORE = 21
+const OP_LOAD = 22
+const OP_INDEXADDR = 23  // Pointer arithmetic: base + offset
+const OP_MEMCOPY = 24    // Memory copy: src, dest, size
+const OP_ARRAY_PUSH = 25 // Array push: array, elem, elem_size
+const OP_ARRAY_LEN = 26  // Array length: returns len from fat pointer
+const OP_STR_CHAR_AT = 27 // String char at: str, index -> char (int)
+const OP_STR_SUBSTRING = 28 // String substring: str, start, end -> str
+const OP_POKE = 29  // Write byte to memory: addr, value
+const OP_RET = 30
+const OP_PEEK = 31  // Read byte from memory: addr -> value
+const OP_HEAP_ALLOC = 32  // Allocate memory: size -> pointer
+const OP_CALL = 33
+const OP_ARG = 34
+const OP_READFILE = 35  // Read file: path -> content string
+const OP_ARGC = 36     // Get argument count -> int
+const OP_ARGV = 37     // Get argument at index: index -> string
+const OP_INT_TO_STR = 38 // Convert int to string: int -> string
+const OP_PRINT = 39 // Print string to stdout: string -> ()
+const OP_LABEL = 40
+const OP_JUMP = 41
+const OP_BRANCH = 42
+const OP_SYSCALL_OPEN = 43
+const OP_SYSCALL_WRITE = 44
+const OP_SYSCALL_CLOSE = 45
+const OP_STR_EQ = 46
+const OP_STR_NE = 47
+const OP_STR_CONCAT = 48
+const OP_COPY = 49
+const OP_LOAD_GLOBAL = 50
+const OP_STR_LEN = 51
+const OP_SYSCALL_READ = 52
+const OP_IS_DIR = 53
+const OP_LIST_DIR = 54
+const OP_MOD = 55
+const OP_SETJMP = 56
+const OP_TEST_FAIL = 57
+const OP_TIME_NANOS = 58
+const OP_TIME_WALLCLOCK = 59
 
 // Struct definitions and offsets (hardcoded for known structs)
 // AstNode: tag(8), int_val(8), str_val(8), left(8), right(8), extra(8), type_tag(8) = 56 bytes
@@ -378,7 +378,7 @@ fn enum_variant_field_type(enum_name: string, variant_name: string, field_name: 
         }
         ei = ei + 1
     }
-    return TYPE_UNKNOWN()
+    return TYPE_UNKNOWN
 }
 
 fn is_scalar_global(name: string) -> int {

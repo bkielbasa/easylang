@@ -2,75 +2,75 @@ package token
 
 // Token type constants for the Ease bootstrap compiler
 
-fn TK_IDENT() -> int { return 1 }
-fn TK_INT() -> int { return 2 }
-fn TK_STRING() -> int { return 3 }
+const TK_IDENT = 1
+const TK_INT = 2
+const TK_STRING = 3
 
 // Keywords
-fn TK_FN() -> int { return 10 }
-fn TK_LET() -> int { return 11 }
-fn TK_MUT() -> int { return 12 }
-fn TK_IF() -> int { return 13 }
-fn TK_ELSE() -> int { return 14 }
-fn TK_FOR() -> int { return 15 }
-fn TK_IN() -> int { return 16 }
-fn TK_RETURN() -> int { return 17 }
-fn TK_BREAK() -> int { return 18 }
-fn TK_STRUCT() -> int { return 19 }
-fn TK_TRUE() -> int { return 20 }
-fn TK_FALSE() -> int { return 21 }
-fn TK_IMPORT() -> int { return 22 }
-fn TK_PACKAGE() -> int { return 23 }
-fn TK_ENUM() -> int { return 24 }
-fn TK_MATCH() -> int { return 25 }
-fn TK_CONST() -> int { return 26 }
+const TK_FN = 10
+const TK_LET = 11
+const TK_MUT = 12
+const TK_IF = 13
+const TK_ELSE = 14
+const TK_FOR = 15
+const TK_IN = 16
+const TK_RETURN = 17
+const TK_BREAK = 18
+const TK_STRUCT = 19
+const TK_TRUE = 20
+const TK_FALSE = 21
+const TK_IMPORT = 22
+const TK_PACKAGE = 23
+const TK_ENUM = 24
+const TK_MATCH = 25
+const TK_CONST = 26
 
 // Arithmetic operators
-fn TK_PLUS() -> int { return 30 }
-fn TK_MINUS() -> int { return 31 }
-fn TK_STAR() -> int { return 32 }
-fn TK_SLASH() -> int { return 33 }
-fn TK_PERCENT() -> int { return 34 }
+const TK_PLUS = 30
+const TK_MINUS = 31
+const TK_STAR = 32
+const TK_SLASH = 33
+const TK_PERCENT = 34
 
 // Comparison operators
-fn TK_LT() -> int { return 35 }
-fn TK_GT() -> int { return 36 }
-fn TK_LE() -> int { return 37 }
-fn TK_GE() -> int { return 38 }
-fn TK_EQ() -> int { return 39 }
-fn TK_NE() -> int { return 40 }
+const TK_LT = 35
+const TK_GT = 36
+const TK_LE = 37
+const TK_GE = 38
+const TK_EQ = 39
+const TK_NE = 40
 
 // Logical operators
-fn TK_AND() -> int { return 41 }
-fn TK_OR() -> int { return 42 }
-fn TK_NOT() -> int { return 43 }
-fn TK_CARET() -> int { return 44 }  // XOR operator ^
-fn TK_AMPERSAND() -> int { return 46 }  // Bitwise AND operator &
-fn TK_PIPE() -> int { return 50 }  // Bitwise OR operator |
+const TK_AND = 41
+const TK_OR = 42
+const TK_NOT = 43
+const TK_CARET = 44  // XOR operator ^
+const TK_AMPERSAND = 46  // Bitwise AND operator &
+const TK_PIPE = 50  // Bitwise OR operator |
 
 // Assignment
-fn TK_ASSIGN() -> int { return 45 }
+const TK_ASSIGN = 45
 
 // Delimiters
-fn TK_ARROW() -> int { return 47 }
-fn TK_DOT() -> int { return 48 }
-fn TK_DOTDOT() -> int { return 49 }
+const TK_ARROW = 47
+const TK_DOT = 48
+const TK_DOTDOT = 49
 
-fn TK_LPAREN() -> int { return 51 }
-fn TK_RPAREN() -> int { return 52 }
-fn TK_LBRACE() -> int { return 53 }
-fn TK_RBRACE() -> int { return 54 }
-fn TK_LBRACKET() -> int { return 55 }
-fn TK_RBRACKET() -> int { return 56 }
-fn TK_COMMA() -> int { return 57 }
-fn TK_COLON() -> int { return 58 }
-fn TK_SEMI() -> int { return 59 }
-fn TK_COLONEQUAL() -> int { return 60 }
-fn TK_COLONCOLON() -> int { return 61 }
-fn TK_FATARROW() -> int { return 62 }
-fn TK_QUESTION() -> int { return 63 }
+const TK_LPAREN = 51
+const TK_RPAREN = 52
+const TK_LBRACE = 53
+const TK_RBRACE = 54
+const TK_LBRACKET = 55
+const TK_RBRACKET = 56
+const TK_COMMA = 57
+const TK_COLON = 58
+const TK_SEMI = 59
+const TK_COLONEQUAL = 60
+const TK_COLONCOLON = 61
+const TK_FATARROW = 62
+const TK_QUESTION = 63
 
-fn TK_EOF() -> int { return 100 }
+const TK_EOF = 100
 
 fn TokenName(kind: int) -> string {
     if kind == 1 { return "identifier" }

@@ -5,9 +5,9 @@ package main
 // Copy all the code from compiler.ease...
 // (Simplified version just to test multiplication)
 
-fn TK_INT() -> int { return 2 }
-fn TK_STAR() -> int { return 32 }
-fn TK_EOF() -> int { return 100 }
+const TK_INT = 2
+const TK_STAR = 32
+const TK_EOF = 100
 
 fn is_digit(ch: int) -> bool {
     return ch >= 48 && ch <= 57
@@ -37,18 +37,18 @@ fn lex_skip(src: string, pos: int) -> int {
 fn lex_kind(src: string, pos: int) -> int {
     src_len := len(src)
     if pos >= src_len {
-        return TK_EOF()
+        return TK_EOF
     }
     ch := lex_peek(src, pos)
-    if ch == 42 { return TK_STAR() }
-    if is_digit(ch) { return TK_INT() }
-    return TK_EOF()
+    if ch == 42 { return TK_STAR }
+    if is_digit(ch) { return TK_INT }
+    return TK_EOF
 }
 
 fn lex_end(src: string, pos: int, kind: int) -> int {
-    if kind == TK_EOF() { return pos }
-    if kind == TK_STAR() { return pos + 1 }
-    if kind == TK_INT() {
+    if kind == TK_EOF { return pos }
+    if kind == TK_STAR { return pos + 1 }
+    if kind == TK_INT {
         end := pos
         for end < len(src) && is_digit(lex_peek(src, end)) {
             end = end + 1
@@ -59,7 +59,7 @@ fn lex_end(src: string, pos: int, kind: int) -> int {
 }
 
 fn lex_int_value(src: string, pos: int) -> int {
-    end := lex_end(src, pos, TK_INT())
+    end := lex_end(src, pos, TK_INT)
     s := str_substring(src, pos, end)
     val := 0
     for i in 0..len(s) {
@@ -76,7 +76,7 @@ struct IRInstr {
     arg2: int,
 }
 
-fn OP_MUL() -> int { return 4 }
+const OP_MUL = 4
 
 fn encode_mul(rd: int, rn: int, rm: int) -> int {
     return 0x9b007c00 + (rm * 0x10000) + (rn * 0x20) + rd
@@ -91,7 +91,7 @@ fn main() -> int {
     pos := 0
     pos = lex_skip(source, pos)
     val1 := lex_int_value(source, pos)
-    pos = lex_end(source, pos, TK_INT())
+    pos = lex_end(source, pos, TK_INT)
 
     pos = lex_skip(source, pos)
     op := lex_kind(source, pos)
@@ -110,7 +110,7 @@ fn main() -> int {
     instrs := []IRInstr{}
     push(instrs, IRInstr { op: 1, dest: 0, arg1: val1, arg2: 0 })  // loadconst val1
     push(instrs, IRInstr { op: 1, dest: 1, arg1: val2, arg2: 0 })  // loadconst val2
-    push(instrs, IRInstr { op: OP_MUL(), dest: 2, arg1: 0, arg2: 1 })  // mul
+    push(instrs, IRInstr { op: OP_MUL, dest: 2, arg1: 0, arg2: 1 })  // mul
 
     print("IR: v2 = mul v0, v1\n\n")
 
