@@ -85,10 +85,15 @@ fn handle_initialize(id: int) {
     sync_opts.SetInt("change", 1)
     sync_opts.SetInt("save", 1)
 
+    comp_opts := json.New()
+    comp_opts.SetBool("resolveProvider", 0)
+
     caps := json.New()
     caps.SetObject("textDocumentSync", sync_opts)
     caps.SetBool("definitionProvider", 1)
     caps.SetBool("hoverProvider", 1)
+    caps.SetObject("completionProvider", comp_opts)
+    caps.SetBool("documentSymbolProvider", 1)
 
     result := json.New()
     result.SetObject("capabilities", caps)
@@ -355,6 +360,161 @@ fn handle_hover(id: int, doc: Doc) {
     write_message(resp)
 }
 
+// Extract the prefix (word fragment before cursor) at a byte offset
+fn get_prefix_at(src: string, offset: int) -> string {
+    start := offset
+    for start > 0 {
+        ch := str_char_at(src, start - 1)
+        is_word := 0
+        if ch >= 65 && ch <= 90 { is_word = 1 }
+        if ch >= 97 && ch <= 122 { is_word = 1 }
+        if ch == 95 { is_word = 1 }
+        if ch >= 48 && ch <= 57 { is_word = 1 }
+        if is_word == 0 { break }
+        start = start - 1
+    }
+    if start == offset { return "" }
+    return str_substring(src, start, offset)
+}
+
+// Map LSP SymbolKind to CompletionItemKind
+fn sym_kind_to_comp_kind(sk: int) -> int {
+    if sk == 12 { return 3 }
+    if sk == 23 { return 22 }
+    if sk == 10 { return 13 }
+    if sk == 13 { return 6 }
+    return 1
+}
+
+// Handle textDocument/completion request
+fn handle_completion(id: int, doc: Doc) {
+    params := doc.GetObject("params")
+    td := params.GetObject("textDocument")
+    uri := td.GetString("uri")
+    position := params.GetObject("position")
+    line := position.GetInt("line")
+    col := position.GetInt("character")
+
+    // Use cached source
+    if len(g_lsp_sources) == 0 {
+        resp := make_null_response(id)
+        write_message(resp)
+        return
+    }
+    src := g_lsp_sources[len(g_lsp_sources) - 1]
+    if len(src) == 0 {
+        resp := make_null_response(id)
+        write_message(resp)
+        return
+    }
+
+    // Convert position to byte offset and get prefix
+    offset := strings.LineColToOffset(src, line, col)
+    prefix := get_prefix_at(src, offset)
+
+    // Parse to populate symbol tables
+    parse_for_diagnostics(src)
+
+    // Build completion items
+    items := json.NewArray()
+    sym_count := lsp_symbol_count()
+    ci := 0
+    for ci < sym_count {
+        name := lsp_symbol_name(ci)
+        // If prefix is empty, include all; otherwise filter by prefix
+        include := 0
+        if len(prefix) == 0 {
+            include = 1
+        } else if strings.HasPrefix(name, prefix) == 1 {
+            include = 1
+        }
+        if include == 1 {
+            item := json.New()
+            item.SetString("label", name)
+            item.SetInt("kind", sym_kind_to_comp_kind(lsp_symbol_kind(ci)))
+            item.SetString("detail", lsp_symbol_sig(ci))
+            items.PushObject(item)
+        }
+        ci = ci + 1
+    }
+
+    result := json.New()
+    result.SetBool("isIncomplete", 0)
+    result.SetArray("items", items)
+
+    resp := make_response(id, result)
+    write_message(resp)
+}
+
+// Handle textDocument/documentSymbol request
+fn handle_document_symbols(id: int, doc: Doc) {
+    params := doc.GetObject("params")
+    td := params.GetObject("textDocument")
+    uri := td.GetString("uri")
+
+    // Use cached source
+    if len(g_lsp_sources) == 0 {
+        resp := make_null_response(id)
+        write_message(resp)
+        return
+    }
+    src := g_lsp_sources[len(g_lsp_sources) - 1]
+    if len(src) == 0 {
+        resp := make_null_response(id)
+        write_message(resp)
+        return
+    }
+
+    // Parse to populate symbol tables
+    parse_for_diagnostics(src)
+
+    // Build SymbolInformation array
+    symbols := json.NewArray()
+    sym_count := lsp_symbol_count()
+    di := 0
+    for di < sym_count {
+        name := lsp_symbol_name(di)
+        kind := lsp_symbol_kind(di)
+        sym_offset := lsp_symbol_offset(di)
+
+        // Convert offset to line/col
+        lc := offset_to_line_col_0(src, sym_offset)
+        sym_line := lc[0]
+        sym_col := lc[1]
+
+        start_pos := json.New()
+        start_pos.SetInt("line", sym_line)
+        start_pos.SetInt("character", sym_col)
+
+        end_pos := json.New()
+        end_pos.SetInt("line", sym_line)
+        end_pos.SetInt("character", sym_col + len(name))
+
+        range_obj := json.New()
+        range_obj.SetObject("start", start_pos)
+        range_obj.SetObject("end", end_pos)
+
+        location := json.New()
+        location.SetString("uri", uri)
+        location.SetObject("range", range_obj)
+
+        sym := json.New()
+        sym.SetString("name", name)
+        sym.SetInt("kind", kind)
+        sym.SetObject("location", location)
+
+        symbols.PushObject(sym)
+        di = di + 1
+    }
+
+    // Return array as result
+    resp := json.New()
+    resp.SetString("jsonrpc", "2.0")
+    resp.SetInt("id", id)
+    resp.SetArray("result", symbols)
+    write_message(resp.Marshal())
+}
+
 // Handle a single JSON-RPC message
 // Returns 1 to continue, 0 to exit
 fn handle_message(msg: string) -> int {
@@ -378,6 +538,16 @@ fn handle_message(msg: string) -> int {
 
     if method == "textDocument/hover" {
         handle_hover(id, doc)
+        return 1
+    }
+
+    if method == "textDocument/completion" {
+        handle_completion(id, doc)
+        return 1
+    }
+
+    if method == "textDocument/documentSymbol" {
+        handle_document_symbols(id, doc)
         return 1
     }
 

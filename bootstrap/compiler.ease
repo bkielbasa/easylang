@@ -93,6 +93,7 @@ g_lsp_diag_msgs := []string{}
 g_lsp_sym_names := []string{}
 g_lsp_sym_offsets := []int{}
 g_lsp_sym_sigs := []string{}
+g_lsp_sym_kinds := []int{}
 
 fn lsp_diagnostic_count() -> int {
     return len(g_lsp_diag_msgs)
@@ -124,6 +125,10 @@ fn lsp_symbol_offset(i: int) -> int {
 
 fn lsp_symbol_sig(i: int) -> string {
     return g_lsp_sym_sigs[i]
+}
+
+fn lsp_symbol_kind(i: int) -> int {
+    return g_lsp_sym_kinds[i]
 }
 
 fn lsp_type_str(type_tag: int, is_array: int, node_idx: int) -> string {
@@ -361,6 +366,7 @@ fn parse_for_diagnostics(source: string) {
     g_lsp_sym_names = []string{}
     g_lsp_sym_offsets = []int{}
     g_lsp_sym_sigs = []string{}
+    g_lsp_sym_kinds = []int{}
     g_lsp_mode = 1
 
     // Phase 1: Lexing
@@ -419,6 +425,7 @@ fn parse_for_diagnostics(source: string) {
                 }
                 ssig = ssig + " }"
                 push(g_lsp_sym_sigs, ssig)
+                push(g_lsp_sym_kinds, 23)
             }
             dpos = dstruct.new_pos
         } else if dkind == TK_ENUM() {
@@ -454,6 +461,7 @@ fn parse_for_diagnostics(source: string) {
                 }
                 esig = esig + " }"
                 push(g_lsp_sym_sigs, esig)
+                push(g_lsp_sym_kinds, 10)
             }
             dpos = denum.new_pos
         } else if dkind == TK_IDENT() {
@@ -465,6 +473,7 @@ fn parse_for_diagnostics(source: string) {
                     push(g_lsp_sym_names, diag_nodes[dce.node_idx].str_val)
                     push(g_lsp_sym_offsets, dpos)
                     push(g_lsp_sym_sigs, diag_nodes[dce.node_idx].str_val + " := ...")
+                    push(g_lsp_sym_kinds, 13)
                 }
                 dpos = dce.new_pos
             } else {
@@ -495,6 +504,7 @@ fn parse_for_diagnostics(source: string) {
                 fsig = fsig + " -> " + frt
             }
             push(g_lsp_sym_sigs, fsig)
+            push(g_lsp_sym_kinds, 12)
             dpos = dfunc.new_pos
             dpos = lex_skip(source, dpos)
         } else {
