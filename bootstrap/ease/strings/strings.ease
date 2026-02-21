@@ -174,3 +174,43 @@ fn Index(s: string, sub: string) -> int {
     }
     return -1
 }
+
+// Builder - mutable string builder using global-array pattern
+g_builder_count := 0
+g_builder_doc := []int{}
+g_builder_parts := []string{}
+
+struct Builder { id: int }
+
+fn NewBuilder() -> Builder {
+    id := g_builder_count
+    g_builder_count = g_builder_count + 1
+    return Builder { id: id }
+}
+
+fn (b: Builder) WriteString(s: string) -> int {
+    push(g_builder_doc, b.id)
+    push(g_builder_parts, s)
+    return len(s)
+}
+
+fn (b: Builder) Write(s: string) -> int {
+    return b.WriteString(s)
+}
+
+fn (b: Builder) String() -> string {
+    result := ""
+    i := 0
+    blen := len(g_builder_doc)
+    for i < blen {
+        if g_builder_doc[i] == b.id {
+            result = result + g_builder_parts[i]
+        }
+        i = i + 1
+    }
+    return result
+}
+
+fn (b: Builder) Len() -> int {
+    return len(b.String())
+}

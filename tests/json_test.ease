@@ -161,3 +161,18 @@ fn TestJsonDocString(t: T) {
         testing.Fatal("expected JSON string, got " + result)
     }
 }
+
+fn TestJsonWriteTo(t: T) {
+    doc := json.New()
+    doc.SetString("lang", "ease")
+    b := strings.NewBuilder()
+    n := json.WriteTo(b, doc)
+    expected := "{\"lang\":\"ease\"}"
+    if n != len(expected) {
+        testing.Fatal("expected WriteTo to return " + strconv.Itoa(len(expected)) + ", got " + strconv.Itoa(n))
+    }
+    result := b.String()
+    if result != expected {
+        testing.Fatal("expected " + expected + ", got " + result)
+    }
+}

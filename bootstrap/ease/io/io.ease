@@ -6,6 +6,14 @@ interface Writer {
     Write(s: string) -> int,
 }
 
+interface StringWriter {
+    WriteString(s: string) -> int,
+}
+
+interface Closer {
+    Close() -> int,
+}
+
 struct StdoutWriter { fd: int }
 
 fn (w: StdoutWriter) Write(s: string) -> int {
@@ -13,8 +21,20 @@ fn (w: StdoutWriter) Write(s: string) -> int {
     return len(s)
 }
 
+fn (w: StdoutWriter) WriteString(s: string) -> int {
+    return w.Write(s)
+}
+
+fn (w: StdoutWriter) Close() -> int {
+    return 0
+}
+
 fn NewStdoutWriter() -> StdoutWriter {
     return StdoutWriter { fd: 1 }
+}
+
+fn NewStderrWriter() -> StdoutWriter {
+    return StdoutWriter { fd: 2 }
 }
 
 fn Print(s: string) {
@@ -54,4 +74,31 @@ fn ReadLine(fd: int) -> string {
     }
     poke(buf + pos, 0)
     return buf
+}
+
+interface Reader {
+    Read(n: int) -> string,
+}
+
+struct StdinReader { fd: int }
+
+fn (r: StdinReader) Read(n: int) -> string {
+    if n <= 0 { return "" }
+    buf := heap_alloc(n + 1)
+    total := 0
+    for total < n {
+        got := syscall.read(r.fd, buf + total, n - total)
+        if got <= 0 { break }
+        total = total + got
+    }
+    poke(buf + total, 0)
+    return buf
+}
+
+fn (r: StdinReader) Close() -> int {
+    return 0
+}
+
+fn NewStdinReader() -> StdinReader {
+    return StdinReader { fd: 0 }
 }

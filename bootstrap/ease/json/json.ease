@@ -675,6 +675,11 @@ fn (d: Doc) String() -> string {
     return marshalValue(d.id)
 }
 
+fn WriteTo(w: Writer, d: Doc) -> int {
+    s := d.Marshal()
+    return w.Write(s)
+}
+
 fn Parse(input: string) -> Doc {
     g_parse_pos = 0
     return parseValue(input, 0)

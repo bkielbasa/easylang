@@ -50,3 +50,39 @@ fn TestStrconvAtoi(t: T) {
         testing.Fatal("Atoi(123) should be 123")
     }
 }
+
+fn TestStringBuilderBasic(t: T) {
+    b := strings.NewBuilder()
+    b.WriteString("hello")
+    b.WriteString(" ")
+    b.WriteString("world")
+    result := b.String()
+    if result != "hello world" {
+        testing.Fatal("expected hello world, got " + result)
+    }
+}
+
+fn TestStringBuilderEmpty(t: T) {
+    b := strings.NewBuilder()
+    result := b.String()
+    if result != "" {
+        testing.Fatal("expected empty string, got " + result)
+    }
+}
+
+fn TestStringBuilderAsStringer(t: T) {
+    b := strings.NewBuilder()
+    b.WriteString("built")
+    result := fmt.Sprint(b)
+    if result != "built" {
+        testing.Fatal("expected built, got " + result)
+    }
+}
+
+fn TestStringBuilderAsWriter(t: T) {
+    b := strings.NewBuilder()
+    b.WriteString("test")
+    if b.Len() != 4 {
+        testing.Fatal("expected len 4, got " + strconv.Itoa(b.Len()))
+    }
+}

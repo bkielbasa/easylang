@@ -74,7 +74,7 @@ The compiler is fully self-hosting. No Go or C runtime needed — just `clang` (
 
 ```bash
 make                    # Build compiler from seed LLVM IR
-make test               # Run tests (70 passing)
+make test               # Run tests (90 passing)
 make test DIR=path      # Run tests in specific directory
 make bench              # Run tests + benchmarks
 make verify             # Verify self-hosting convergence (gen1 == gen2)

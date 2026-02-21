@@ -21,7 +21,7 @@ The Ease compiler is written in Ease and compiles itself with byte-identical con
 - **Vreg-based type system** — tracks types via `g_vreg_types`/`g_param_types` arrays, replaces `is_string_expr` heuristic
 - String `==`/`!=`/`+` auto-dispatch via vreg type lookups (no heuristic needed)
 - Dynamic struct field registry for user-defined structs
-- Go-style test suite (70 tests passing, 2 benchmarks)
+- Go-style test suite (90 tests passing, 2 benchmarks)
 
 **Compiler Components** (all in `bootstrap/ease/`):
 - [x] Lexer with comment handling (// comments)
