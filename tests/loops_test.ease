@@ -28,3 +28,36 @@ fn TestCountEven(t: T) {
         testing.Fatal("should have 3 even numbers")
     }
 }
+
+fn TestForInArray(t: T) {
+    arr := []int{10, 20, 30}
+    sum := 0
+    for x in arr {
+        sum = sum + x
+    }
+    if sum != 60 {
+        testing.Fatal("for-in int array: expected sum 60")
+    }
+}
+
+fn TestForInStringArray(t: T) {
+    arr := []string{"a", "b", "c"}
+    result := ""
+    for s in arr {
+        result = result + s
+    }
+    if result != "abc" {
+        testing.Fatal("for-in string array: expected abc")
+    }
+}
+
+fn TestForInEmptyArray(t: T) {
+    arr := []int{}
+    count := 0
+    for x in arr {
+        count = count + 1
+    }
+    if count != 0 {
+        testing.Fatal("for-in empty array: body should not execute")
+    }
+}

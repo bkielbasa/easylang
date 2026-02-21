@@ -781,34 +781,94 @@ fn gen_ir_stmt_if(node: AstNode, nodes: []AstNode, instrs: []IRInstr, st_n: []st
 
 fn gen_ir_stmt_for(n: AstNode, nodes: []AstNode, instrs: []IRInstr, st_n: []string, st_v: []int) -> int {
     if n.str_val != "" {
-        // Range-based for loop: for i in start..end { body }
-        // n.left = EXPR_BINARY(TK_DOTDOT) with left=start, right=end
-        // n.str_val = loop variable name
-        // n.right = body block
         range_node := nodes[n.left]
-        start_vreg := gen_ir_from_ast_with_symtab(range_node.left, nodes, instrs, st_n, st_v)
-        end_vreg := gen_ir_from_ast_with_symtab(range_node.right, nodes, instrs, st_n, st_v)
+        is_range := range_node.tag == EXPR_BINARY && range_node.int_val == TK_DOTDOT
 
-        // Initialize loop variable with a copy of start
-        loop_vreg := len(instrs)
-        push(instrs, IRInstr { op: OP_COPY, dest: loop_vreg, arg1: start_vreg, arg2: 0, arg3: 0, str_val: "" })
-        set_vreg_type(loop_vreg, TYPE_INT)
+        if is_range {
+            // Range-based for loop: for i in start..end { body }
+            start_vreg := gen_ir_from_ast_with_symtab(range_node.left, nodes, instrs, st_n, st_v)
+            end_vreg := gen_ir_from_ast_with_symtab(range_node.right, nodes, instrs, st_n, st_v)
+
+            // Initialize loop variable with a copy of start
+            loop_vreg := len(instrs)
+            push(instrs, IRInstr { op: OP_COPY, dest: loop_vreg, arg1: start_vreg, arg2: 0, arg3: 0, str_val: "" })
+            set_vreg_type(loop_vreg, TYPE_INT)
+            push(st_n, n.str_val)
+            push(st_v, loop_vreg)
+
+            s := g_next_label
+            g_next_label = g_next_label + 1
+            e := g_next_label
+            g_next_label = g_next_label + 1
+
+            // Loop header: compare loop_vreg < end_vreg
+            push(instrs, IRInstr { op: OP_LABEL, dest: s, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
+            cmp_vreg := len(instrs)
+            push(instrs, IRInstr { op: OP_CMP_LT, dest: cmp_vreg, arg1: loop_vreg, arg2: end_vreg, arg3: 0, str_val: "" })
+            push(instrs, IRInstr { op: OP_BRANCH, dest: cmp_vreg, arg1: e, arg2: 0, arg3: 0, str_val: "" })
+
+            // Body
+            saved_break := g_break_label
+            g_break_label = e
+            if n.right >= 0 { gen_ir_from_ast_with_symtab(n.right, nodes, instrs, st_n, st_v) }
+            g_break_label = saved_break
+
+            // Increment: loop_vreg = loop_vreg + 1
+            one_vreg := len(instrs)
+            push(instrs, IRInstr { op: OP_LOADCONST, dest: one_vreg, arg1: 1, arg2: 0, arg3: 0, str_val: "" })
+            inc_vreg := len(instrs)
+            push(instrs, IRInstr { op: OP_ADD, dest: inc_vreg, arg1: loop_vreg, arg2: one_vreg, arg3: 0, str_val: "" })
+            push(instrs, IRInstr { op: OP_COPY, dest: loop_vreg, arg1: inc_vreg, arg2: 0, arg3: 0, str_val: "" })
+
+            push(instrs, IRInstr { op: OP_JUMP, dest: s, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
+            push(instrs, IRInstr { op: OP_LABEL, dest: e, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
+            return 0
+        }
+
+        // Array iteration: for x in arr { body }
+        arr_vreg := gen_ir_from_ast_with_symtab(n.left, nodes, instrs, st_n, st_v)
+
+        // Get array length
+        len_vreg := len(instrs)
+        push(instrs, IRInstr { op: OP_ARRAY_LEN, dest: len_vreg, arg1: arr_vreg, arg2: 0, arg3: 0, str_val: "" })
+        set_vreg_type(len_vreg, TYPE_INT)
+
+        // Hidden index counter, initialized to 0
+        zero_vreg := len(instrs)
+        push(instrs, IRInstr { op: OP_LOADCONST, dest: zero_vreg, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
+        idx_vreg := len(instrs)
+        push(instrs, IRInstr { op: OP_COPY, dest: idx_vreg, arg1: zero_vreg, arg2: 0, arg3: 0, str_val: "" })
+        set_vreg_type(idx_vreg, TYPE_INT)
+
+        // Derive element type from array type
+        arr_type := get_vreg_type(arr_vreg)
+        elem_type := TYPE_INT
+        if arr_type == TYPE_STRING_ARRAY { elem_type = TYPE_STRING }
+        if arr_type == TYPE_BOOL_ARRAY { elem_type = TYPE_BOOL }
+
+        // Loop variable (dummy initial value, updated each iteration)
+        elem_vreg := len(instrs)
+        push(instrs, IRInstr { op: OP_COPY, dest: elem_vreg, arg1: zero_vreg, arg2: 0, arg3: 0, str_val: "" })
+        set_vreg_type(elem_vreg, elem_type)
         push(st_n, n.str_val)
-        push(st_v, loop_vreg)
+        push(st_v, elem_vreg)
 
         s := g_next_label
         g_next_label = g_next_label + 1
         e := g_next_label
         g_next_label = g_next_label + 1
 
-        // Loop header: compare loop_vreg < end_vreg
+        // Loop header: compare idx < len
         push(instrs, IRInstr { op: OP_LABEL, dest: s, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
         cmp_vreg := len(instrs)
-        push(instrs, IRInstr { op: OP_CMP_LT, dest: cmp_vreg, arg1: loop_vreg, arg2: end_vreg, arg3: 0, str_val: "" })
-        // OP_BRANCH: jump to label when dest==0 (CBZ semantics)
-        // cmp_vreg = 1 when i < end, 0 when i >= end
-        // So branch to end when cmp_vreg==0 (loop done)
+        push(instrs, IRInstr { op: OP_CMP_LT, dest: cmp_vreg, arg1: idx_vreg, arg2: len_vreg, arg3: 0, str_val: "" })
         push(instrs, IRInstr { op: OP_BRANCH, dest: cmp_vreg, arg1: e, arg2: 0, arg3: 0, str_val: "" })
+
+        // Load current element: elem = arr[idx]
+        load_vreg := len(instrs)
+        push(instrs, IRInstr { op: OP_LOAD, dest: load_vreg, arg1: arr_vreg, arg2: idx_vreg, arg3: 0, str_val: "array_index" })
+        set_vreg_type(load_vreg, elem_type)
+        push(instrs, IRInstr { op: OP_COPY, dest: elem_vreg, arg1: load_vreg, arg2: 0, arg3: 0, str_val: "" })
 
         // Body
         saved_break := g_break_label
@@ -816,12 +876,12 @@ fn gen_ir_stmt_for(n: AstNode, nodes: []AstNode, instrs: []IRInstr, st_n: []stri
         if n.right >= 0 { gen_ir_from_ast_with_symtab(n.right, nodes, instrs, st_n, st_v) }
         g_break_label = saved_break
 
-        // Increment: loop_vreg = loop_vreg + 1
+        // Increment hidden index: idx = idx + 1
         one_vreg := len(instrs)
         push(instrs, IRInstr { op: OP_LOADCONST, dest: one_vreg, arg1: 1, arg2: 0, arg3: 0, str_val: "" })
         inc_vreg := len(instrs)
-        push(instrs, IRInstr { op: OP_ADD, dest: inc_vreg, arg1: loop_vreg, arg2: one_vreg, arg3: 0, str_val: "" })
-        push(instrs, IRInstr { op: OP_COPY, dest: loop_vreg, arg1: inc_vreg, arg2: 0, arg3: 0, str_val: "" })
+        push(instrs, IRInstr { op: OP_ADD, dest: inc_vreg, arg1: idx_vreg, arg2: one_vreg, arg3: 0, str_val: "" })
+        push(instrs, IRInstr { op: OP_COPY, dest: idx_vreg, arg1: inc_vreg, arg2: 0, arg3: 0, str_val: "" })
 
         push(instrs, IRInstr { op: OP_JUMP, dest: s, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
         push(instrs, IRInstr { op: OP_LABEL, dest: e, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
