@@ -21,7 +21,7 @@ The Ease compiler is written in Ease and compiles itself with byte-identical con
 - **Vreg-based type system** — tracks types via `g_vreg_types`/`g_param_types` arrays, replaces `is_string_expr` heuristic
 - String `==`/`!=`/`+` auto-dispatch via vreg type lookups (no heuristic needed)
 - Dynamic struct field registry for user-defined structs
-- Go-style test suite (66 tests passing, 2 benchmarks)
+- Go-style test suite (70 tests passing, 2 benchmarks)
 
 **Compiler Components** (all in `bootstrap/ease/`):
 - [x] Lexer with comment handling (// comments)
@@ -74,6 +74,7 @@ The Ease compiler is written in Ease and compiles itself with byte-identical con
 - [x] **Go-style benchmark framework** — `fn BenchmarkXxx(b: B)` with `testing.B` struct (`name: string`, `N: int`), auto-calibration (doubles N until >= 1s elapsed), `ease_time_nanos()` C runtime + `OP_TIME_NANOS` IR opcode, reports `iterations\tns/op`.
 - [x] **Struct type name tracking** — Parallel arrays (`g_vreg_struct_names`, `g_param_struct_names`) track which struct type each vreg holds, enabling method dispatch.
 - [x] **Method receivers** — Go-style `fn (recv: Type) Method()` syntax, name mangling (`Type_Method`), receiver injected as first parameter, method call dispatch via struct type lookup.
+- [x] **Implicit interfaces** — Go-style `interface Name { Method() -> Type }` with implicit satisfaction. Interface values are heap-allocated `[concrete_ptr, vtable_ptr]` pairs. Vtables initialized at startup via `@ease_init_vtables()`. Auto-wrapping at call sites when passing concrete structs to interface-typed parameters.
 
 ### Language Features
 - [x] **Go-style `:=` declarations** — Replaced `let`/`let mut` with `:=`. All variables are mutable.
@@ -82,7 +83,7 @@ The Ease compiler is written in Ease and compiles itself with byte-identical con
 - [x] Result and Option types (stdlib enums: `Option`, `Result`, `StringOption` with helpers)
 - [x] Method receivers (`fn (r: T) Method()`) with value and pointer receiver syntax
 - [x] Pointer syntax (`*T`, `&x`, `*x`) — parsed and recognized, identity ops since structs are heap pointers
-- [ ] Traits (parser done, codegen TODO)
+- [x] Interfaces (implicit satisfaction, vtable dispatch, auto-wrapping)
 - [ ] Generics (design TODO)
 - [ ] Closures and lambdas
 - [x] Error propagation operator (`?`) — postfix `expr?` extracts success value or early-returns error/none

@@ -162,6 +162,57 @@ fn main() {
 - Pointer types parsed in parameters, return types, and struct fields
 - `TYPE_PTR` (8) added to type system constants
 
+## Interfaces (Go-style, implemented)
+Implicit interfaces — a struct satisfies an interface by implementing all required methods (no `implements` keyword).
+
+```ease
+interface Greeter {
+    Greet() -> string,
+}
+
+struct English { name: string }
+struct Spanish { name: string }
+
+fn (e: English) Greet() -> string { return "Hello, " + e.name }
+fn (s: Spanish) Greet() -> string { return "Hola, " + s.name }
+
+fn greet_with(g: Greeter) -> string {
+    return g.Greet()
+}
+
+fn main() {
+    e := English { name: "World" }
+    s := Spanish { name: "Mundo" }
+    print(greet_with(e) + "\n")    // Hello, World
+    print(greet_with(s) + "\n")    // Hola, Mundo
+}
+```
+
+- **Implicit satisfaction**: Any struct with matching methods satisfies the interface — no declaration needed
+- **Interface values**: Heap-allocated 16-byte pair `[concrete_ptr, vtable_ptr]`
+- **Vtable dispatch**: Method calls on interface values go through a vtable for indirect dispatch
+- **Auto-wrapping**: Concrete structs are automatically wrapped when passed to interface-typed parameters
+- **Multiple interfaces**: A struct can satisfy multiple interfaces simultaneously
+- **Method signatures**: Interface methods declare name, parameters, and return type
+
+```ease
+interface Sizer {
+    Size() -> int,
+}
+
+interface Stringer {
+    String() -> string,
+}
+
+struct Box { width: int, height: int }
+
+// Box satisfies both Sizer and Stringer
+fn (b: Box) Size() -> int { return b.width * b.height }
+fn (b: Box) String() -> string {
+    return strconv.Itoa(b.width) + "x" + strconv.Itoa(b.height)
+}
+```
+
 ## Concurrency
 - **Goroutines**: `go expression`
 - **Channels**: `chan<T>()`, `ch <- value`, `<-ch`

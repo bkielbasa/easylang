@@ -32,7 +32,7 @@ fn TestMultiply(t: T) {
 - **stdlib auto-loaded**: `testing`, `io`, `strings`, `os`, `strconv`, `time`, `result` available without import
 
 ```bash
-make test                           # run all tests in tests/ (66 passing)
+make test                           # run all tests in tests/ (70 passing)
 make test DIR=path/to/dir           # run tests in a specific directory
 make bench                          # run tests + benchmarks
 make bench DIR=path/to/dir          # benchmarks in a specific directory
@@ -84,14 +84,14 @@ BenchmarkFactorial	33554432	35 ns/op
 
 ```bash
 make                                    # Build from seed (no Go required)
-make test                               # Run tests (58 passing)
+make test                               # Run tests (70 passing)
 make test DIR=path                      # Run tests in specific directory
 make bench                              # Run tests + benchmarks
 make verify                             # Verify self-hosting convergence
 make update-seed                        # Update seed after source changes
 ```
 
-## Test Suite (58 tests, Go-style)
+## Test Suite (70 tests, Go-style)
 
 Tests live in `tests/` as `*_test.ease` files with `fn TestXxx(t: T)` functions:
 
@@ -107,6 +107,7 @@ Tests live in `tests/` as `*_test.ease` files with `fn TestXxx(t: T)` functions:
 | `result_test.ease` | 10 | Option, Result, StringOption types, match arm string bindings, `?` try operator |
 | `time_test.ease` | 6 | time.Now, Unix, UnixNano, Add, Before, After, Since |
 | `methods_test.ease` | 6 | Method receivers, value/pointer receivers, dispatch |
+| `interface_test.ease` | 4 | Implicit interfaces, vtable dispatch, polymorphism, multi-interface |
 | `json_test.ease` | 12 | JSON build, marshal, parse, nested objects, arrays, escaping |
 | `bench_test.ease` | 2 | Benchmark: add, factorial (auto-calibrating ns/op) |
 | `helpers.ease` | — | Shared helper functions, structs, enums, methods |
