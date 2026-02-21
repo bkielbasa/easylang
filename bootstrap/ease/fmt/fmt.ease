@@ -1,0 +1,13 @@
+package fmt
+
+interface Stringer {
+    String() -> string,
+}
+
+fn Sprint(s: Stringer) -> string {
+    return s.String()
+}
+
+fn Println(s: Stringer) {
+    io.Print(s.String() + "\n")
+}

@@ -1241,7 +1241,7 @@ fn run_test_mode(test_path: string, run_bench: int) -> int {
     }
 
     // Load stdlib modules (io, strings, os, strconv, testing, time)
-    stdlib_mods := []string{"./ease/io", "./ease/strings", "./ease/os", "./ease/strconv", "./ease/testing", "./ease/time", "./ease/result", "./ease/json"}
+    stdlib_mods := []string{"./ease/io", "./ease/strings", "./ease/os", "./ease/strconv", "./ease/testing", "./ease/time", "./ease/result", "./ease/json", "./ease/fmt"}
     smi := 0
     for smi < len(stdlib_mods) {
         smod_path := stdlib_mods[smi]
@@ -2516,7 +2516,7 @@ fn main() -> int {
 
     // Load bootstrap stdlib modules programmatically (not via import declarations,
     // because the Go compiler's sema would reject them due to builtin conflicts)
-    stdlib_mods := []string{"./ease/io", "./ease/strings", "./ease/os", "./ease/strconv", "./ease/time", "./ease/result", "./ease/json"}
+    stdlib_mods := []string{"./ease/io", "./ease/strings", "./ease/os", "./ease/strconv", "./ease/time", "./ease/result", "./ease/json", "./ease/fmt"}
     smi := 0
     for smi < len(stdlib_mods) {
         smod_path := stdlib_mods[smi]
