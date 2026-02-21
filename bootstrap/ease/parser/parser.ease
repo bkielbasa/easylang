@@ -375,6 +375,47 @@ fn parse_stmt(src: string, pos: int, nodes: []AstNode) -> ParseResult {
         if next_kind == TK_ASSIGN {
             return parse_assign_stmt(src, saved_pos, nodes)
         }
+        if next_kind == TK_LBRACKET {
+            // Might be arr[i] = val (index assignment) or arr[i] (expression statement)
+            p = saved_pos
+            idx_result := parse_expr_with_pos(src, p, nodes)
+            if idx_result.node_idx >= 0 {
+                p = idx_result.new_pos
+                p = lex_skip(src, p)
+                if lex_kind(src, p) == TK_ASSIGN {
+                    // Index assignment: arr[i] = val
+                    p = lex_end(src, p, TK_ASSIGN)
+                    p = lex_skip(src, p)
+                    rhs_result := parse_expr_with_pos(src, p, nodes)
+                    if rhs_result.node_idx >= 0 {
+                        ia_node := AstNode {
+                            tag: STMT_INDEX_ASSIGN,
+                            int_val: 0,
+                            str_val: "",
+                            left: idx_result.node_idx,
+                            right: rhs_result.node_idx,
+                            extra: -1,
+                            type_tag: TYPE_UNKNOWN
+                        }
+                        push(nodes, ia_node)
+                        return ParseResult { node_idx: len(nodes) - 1, new_pos: rhs_result.new_pos }
+                    }
+                }
+                // Not an assignment — wrap as expression statement
+                stmt := AstNode {
+                    tag: STMT_EXPR,
+                    int_val: 0,
+                    str_val: "",
+                    left: idx_result.node_idx,
+                    right: -1,
+                    extra: -1,
+                    type_tag: TYPE_UNKNOWN
+                }
+                push(nodes, stmt)
+                return ParseResult { node_idx: len(nodes) - 1, new_pos: p }
+            }
+            p = saved_pos
+        }
         // Not an assignment or declaration, restore position and parse as expression statement
         p = saved_pos
     }

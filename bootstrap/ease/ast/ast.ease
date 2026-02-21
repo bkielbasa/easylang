@@ -50,6 +50,7 @@ const EXPR_TRY = 50
 const DECL_CONST = 51
 const DECL_INTERFACE = 52
 const DECL_IMETHOD = 53
+const STMT_INDEX_ASSIGN = 54
 
 // Type tags
 const TYPE_UNKNOWN = 0

@@ -86,3 +86,19 @@ fn TestStringBuilderAsWriter(t: T) {
         testing.Fatal("expected len 4, got " + strconv.Itoa(b.Len()))
     }
 }
+
+fn TestStringBuilderReset(t: T) {
+    b := strings.NewBuilder()
+    b.WriteString("hello")
+    b.Reset()
+    result := b.String()
+    if result != "" {
+        testing.Fatal("expected empty after reset, got " + result)
+    }
+    b.WriteString("world")
+    result = b.String()
+    if result != "world" {
+        testing.Fatal("expected world after reset+write, got " + result)
+    }
+}
+

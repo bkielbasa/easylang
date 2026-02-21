@@ -752,6 +752,17 @@ fn gen_ir_stmt_assign(node: AstNode, nodes: []AstNode, instrs: []IRInstr, st_n: 
     return val_vreg
 }
 
+fn gen_ir_index_assign(node: AstNode, nodes: []AstNode, instrs: []IRInstr, st_n: []string, st_v: []int) -> int {
+    // node.left = EXPR_INDEX node (the arr[i] LHS)
+    // node.right = value expression (the RHS)
+    idx_node := nodes[node.left]
+    arr_vreg := gen_ir_from_ast_with_symtab(idx_node.left, nodes, instrs, st_n, st_v)
+    index_vreg := gen_ir_from_ast_with_symtab(idx_node.right, nodes, instrs, st_n, st_v)
+    val_vreg := gen_ir_from_ast_with_symtab(node.right, nodes, instrs, st_n, st_v)
+    push(instrs, IRInstr { op: OP_STORE_INDEX, dest: -1, arg1: arr_vreg, arg2: index_vreg, arg3: val_vreg, str_val: "" })
+    return val_vreg
+}
+
 fn gen_ir_stmt_if(node: AstNode, nodes: []AstNode, instrs: []IRInstr, st_n: []string, st_v: []int) -> int {
     c := gen_ir_from_ast_with_symtab(node.left, nodes, instrs, st_n, st_v)
     if c < 0 { return -1 }
@@ -1319,6 +1330,10 @@ fn gen_ir_from_ast_with_symtab(ast_idx: int, nodes: []AstNode, instrs: []IRInstr
 
     if node.tag == STMT_ASSIGN {
         return gen_ir_stmt_assign(node, nodes, instrs, symtab_names, symtab_vregs)
+    }
+
+    if node.tag == STMT_INDEX_ASSIGN {
+        return gen_ir_index_assign(node, nodes, instrs, symtab_names, symtab_vregs)
     }
 
     if node.tag == STMT_EXPR {

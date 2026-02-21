@@ -210,13 +210,15 @@ fn collect_vregs(instrs: []IRInstr, start: int, end_pos: int, param_count: int) 
             if instr.arg1 >= 0 { add_unique(vregs, instr.arg1) }
         }
         // arg2 is vreg for binary ops, STORE, ARRAY_PUSH, POKE, STR_EQ/NE, STR_CHAR_AT, etc
-        if op == OP_ADD || op == OP_SUB || op == OP_MUL || op == OP_DIV || op == OP_CMP_LT || op == OP_CMP_GT || op == OP_CMP_LE || op == OP_CMP_GE || op == OP_CMP_EQ || op == OP_CMP_NE || op == OP_AND || op == OP_OR || op == OP_XOR || op == OP_BITAND || op == OP_BITOR || op == OP_STORE || op == OP_ARRAY_PUSH || op == OP_POKE || op == OP_STR_EQ || op == OP_STR_NE || op == OP_STR_CONCAT || op == OP_STR_CHAR_AT || op == OP_MEMCOPY || op == OP_SYSCALL_OPEN || op == OP_SYSCALL_WRITE || op == OP_SYSCALL_CLOSE || op == OP_SYSCALL_READ {
+        if op == OP_ADD || op == OP_SUB || op == OP_MUL || op == OP_DIV || op == OP_CMP_LT || op == OP_CMP_GT || op == OP_CMP_LE || op == OP_CMP_GE || op == OP_CMP_EQ || op == OP_CMP_NE || op == OP_AND || op == OP_OR || op == OP_XOR || op == OP_BITAND || op == OP_BITOR || op == OP_STORE || op == OP_ARRAY_PUSH || op == OP_POKE || op == OP_STR_EQ || op == OP_STR_NE || op == OP_STR_CONCAT || op == OP_STR_CHAR_AT || op == OP_MEMCOPY || op == OP_SYSCALL_OPEN || op == OP_SYSCALL_WRITE || op == OP_SYSCALL_CLOSE || op == OP_SYSCALL_READ || op == OP_STORE_INDEX {
             if instr.arg2 >= 0 { add_unique(vregs, instr.arg2) }
         }
         // MEMCOPY arg3 is vreg (size)
         if op == OP_MEMCOPY && instr.arg3 >= 0 { add_unique(vregs, instr.arg3) }
         // SYSCALL_OPEN arg3 is vreg (mode), SYSCALL_READ arg3 is vreg (size)
         if (op == OP_SYSCALL_OPEN || op == OP_SYSCALL_READ) && instr.arg3 >= 0 { add_unique(vregs, instr.arg3) }
+        // STORE_INDEX arg3 is vreg (value)
+        if op == OP_STORE_INDEX && instr.arg3 >= 0 { add_unique(vregs, instr.arg3) }
         i = i + 1
     }
     return vregs
@@ -646,6 +648,24 @@ fn emit_llvm_function(fd: int, instrs: []IRInstr, start: int, end_pos: int, func
             ptr := tmp_name(ti, 2)
             write_str(fd, "  " + ptr + " = inttoptr i64 " + addr + " to ptr\n")
             write_str(fd, "  store i64 " + val + ", ptr " + ptr + "\n")
+        }
+
+        if terminated == 0 && instr.op == OP_STORE_INDEX {
+            // arr=arg1, idx=arg2, val=arg3
+            arr := emit_load_vreg(fd, instr.arg1, ti, 0)
+            si_fp := "%si.fp." + strconv.Itoa(ti)
+            write_str(fd, "  " + si_fp + " = inttoptr i64 " + arr + " to ptr\n")
+            si_dp := "%si.dp." + strconv.Itoa(ti)
+            write_str(fd, "  " + si_dp + " = load i64, ptr " + si_fp + "\n")
+            idx := emit_load_vreg(fd, instr.arg2, ti, 1)
+            si_scaled := "%si.sc." + strconv.Itoa(ti)
+            write_str(fd, "  " + si_scaled + " = mul i64 " + idx + ", 8\n")
+            si_addr := "%si.addr." + strconv.Itoa(ti)
+            write_str(fd, "  " + si_addr + " = add i64 " + si_dp + ", " + si_scaled + "\n")
+            si_ptr := "%si.ptr." + strconv.Itoa(ti)
+            write_str(fd, "  " + si_ptr + " = inttoptr i64 " + si_addr + " to ptr\n")
+            val := emit_load_vreg(fd, instr.arg3, ti, 2)
+            write_str(fd, "  store i64 " + val + ", ptr " + si_ptr + "\n")
         }
 
         if terminated == 0 && instr.op == OP_COPY {
