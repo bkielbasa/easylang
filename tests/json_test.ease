@@ -39,9 +39,9 @@ fn TestJsonSetBool(t: T) {
 fn TestJsonSetNull(t: T) {
     doc := json.New()
     doc.SetNull("empty")
-    typ := doc.TypeOf("empty")
-    if typ != 0 {
-        testing.Fatal("expected type 0 (NULL), got " + strconv.Itoa(typ))
+    output := doc.Marshal()
+    if output != "{\"empty\":null}" {
+        testing.Fatal("expected {\"empty\":null}, got " + output)
     }
 }
 

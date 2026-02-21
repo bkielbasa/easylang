@@ -1847,6 +1847,18 @@ fn doc_emit_category(label: string, kind: int, prefix: string, names: []string, 
     }
 }
 
+fn doc_is_internal_pkg(name: string) -> int {
+    if name == "token" { return 1 }
+    if name == "lexer" { return 1 }
+    if name == "ast" { return 1 }
+    if name == "parser" { return 1 }
+    if name == "ir" { return 1 }
+    if name == "irgen" { return 1 }
+    if name == "llvm" { return 1 }
+    if name == "lsp" { return 1 }
+    return 0
+}
+
 fn run_doc_mode(doc_path: string) -> int {
     // Strip trailing slash
     path := doc_path
@@ -1899,29 +1911,32 @@ fn run_doc_mode(doc_path: string) -> int {
             // Derive from directory name
             pname = extract_module_name(pkg_dirs[pi])
         }
-        push(pkg_names, pname)
-        push(pkg_doc_texts, doc_extract_pkg_doc(files))
-        push(pkg_sym_start, len(sym_names))
+        // Skip compiler-internal packages
+        if doc_is_internal_pkg(pname) == 0 {
+            push(pkg_names, pname)
+            push(pkg_doc_texts, doc_extract_pkg_doc(files))
+            push(pkg_sym_start, len(sym_names))
 
-        fi := 0
-        for fi < len(files) {
-            src := os.ReadFile(files[fi])
-            if len(src) > 0 {
-                sym_before := lsp_symbol_count()
-                parse_for_diagnostics(src)
-                si := sym_before
-                sc := lsp_symbol_count()
-                for si < sc {
-                    push(sym_names, lsp_symbol_name(si))
-                    push(sym_sigs, lsp_symbol_sig(si))
-                    push(sym_kinds, lsp_symbol_kind(si))
-                    push(sym_docs, lsp_symbol_doc(si))
-                    si = si + 1
+            fi := 0
+            for fi < len(files) {
+                src := os.ReadFile(files[fi])
+                if len(src) > 0 {
+                    sym_before := lsp_symbol_count()
+                    parse_for_diagnostics(src)
+                    si := sym_before
+                    sc := lsp_symbol_count()
+                    for si < sc {
+                        push(sym_names, lsp_symbol_name(si))
+                        push(sym_sigs, lsp_symbol_sig(si))
+                        push(sym_kinds, lsp_symbol_kind(si))
+                        push(sym_docs, lsp_symbol_doc(si))
+                        si = si + 1
+                    }
                 }
+                fi = fi + 1
             }
-            fi = fi + 1
+            push(pkg_sym_count, len(sym_names) - pkg_sym_start[pi])
         }
-        push(pkg_sym_count, len(sym_names) - pkg_sym_start[pi])
         pi = pi + 1
     }
 

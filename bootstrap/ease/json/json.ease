@@ -1,12 +1,12 @@
 package json
 
-// JSON type constants
-const JSON_NULL = 0
-const JSON_STRING = 1
-const JSON_INT = 2
-const JSON_BOOL = 3
-const JSON_OBJECT = 4
-const JSON_ARRAY = 5
+// json type constants (internal)
+const json_null = 0
+const json_string = 1
+const json_int = 2
+const json_bool = 3
+const json_object = 4
+const json_array = 5
 
 struct Doc {
     id: int,
@@ -46,7 +46,7 @@ fn NewArray() -> Doc {
 fn (d: Doc) SetString(key: string, val: string) {
     push(g_entry_doc, d.id)
     push(g_entry_key, key)
-    push(g_entry_type, JSON_STRING)
+    push(g_entry_type, json_string)
     push(g_entry_str, val)
     push(g_entry_int, 0)
 }
@@ -54,7 +54,7 @@ fn (d: Doc) SetString(key: string, val: string) {
 fn (d: Doc) SetInt(key: string, val: int) {
     push(g_entry_doc, d.id)
     push(g_entry_key, key)
-    push(g_entry_type, JSON_INT)
+    push(g_entry_type, json_int)
     push(g_entry_str, "")
     push(g_entry_int, val)
 }
@@ -62,7 +62,7 @@ fn (d: Doc) SetInt(key: string, val: int) {
 fn (d: Doc) SetBool(key: string, val: int) {
     push(g_entry_doc, d.id)
     push(g_entry_key, key)
-    push(g_entry_type, JSON_BOOL)
+    push(g_entry_type, json_bool)
     push(g_entry_str, "")
     push(g_entry_int, val)
 }
@@ -70,7 +70,7 @@ fn (d: Doc) SetBool(key: string, val: int) {
 fn (d: Doc) SetNull(key: string) {
     push(g_entry_doc, d.id)
     push(g_entry_key, key)
-    push(g_entry_type, JSON_NULL)
+    push(g_entry_type, json_null)
     push(g_entry_str, "")
     push(g_entry_int, 0)
 }
@@ -78,7 +78,7 @@ fn (d: Doc) SetNull(key: string) {
 fn (d: Doc) SetObject(key: string, child: Doc) {
     push(g_entry_doc, d.id)
     push(g_entry_key, key)
-    push(g_entry_type, JSON_OBJECT)
+    push(g_entry_type, json_object)
     push(g_entry_str, "")
     push(g_entry_int, child.id)
 }
@@ -86,7 +86,7 @@ fn (d: Doc) SetObject(key: string, child: Doc) {
 fn (d: Doc) SetArray(key: string, child: Doc) {
     push(g_entry_doc, d.id)
     push(g_entry_key, key)
-    push(g_entry_type, JSON_ARRAY)
+    push(g_entry_type, json_array)
     push(g_entry_str, "")
     push(g_entry_int, child.id)
 }
@@ -96,7 +96,7 @@ fn (d: Doc) SetArray(key: string, child: Doc) {
 fn (d: Doc) PushString(val: string) {
     push(g_entry_doc, d.id)
     push(g_entry_key, "")
-    push(g_entry_type, JSON_STRING)
+    push(g_entry_type, json_string)
     push(g_entry_str, val)
     push(g_entry_int, 0)
 }
@@ -104,7 +104,7 @@ fn (d: Doc) PushString(val: string) {
 fn (d: Doc) PushInt(val: int) {
     push(g_entry_doc, d.id)
     push(g_entry_key, "")
-    push(g_entry_type, JSON_INT)
+    push(g_entry_type, json_int)
     push(g_entry_str, "")
     push(g_entry_int, val)
 }
@@ -112,7 +112,7 @@ fn (d: Doc) PushInt(val: int) {
 fn (d: Doc) PushBool(val: int) {
     push(g_entry_doc, d.id)
     push(g_entry_key, "")
-    push(g_entry_type, JSON_BOOL)
+    push(g_entry_type, json_bool)
     push(g_entry_str, "")
     push(g_entry_int, val)
 }
@@ -120,7 +120,7 @@ fn (d: Doc) PushBool(val: int) {
 fn (d: Doc) PushNull() {
     push(g_entry_doc, d.id)
     push(g_entry_key, "")
-    push(g_entry_type, JSON_NULL)
+    push(g_entry_type, json_null)
     push(g_entry_str, "")
     push(g_entry_int, 0)
 }
@@ -128,7 +128,7 @@ fn (d: Doc) PushNull() {
 fn (d: Doc) PushObject(child: Doc) {
     push(g_entry_doc, d.id)
     push(g_entry_key, "")
-    push(g_entry_type, JSON_OBJECT)
+    push(g_entry_type, json_object)
     push(g_entry_str, "")
     push(g_entry_int, child.id)
 }
@@ -136,7 +136,7 @@ fn (d: Doc) PushObject(child: Doc) {
 fn (d: Doc) PushArray(child: Doc) {
     push(g_entry_doc, d.id)
     push(g_entry_key, "")
-    push(g_entry_type, JSON_ARRAY)
+    push(g_entry_type, json_array)
     push(g_entry_str, "")
     push(g_entry_int, child.id)
 }
@@ -147,7 +147,7 @@ fn (d: Doc) GetString(key: string) -> string {
     i := 0
     elen := len(g_entry_doc)
     for i < elen {
-        if g_entry_doc[i] == d.id && g_entry_key[i] == key && g_entry_type[i] == JSON_STRING {
+        if g_entry_doc[i] == d.id && g_entry_key[i] == key && g_entry_type[i] == json_string {
             return g_entry_str[i]
         }
         i = i + 1
@@ -159,7 +159,7 @@ fn (d: Doc) GetInt(key: string) -> int {
     i := 0
     elen := len(g_entry_doc)
     for i < elen {
-        if g_entry_doc[i] == d.id && g_entry_key[i] == key && g_entry_type[i] == JSON_INT {
+        if g_entry_doc[i] == d.id && g_entry_key[i] == key && g_entry_type[i] == json_int {
             return g_entry_int[i]
         }
         i = i + 1
@@ -171,7 +171,7 @@ fn (d: Doc) GetBool(key: string) -> int {
     i := 0
     elen := len(g_entry_doc)
     for i < elen {
-        if g_entry_doc[i] == d.id && g_entry_key[i] == key && g_entry_type[i] == JSON_BOOL {
+        if g_entry_doc[i] == d.id && g_entry_key[i] == key && g_entry_type[i] == json_bool {
             return g_entry_int[i]
         }
         i = i + 1
@@ -183,7 +183,7 @@ fn (d: Doc) GetObject(key: string) -> Doc {
     i := 0
     elen := len(g_entry_doc)
     for i < elen {
-        if g_entry_doc[i] == d.id && g_entry_key[i] == key && g_entry_type[i] == JSON_OBJECT {
+        if g_entry_doc[i] == d.id && g_entry_key[i] == key && g_entry_type[i] == json_object {
             return Doc { id: g_entry_int[i] }
         }
         i = i + 1
@@ -195,7 +195,7 @@ fn (d: Doc) GetArray(key: string) -> Doc {
     i := 0
     elen := len(g_entry_doc)
     for i < elen {
-        if g_entry_doc[i] == d.id && g_entry_key[i] == key && g_entry_type[i] == JSON_ARRAY {
+        if g_entry_doc[i] == d.id && g_entry_key[i] == key && g_entry_type[i] == json_array {
             return Doc { id: g_entry_int[i] }
         }
         i = i + 1
@@ -213,18 +213,6 @@ fn (d: Doc) Has(key: string) -> int {
         i = i + 1
     }
     return 0
-}
-
-fn (d: Doc) TypeOf(key: string) -> int {
-    i := 0
-    elen := len(g_entry_doc)
-    for i < elen {
-        if g_entry_doc[i] == d.id && g_entry_key[i] == key {
-            return g_entry_type[i]
-        }
-        i = i + 1
-    }
-    return -1
 }
 
 // --- Array getters ---
@@ -338,7 +326,7 @@ fn EscapeString(s: string) -> string {
     return buf
 }
 
-fn MarshalValue(doc_id: int) -> string {
+fn marshalValue(doc_id: int) -> string {
     is_arr := g_doc_is_array[doc_id]
     result := ""
     if is_arr == 1 {
@@ -359,22 +347,22 @@ fn MarshalValue(doc_id: int) -> string {
             if is_arr == 0 {
                 result = result + "\"" + EscapeString(g_entry_key[i]) + "\":"
             }
-            if etype == JSON_STRING {
+            if etype == json_string {
                 result = result + "\"" + EscapeString(g_entry_str[i]) + "\""
-            } else if etype == JSON_INT {
+            } else if etype == json_int {
                 result = result + strconv.Itoa(g_entry_int[i])
-            } else if etype == JSON_BOOL {
+            } else if etype == json_bool {
                 if g_entry_int[i] != 0 {
                     result = result + "true"
                 } else {
                     result = result + "false"
                 }
-            } else if etype == JSON_NULL {
+            } else if etype == json_null {
                 result = result + "null"
-            } else if etype == JSON_OBJECT {
-                result = result + MarshalValue(g_entry_int[i])
-            } else if etype == JSON_ARRAY {
-                result = result + MarshalValue(g_entry_int[i])
+            } else if etype == json_object {
+                result = result + marshalValue(g_entry_int[i])
+            } else if etype == json_array {
+                result = result + marshalValue(g_entry_int[i])
             }
         }
         i = i + 1
@@ -388,12 +376,12 @@ fn MarshalValue(doc_id: int) -> string {
 }
 
 fn (d: Doc) Marshal() -> string {
-    return MarshalValue(d.id)
+    return marshalValue(d.id)
 }
 
 // --- Parse ---
 
-fn SkipWs(input: string, pos: int) -> int {
+fn skipWs(input: string, pos: int) -> int {
     ilen := len(input)
     p := pos
     for p < ilen {
@@ -407,7 +395,7 @@ fn SkipWs(input: string, pos: int) -> int {
     return p
 }
 
-fn ParseStringVal(input: string, pos: int) -> string {
+fn parseStringVal(input: string, pos: int) -> string {
     // pos points at the opening quote
     ilen := len(input)
     p := pos + 1
@@ -450,7 +438,7 @@ fn ParseStringVal(input: string, pos: int) -> string {
     return buf
 }
 
-fn ParseNumber(input: string, pos: int) -> int {
+fn parseNumber(input: string, pos: int) -> int {
     ilen := len(input)
     p := pos
     negative := 0
@@ -475,9 +463,9 @@ fn ParseNumber(input: string, pos: int) -> int {
     return result
 }
 
-fn ParseValue(input: string, pos: int) -> Doc {
+fn parseValue(input: string, pos: int) -> Doc {
     ilen := len(input)
-    p := SkipWs(input, pos)
+    p := skipWs(input, pos)
     if p >= ilen {
         g_parse_pos = p
         return New()
@@ -486,22 +474,22 @@ fn ParseValue(input: string, pos: int) -> Doc {
 
     // Object
     if ch == 123 {
-        return ParseObject(input, p)
+        return parseObject(input, p)
     }
 
     // Array
     if ch == 91 {
-        return ParseArray(input, p)
+        return parseArray(input, p)
     }
 
     // String
     if ch == 34 {
-        val := ParseStringVal(input, p)
+        val := parseStringVal(input, p)
         doc := New()
         // Store as single-value doc: push a string entry with empty key
         push(g_entry_doc, doc.id)
         push(g_entry_key, "")
-        push(g_entry_type, JSON_STRING)
+        push(g_entry_type, json_string)
         push(g_entry_str, val)
         push(g_entry_int, 0)
         return doc
@@ -509,11 +497,11 @@ fn ParseValue(input: string, pos: int) -> Doc {
 
     // Number
     if ch >= 48 && ch <= 57 || ch == 45 {
-        val := ParseNumber(input, p)
+        val := parseNumber(input, p)
         doc := New()
         push(g_entry_doc, doc.id)
         push(g_entry_key, "")
-        push(g_entry_type, JSON_INT)
+        push(g_entry_type, json_int)
         push(g_entry_str, "")
         push(g_entry_int, val)
         return doc
@@ -525,7 +513,7 @@ fn ParseValue(input: string, pos: int) -> Doc {
         doc := New()
         push(g_entry_doc, doc.id)
         push(g_entry_key, "")
-        push(g_entry_type, JSON_BOOL)
+        push(g_entry_type, json_bool)
         push(g_entry_str, "")
         push(g_entry_int, 1)
         return doc
@@ -537,7 +525,7 @@ fn ParseValue(input: string, pos: int) -> Doc {
         doc := New()
         push(g_entry_doc, doc.id)
         push(g_entry_key, "")
-        push(g_entry_type, JSON_BOOL)
+        push(g_entry_type, json_bool)
         push(g_entry_str, "")
         push(g_entry_int, 0)
         return doc
@@ -549,7 +537,7 @@ fn ParseValue(input: string, pos: int) -> Doc {
         doc := New()
         push(g_entry_doc, doc.id)
         push(g_entry_key, "")
-        push(g_entry_type, JSON_NULL)
+        push(g_entry_type, json_null)
         push(g_entry_str, "")
         push(g_entry_int, 0)
         return doc
@@ -560,49 +548,49 @@ fn ParseValue(input: string, pos: int) -> Doc {
     return New()
 }
 
-fn ParseObject(input: string, pos: int) -> Doc {
+fn parseObject(input: string, pos: int) -> Doc {
     doc := New()
     ilen := len(input)
     p := pos + 1
-    p = SkipWs(input, p)
+    p = skipWs(input, p)
     if p < ilen && str_char_at(input, p) == 125 {
         g_parse_pos = p + 1
         return doc
     }
     for p < ilen {
-        p = SkipWs(input, p)
+        p = skipWs(input, p)
         if p >= ilen { break }
         if str_char_at(input, p) == 125 {
             p = p + 1
             break
         }
         // Parse key
-        key := ParseStringVal(input, p)
+        key := parseStringVal(input, p)
         p = g_parse_pos
-        p = SkipWs(input, p)
+        p = skipWs(input, p)
         if p < ilen && str_char_at(input, p) == 58 {
             p = p + 1
         }
-        p = SkipWs(input, p)
+        p = skipWs(input, p)
         // Save entry count before parsing value
         entry_before := len(g_entry_doc)
         // Parse value
-        child := ParseValue(input, p)
+        child := parseValue(input, p)
         p = g_parse_pos
         entry_after := len(g_entry_doc)
-        // Check if ParseValue added exactly one wrapper entry for child.id
+        // Check if parseValue added exactly one wrapper entry for child.id
         found_wrapper := 0
         if entry_after == entry_before + 1 {
             if g_entry_doc[entry_before] == child.id && g_entry_key[entry_before] == "" {
                 found_wrapper = 1
                 ctype := g_entry_type[entry_before]
-                if ctype == JSON_STRING {
+                if ctype == json_string {
                     doc.SetString(key, g_entry_str[entry_before])
-                } else if ctype == JSON_INT {
+                } else if ctype == json_int {
                     doc.SetInt(key, g_entry_int[entry_before])
-                } else if ctype == JSON_BOOL {
+                } else if ctype == json_bool {
                     doc.SetBool(key, g_entry_int[entry_before])
-                } else if ctype == JSON_NULL {
+                } else if ctype == json_null {
                     doc.SetNull(key)
                 }
             }
@@ -615,7 +603,7 @@ fn ParseObject(input: string, pos: int) -> Doc {
                 doc.SetObject(key, child)
             }
         }
-        p = SkipWs(input, p)
+        p = skipWs(input, p)
         if p < ilen && str_char_at(input, p) == 44 {
             p = p + 1
         }
@@ -624,17 +612,17 @@ fn ParseObject(input: string, pos: int) -> Doc {
     return doc
 }
 
-fn ParseArray(input: string, pos: int) -> Doc {
+fn parseArray(input: string, pos: int) -> Doc {
     doc := NewArray()
     ilen := len(input)
     p := pos + 1
-    p = SkipWs(input, p)
+    p = skipWs(input, p)
     if p < ilen && str_char_at(input, p) == 93 {
         g_parse_pos = p + 1
         return doc
     }
     for p < ilen {
-        p = SkipWs(input, p)
+        p = skipWs(input, p)
         if p >= ilen { break }
         if str_char_at(input, p) == 93 {
             p = p + 1
@@ -643,22 +631,22 @@ fn ParseArray(input: string, pos: int) -> Doc {
         // Save entry count before parsing value
         entry_before := len(g_entry_doc)
         // Parse value
-        child := ParseValue(input, p)
+        child := parseValue(input, p)
         p = g_parse_pos
         entry_after := len(g_entry_doc)
-        // Check if ParseValue added exactly one wrapper entry for child.id
+        // Check if parseValue added exactly one wrapper entry for child.id
         found_wrapper := 0
         if entry_after == entry_before + 1 {
             if g_entry_doc[entry_before] == child.id && g_entry_key[entry_before] == "" {
                 found_wrapper = 1
                 ctype := g_entry_type[entry_before]
-                if ctype == JSON_STRING {
+                if ctype == json_string {
                     doc.PushString(g_entry_str[entry_before])
-                } else if ctype == JSON_INT {
+                } else if ctype == json_int {
                     doc.PushInt(g_entry_int[entry_before])
-                } else if ctype == JSON_BOOL {
+                } else if ctype == json_bool {
                     doc.PushBool(g_entry_int[entry_before])
-                } else if ctype == JSON_NULL {
+                } else if ctype == json_null {
                     doc.PushNull()
                 }
             }
@@ -670,7 +658,7 @@ fn ParseArray(input: string, pos: int) -> Doc {
                 doc.PushObject(child)
             }
         }
-        p = SkipWs(input, p)
+        p = skipWs(input, p)
         if p < ilen && str_char_at(input, p) == 44 {
             p = p + 1
         }
@@ -681,5 +669,5 @@ fn ParseArray(input: string, pos: int) -> Doc {
 
 fn Parse(input: string) -> Doc {
     g_parse_pos = 0
-    return ParseValue(input, 0)
+    return parseValue(input, 0)
 }
