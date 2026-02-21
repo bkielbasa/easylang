@@ -473,13 +473,27 @@ fn gen_ir_struct_lit(node: AstNode, ast_idx: int, nodes: []AstNode, instrs: []IR
 }
 
 fn gen_ir_call_user(node: AstNode, ast_idx: int, nodes: []AstNode, instrs: []IRInstr, st_names: []string, st_vregs: []int) -> int {
+    call_name := lookup_rename(node.str_val)
     args := gen_ir_eval_args(ast_idx, nodes, instrs, st_names, st_vregs)
+    // Emit OP_ARG for each arg, wrapping if the param expects an interface
     i := 0
     for i < len(args) {
-        push(instrs, IRInstr { op: OP_ARG, dest: i, arg1: args[i], arg2: -1, arg3: 0, str_val: "" })
+        arg_vreg := args[i]
+        param_type_name := lookup_func_param_type_name(call_name, i)
+        if param_type_name != "" && is_interface(param_type_name) == 1 {
+            arg_struct_name := get_vreg_struct_name(arg_vreg)
+            if arg_struct_name != "" && struct_satisfies_interface(arg_struct_name, param_type_name) == 1 {
+                wrap := len(instrs)
+                push(instrs, IRInstr { op: OP_IFACE_WRAP, dest: wrap, arg1: arg_vreg, arg2: 0, arg3: 0, str_val: param_type_name + "." + arg_struct_name })
+                set_vreg_type(wrap, TYPE_STRUCT)
+                set_vreg_struct_name(wrap, param_type_name)
+                record_vtable_pair(arg_struct_name, param_type_name)
+                arg_vreg = wrap
+            }
+        }
+        push(instrs, IRInstr { op: OP_ARG, dest: i, arg1: arg_vreg, arg2: -1, arg3: 0, str_val: "" })
         i = i + 1
     }
-    call_name := lookup_rename(node.str_val)
     res := len(instrs)
     push(instrs, IRInstr { op: OP_CALL, dest: res, arg1: 0, arg2: node.int_val, arg3: 0, str_val: call_name })
     set_vreg_type(res, make_type(lookup_func_return_type(call_name), lookup_func_return_is_array(call_name)))
@@ -1214,6 +1228,28 @@ fn gen_ir_from_ast_with_symtab(ast_idx: int, nodes: []AstNode, instrs: []IRInstr
             if recv_vreg >= 0 && recv_vreg > -1000 {
                 struct_name := get_vreg_struct_name(recv_vreg)
                 if struct_name != "" {
+                    // Check if receiver is an interface type
+                    if is_interface(struct_name) == 1 {
+                        vtable_idx := iface_method_index(struct_name, method_name)
+                        if vtable_idx >= 0 {
+                            // Emit OP_ARG for interface value + remaining args
+                            push(instrs, IRInstr { op: OP_ARG, dest: 0, arg1: recv_vreg, arg2: -1, arg3: 0, str_val: "" })
+                            ic_args := gen_ir_eval_args(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
+                            ic_ai := 0
+                            for ic_ai < len(ic_args) {
+                                push(instrs, IRInstr { op: OP_ARG, dest: ic_ai + 1, arg1: ic_args[ic_ai], arg2: -1, arg3: 0, str_val: "" })
+                                ic_ai = ic_ai + 1
+                            }
+                            ic_total_args := len(ic_args) + 1
+                            ic_res := len(instrs)
+                            push(instrs, IRInstr { op: OP_IFACE_CALL, dest: ic_res, arg1: vtable_idx, arg2: ic_total_args, arg3: 0, str_val: struct_name })
+                            // Set return type from interface method signature
+                            ic_ret := iface_method_ret_type(struct_name, vtable_idx)
+                            ic_ret_arr := iface_method_ret_is_array(struct_name, vtable_idx)
+                            set_vreg_type(ic_res, make_type(ic_ret, ic_ret_arr))
+                            return ic_res
+                        }
+                    }
                     internal_name := lookup_method(struct_name, method_name)
                     if internal_name != "" {
                         actual_name := lookup_rename(internal_name)

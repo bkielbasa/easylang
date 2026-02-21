@@ -1,0 +1,72 @@
+package main
+
+interface Greeter {
+    Greet() -> string,
+}
+
+struct English { name: string }
+struct Spanish { name: string }
+
+fn (e: English) Greet() -> string { return "Hello, " + e.name }
+fn (s: Spanish) Greet() -> string { return "Hola, " + s.name }
+
+fn greet_with(g: Greeter) -> string {
+    return g.Greet()
+}
+
+fn TestInterfaceBasic(t: T) {
+    e := English { name: "World" }
+    result := greet_with(e)
+    if result != "Hello, World" {
+        testing.Fatal("expected Hello, World, got " + result)
+    }
+}
+
+fn TestInterfacePolymorphism(t: T) {
+    s := Spanish { name: "Mundo" }
+    result := greet_with(s)
+    if result != "Hola, Mundo" {
+        testing.Fatal("expected Hola, Mundo, got " + result)
+    }
+}
+
+interface Sizer {
+    Size() -> int,
+}
+
+struct Box { width: int, height: int }
+
+fn (b: Box) Size() -> int { return b.width * b.height }
+
+fn total_size(a: Sizer, b: Sizer) -> int {
+    return a.Size() + b.Size()
+}
+
+fn TestInterfaceMultipleArgs(t: T) {
+    b1 := Box { width: 3, height: 4 }
+    b2 := Box { width: 5, height: 6 }
+    result := total_size(b1, b2)
+    if result != 42 {
+        testing.Fatal("expected 42, got " + strconv.Itoa(result))
+    }
+}
+
+interface Stringer {
+    String() -> string,
+}
+
+fn (b: Box) String() -> string {
+    return strconv.Itoa(b.width) + "x" + strconv.Itoa(b.height)
+}
+
+fn to_string(s: Stringer) -> string {
+    return s.String()
+}
+
+fn TestInterfaceMultipleSatisfied(t: T) {
+    b := Box { width: 10, height: 20 }
+    result := to_string(b)
+    if result != "10x20" {
+        testing.Fatal("expected 10x20, got " + result)
+    }
+}

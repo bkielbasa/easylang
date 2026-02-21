@@ -48,6 +48,8 @@ const STMT_MATCH = 48
 const STMT_MATCH_ARM = 49
 const EXPR_TRY = 50
 const DECL_CONST = 51
+const DECL_INTERFACE = 52
+const DECL_IMETHOD = 53
 
 // Type tags
 const TYPE_UNKNOWN = 0
@@ -59,6 +61,7 @@ const TYPE_STRING_ARRAY = 5
 const TYPE_BOOL_ARRAY = 6
 const TYPE_STRUCT = 7
 const TYPE_PTR = 8
+const TYPE_INTERFACE = 9
 
 struct ParseResult {
     node_idx: int,

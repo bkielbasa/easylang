@@ -24,6 +24,7 @@ const TK_PACKAGE = 23
 const TK_ENUM = 24
 const TK_MATCH = 25
 const TK_CONST = 26
+const TK_INTERFACE = 27
 
 // Arithmetic operators
 const TK_PLUS = 30
@@ -93,6 +94,7 @@ fn TokenName(kind: int) -> string {
     if kind == 24 { return "'enum'" }
     if kind == 25 { return "'match'" }
     if kind == 26 { return "'const'" }
+    if kind == 27 { return "'interface'" }
     if kind == 30 { return "'+'" }
     if kind == 31 { return "'-'" }
     if kind == 32 { return "'*'" }

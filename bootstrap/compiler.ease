@@ -85,6 +85,15 @@ g_method_struct_names := []string{}
 g_method_names := []string{}
 g_method_func_names := []string{}
 
+// Interface support: function parameter type registry
+g_func_param_names := []string{}
+g_func_param_indices := []int{}
+g_func_param_type_names := []string{}
+
+// Interface support: vtable tracking
+g_vtable_struct_names := []string{}
+g_vtable_iface_names := []string{}
+
 // Const storage: compile-time constants inlined at use sites
 g_const_names := []string{}
 g_const_int_values := []int{}
@@ -241,6 +250,43 @@ fn lookup_method(struct_name: string, method_name: string) -> string {
         i = i + 1
     }
     return ""
+}
+
+fn lookup_func_param_type_name(func_name: string, param_idx: int) -> string {
+    i := 0
+    for i < len(g_func_param_names) {
+        if g_func_param_names[i] == func_name && g_func_param_indices[i] == param_idx {
+            return g_func_param_type_names[i]
+        }
+        i = i + 1
+    }
+    return ""
+}
+
+fn struct_satisfies_interface(struct_name: string, iface_name: string) -> int {
+    mc := iface_method_count(iface_name)
+    mi := 0
+    for mi < mc {
+        mname := iface_method_name(iface_name, mi)
+        if lookup_method(struct_name, mname) == "" {
+            return 0
+        }
+        mi = mi + 1
+    }
+    return 1
+}
+
+fn record_vtable_pair(struct_name: string, iface_name: string) {
+    // Check if already recorded
+    i := 0
+    for i < len(g_vtable_struct_names) {
+        if g_vtable_struct_names[i] == struct_name && g_vtable_iface_names[i] == iface_name {
+            return
+        }
+        i = i + 1
+    }
+    push(g_vtable_struct_names, struct_name)
+    push(g_vtable_iface_names, iface_name)
 }
 
 // Find the position of '.' in a string, returns -1 if not found
@@ -554,6 +600,9 @@ fn parse_for_diagnostics(source: string) {
                 push(g_lsp_sym_docs, extract_doc_comment(source, dpos))
             }
             dpos = denum.new_pos
+        } else if dkind == TK_INTERFACE {
+            diface := parse_interface_decl(source, dpos, diag_nodes)
+            dpos = diface.new_pos
         } else if dkind == TK_IDENT {
             dce_end := lex_end(source, dpos, dkind)
             dce_next := lex_skip(source, dce_end)
@@ -846,6 +895,9 @@ fn parse_source_file(source: string, nodes: []AstNode, func_names: []string, fun
         } else if kind == TK_ENUM {
             enum_result := parse_enum_decl(source, parse_pos, nodes)
             parse_pos = enum_result.new_pos
+        } else if kind == TK_INTERFACE {
+            iface_result := parse_interface_decl(source, parse_pos, nodes)
+            parse_pos = iface_result.new_pos
         } else if kind == TK_CONST {
             const_result := parse_const_decl(source, parse_pos, nodes)
             if const_result.node_idx >= 0 {
@@ -1030,6 +1082,9 @@ fn run_test_mode(test_path: string, run_bench: int) -> int {
                                         } else if dir_kind == TK_ENUM {
                                             dir_enum := parse_enum_decl(dir_source, dir_pos, nodes)
                                             dir_pos = dir_enum.new_pos
+                                        } else if dir_kind == TK_INTERFACE {
+                                            dir_iface := parse_interface_decl(dir_source, dir_pos, nodes)
+                                            dir_pos = dir_iface.new_pos
                                         } else if dir_kind == TK_CONST {
                                             dir_const := parse_const_decl(dir_source, dir_pos, nodes)
                                             if dir_const.node_idx >= 0 {
@@ -1124,6 +1179,9 @@ fn run_test_mode(test_path: string, run_bench: int) -> int {
                         } else if mod_kind == TK_ENUM {
                             mod_enum_result := parse_enum_decl(mod_source, mod_pos, nodes)
                             mod_pos = mod_enum_result.new_pos
+                        } else if mod_kind == TK_INTERFACE {
+                            mod_iface_result := parse_interface_decl(mod_source, mod_pos, nodes)
+                            mod_pos = mod_iface_result.new_pos
                         } else if mod_kind == TK_CONST {
                             mod_const := parse_const_decl(mod_source, mod_pos, nodes)
                             if mod_const.node_idx >= 0 {
@@ -1267,6 +1325,10 @@ fn run_test_mode(test_path: string, run_bench: int) -> int {
                     smod_enum := parse_enum_decl(smod_source, smod_pos, nodes)
                     smod_pos = smod_enum.new_pos
                     smod_pos = lex_skip(smod_source, smod_pos)
+                } else if smod_kind == TK_INTERFACE {
+                    smod_iface := parse_interface_decl(smod_source, smod_pos, nodes)
+                    smod_pos = smod_iface.new_pos
+                    smod_pos = lex_skip(smod_source, smod_pos)
                 } else if smod_kind == TK_CONST {
                     smod_const := parse_const_decl(smod_source, smod_pos, nodes)
                     if smod_const.node_idx >= 0 {
@@ -1377,6 +1439,33 @@ fn run_test_mode(test_path: string, run_bench: int) -> int {
         efi = efi + 1
     }
 
+    // Register interfaces
+    ifi := 0
+    for ifi < nodes_len {
+        if nodes[ifi].tag == DECL_INTERFACE {
+            iname := nodes[ifi].str_val
+            imethods := []string{}
+            iparam_counts := []int{}
+            iret_types := []int{}
+            iret_is_arrays := []int{}
+            imi := nodes[ifi].left
+            imc := nodes[ifi].int_val
+            imci := 0
+            for imci < imc {
+                if imi >= nodes_len { break }
+                if nodes[imi].tag != DECL_IMETHOD { break }
+                push(imethods, nodes[imi].str_val)
+                push(iparam_counts, nodes[imi].int_val)
+                push(iret_types, nodes[imi].type_tag)
+                push(iret_is_arrays, nodes[imi].extra)
+                imi = imi + 1
+                imci = imci + 1
+            }
+            RegisterInterface(iname, imethods, iparam_counts, iret_types, iret_is_arrays)
+        }
+        ifi = ifi + 1
+    }
+
     // Build function return type registry
     register_func_return_type("os.Argv", TYPE_STRING, 0, "")
     register_func_return_type("os.IsDir", TYPE_INT, 0, "")
@@ -1400,6 +1489,29 @@ fn run_test_mode(test_path: string, run_bench: int) -> int {
         ret_sname := lookup_type_name(func_indices[reg_i])
         register_func_return_type(func_names[reg_i], fn_node.type_tag, fn_node.int_val, ret_sname)
         reg_i = reg_i + 1
+    }
+
+    // Build function parameter type registry
+    fpt_i := 0
+    for fpt_i < len(func_indices) {
+        fpt_node := nodes[func_indices[fpt_i]]
+        fpt_name := func_names[fpt_i]
+        if fpt_node.left >= 0 {
+            fpt_pi := fpt_node.left
+            fpt_pidx := 0
+            for fpt_pi < nodes_len {
+                if nodes[fpt_pi].tag != DECL_PARAM { break }
+                fpt_tname := lookup_type_name(fpt_pi)
+                if fpt_tname != "" {
+                    push(g_func_param_names, fpt_name)
+                    push(g_func_param_indices, fpt_pidx)
+                    push(g_func_param_type_names, fpt_tname)
+                }
+                fpt_pidx = fpt_pidx + 1
+                fpt_pi = fpt_pi + 1
+            }
+        }
+        fpt_i = fpt_i + 1
     }
 
     // IR Generation — compile all user functions
@@ -2112,6 +2224,9 @@ fn main() -> int {
         } else if kind == TK_ENUM {
             enum_result := parse_enum_decl(source, parse_pos, nodes)
             parse_pos = enum_result.new_pos
+        } else if kind == TK_INTERFACE {
+            iface_result := parse_interface_decl(source, parse_pos, nodes)
+            parse_pos = iface_result.new_pos
         } else if kind == TK_CONST {
             const_result := parse_const_decl(source, parse_pos, nodes)
             if const_result.node_idx >= 0 {
@@ -2215,6 +2330,9 @@ fn main() -> int {
                                         } else if dir_kind == TK_ENUM {
                                             dir_enum := parse_enum_decl(dir_source, dir_pos, nodes)
                                             dir_pos = dir_enum.new_pos
+                                        } else if dir_kind == TK_INTERFACE {
+                                            dir_iface := parse_interface_decl(dir_source, dir_pos, nodes)
+                                            dir_pos = dir_iface.new_pos
                                         } else if dir_kind == TK_CONST {
                                             dir_const := parse_const_decl(dir_source, dir_pos, nodes)
                                             if dir_const.node_idx >= 0 {
@@ -2329,6 +2447,9 @@ fn main() -> int {
                         } else if mod_kind == TK_ENUM {
                             mod_enum_result := parse_enum_decl(mod_source, mod_pos, nodes)
                             mod_pos = mod_enum_result.new_pos
+                        } else if mod_kind == TK_INTERFACE {
+                            mod_iface_result := parse_interface_decl(mod_source, mod_pos, nodes)
+                            mod_pos = mod_iface_result.new_pos
                         } else if mod_kind == TK_CONST {
                             mod_const := parse_const_decl(mod_source, mod_pos, nodes)
                             if mod_const.node_idx >= 0 {
@@ -2486,6 +2607,10 @@ fn main() -> int {
                     smod_enum := parse_enum_decl(smod_source, smod_pos, nodes)
                     smod_pos = smod_enum.new_pos
                     smod_pos = lex_skip(smod_source, smod_pos)
+                } else if smod_kind == TK_INTERFACE {
+                    smod_iface := parse_interface_decl(smod_source, smod_pos, nodes)
+                    smod_pos = smod_iface.new_pos
+                    smod_pos = lex_skip(smod_source, smod_pos)
                 } else if smod_kind == TK_CONST {
                     smod_const := parse_const_decl(smod_source, smod_pos, nodes)
                     if smod_const.node_idx >= 0 {
@@ -2600,6 +2725,33 @@ fn main() -> int {
         efi = efi + 1
     }
 
+    // Register interfaces
+    ifi := 0
+    for ifi < nodes_len {
+        if nodes[ifi].tag == DECL_INTERFACE {
+            iname := nodes[ifi].str_val
+            imethods := []string{}
+            iparam_counts := []int{}
+            iret_types := []int{}
+            iret_is_arrays := []int{}
+            imi := nodes[ifi].left
+            imc := nodes[ifi].int_val
+            imci := 0
+            for imci < imc {
+                if imi >= nodes_len { break }
+                if nodes[imi].tag != DECL_IMETHOD { break }
+                push(imethods, nodes[imi].str_val)
+                push(iparam_counts, nodes[imi].int_val)
+                push(iret_types, nodes[imi].type_tag)
+                push(iret_is_arrays, nodes[imi].extra)
+                imi = imi + 1
+                imci = imci + 1
+            }
+            RegisterInterface(iname, imethods, iparam_counts, iret_types, iret_is_arrays)
+        }
+        ifi = ifi + 1
+    }
+
     // Build function return type registry
     // Pre-register built-in functions (no DECL_FUNC nodes for these)
     register_func_return_type("os.Argv", TYPE_STRING, 0, "")
@@ -2626,6 +2778,29 @@ fn main() -> int {
         ret_sname := lookup_type_name(func_indices[reg_i])
         register_func_return_type(func_names[reg_i], fn_node.type_tag, fn_node.int_val, ret_sname)
         reg_i = reg_i + 1
+    }
+
+    // Build function parameter type registry
+    fpt_i := 0
+    for fpt_i < len(func_indices) {
+        fpt_node := nodes[func_indices[fpt_i]]
+        fpt_name := func_names[fpt_i]
+        if fpt_node.left >= 0 {
+            fpt_pi := fpt_node.left
+            fpt_pidx := 0
+            for fpt_pi < nodes_len {
+                if nodes[fpt_pi].tag != DECL_PARAM { break }
+                fpt_tname := lookup_type_name(fpt_pi)
+                if fpt_tname != "" {
+                    push(g_func_param_names, fpt_name)
+                    push(g_func_param_indices, fpt_pidx)
+                    push(g_func_param_type_names, fpt_tname)
+                }
+                fpt_pidx = fpt_pidx + 1
+                fpt_pi = fpt_pi + 1
+            }
+        }
+        fpt_i = fpt_i + 1
     }
 
     // Phase 3: IR Generation

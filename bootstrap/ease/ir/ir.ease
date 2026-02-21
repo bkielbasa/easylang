@@ -99,6 +99,8 @@ const OP_SETJMP = 56
 const OP_TEST_FAIL = 57
 const OP_TIME_NANOS = 58
 const OP_TIME_WALLCLOCK = 59
+const OP_IFACE_WRAP = 60
+const OP_IFACE_CALL = 61
 
 // Struct definitions and offsets (hardcoded for known structs)
 // AstNode: tag(8), int_val(8), str_val(8), left(8), right(8), extra(8), type_tag(8) = 56 bytes
@@ -385,6 +387,116 @@ fn is_scalar_global(name: string) -> int {
     i := 0
     for i < len(g_scalar_globals) {
         if g_scalar_globals[i] == name { return 1 }
+        i = i + 1
+    }
+    return 0
+}
+
+// Interface registry
+g_iface_names := []string{}
+g_iface_method_counts := []int{}
+g_iface_method_starts := []int{}
+g_iface_method_names := []string{}
+g_iface_method_param_counts := []int{}
+g_iface_method_ret_types := []int{}
+g_iface_method_ret_is_array := []int{}
+
+fn RegisterInterface(name: string, method_names: []string, param_counts: []int, ret_types: []int, ret_is_arrays: []int) {
+    push(g_iface_names, name)
+    push(g_iface_method_counts, len(method_names))
+    push(g_iface_method_starts, len(g_iface_method_names))
+    i := 0
+    for i < len(method_names) {
+        push(g_iface_method_names, method_names[i])
+        push(g_iface_method_param_counts, param_counts[i])
+        push(g_iface_method_ret_types, ret_types[i])
+        push(g_iface_method_ret_is_array, ret_is_arrays[i])
+        i = i + 1
+    }
+}
+
+fn is_interface(name: string) -> int {
+    i := 0
+    for i < len(g_iface_names) {
+        if g_iface_names[i] == name { return 1 }
+        i = i + 1
+    }
+    return 0
+}
+
+fn iface_method_count(iface_name: string) -> int {
+    i := 0
+    for i < len(g_iface_names) {
+        if g_iface_names[i] == iface_name {
+            return g_iface_method_counts[i]
+        }
+        i = i + 1
+    }
+    return 0
+}
+
+fn iface_method_name(iface_name: string, idx: int) -> string {
+    i := 0
+    for i < len(g_iface_names) {
+        if g_iface_names[i] == iface_name {
+            start := g_iface_method_starts[i]
+            return g_iface_method_names[start + idx]
+        }
+        i = i + 1
+    }
+    return ""
+}
+
+fn iface_method_index(iface_name: string, method_name: string) -> int {
+    i := 0
+    for i < len(g_iface_names) {
+        if g_iface_names[i] == iface_name {
+            start := g_iface_method_starts[i]
+            count := g_iface_method_counts[i]
+            j := 0
+            for j < count {
+                if g_iface_method_names[start + j] == method_name {
+                    return j
+                }
+                j = j + 1
+            }
+        }
+        i = i + 1
+    }
+    return -1
+}
+
+fn iface_method_param_count(iface_name: string, idx: int) -> int {
+    i := 0
+    for i < len(g_iface_names) {
+        if g_iface_names[i] == iface_name {
+            start := g_iface_method_starts[i]
+            return g_iface_method_param_counts[start + idx]
+        }
+        i = i + 1
+    }
+    return 0
+}
+
+fn iface_method_ret_type(iface_name: string, idx: int) -> int {
+    i := 0
+    for i < len(g_iface_names) {
+        if g_iface_names[i] == iface_name {
+            start := g_iface_method_starts[i]
+            return g_iface_method_ret_types[start + idx]
+        }
+        i = i + 1
+    }
+    return 0
+}
+
+fn iface_method_ret_is_array(iface_name: string, idx: int) -> int {
+    i := 0
+    for i < len(g_iface_names) {
+        if g_iface_names[i] == iface_name {
+            start := g_iface_method_starts[i]
+            return g_iface_method_ret_is_array[start + idx]
+        }
         i = i + 1
     }
     return 0

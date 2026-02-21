@@ -193,7 +193,7 @@ fn collect_vregs(instrs: []IRInstr, start: int, end_pos: int, param_count: int) 
         instr := instrs[i]
         op := instr.op
         // dest is vreg for result-producing operations
-        if op == OP_LOADCONST || op == OP_ADD || op == OP_SUB || op == OP_MUL || op == OP_DIV || op == OP_CMP_LT || op == OP_CMP_GT || op == OP_CMP_LE || op == OP_CMP_GE || op == OP_CMP_EQ || op == OP_CMP_NE || op == OP_AND || op == OP_OR || op == OP_NOT || op == OP_XOR || op == OP_BITAND || op == OP_BITOR || op == OP_ALLOCA || op == OP_LOAD || op == OP_INDEXADDR || op == OP_ARRAY_LEN || op == OP_STR_LEN || op == OP_STR_CHAR_AT || op == OP_PEEK || op == OP_HEAP_ALLOC || op == OP_CALL || op == OP_ARGC || op == OP_ARGV || op == OP_INT_TO_STR || op == OP_STR_EQ || op == OP_STR_NE || op == OP_STR_CONCAT || op == OP_LOAD_GLOBAL || op == OP_SYSCALL_OPEN || op == OP_SYSCALL_WRITE || op == OP_SYSCALL_CLOSE || op == OP_SYSCALL_READ || op == OP_IS_DIR || op == OP_LIST_DIR || op == OP_SETJMP || op == OP_TIME_NANOS || op == OP_TIME_WALLCLOCK {
+        if op == OP_LOADCONST || op == OP_ADD || op == OP_SUB || op == OP_MUL || op == OP_DIV || op == OP_CMP_LT || op == OP_CMP_GT || op == OP_CMP_LE || op == OP_CMP_GE || op == OP_CMP_EQ || op == OP_CMP_NE || op == OP_AND || op == OP_OR || op == OP_NOT || op == OP_XOR || op == OP_BITAND || op == OP_BITOR || op == OP_ALLOCA || op == OP_LOAD || op == OP_INDEXADDR || op == OP_ARRAY_LEN || op == OP_STR_LEN || op == OP_STR_CHAR_AT || op == OP_PEEK || op == OP_HEAP_ALLOC || op == OP_CALL || op == OP_ARGC || op == OP_ARGV || op == OP_INT_TO_STR || op == OP_STR_EQ || op == OP_STR_NE || op == OP_STR_CONCAT || op == OP_LOAD_GLOBAL || op == OP_SYSCALL_OPEN || op == OP_SYSCALL_WRITE || op == OP_SYSCALL_CLOSE || op == OP_SYSCALL_READ || op == OP_IS_DIR || op == OP_LIST_DIR || op == OP_SETJMP || op == OP_TIME_NANOS || op == OP_TIME_WALLCLOCK || op == OP_IFACE_WRAP || op == OP_IFACE_CALL {
             if instr.dest >= 0 { add_unique(vregs, instr.dest) }
         }
         // RET dest is vreg
@@ -206,7 +206,7 @@ fn collect_vregs(instrs: []IRInstr, start: int, end_pos: int, param_count: int) 
             if instr.arg1 >= 0 { add_unique(vregs, instr.arg1) }
         }
         // arg1 is vreg for most ops (not LOADCONST, ALLOCA, LABEL, JUMP, BRANCH, ARGC, CALL)
-        if op != OP_LOADCONST && op != OP_LOAD_GLOBAL && op != OP_ALLOCA && op != OP_LABEL && op != OP_JUMP && op != OP_BRANCH && op != OP_ARGC && op != OP_TIME_NANOS && op != OP_TIME_WALLCLOCK && op != OP_CALL {
+        if op != OP_LOADCONST && op != OP_LOAD_GLOBAL && op != OP_ALLOCA && op != OP_LABEL && op != OP_JUMP && op != OP_BRANCH && op != OP_ARGC && op != OP_TIME_NANOS && op != OP_TIME_WALLCLOCK && op != OP_CALL && op != OP_IFACE_CALL {
             if instr.arg1 >= 0 { add_unique(vregs, instr.arg1) }
         }
         // arg2 is vreg for binary ops, STORE, ARRAY_PUSH, POKE, STR_EQ/NE, STR_CHAR_AT, etc
@@ -292,6 +292,20 @@ fn emit_llvm_ir(instrs: []IRInstr, output_path: string) -> int {
         write_str(fd, "\n")
     }
 
+    // Emit vtable globals
+    vti := 0
+    for vti < len(g_vtable_struct_names) {
+        vt_iname := g_vtable_iface_names[vti]
+        vt_sname := g_vtable_struct_names[vti]
+        vt_mc := iface_method_count(vt_iname)
+        vt_size := vt_mc * 8
+        write_str(fd, "@vtable." + llvm_mangle(vt_iname + "." + vt_sname) + " = global [" + strconv.Itoa(vt_size) + " x i8] zeroinitializer\n")
+        vti = vti + 1
+    }
+    if len(g_vtable_struct_names) > 0 {
+        write_str(fd, "\n")
+    }
+
     // Emit runtime declarations
     emit_llvm_decls(fd)
 
@@ -326,6 +340,9 @@ fn emit_llvm_ir(instrs: []IRInstr, output_path: string) -> int {
             fi = fi + 1
         }
     }
+
+    // Emit vtable init function
+    emit_llvm_vtable_init(fd)
 
     // Emit @main wrapper that stores argc/argv and calls ease_user_main
     emit_llvm_main_wrapper(fd)
@@ -422,11 +439,48 @@ fn emit_llvm_helpers(fd: int) {
     write_str(fd, "}\n\n")
 }
 
+fn emit_llvm_vtable_init(fd: int) {
+    if len(g_vtable_struct_names) == 0 { return }
+    write_str(fd, "define void @ease_init_vtables() {\n")
+    vti := 0
+    for vti < len(g_vtable_struct_names) {
+        vt_sname := g_vtable_struct_names[vti]
+        vt_iname := g_vtable_iface_names[vti]
+        vt_mc := iface_method_count(vt_iname)
+        vt_global := "@vtable." + llvm_mangle(vt_iname + "." + vt_sname)
+        mi := 0
+        for mi < vt_mc {
+            mname := iface_method_name(vt_iname, mi)
+            func_name := lookup_method(vt_sname, mname)
+            if func_name != "" {
+                actual := lookup_rename(func_name)
+                llvm_name := llvm_func_name(actual)
+                fp_name := "%vt.fp." + strconv.Itoa(vti) + "." + strconv.Itoa(mi)
+                write_str(fd, "  " + fp_name + " = ptrtoint ptr @" + llvm_name + " to i64\n")
+                if mi == 0 {
+                    write_str(fd, "  store i64 " + fp_name + ", ptr " + vt_global + "\n")
+                } else {
+                    slot_name := "%vt.slot." + strconv.Itoa(vti) + "." + strconv.Itoa(mi)
+                    write_str(fd, "  " + slot_name + " = getelementptr i8, ptr " + vt_global + ", i64 " + strconv.Itoa(mi * 8) + "\n")
+                    write_str(fd, "  store i64 " + fp_name + ", ptr " + slot_name + "\n")
+                }
+            }
+            mi = mi + 1
+        }
+        vti = vti + 1
+    }
+    write_str(fd, "  ret void\n")
+    write_str(fd, "}\n\n")
+}
+
 fn emit_llvm_main_wrapper(fd: int) {
     write_str(fd, "define i32 @main(i32 %argc, ptr %argv) {\n")
     write_str(fd, "  %argc.ext = sext i32 %argc to i64\n")
     write_str(fd, "  store i64 %argc.ext, ptr @g_argc\n")
     write_str(fd, "  store ptr %argv, ptr @g_argv\n")
+    if len(g_vtable_struct_names) > 0 {
+        write_str(fd, "  call void @ease_init_vtables()\n")
+    }
     write_str(fd, "  %r = call i64 @ease_user_main()\n")
     write_str(fd, "  %r32 = trunc i64 %r to i32\n")
     write_str(fd, "  ret i32 %r32\n")
@@ -969,6 +1023,68 @@ fn emit_llvm_function(fd: int, instrs: []IRInstr, start: int, end_pos: int, func
             } else {
                 write_str(fd, "  call i64 @" + callee + "(" + args_str + ")\n")
             }
+            // Reset call args
+            call_args = []int{}
+        }
+
+        if terminated == 0 && instr.op == OP_IFACE_WRAP {
+            // Allocate 16 bytes for interface value [concrete_ptr, vtable_ptr]
+            iw_ptr := "%iw.ptr." + strconv.Itoa(ti)
+            write_str(fd, "  " + iw_ptr + " = call ptr @malloc(i64 16)\n")
+            // Store concrete ptr at offset 0
+            iw_concrete := emit_load_vreg(fd, instr.arg1, ti, 0)
+            iw_concrete_ptr := "%iw.cptr." + strconv.Itoa(ti)
+            write_str(fd, "  " + iw_concrete_ptr + " = inttoptr i64 " + iw_concrete + " to ptr\n")
+            write_str(fd, "  store i64 " + iw_concrete + ", ptr " + iw_ptr + "\n")
+            // Store vtable ptr at offset 8
+            iw_vt := "%iw.vt." + strconv.Itoa(ti)
+            write_str(fd, "  " + iw_vt + " = ptrtoint ptr @vtable." + llvm_mangle(instr.str_val) + " to i64\n")
+            iw_slot1 := "%iw.slot1." + strconv.Itoa(ti)
+            write_str(fd, "  " + iw_slot1 + " = getelementptr i8, ptr " + iw_ptr + ", i64 8\n")
+            write_str(fd, "  store i64 " + iw_vt + ", ptr " + iw_slot1 + "\n")
+            // Result = interface value as i64
+            iw_result := "%iw.result." + strconv.Itoa(ti)
+            write_str(fd, "  " + iw_result + " = ptrtoint ptr " + iw_ptr + " to i64\n")
+            emit_store_vreg(fd, instr.dest, iw_result)
+        }
+
+        if terminated == 0 && instr.op == OP_IFACE_CALL {
+            // Indirect call through interface vtable
+            // call_args[0] = interface value, rest = user args
+            // instr.arg1 = vtable method index, instr.arg2 = total arg count
+            ic_iface := "%ic.iface." + strconv.Itoa(ti)
+            ic_iface_val := emit_load_vreg(fd, call_args[0], ti, 0)
+            write_str(fd, "  " + ic_iface + " = inttoptr i64 " + ic_iface_val + " to ptr\n")
+            // Load concrete_ptr at offset 0
+            ic_concrete := "%ic.concrete." + strconv.Itoa(ti)
+            write_str(fd, "  " + ic_concrete + " = load i64, ptr " + ic_iface + "\n")
+            // Load vtable_ptr at offset 8
+            ic_vt_slot := "%ic.vt.slot." + strconv.Itoa(ti)
+            write_str(fd, "  " + ic_vt_slot + " = getelementptr i8, ptr " + ic_iface + ", i64 8\n")
+            ic_vt := "%ic.vt." + strconv.Itoa(ti)
+            write_str(fd, "  " + ic_vt + " = load i64, ptr " + ic_vt_slot + "\n")
+            ic_vt_ptr := "%ic.vt.ptr." + strconv.Itoa(ti)
+            write_str(fd, "  " + ic_vt_ptr + " = inttoptr i64 " + ic_vt + " to ptr\n")
+            // Load function pointer at vtable_idx * 8
+            ic_fp_offset := instr.arg1 * 8
+            ic_fp_slot := "%ic.fp.slot." + strconv.Itoa(ti)
+            write_str(fd, "  " + ic_fp_slot + " = getelementptr i8, ptr " + ic_vt_ptr + ", i64 " + strconv.Itoa(ic_fp_offset) + "\n")
+            ic_fp := "%ic.fp." + strconv.Itoa(ti)
+            write_str(fd, "  " + ic_fp + " = load i64, ptr " + ic_fp_slot + "\n")
+            ic_fn := "%ic.fn." + strconv.Itoa(ti)
+            write_str(fd, "  " + ic_fn + " = inttoptr i64 " + ic_fp + " to ptr\n")
+            // Build argument string: concrete_ptr as first arg, then remaining args
+            ic_args_str := "i64 " + ic_concrete
+            ic_ai := 1
+            for ic_ai < len(call_args) {
+                ic_arg_val := emit_load_vreg(fd, call_args[ic_ai], ti, ic_ai)
+                ic_args_str = ic_args_str + ", i64 " + ic_arg_val
+                ic_ai = ic_ai + 1
+            }
+            // Emit indirect call
+            ic_result := "%ic.result." + strconv.Itoa(ti)
+            write_str(fd, "  " + ic_result + " = call i64 " + ic_fn + "(" + ic_args_str + ")\n")
+            emit_store_vreg(fd, instr.dest, ic_result)
             // Reset call args
             call_args = []int{}
         }
