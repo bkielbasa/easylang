@@ -70,3 +70,35 @@ fn TestInterfaceMultipleSatisfied(t: T) {
         testing.Fatal("expected 10x20, got " + result)
     }
 }
+
+// Test: function returning interface value
+fn make_greeter(spanish: int) -> Greeter {
+    if spanish == 1 {
+        return Spanish { name: "Mundo" }
+    }
+    return English { name: "World" }
+}
+
+fn TestInterfaceReturnValue(t: T) {
+    g1 := make_greeter(0)
+    if g1.Greet() != "Hello, World" {
+        testing.Fatal("expected Hello, World, got " + g1.Greet())
+    }
+    g2 := make_greeter(1)
+    if g2.Greet() != "Hola, Mundo" {
+        testing.Fatal("expected Hola, Mundo, got " + g2.Greet())
+    }
+}
+
+// Test: interface value stored in local and passed around
+fn double_greet(g: Greeter) -> string {
+    return g.Greet() + " " + g.Greet()
+}
+
+fn TestInterfaceLocalVar(t: T) {
+    g := make_greeter(0)
+    result := double_greet(g)
+    if result != "Hello, World Hello, World" {
+        testing.Fatal("expected Hello, World Hello, World, got " + result)
+    }
+}

@@ -1553,6 +1553,7 @@ fn run_test_mode(test_path: string, run_bench: int) -> int {
             push(symtab_vregs, -2000 - ci)
             ci = ci + 1
         }
+        push(g_current_func_name_arr, func_names[gen_all_i])
         gen_ir_from_ast_with_symtab(func_idx, nodes, instrs, symtab_names, symtab_vregs)
         gen_all_i = gen_all_i + 1
     }
@@ -2843,6 +2844,7 @@ fn main() -> int {
             push(symtab_vregs, -2000 - ci)
             ci = ci + 1
         }
+        push(g_current_func_name_arr, func_names[gen_all_i])
         gen_ir_from_ast_with_symtab(func_idx, nodes, instrs, symtab_names, symtab_vregs)
         gen_all_i = gen_all_i + 1
     }

@@ -66,6 +66,10 @@ fn make_type(type_tag: int, is_array: int) -> int {
     return type_tag
 }
 
+// Current function name — set by compiler before each function's IR generation
+// Uses []string array workaround since string globals can't be reassigned
+g_current_func_name_arr := []string{}
+
 // Struct name tracking: parallel arrays mapping vregs to struct type names
 g_vreg_struct_names := []string{}
 g_param_struct_names := []string{}
@@ -678,6 +682,22 @@ fn gen_ir_stmt_ret(node: AstNode, nodes: []AstNode, instrs: []IRInstr, st_n: []s
     v := -1
     if node.left >= 0 {
         v = gen_ir_from_ast_with_symtab(node.left, nodes, instrs, st_n, st_v)
+    }
+    // Check if function returns an interface type — wrap if needed
+    if v >= 0 && len(g_current_func_name_arr) > 0 {
+        cur_fn := g_current_func_name_arr[len(g_current_func_name_arr) - 1]
+        ret_struct_name := lookup_func_return_struct_name(cur_fn)
+        if ret_struct_name != "" && is_interface(ret_struct_name) == 1 {
+            val_struct_name := get_vreg_struct_name(v)
+            if val_struct_name != "" && val_struct_name != ret_struct_name && struct_satisfies_interface(val_struct_name, ret_struct_name) == 1 {
+                wrap := len(instrs)
+                push(instrs, IRInstr { op: OP_IFACE_WRAP, dest: wrap, arg1: v, arg2: 0, arg3: 0, str_val: ret_struct_name + "." + val_struct_name })
+                set_vreg_type(wrap, TYPE_STRUCT)
+                set_vreg_struct_name(wrap, ret_struct_name)
+                record_vtable_pair(val_struct_name, ret_struct_name)
+                v = wrap
+            }
+        }
     }
     push(instrs, IRInstr { op: OP_RET, dest: v, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
     return v
