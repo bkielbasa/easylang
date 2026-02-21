@@ -1,0 +1,234 @@
+package maps
+
+// Hash map implementation using open addressing with linear probing.
+// Supports generic key types: string (key_type=0) and int/bool (key_type=1).
+//
+// Header layout (48 bytes):
+//   [0]  keys_ptr   — pointer to array of keys (i64)
+//   [8]  vals_ptr   — pointer to array of values (i64)
+//   [16] flags_ptr  — pointer to array of flag bytes (0=empty, 1=occupied, 2=tombstone)
+//   [24] size       — number of occupied entries
+//   [32] cap        — total capacity (power of 2)
+//   [40] key_type   — 0=string, 1=int/bool
+
+fn hash_string_raw(s: int) -> int {
+    // djb2 hash
+    h := 5381
+    i := 0
+    for {
+        ch := peek(s + i)
+        if ch == 0 { break }
+        h = h * 33 + ch
+        i = i + 1
+    }
+    // Make positive
+    if h < 0 { h = 0 - h }
+    return h
+}
+
+fn str_eq_raw(a: int, b: int) -> int {
+    if a == b { return 1 }
+    i := 0
+    for {
+        ca := peek(a + i)
+        cb := peek(b + i)
+        if ca != cb { return 0 }
+        if ca == 0 { return 1 }
+        i = i + 1
+    }
+    return 1
+}
+
+fn hash_int_raw(k: int) -> int {
+    // Knuth multiplicative hash
+    h := k * 2654435761
+    if h < 0 { h = 0 - h }
+    return h
+}
+
+fn int_eq_raw(a: int, b: int) -> int {
+    if a == b { return 1 }
+    return 0
+}
+
+fn hash_key(key: int, key_type: int) -> int {
+    if key_type == 0 { return hash_string_raw(key) }
+    return hash_int_raw(key)
+}
+
+fn key_eq(a: int, b: int, key_type: int) -> int {
+    if key_type == 0 { return str_eq_raw(a, b) }
+    return int_eq_raw(a, b)
+}
+
+fn New(key_type: int) -> int {
+    cap := 8
+    // Allocate header: 48 bytes
+    hdr := heap_alloc(48)
+    // Allocate keys array: cap * 8 bytes
+    keys := heap_alloc(cap * 8)
+    // Allocate vals array: cap * 8 bytes
+    vals := heap_alloc(cap * 8)
+    // Allocate flags array: cap bytes (initialized to 0 = empty)
+    flags := heap_alloc(cap)
+    // Store into header
+    poke64(hdr, keys)
+    poke64(hdr + 8, vals)
+    poke64(hdr + 16, flags)
+    poke64(hdr + 24, 0)
+    poke64(hdr + 32, cap)
+    poke64(hdr + 40, key_type)
+    return hdr
+}
+
+fn Get(m: int, key: int) -> int {
+    cap := peek64(m + 32)
+    if cap == 0 { return 0 }
+    key_type := peek64(m + 40)
+    flags := peek64(m + 16)
+    keys := peek64(m)
+    vals := peek64(m + 8)
+    mask := cap - 1
+    h := hash_key(key, key_type) & mask
+    i := 0
+    for i < cap {
+        slot := (h + i) & mask
+        f := peek(flags + slot)
+        if f == 0 {
+            // Empty slot — key not found
+            return 0
+        }
+        if f == 1 {
+            // Occupied — check key
+            k := peek64(keys + slot * 8)
+            if key_eq(k, key, key_type) == 1 {
+                return peek64(vals + slot * 8)
+            }
+        }
+        // f == 2 (tombstone) — continue probing
+        i = i + 1
+    }
+    return 0
+}
+
+fn grow(m: int) {
+    old_cap := peek64(m + 32)
+    old_keys := peek64(m)
+    old_vals := peek64(m + 8)
+    old_flags := peek64(m + 16)
+    key_type := peek64(m + 40)
+
+    new_cap := old_cap * 2
+    new_keys := heap_alloc(new_cap * 8)
+    new_vals := heap_alloc(new_cap * 8)
+    new_flags := heap_alloc(new_cap)
+
+    mask := new_cap - 1
+    j := 0
+    for j < old_cap {
+        f := peek(old_flags + j)
+        if f == 1 {
+            k := peek64(old_keys + j * 8)
+            v := peek64(old_vals + j * 8)
+            h := hash_key(k, key_type) & mask
+            probe := 0
+            for probe < new_cap {
+                slot := (h + probe) & mask
+                if peek(new_flags + slot) == 0 {
+                    poke64(new_keys + slot * 8, k)
+                    poke64(new_vals + slot * 8, v)
+                    poke(new_flags + slot, 1)
+                    break
+                }
+                probe = probe + 1
+            }
+        }
+        j = j + 1
+    }
+
+    poke64(m, new_keys)
+    poke64(m + 8, new_vals)
+    poke64(m + 16, new_flags)
+    poke64(m + 32, new_cap)
+}
+
+fn Set(m: int, key: int, val: int) -> int {
+    // Check load factor: grow if size >= cap * 3 / 4
+    size := peek64(m + 24)
+    cap := peek64(m + 32)
+    if size * 4 >= cap * 3 {
+        grow(m)
+        cap = peek64(m + 32)
+    }
+
+    key_type := peek64(m + 40)
+    flags := peek64(m + 16)
+    keys := peek64(m)
+    vals := peek64(m + 8)
+    mask := cap - 1
+    h := hash_key(key, key_type) & mask
+
+    first_tombstone := -1
+    i := 0
+    for i < cap {
+        slot := (h + i) & mask
+        f := peek(flags + slot)
+        if f == 0 {
+            // Empty slot — insert here (or at first tombstone if found)
+            if first_tombstone >= 0 {
+                slot = first_tombstone
+            }
+            poke64(keys + slot * 8, key)
+            poke64(vals + slot * 8, val)
+            poke(flags + slot, 1)
+            poke64(m + 24, size + 1)
+            return 0
+        }
+        if f == 1 {
+            k := peek64(keys + slot * 8)
+            if key_eq(k, key, key_type) == 1 {
+                // Key exists — update value
+                poke64(vals + slot * 8, val)
+                return 0
+            }
+        }
+        if f == 2 && first_tombstone < 0 {
+            first_tombstone = slot
+        }
+        i = i + 1
+    }
+    // Should not reach here if load factor is maintained
+    return 0
+}
+
+fn Delete(m: int, key: int) -> int {
+    cap := peek64(m + 32)
+    if cap == 0 { return 0 }
+    key_type := peek64(m + 40)
+    flags := peek64(m + 16)
+    keys := peek64(m)
+    mask := cap - 1
+    h := hash_key(key, key_type) & mask
+    i := 0
+    for i < cap {
+        slot := (h + i) & mask
+        f := peek(flags + slot)
+        if f == 0 { return 0 }
+        if f == 1 {
+            k := peek64(keys + slot * 8)
+            if key_eq(k, key, key_type) == 1 {
+                // Mark as tombstone
+                poke(flags + slot, 2)
+                size := peek64(m + 24)
+                poke64(m + 24, size - 1)
+                return 0
+            }
+        }
+        i = i + 1
+    }
+    return 0
+}
+
+fn Len(m: int) -> int {
+    return peek64(m + 24)
+}

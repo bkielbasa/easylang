@@ -1,0 +1,159 @@
+package main
+
+// Hash map tests
+
+fn TestMapCreate(t: T) {
+    m := map[string]int{}
+    if len(m) != 0 {
+        testing.Fatal("expected len 0")
+    }
+}
+
+fn TestMapSetGet(t: T) {
+    m := map[string]int{}
+    m["hello"] = 42
+    v := m["hello"]
+    if v != 42 {
+        testing.Fatal("expected 42")
+    }
+}
+
+fn TestMapLen(t: T) {
+    m := map[string]int{}
+    m["a"] = 1
+    m["b"] = 2
+    m["c"] = 3
+    if len(m) != 3 {
+        testing.Fatal("expected len 3")
+    }
+}
+
+fn TestMapMissingKey(t: T) {
+    m := map[string]int{}
+    m["x"] = 10
+    v := m["y"]
+    if v != 0 {
+        testing.Fatal("expected 0 for missing key")
+    }
+}
+
+fn TestMapOverwrite(t: T) {
+    m := map[string]int{}
+    m["key"] = 100
+    m["key"] = 200
+    if m["key"] != 200 {
+        testing.Fatal("expected 200 after overwrite")
+    }
+    if len(m) != 1 {
+        testing.Fatal("expected len 1 after overwrite")
+    }
+}
+
+fn TestMapDelete(t: T) {
+    m := map[string]int{}
+    m["del"] = 99
+    delete(m, "del")
+    if m["del"] != 0 {
+        testing.Fatal("expected 0 after delete")
+    }
+    if len(m) != 0 {
+        testing.Fatal("expected len 0 after delete")
+    }
+}
+
+fn TestMapManyKeys(t: T) {
+    m := map[string]int{}
+    m["k0"] = 0
+    m["k1"] = 1
+    m["k2"] = 2
+    m["k3"] = 3
+    m["k4"] = 4
+    m["k5"] = 5
+    m["k6"] = 6
+    m["k7"] = 7
+    m["k8"] = 8
+    m["k9"] = 9
+    if len(m) != 10 {
+        testing.Fatal("expected len 10")
+    }
+    if m["k0"] != 0 { testing.Fatal("k0") }
+    if m["k5"] != 5 { testing.Fatal("k5") }
+    if m["k9"] != 9 { testing.Fatal("k9") }
+}
+
+fn TestMapDeleteReinsert(t: T) {
+    m := map[string]int{}
+    m["foo"] = 1
+    delete(m, "foo")
+    m["foo"] = 2
+    if m["foo"] != 2 {
+        testing.Fatal("expected 2 after reinsert")
+    }
+    if len(m) != 1 {
+        testing.Fatal("expected len 1 after reinsert")
+    }
+}
+
+fn TestMapIntKeySetGet(t: T) {
+    m := map[int]string{}
+    m[42] = "hello"
+    if m[42] != "hello" {
+        testing.Fatal("expected hello")
+    }
+}
+
+fn TestMapIntKeyMissing(t: T) {
+    m := map[int]string{}
+    m[1] = "one"
+    v := m[2]
+    if v != "" {
+        testing.Fatal("expected empty string for missing int key")
+    }
+}
+
+fn TestMapStringString(t: T) {
+    m := map[string]string{}
+    m["name"] = "ease"
+    m["lang"] = "compiler"
+    if m["name"] != "ease" {
+        testing.Fatal("expected ease")
+    }
+    if m["lang"] != "compiler" {
+        testing.Fatal("expected compiler")
+    }
+    if len(m) != 2 {
+        testing.Fatal("expected len 2")
+    }
+}
+
+fn TestMapIntInt(t: T) {
+    m := map[int]int{}
+    m[10] = 100
+    m[20] = 200
+    m[30] = 300
+    if m[10] != 100 { testing.Fatal("expected 100") }
+    if m[20] != 200 { testing.Fatal("expected 200") }
+    if m[30] != 300 { testing.Fatal("expected 300") }
+    if len(m) != 3 { testing.Fatal("expected len 3") }
+}
+
+fn TestMapIntKeyDelete(t: T) {
+    m := map[int]int{}
+    m[5] = 50
+    delete(m, 5)
+    if m[5] != 0 {
+        testing.Fatal("expected 0 after delete")
+    }
+    if len(m) != 0 {
+        testing.Fatal("expected len 0 after delete")
+    }
+}
+
+fn TestMapBoolKey(t: T) {
+    m := map[bool]int{}
+    m[true] = 1
+    m[false] = 0
+    if m[true] != 1 { testing.Fatal("expected 1 for true") }
+    if m[false] != 0 { testing.Fatal("expected 0 for false") }
+    if len(m) != 2 { testing.Fatal("expected len 2") }
+}

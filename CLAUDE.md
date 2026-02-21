@@ -59,10 +59,11 @@ ease/
 │       ├── time/time.ease         # Time package (Now, Unix, Add, Before, After)
 │       ├── result/result.ease     # Result/Option types (Option, Result, StringOption)
 │       ├── json/json.ease         # JSON document API (build, serialize, parse)
+│       ├── maps/maps.ease         # Hash map (map[string]int)
 │       └── lsp/lsp.ease           # LSP server (diagnostics)
 ├── editors/              # Editor integrations
 │   └── vscode/           # VS Code extension (LSP client)
-├── tests/                # Go-style tests (70 passing)
+├── tests/                # Go-style tests (111 passing)
 ├── examples/             # Example programs
 │   └── testdemo/         # Go-style test demo (math.ease + math_test.ease)
 └── findings/             # Compiler engineering notes
@@ -74,7 +75,7 @@ The compiler is fully self-hosting. No Go or C runtime needed — just `clang` (
 
 ```bash
 make                    # Build compiler from seed LLVM IR
-make test               # Run tests (90 passing)
+make test               # Run tests (111 passing)
 make test DIR=path      # Run tests in specific directory
 make bench              # Run tests + benchmarks
 make verify             # Verify self-hosting convergence (gen1 == gen2)

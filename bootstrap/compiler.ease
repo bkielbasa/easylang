@@ -80,6 +80,7 @@ g_rename_to := []string{}
 g_field_reg_names := []string{}
 g_field_reg_types := []int{}
 g_field_reg_is_array := []int{}
+g_field_reg_struct_names := []string{}
 g_func_ret_struct_names := []string{}
 g_method_struct_names := []string{}
 g_method_names := []string{}
@@ -177,6 +178,29 @@ fn register_field_type(name: string, field_type: int, is_array: int) {
     push(g_field_reg_names, name)
     push(g_field_reg_types, field_type)
     push(g_field_reg_is_array, is_array)
+    push(g_field_reg_struct_names, "")
+}
+
+fn register_field_struct_name(name: string, sname: string) {
+    i := 0
+    for i < len(g_field_reg_names) {
+        if g_field_reg_names[i] == name {
+            g_field_reg_struct_names[i] = sname
+            return
+        }
+        i = i + 1
+    }
+}
+
+fn lookup_field_struct_name(name: string) -> string {
+    i := 0
+    for i < len(g_field_reg_names) {
+        if g_field_reg_names[i] == name {
+            return g_field_reg_struct_names[i]
+        }
+        i = i + 1
+    }
+    return ""
 }
 
 fn lookup_field_type(name: string) -> int {
@@ -1240,8 +1264,8 @@ fn run_test_mode(test_path: string, run_bench: int) -> int {
         imp_i = imp_i + 1
     }
 
-    // Load stdlib modules (io, strings, os, strconv, testing, time)
-    stdlib_mods := []string{"./ease/io", "./ease/strings", "./ease/os", "./ease/strconv", "./ease/testing", "./ease/time", "./ease/result", "./ease/json", "./ease/fmt"}
+    // Load stdlib modules (io, strings, os, strconv, testing, time, maps)
+    stdlib_mods := []string{"./ease/io", "./ease/strings", "./ease/os", "./ease/strconv", "./ease/testing", "./ease/time", "./ease/result", "./ease/json", "./ease/fmt", "./ease/maps"}
     smi := 0
     for smi < len(stdlib_mods) {
         smod_path := stdlib_mods[smi]
@@ -1392,6 +1416,9 @@ fn run_test_mode(test_path: string, run_bench: int) -> int {
                     push(field_names_list, nodes[fi].str_val)
                     if nodes[fi].type_tag != TYPE_UNKNOWN {
                         register_field_type(nodes[fi].str_val, nodes[fi].type_tag, nodes[fi].int_val)
+                    }
+                    if nodes[fi].type_tag == TYPE_STRUCT || nodes[fi].type_tag == TYPE_MAP {
+                        register_field_struct_name(nodes[fi].str_val, lookup_type_name(fi))
                     }
                     RegisterFieldOffset(nodes[fi].str_val, field_idx * 8)
                     field_idx = field_idx + 1
@@ -2516,7 +2543,7 @@ fn main() -> int {
 
     // Load bootstrap stdlib modules programmatically (not via import declarations,
     // because the Go compiler's sema would reject them due to builtin conflicts)
-    stdlib_mods := []string{"./ease/io", "./ease/strings", "./ease/os", "./ease/strconv", "./ease/time", "./ease/result", "./ease/json", "./ease/fmt"}
+    stdlib_mods := []string{"./ease/io", "./ease/strings", "./ease/os", "./ease/strconv", "./ease/time", "./ease/result", "./ease/json", "./ease/fmt", "./ease/maps"}
     smi := 0
     for smi < len(stdlib_mods) {
         smod_path := stdlib_mods[smi]
@@ -2677,6 +2704,9 @@ fn main() -> int {
                     push(field_names_list, nodes[fi].str_val)
                     if nodes[fi].type_tag != TYPE_UNKNOWN {
                         register_field_type(nodes[fi].str_val, nodes[fi].type_tag, nodes[fi].int_val)
+                    }
+                    if nodes[fi].type_tag == TYPE_STRUCT || nodes[fi].type_tag == TYPE_MAP {
+                        register_field_struct_name(nodes[fi].str_val, lookup_type_name(fi))
                     }
                     RegisterFieldOffset(nodes[fi].str_val, field_idx * 8)
                     field_idx = field_idx + 1

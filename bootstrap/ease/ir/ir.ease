@@ -102,6 +102,11 @@ const OP_TIME_WALLCLOCK = 59
 const OP_IFACE_WRAP = 60
 const OP_IFACE_CALL = 61
 const OP_STORE_INDEX = 62
+const OP_MAP_NEW = 63
+const OP_MAP_GET = 64
+const OP_MAP_SET = 65
+const OP_MAP_DELETE = 66
+const OP_MAP_LEN = 67
 
 // Struct definitions and offsets (hardcoded for known structs)
 // AstNode: tag(8), int_val(8), str_val(8), left(8), right(8), extra(8), type_tag(8) = 56 bytes

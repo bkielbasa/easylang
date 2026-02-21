@@ -430,11 +430,22 @@ fn parse_param(src: string, pos: int, nodes: []AstNode) -> ParseResult {
     p = lex_end(src, p, colon_kind)
     p = lex_skip(src, p)
 
-    // Parse type name (simple, array, or pointer type)
+    // Parse type name (simple, array, map, or pointer type)
     type_name := ""
     type_kind := lex_kind(src, p)
 
-    if type_kind == TK_STAR {
+    if type_kind == TK_MAP {
+        // Map type: map[KeyType]ValType
+        p = lex_end(src, p, type_kind)
+        p = lex_skip(src, p)
+        map_key_type := ""
+        map_val_type := ""
+        if lex_kind(src, p) == TK_LBRACKET { p = lex_end(src, p, TK_LBRACKET) p = lex_skip(src, p) }
+        if lex_kind(src, p) == TK_IDENT { map_key_type = lex_string_value(src, p, TK_IDENT) p = lex_end(src, p, TK_IDENT) p = lex_skip(src, p) }
+        if lex_kind(src, p) == TK_RBRACKET { p = lex_end(src, p, TK_RBRACKET) p = lex_skip(src, p) }
+        if lex_kind(src, p) == TK_IDENT { map_val_type = lex_string_value(src, p, TK_IDENT) p = lex_end(src, p, TK_IDENT) }
+        type_name = "map[" + map_key_type + "]" + map_val_type
+    } else if type_kind == TK_STAR {
         // Pointer type: *TypeName
         p = lex_end(src, p, type_kind)
         p = lex_skip(src, p)
@@ -477,6 +488,7 @@ fn parse_param(src: string, pos: int, nodes: []AstNode) -> ParseResult {
     if type_name == "bool" { param_type_tag = TYPE_BOOL }
     if type_name == "[]string" { param_type_tag = TYPE_STRING param_is_array = 1 }
     if type_name == "[]int" { param_type_tag = TYPE_INT param_is_array = 1 }
+    if strings.HasPrefix(type_name, "map[") { param_type_tag = TYPE_MAP }
     if param_type_tag == TYPE_UNKNOWN && type_name != "" {
         param_type_tag = TYPE_STRUCT
     }
@@ -490,7 +502,7 @@ fn parse_param(src: string, pos: int, nodes: []AstNode) -> ParseResult {
         type_tag: param_type_tag
     }
     push(nodes, param)
-    if param_type_tag == TYPE_STRUCT {
+    if param_type_tag == TYPE_STRUCT || param_type_tag == TYPE_MAP {
         push(g_type_name_node_idx, len(nodes) - 1)
         push(g_type_name_str, type_name)
     }
@@ -830,10 +842,21 @@ fn parse_func_decl(src: string, pos: int, nodes: []AstNode) -> ParseResult {
         p = lex_end(src, p, arrow)
         p = lex_skip(src, p)
 
-        // Parse return type (simple, array, or pointer type)
+        // Parse return type (simple, array, map, or pointer type)
         ret_type_kind := lex_kind(src, p)
 
-        if ret_type_kind == TK_STAR {
+        if ret_type_kind == TK_MAP {
+            // Map return type: map[KeyType]ValType
+            p = lex_end(src, p, ret_type_kind)
+            p = lex_skip(src, p)
+            map_key_type := ""
+            map_val_type := ""
+            if lex_kind(src, p) == TK_LBRACKET { p = lex_end(src, p, TK_LBRACKET) p = lex_skip(src, p) }
+            if lex_kind(src, p) == TK_IDENT { map_key_type = lex_string_value(src, p, TK_IDENT) p = lex_end(src, p, TK_IDENT) p = lex_skip(src, p) }
+            if lex_kind(src, p) == TK_RBRACKET { p = lex_end(src, p, TK_RBRACKET) p = lex_skip(src, p) }
+            if lex_kind(src, p) == TK_IDENT { map_val_type = lex_string_value(src, p, TK_IDENT) p = lex_end(src, p, TK_IDENT) }
+            ret_type = "map[" + map_key_type + "]" + map_val_type
+        } else if ret_type_kind == TK_STAR {
             // Pointer return type: *TypeName
             p = lex_end(src, p, ret_type_kind)
             p = lex_skip(src, p)
@@ -890,6 +913,7 @@ fn parse_func_decl(src: string, pos: int, nodes: []AstNode) -> ParseResult {
     if ret_type == "[]string" { ret_type_tag = TYPE_STRING
         ret_is_array = 1
     }
+    if strings.HasPrefix(ret_type, "map[") { ret_type_tag = TYPE_MAP }
     if ret_type_tag == TYPE_UNKNOWN && ret_type != "" {
         ret_type_tag = TYPE_STRUCT
     }
@@ -906,8 +930,8 @@ fn parse_func_decl(src: string, pos: int, nodes: []AstNode) -> ParseResult {
     push(nodes, func)
     func_node_idx := len(nodes) - 1
 
-    // Store struct return type name in side table
-    if ret_type_tag == TYPE_STRUCT {
+    // Store struct/map return type name in side table
+    if ret_type_tag == TYPE_STRUCT || ret_type_tag == TYPE_MAP {
         push(g_type_name_node_idx, func_node_idx)
         push(g_type_name_str, ret_type)
     }
@@ -944,11 +968,22 @@ fn parse_field(src: string, pos: int, nodes: []AstNode) -> ParseResult {
     p = lex_end(src, p, colon)
     p = lex_skip(src, p)
 
-    // Parse type (including array, pointer, and struct types)
+    // Parse type (including array, pointer, map, and struct types)
     type_kind := lex_kind(src, p)
     type_name := ""
 
-    if type_kind == TK_STAR {
+    if type_kind == TK_MAP {
+        // Map type: map[KeyType]ValType
+        p = lex_end(src, p, type_kind)
+        p = lex_skip(src, p)
+        map_key_type := ""
+        map_val_type := ""
+        if lex_kind(src, p) == TK_LBRACKET { p = lex_end(src, p, TK_LBRACKET) p = lex_skip(src, p) }
+        if lex_kind(src, p) == TK_IDENT { map_key_type = lex_string_value(src, p, TK_IDENT) p = lex_end(src, p, TK_IDENT) p = lex_skip(src, p) }
+        if lex_kind(src, p) == TK_RBRACKET { p = lex_end(src, p, TK_RBRACKET) p = lex_skip(src, p) }
+        if lex_kind(src, p) == TK_IDENT { map_val_type = lex_string_value(src, p, TK_IDENT) p = lex_end(src, p, TK_IDENT) }
+        type_name = "map[" + map_key_type + "]" + map_val_type
+    } else if type_kind == TK_STAR {
         // Pointer type: *TypeName
         p = lex_end(src, p, type_kind)
         p = lex_skip(src, p)
@@ -996,6 +1031,7 @@ fn parse_field(src: string, pos: int, nodes: []AstNode) -> ParseResult {
     if type_name == "[]int" { field_type_tag = TYPE_INT field_is_array = 1 }
     if type_name == "[]bool" { field_type_tag = TYPE_BOOL field_is_array = 1 }
     if type_name == "[]string" { field_type_tag = TYPE_STRING field_is_array = 1 }
+    if strings.HasPrefix(type_name, "map[") { field_type_tag = TYPE_MAP }
     if field_type_tag == TYPE_UNKNOWN && type_name != "" {
         field_type_tag = TYPE_STRUCT
     }
@@ -1011,7 +1047,7 @@ fn parse_field(src: string, pos: int, nodes: []AstNode) -> ParseResult {
         type_tag: field_type_tag
     }
     push(nodes, field)
-    if field_type_tag == TYPE_STRUCT {
+    if field_type_tag == TYPE_STRUCT || field_type_tag == TYPE_MAP {
         push(g_type_name_node_idx, len(nodes) - 1)
         push(g_type_name_str, type_name)
     }
@@ -1664,6 +1700,31 @@ fn parse_atom(src: string, pos: int, nodes: []AstNode) -> ParseResult {
 
         node := new_ident_node(name, nodes)
         return ParseResult { node_idx: node, new_pos: p }
+    }
+    if kind == TK_MAP {
+        // Map literal: map[KeyType]ValType{}
+        p = lex_end(src, p, kind)
+        p = lex_skip(src, p)
+        map_key_type := ""
+        map_val_type := ""
+        if lex_kind(src, p) == TK_LBRACKET { p = lex_end(src, p, TK_LBRACKET) p = lex_skip(src, p) }
+        if lex_kind(src, p) == TK_IDENT { map_key_type = lex_string_value(src, p, TK_IDENT) p = lex_end(src, p, TK_IDENT) p = lex_skip(src, p) }
+        if lex_kind(src, p) == TK_RBRACKET { p = lex_end(src, p, TK_RBRACKET) p = lex_skip(src, p) }
+        if lex_kind(src, p) == TK_IDENT { map_val_type = lex_string_value(src, p, TK_IDENT) p = lex_end(src, p, TK_IDENT) p = lex_skip(src, p) }
+        if lex_kind(src, p) == TK_LBRACE { p = lex_end(src, p, TK_LBRACE) p = lex_skip(src, p) }
+        if lex_kind(src, p) == TK_RBRACE { p = lex_end(src, p, TK_RBRACE) }
+        map_type_str := "map[" + map_key_type + "]" + map_val_type
+        map_node := AstNode {
+            tag: EXPR_MAP_LIT,
+            int_val: 0,
+            str_val: map_type_str,
+            left: -1,
+            right: -1,
+            extra: -1,
+            type_tag: TYPE_MAP
+        }
+        push(nodes, map_node)
+        return ParseResult { node_idx: len(nodes) - 1, new_pos: p }
     }
     if kind == TK_LBRACKET {
         // Array literal: []Type{elem1, elem2, ...}

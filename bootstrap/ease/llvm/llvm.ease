@@ -193,7 +193,7 @@ fn collect_vregs(instrs: []IRInstr, start: int, end_pos: int, param_count: int) 
         instr := instrs[i]
         op := instr.op
         // dest is vreg for result-producing operations
-        if op == OP_LOADCONST || op == OP_ADD || op == OP_SUB || op == OP_MUL || op == OP_DIV || op == OP_CMP_LT || op == OP_CMP_GT || op == OP_CMP_LE || op == OP_CMP_GE || op == OP_CMP_EQ || op == OP_CMP_NE || op == OP_AND || op == OP_OR || op == OP_NOT || op == OP_XOR || op == OP_BITAND || op == OP_BITOR || op == OP_ALLOCA || op == OP_LOAD || op == OP_INDEXADDR || op == OP_ARRAY_LEN || op == OP_STR_LEN || op == OP_STR_CHAR_AT || op == OP_PEEK || op == OP_HEAP_ALLOC || op == OP_CALL || op == OP_ARGC || op == OP_ARGV || op == OP_INT_TO_STR || op == OP_STR_EQ || op == OP_STR_NE || op == OP_STR_CONCAT || op == OP_LOAD_GLOBAL || op == OP_SYSCALL_OPEN || op == OP_SYSCALL_WRITE || op == OP_SYSCALL_CLOSE || op == OP_SYSCALL_READ || op == OP_IS_DIR || op == OP_LIST_DIR || op == OP_SETJMP || op == OP_TIME_NANOS || op == OP_TIME_WALLCLOCK || op == OP_IFACE_WRAP || op == OP_IFACE_CALL {
+        if op == OP_LOADCONST || op == OP_ADD || op == OP_SUB || op == OP_MUL || op == OP_DIV || op == OP_CMP_LT || op == OP_CMP_GT || op == OP_CMP_LE || op == OP_CMP_GE || op == OP_CMP_EQ || op == OP_CMP_NE || op == OP_AND || op == OP_OR || op == OP_NOT || op == OP_XOR || op == OP_BITAND || op == OP_BITOR || op == OP_ALLOCA || op == OP_LOAD || op == OP_INDEXADDR || op == OP_ARRAY_LEN || op == OP_STR_LEN || op == OP_STR_CHAR_AT || op == OP_PEEK || op == OP_HEAP_ALLOC || op == OP_CALL || op == OP_ARGC || op == OP_ARGV || op == OP_INT_TO_STR || op == OP_STR_EQ || op == OP_STR_NE || op == OP_STR_CONCAT || op == OP_LOAD_GLOBAL || op == OP_SYSCALL_OPEN || op == OP_SYSCALL_WRITE || op == OP_SYSCALL_CLOSE || op == OP_SYSCALL_READ || op == OP_IS_DIR || op == OP_LIST_DIR || op == OP_SETJMP || op == OP_TIME_NANOS || op == OP_TIME_WALLCLOCK || op == OP_IFACE_WRAP || op == OP_IFACE_CALL || op == OP_MAP_NEW || op == OP_MAP_GET || op == OP_MAP_SET || op == OP_MAP_DELETE || op == OP_MAP_LEN {
             if instr.dest >= 0 { add_unique(vregs, instr.dest) }
         }
         // RET dest is vreg
@@ -206,19 +206,19 @@ fn collect_vregs(instrs: []IRInstr, start: int, end_pos: int, param_count: int) 
             if instr.arg1 >= 0 { add_unique(vregs, instr.arg1) }
         }
         // arg1 is vreg for most ops (not LOADCONST, ALLOCA, LABEL, JUMP, BRANCH, ARGC, CALL)
-        if op != OP_LOADCONST && op != OP_LOAD_GLOBAL && op != OP_ALLOCA && op != OP_LABEL && op != OP_JUMP && op != OP_BRANCH && op != OP_ARGC && op != OP_TIME_NANOS && op != OP_TIME_WALLCLOCK && op != OP_CALL && op != OP_IFACE_CALL {
+        if op != OP_LOADCONST && op != OP_LOAD_GLOBAL && op != OP_ALLOCA && op != OP_LABEL && op != OP_JUMP && op != OP_BRANCH && op != OP_ARGC && op != OP_TIME_NANOS && op != OP_TIME_WALLCLOCK && op != OP_CALL && op != OP_IFACE_CALL && op != OP_MAP_NEW {
             if instr.arg1 >= 0 { add_unique(vregs, instr.arg1) }
         }
         // arg2 is vreg for binary ops, STORE, ARRAY_PUSH, POKE, STR_EQ/NE, STR_CHAR_AT, etc
-        if op == OP_ADD || op == OP_SUB || op == OP_MUL || op == OP_DIV || op == OP_CMP_LT || op == OP_CMP_GT || op == OP_CMP_LE || op == OP_CMP_GE || op == OP_CMP_EQ || op == OP_CMP_NE || op == OP_AND || op == OP_OR || op == OP_XOR || op == OP_BITAND || op == OP_BITOR || op == OP_STORE || op == OP_ARRAY_PUSH || op == OP_POKE || op == OP_STR_EQ || op == OP_STR_NE || op == OP_STR_CONCAT || op == OP_STR_CHAR_AT || op == OP_MEMCOPY || op == OP_SYSCALL_OPEN || op == OP_SYSCALL_WRITE || op == OP_SYSCALL_CLOSE || op == OP_SYSCALL_READ || op == OP_STORE_INDEX {
+        if op == OP_ADD || op == OP_SUB || op == OP_MUL || op == OP_DIV || op == OP_CMP_LT || op == OP_CMP_GT || op == OP_CMP_LE || op == OP_CMP_GE || op == OP_CMP_EQ || op == OP_CMP_NE || op == OP_AND || op == OP_OR || op == OP_XOR || op == OP_BITAND || op == OP_BITOR || op == OP_STORE || op == OP_ARRAY_PUSH || op == OP_POKE || op == OP_STR_EQ || op == OP_STR_NE || op == OP_STR_CONCAT || op == OP_STR_CHAR_AT || op == OP_MEMCOPY || op == OP_SYSCALL_OPEN || op == OP_SYSCALL_WRITE || op == OP_SYSCALL_CLOSE || op == OP_SYSCALL_READ || op == OP_STORE_INDEX || op == OP_MAP_GET || op == OP_MAP_SET || op == OP_MAP_DELETE {
             if instr.arg2 >= 0 { add_unique(vregs, instr.arg2) }
         }
         // MEMCOPY arg3 is vreg (size)
         if op == OP_MEMCOPY && instr.arg3 >= 0 { add_unique(vregs, instr.arg3) }
         // SYSCALL_OPEN arg3 is vreg (mode), SYSCALL_READ arg3 is vreg (size)
         if (op == OP_SYSCALL_OPEN || op == OP_SYSCALL_READ) && instr.arg3 >= 0 { add_unique(vregs, instr.arg3) }
-        // STORE_INDEX arg3 is vreg (value)
-        if op == OP_STORE_INDEX && instr.arg3 >= 0 { add_unique(vregs, instr.arg3) }
+        // STORE_INDEX arg3 is vreg (value), MAP_SET arg3 is vreg (value)
+        if (op == OP_STORE_INDEX || op == OP_MAP_SET) && instr.arg3 >= 0 { add_unique(vregs, instr.arg3) }
         i = i + 1
     }
     return vregs
@@ -1107,6 +1107,44 @@ fn emit_llvm_function(fd: int, instrs: []IRInstr, start: int, end_pos: int, func
             emit_store_vreg(fd, instr.dest, ic_result)
             // Reset call args
             call_args = []int{}
+        }
+
+        if terminated == 0 && instr.op == OP_MAP_NEW {
+            r := tmp_name(ti, 0)
+            write_str(fd, "  " + r + " = call i64 @maps_New(i64 " + strconv.Itoa(instr.arg1) + ")\n")
+            emit_store_vreg(fd, instr.dest, r)
+        }
+
+        if terminated == 0 && instr.op == OP_MAP_GET {
+            m := emit_load_vreg(fd, instr.arg1, ti, 0)
+            k := emit_load_vreg(fd, instr.arg2, ti, 1)
+            r := tmp_name(ti, 2)
+            write_str(fd, "  " + r + " = call i64 @maps_Get(i64 " + m + ", i64 " + k + ")\n")
+            emit_store_vreg(fd, instr.dest, r)
+        }
+
+        if terminated == 0 && instr.op == OP_MAP_SET {
+            m := emit_load_vreg(fd, instr.arg1, ti, 0)
+            k := emit_load_vreg(fd, instr.arg2, ti, 1)
+            v := emit_load_vreg(fd, instr.arg3, ti, 2)
+            r := tmp_name(ti, 3)
+            write_str(fd, "  " + r + " = call i64 @maps_Set(i64 " + m + ", i64 " + k + ", i64 " + v + ")\n")
+            emit_store_vreg(fd, instr.dest, r)
+        }
+
+        if terminated == 0 && instr.op == OP_MAP_DELETE {
+            m := emit_load_vreg(fd, instr.arg1, ti, 0)
+            k := emit_load_vreg(fd, instr.arg2, ti, 1)
+            r := tmp_name(ti, 2)
+            write_str(fd, "  " + r + " = call i64 @maps_Delete(i64 " + m + ", i64 " + k + ")\n")
+            emit_store_vreg(fd, instr.dest, r)
+        }
+
+        if terminated == 0 && instr.op == OP_MAP_LEN {
+            m := emit_load_vreg(fd, instr.arg1, ti, 0)
+            r := tmp_name(ti, 1)
+            write_str(fd, "  " + r + " = call i64 @maps_Len(i64 " + m + ")\n")
+            emit_store_vreg(fd, instr.dest, r)
         }
 
         if terminated == 0 && instr.op == OP_RET {

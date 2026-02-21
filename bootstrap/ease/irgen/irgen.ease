@@ -111,6 +111,40 @@ fn get_vreg_struct_name(vreg: int) -> string {
     return ""
 }
 
+fn map_key_type_str(map_type: string) -> string {
+    // Extract key type from "map[KEY]VAL" — chars between '[' and ']'
+    i := 4
+    for i < len(map_type) {
+        if str_char_at(map_type, i) == 93 { return str_substring(map_type, 4, i) }
+        i = i + 1
+    }
+    return "string"
+}
+
+fn map_val_type_str(map_type: string) -> string {
+    // Extract value type from "map[KEY]VAL" — chars after ']'
+    i := 4
+    for i < len(map_type) {
+        if str_char_at(map_type, i) == 93 { return str_substring(map_type, i + 1, len(map_type)) }
+        i = i + 1
+    }
+    return "int"
+}
+
+fn map_key_type_code(map_type: string) -> int {
+    // 0 = string key, 1 = int/bool key
+    kt := map_key_type_str(map_type)
+    if kt == "string" { return 0 }
+    return 1
+}
+
+fn type_tag_from_name(name: string) -> int {
+    if name == "int" { return TYPE_INT }
+    if name == "string" { return TYPE_STRING }
+    if name == "bool" { return TYPE_BOOL }
+    return TYPE_INT
+}
+
 fn is_type_string(t: int) -> int {
     if t == TYPE_STRING { return 1 }
     return 0
@@ -132,6 +166,9 @@ fn gen_ir_call_len(ast_idx: int, nodes: []AstNode, instrs: []IRInstr, symtab_nam
     op := OP_ARRAY_LEN
     if get_vreg_type(array_vreg) == TYPE_STRING {
         op = OP_STR_LEN
+    }
+    if get_vreg_type(array_vreg) == TYPE_MAP {
+        op = OP_MAP_LEN
     }
     len_instr := IRInstr { op: op, dest: result_vreg, arg1: array_vreg, arg2: 0, arg3: 0, str_val: "" }
     push(instrs, len_instr)
@@ -178,6 +215,45 @@ fn gen_ir_call_peek(ast_idx: int, nodes: []AstNode, instrs: []IRInstr, symtab_na
     push(instrs, peek_instr)
     set_vreg_type(result_vreg, TYPE_INT)
     return result_vreg  // peek returns the byte value
+}
+
+// Helper: Generate IR for peek64() builtin — 8-byte read (reuses OP_LOAD)
+fn gen_ir_call_peek64(ast_idx: int, nodes: []AstNode, instrs: []IRInstr, symtab_names: []string, symtab_vregs: []int) -> int {
+    arg_indices := get_call_args(ast_idx)
+    if len(arg_indices) != 1 {
+        return -1
+    }
+    addr_vreg := gen_ir_from_ast_with_symtab(arg_indices[0], nodes, instrs, symtab_names, symtab_vregs)
+    result_vreg := len(instrs)
+    push(instrs, IRInstr { op: OP_LOAD, dest: result_vreg, arg1: addr_vreg, arg2: 0, arg3: 0, str_val: "" })
+    set_vreg_type(result_vreg, TYPE_INT)
+    return result_vreg
+}
+
+// Helper: Generate IR for poke64() builtin — 8-byte write (reuses OP_STORE)
+fn gen_ir_call_poke64(ast_idx: int, nodes: []AstNode, instrs: []IRInstr, symtab_names: []string, symtab_vregs: []int) -> int {
+    arg_indices := get_call_args(ast_idx)
+    if len(arg_indices) != 2 {
+        return -1
+    }
+    addr_vreg := gen_ir_from_ast_with_symtab(arg_indices[0], nodes, instrs, symtab_names, symtab_vregs)
+    value_vreg := gen_ir_from_ast_with_symtab(arg_indices[1], nodes, instrs, symtab_names, symtab_vregs)
+    push(instrs, IRInstr { op: OP_STORE, dest: -1, arg1: addr_vreg, arg2: value_vreg, arg3: 0, str_val: "" })
+    return -1
+}
+
+// Helper: Generate IR for delete() builtin (map deletion)
+fn gen_ir_call_delete(ast_idx: int, nodes: []AstNode, instrs: []IRInstr, symtab_names: []string, symtab_vregs: []int) -> int {
+    arg_indices := get_call_args(ast_idx)
+    if len(arg_indices) != 2 {
+        return -1
+    }
+    map_vreg := gen_ir_from_ast_with_symtab(arg_indices[0], nodes, instrs, symtab_names, symtab_vregs)
+    key_vreg := gen_ir_from_ast_with_symtab(arg_indices[1], nodes, instrs, symtab_names, symtab_vregs)
+    result_vreg := len(instrs)
+    push(instrs, IRInstr { op: OP_MAP_DELETE, dest: result_vreg, arg1: map_vreg, arg2: key_vreg, arg3: 0, str_val: "" })
+    set_vreg_type(result_vreg, TYPE_INT)
+    return result_vreg
 }
 
 // Helper: Generate IR for heap_alloc() builtin
@@ -353,6 +429,16 @@ fn gen_ir_eval_args(ast_idx: int, nodes: []AstNode, instrs: []IRInstr, st_names:
 fn gen_ir_index(node: AstNode, nodes: []AstNode, instrs: []IRInstr, st_names: []string, st_vregs: []int) -> int {
     arr := gen_ir_from_ast_with_symtab(node.left, nodes, instrs, st_names, st_vregs)
     idx := gen_ir_from_ast_with_symtab(node.right, nodes, instrs, st_names, st_vregs)
+    // Map indexing: m["key"] → OP_MAP_GET
+    if get_vreg_type(arr) == TYPE_MAP {
+        res := len(instrs)
+        push(instrs, IRInstr { op: OP_MAP_GET, dest: res, arg1: arr, arg2: idx, arg3: 0, str_val: "" })
+        map_type := get_vreg_struct_name(arr)
+        val_type := TYPE_INT
+        if map_type != "" { val_type = type_tag_from_name(map_val_type_str(map_type)) }
+        set_vreg_type(res, val_type)
+        return res
+    }
     res := len(instrs)
     instr := IRInstr { op: OP_LOAD, dest: res, arg1: arr, arg2: idx, arg3: 0, str_val: "array_index" }
     push(instrs, instr)
@@ -387,6 +473,8 @@ fn gen_ir_field(node: AstNode, nodes: []AstNode, instrs: []IRInstr, st_names: []
     instr := IRInstr { op: OP_LOAD, dest: res, arg1: base, arg2: off, arg3: 0, str_val: node.str_val }
     push(instrs, instr)
     set_vreg_type(res, make_type(lookup_field_type(node.str_val), lookup_field_is_array(node.str_val)))
+    sname := lookup_field_struct_name(node.str_val)
+    if sname != "" { set_vreg_struct_name(res, sname) }
     return res
 }
 
@@ -759,6 +847,13 @@ fn gen_ir_index_assign(node: AstNode, nodes: []AstNode, instrs: []IRInstr, st_n:
     arr_vreg := gen_ir_from_ast_with_symtab(idx_node.left, nodes, instrs, st_n, st_v)
     index_vreg := gen_ir_from_ast_with_symtab(idx_node.right, nodes, instrs, st_n, st_v)
     val_vreg := gen_ir_from_ast_with_symtab(node.right, nodes, instrs, st_n, st_v)
+    // Map index assignment: m["key"] = val → OP_MAP_SET
+    if get_vreg_type(arr_vreg) == TYPE_MAP {
+        res := len(instrs)
+        push(instrs, IRInstr { op: OP_MAP_SET, dest: res, arg1: arr_vreg, arg2: index_vreg, arg3: val_vreg, str_val: "" })
+        set_vreg_type(res, TYPE_INT)
+        return res
+    }
     push(instrs, IRInstr { op: OP_STORE_INDEX, dest: -1, arg1: arr_vreg, arg2: index_vreg, arg3: val_vreg, str_val: "" })
     return val_vreg
 }
@@ -1261,6 +1356,15 @@ fn gen_ir_from_ast_with_symtab(ast_idx: int, nodes: []AstNode, instrs: []IRInstr
         if func_name == "peek" {
             return gen_ir_call_peek(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
         }
+        if func_name == "peek64" {
+            return gen_ir_call_peek64(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
+        }
+        if func_name == "poke64" {
+            return gen_ir_call_poke64(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
+        }
+        if func_name == "delete" {
+            return gen_ir_call_delete(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
+        }
         if func_name == "heap_alloc" {
             return gen_ir_call_heap_alloc(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
         }
@@ -1350,6 +1454,16 @@ fn gen_ir_from_ast_with_symtab(ast_idx: int, nodes: []AstNode, instrs: []IRInstr
             }
         }
         return gen_ir_call_user(node, ast_idx, nodes, instrs, symtab_names, symtab_vregs)
+    }
+
+    if node.tag == EXPR_MAP_LIT {
+        map_type := node.str_val
+        kt_code := map_key_type_code(map_type)
+        result_vreg := len(instrs)
+        push(instrs, IRInstr { op: OP_MAP_NEW, dest: result_vreg, arg1: kt_code, arg2: 0, arg3: 0, str_val: "" })
+        set_vreg_type(result_vreg, TYPE_MAP)
+        set_vreg_struct_name(result_vreg, map_type)
+        return result_vreg
     }
 
     if node.tag == EXPR_ARRAY_LIT {
@@ -1447,8 +1561,8 @@ fn gen_ir_from_ast_with_symtab(ast_idx: int, nodes: []AstNode, instrs: []IRInstr
                     push(symtab_vregs, param_reg)
                     ptype := make_type(param_node.type_tag, param_node.int_val)
                     set_vreg_type(param_reg, ptype)
-                    // Set struct name for struct-typed params
-                    if param_node.type_tag == TYPE_STRUCT {
+                    // Set struct name for struct/map-typed params
+                    if param_node.type_tag == TYPE_STRUCT || param_node.type_tag == TYPE_MAP {
                         param_sname := lookup_type_name(param_i)
                         set_vreg_struct_name(param_reg, param_sname)
                     }
