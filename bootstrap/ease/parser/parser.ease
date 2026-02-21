@@ -20,37 +20,6 @@ fn lookup_type_name(node_idx: int) -> string {
     return ""
 }
 
-fn parse_primary(src: string, pos: int, nodes: []AstNode) -> int {
-    kind := lex_kind(src, pos)
-
-    if kind == TK_INT {
-        val := lex_int_value(src, pos)
-        return new_int_node(val, nodes)
-    }
-
-    if kind == TK_TRUE {
-        return new_bool_node(1, nodes)
-    }
-
-    if kind == TK_FALSE {
-        return new_bool_node(0, nodes)
-    }
-
-    if kind == TK_IDENT {
-        name := lex_string_value(src, pos, kind)
-        return new_ident_node(name, nodes)
-    }
-
-    if kind == TK_LPAREN {
-        // Parenthesized expression
-        new_pos := lex_end(src, pos, kind)
-        new_pos = lex_skip(src, new_pos)
-        // TODO: recursively parse expression
-        return -1
-    }
-
-    return -1
-}
 
 // Parse variable declaration: name := expr
 fn parse_colonequal_stmt(src: string, pos: int, nodes: []AstNode) -> ParseResult {
