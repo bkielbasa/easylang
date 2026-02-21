@@ -12,6 +12,10 @@ struct Doc {
     id: int,
 }
 
+interface Marshaler {
+    Marshal() -> string,
+}
+
 // Global parallel arrays for document storage
 g_doc_count := 0
 g_doc_is_array := []int{}
@@ -665,6 +669,10 @@ fn parseArray(input: string, pos: int) -> Doc {
     }
     g_parse_pos = p
     return doc
+}
+
+fn (d: Doc) String() -> string {
+    return marshalValue(d.id)
 }
 
 fn Parse(input: string) -> Doc {

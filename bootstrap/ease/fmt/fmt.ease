@@ -11,3 +11,7 @@ fn Sprint(s: Stringer) -> string {
 fn Println(s: Stringer) {
     io.Print(s.String() + "\n")
 }
+
+fn Fprintln(w: Writer, s: Stringer) {
+    w.Write(s.String() + "\n")
+}

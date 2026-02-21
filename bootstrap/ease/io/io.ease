@@ -2,11 +2,26 @@ package io
 
 // I/O functions for the Ease bootstrap compiler
 
+interface Writer {
+    Write(s: string) -> int,
+}
+
+struct StdoutWriter { fd: int }
+
+fn (w: StdoutWriter) Write(s: string) -> int {
+    syscall.write(w.fd, s, len(s))
+    return len(s)
+}
+
+fn NewStdoutWriter() -> StdoutWriter {
+    return StdoutWriter { fd: 1 }
+}
+
 fn Print(s: string) {
     syscall.write(1, s, len(s))
 }
 
-fn Write(fd: int, s: string) {
+fn WriteFd(fd: int, s: string) {
     syscall.write(fd, s, len(s))
 }
 

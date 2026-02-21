@@ -27,3 +27,8 @@ fn TestFmtSprintDifferentTypes(t: T) {
         testing.Fatal("expected red, got " + result)
     }
 }
+
+fn TestFmtPrintln(t: T) {
+    p := Point { x: 5, y: 6 }
+    fmt.Println(p)
+}

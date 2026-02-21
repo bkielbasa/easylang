@@ -49,3 +49,7 @@ fn After(t1: Time, t2: Time) -> int {
     if t1.nsec > t2.nsec { return 1 }
     return 0
 }
+
+fn (t: Time) String() -> string {
+    return strconv.Itoa(t.sec) + "." + strconv.Itoa(t.nsec)
+}

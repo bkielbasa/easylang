@@ -46,8 +46,8 @@ fn write_message(body: string) {
     poke(cr_lf + 3, 10)
     poke(cr_lf + 4, 0)
     header = header + cr_lf
-    io.Write(1, header)
-    io.Write(1, body)
+    io.WriteFd(1, header)
+    io.WriteFd(1, body)
 }
 
 // Build a JSON-RPC response with a result object

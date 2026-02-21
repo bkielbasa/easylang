@@ -60,3 +60,23 @@ fn TestTimeAfter(t: T) {
         testing.Fatal("expected t1 not After t2")
     }
 }
+
+fn TestTimeString(t: T) {
+    now := time.Now()
+    result := fmt.Sprint(now)
+    if len(result) < 3 {
+        testing.Fatal("expected time string with dot, got " + result)
+    }
+    // Check that the string contains a dot separator
+    found_dot := 0
+    i := 0
+    for i < len(result) {
+        if str_char_at(result, i) == 46 {
+            found_dot = 1
+        }
+        i = i + 1
+    }
+    if found_dot != 1 {
+        testing.Fatal("expected dot in time string, got " + result)
+    }
+}

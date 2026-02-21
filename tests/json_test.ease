@@ -152,3 +152,12 @@ fn TestJsonEscaping(t: T) {
         testing.Fatal("expected " + expected + ", got " + output)
     }
 }
+
+fn TestJsonDocString(t: T) {
+    doc := json.New()
+    doc.SetString("name", "ease")
+    result := fmt.Sprint(doc)
+    if result != "{\"name\":\"ease\"}" {
+        testing.Fatal("expected JSON string, got " + result)
+    }
+}
