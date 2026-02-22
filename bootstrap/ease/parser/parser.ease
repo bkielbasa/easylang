@@ -226,18 +226,46 @@ fn parse_return_stmt(src: string, pos: int, nodes: []AstNode) -> ParseResult {
     // Check if there's an expression to return
     next_kind := lex_kind(src, p)
     expr_node := -1
+    extra_count := 0
 
     // If not EOF, semicolon, or close brace, parse expression
     if next_kind != TK_EOF && next_kind != TK_SEMI && next_kind != TK_RBRACE {
         expr_result := parse_expr_with_pos(src, p, nodes)
         expr_node = expr_result.node_idx
         p = expr_result.new_pos
+        p = lex_skip(src, p)
+
+        // Check for multi-value return: return expr1, expr2, ...
+        extra_exprs := []int{}
+        for lex_kind(src, p) == TK_COMMA {
+            p = lex_end(src, p, TK_COMMA)
+            p = lex_skip(src, p)
+            next_result := parse_expr_with_pos(src, p, nodes)
+            if next_result.node_idx < 0 { break }
+            push(extra_exprs, next_result.node_idx)
+            p = next_result.new_pos
+            p = lex_skip(src, p)
+        }
+
+        if len(extra_exprs) > 0 {
+            extra_count = len(extra_exprs)
+            all_exprs := []int{}
+            push(all_exprs, expr_node)
+            ei := 0
+            for ei < len(extra_exprs) {
+                push(all_exprs, extra_exprs[ei])
+                ei = ei + 1
+            }
+            // Store expression indices using upcoming node index
+            store_multi_ret_exprs(len(nodes), all_exprs)
+        }
     }
 
     // Create return statement node
+    // int_val = extra_count (0 for single return, >0 for multi-return)
     stmt := AstNode {
         tag: STMT_RETURN,
-        int_val: 0,
+        int_val: extra_count,
         str_val: "",
         left: expr_node,
         right: -1,
@@ -335,9 +363,53 @@ fn parse_stmt(src: string, pos: int, nodes: []AstNode) -> ParseResult {
     // Check if it's an assignment (ident followed by =) or declaration (ident followed by :=)
     if kind == TK_IDENT {
         saved_pos := p
+        first_name := lex_string_value(src, p, kind)
         p = lex_end(src, p, kind)
         p = lex_skip(src, p)
         next_kind := lex_kind(src, p)
+        if next_kind == TK_COMMA {
+            // Multi-variable declaration: a, b, c := expr
+            ml_names := []string{}
+            push(ml_names, first_name)
+            for lex_kind(src, p) == TK_COMMA {
+                p = lex_end(src, p, TK_COMMA)
+                p = lex_skip(src, p)
+                if lex_kind(src, p) != TK_IDENT { break }
+                push(ml_names, lex_string_value(src, p, TK_IDENT))
+                p = lex_end(src, p, TK_IDENT)
+                p = lex_skip(src, p)
+            }
+            if lex_kind(src, p) == TK_COLONEQUAL {
+                p = lex_end(src, p, TK_COLONEQUAL)
+                p = lex_skip(src, p)
+                // Create EXPR_IDENT nodes for each name (consecutive in AST)
+                ml_first_ident := len(nodes)
+                ml_ni := 0
+                for ml_ni < len(ml_names) {
+                    new_ident_node(ml_names[ml_ni], nodes)
+                    ml_ni = ml_ni + 1
+                }
+                // Parse RHS
+                ml_rhs := parse_expr_with_pos(src, p, nodes)
+                if ml_rhs.node_idx >= 0 {
+                    ml_stmt := AstNode {
+                        tag: STMT_MULTI_LET,
+                        int_val: len(ml_names),
+                        str_val: "",
+                        left: ml_first_ident,
+                        right: ml_rhs.node_idx,
+                        extra: -1,
+                        type_tag: TYPE_UNKNOWN
+                    }
+                    push(nodes, ml_stmt)
+                    return ParseResult { node_idx: len(nodes) - 1, new_pos: ml_rhs.new_pos }
+                }
+            }
+            p = saved_pos
+            p = lex_end(src, p, kind)
+            p = lex_skip(src, p)
+            next_kind = lex_kind(src, p)
+        }
         if next_kind == TK_COLONEQUAL {
             return parse_colonequal_stmt(src, saved_pos, nodes)
         }
@@ -842,10 +914,37 @@ fn parse_func_decl(src: string, pos: int, nodes: []AstNode) -> ParseResult {
         p = lex_end(src, p, arrow)
         p = lex_skip(src, p)
 
-        // Parse return type (simple, array, map, or pointer type)
+        // Parse return type (simple, array, map, tuple, or pointer type)
         ret_type_kind := lex_kind(src, p)
 
-        if ret_type_kind == TK_MAP {
+        if ret_type_kind == TK_LPAREN {
+            // Tuple return type: -> (Type1, Type2, ...)
+            p = lex_end(src, p, TK_LPAREN)
+            p = lex_skip(src, p)
+            tuple_types := []string{}
+            for lex_kind(src, p) != TK_RPAREN {
+                if lex_kind(src, p) == TK_COMMA {
+                    p = lex_end(src, p, TK_COMMA)
+                    p = lex_skip(src, p)
+                }
+                push(tuple_types, lex_string_value(src, p, TK_IDENT))
+                p = lex_end(src, p, TK_IDENT)
+                p = lex_skip(src, p)
+            }
+            p = lex_end(src, p, TK_RPAREN)
+            // Build: "__tuple2:int,string"
+            ret_type = "__tuple" + strconv.Itoa(len(tuple_types))
+            tti := 0
+            for tti < len(tuple_types) {
+                if tti == 0 {
+                    ret_type = ret_type + ":"
+                } else {
+                    ret_type = ret_type + ","
+                }
+                ret_type = ret_type + tuple_types[tti]
+                tti = tti + 1
+            }
+        } else if ret_type_kind == TK_MAP {
             // Map return type: map[KeyType]ValType
             p = lex_end(src, p, ret_type_kind)
             p = lex_skip(src, p)

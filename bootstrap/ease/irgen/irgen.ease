@@ -766,7 +766,35 @@ fn gen_ir_expr(node: AstNode, ast_idx: int, nodes: []AstNode, instrs: []IRInstr,
     return 0
 }
 
-fn gen_ir_stmt_ret(node: AstNode, nodes: []AstNode, instrs: []IRInstr, st_n: []string, st_v: []int) -> int {
+fn gen_ir_stmt_ret(node: AstNode, ast_idx: int, nodes: []AstNode, instrs: []IRInstr, st_n: []string, st_v: []int) -> int {
+    // Multi-return: pack values into a heap-allocated tuple
+    if node.int_val > 0 && node.left >= 0 {
+        total := node.int_val + 1
+        expr_indices := get_multi_ret_exprs(ast_idx)
+        // Evaluate each expression
+        ret_vregs := []int{}
+        ri := 0
+        for ri < len(expr_indices) {
+            rv := gen_ir_from_ast_with_symtab(expr_indices[ri], nodes, instrs, st_n, st_v)
+            push(ret_vregs, rv)
+            ri = ri + 1
+        }
+        // Allocate tuple: total * 8 bytes
+        ptr := len(instrs)
+        push(instrs, IRInstr { op: OP_ALLOCA, dest: ptr, arg1: total * 8, arg2: 0, arg3: 0, str_val: "" })
+        // Store each value at ptr + (i * 8)
+        mri := 0
+        for mri < len(ret_vregs) {
+            addr := len(instrs)
+            push(instrs, IRInstr { op: OP_INDEXADDR, dest: addr, arg1: ptr, arg2: mri * 8, arg3: 0, str_val: "" })
+            push(instrs, IRInstr { op: OP_STORE, dest: -1, arg1: addr, arg2: ret_vregs[mri], arg3: 0, str_val: "" })
+            mri = mri + 1
+        }
+        set_vreg_type(ptr, TYPE_STRUCT)
+        push(instrs, IRInstr { op: OP_RET, dest: ptr, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
+        return ptr
+    }
+
     v := -1
     if node.left >= 0 {
         v = gen_ir_from_ast_with_symtab(node.left, nodes, instrs, st_n, st_v)
@@ -803,6 +831,40 @@ fn gen_ir_stmt_let(node: AstNode, nodes: []AstNode, instrs: []IRInstr, st_n: []s
     push(st_n, node.str_val)
     push(st_v, new_vreg)
     return new_vreg
+}
+
+fn gen_ir_multi_let(node: AstNode, nodes: []AstNode, instrs: []IRInstr, st_n: []string, st_v: []int) -> int {
+    // Evaluate RHS (function call returning tuple pointer)
+    tuple_vreg := gen_ir_from_ast_with_symtab(node.right, nodes, instrs, st_n, st_v)
+
+    // Get called function name for type lookups
+    rhs_node := nodes[node.right]
+    call_name := ""
+    if rhs_node.tag == EXPR_CALL {
+        call_name = lookup_rename(rhs_node.str_val)
+    }
+
+    // Load each element and add to symtab
+    mli := 0
+    for mli < node.int_val {
+        name_node := nodes[node.left + mli]
+        // Load from tuple_vreg + (i * 8)
+        load_vreg := len(instrs)
+        push(instrs, IRInstr { op: OP_LOAD, dest: load_vreg, arg1: tuple_vreg, arg2: mli * 8, arg3: 0, str_val: "" })
+        elem_type := TYPE_UNKNOWN
+        if call_name != "" {
+            elem_type = lookup_func_return_tuple_type(call_name, mli)
+        }
+        set_vreg_type(load_vreg, elem_type)
+        // Copy (same as gen_ir_stmt_let)
+        new_vreg := len(instrs)
+        push(instrs, IRInstr { op: OP_COPY, dest: new_vreg, arg1: load_vreg, arg2: 0, arg3: 0, str_val: "" })
+        set_vreg_type(new_vreg, elem_type)
+        push(st_n, name_node.str_val)
+        push(st_v, new_vreg)
+        mli = mli + 1
+    }
+    return tuple_vreg
 }
 
 fn gen_ir_stmt_assign(node: AstNode, nodes: []AstNode, instrs: []IRInstr, st_n: []string, st_v: []int) -> int {
@@ -1495,11 +1557,15 @@ fn gen_ir_from_ast_with_symtab(ast_idx: int, nodes: []AstNode, instrs: []IRInstr
     }
 
     if node.tag == STMT_RETURN {
-        return gen_ir_stmt_ret(node, nodes, instrs, symtab_names, symtab_vregs)
+        return gen_ir_stmt_ret(node, ast_idx, nodes, instrs, symtab_names, symtab_vregs)
     }
 
     if node.tag == STMT_LET {
         return gen_ir_stmt_let(node, nodes, instrs, symtab_names, symtab_vregs)
+    }
+
+    if node.tag == STMT_MULTI_LET {
+        return gen_ir_multi_let(node, nodes, instrs, symtab_names, symtab_vregs)
     }
 
     if node.tag == STMT_ASSIGN {

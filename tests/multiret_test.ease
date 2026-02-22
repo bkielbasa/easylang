@@ -1,0 +1,62 @@
+package main
+
+// Multiple return values
+
+fn divmod(a: int, b: int) -> (int, int) {
+    return a / b, a % b
+}
+
+fn swap(a: int, b: int) -> (int, int) {
+    return b, a
+}
+
+fn int_and_string(x: int) -> (int, string) {
+    return x, "hello"
+}
+
+fn three_vals() -> (int, int, int) {
+    return 1, 2, 3
+}
+
+fn TestDivmod(t: T) {
+    q, r := divmod(10, 3)
+    if q != 3 {
+        testing.Fatal("divmod quotient should be 3")
+    }
+    if r != 1 {
+        testing.Fatal("divmod remainder should be 1")
+    }
+}
+
+fn TestSwap(t: T) {
+    a, b := swap(1, 2)
+    if a != 2 {
+        testing.Fatal("swap first should be 2")
+    }
+    if b != 1 {
+        testing.Fatal("swap second should be 1")
+    }
+}
+
+fn TestIntAndString(t: T) {
+    n, s := int_and_string(42)
+    if n != 42 {
+        testing.Fatal("int_and_string n should be 42")
+    }
+    if s != "hello" {
+        testing.Fatal("int_and_string s should be hello")
+    }
+}
+
+fn TestThreeValues(t: T) {
+    a, b, c := three_vals()
+    if a != 1 {
+        testing.Fatal("three_vals a should be 1")
+    }
+    if b != 2 {
+        testing.Fatal("three_vals b should be 2")
+    }
+    if c != 3 {
+        testing.Fatal("three_vals c should be 3")
+    }
+}

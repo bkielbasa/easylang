@@ -52,6 +52,7 @@ const DECL_INTERFACE = 52
 const DECL_IMETHOD = 53
 const STMT_INDEX_ASSIGN = 54
 const EXPR_MAP_LIT = 55
+const STMT_MULTI_LET = 56
 
 // Type tags
 const TYPE_UNKNOWN = 0

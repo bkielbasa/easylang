@@ -56,6 +56,44 @@ fn get_call_args(call_node_idx: int) -> []int {
     return []int{}
 }
 
+// Global storage for multi-return expression indices
+// Maps return node index -> expression indices
+// Layout: same as g_call_args
+g_multi_ret_exprs := []int{}
+
+fn store_multi_ret_exprs(ret_node_idx: int, expr_indices: []int) {
+    push(g_multi_ret_exprs, ret_node_idx)
+    push(g_multi_ret_exprs, len(expr_indices))
+    i := 0
+    count := len(expr_indices)
+    for i < count {
+        push(g_multi_ret_exprs, expr_indices[i])
+        i = i + 1
+    }
+}
+
+fn get_multi_ret_exprs(ret_node_idx: int) -> []int {
+    i := 0
+    for {
+        if i >= len(g_multi_ret_exprs) {
+            break
+        }
+        if g_multi_ret_exprs[i] == ret_node_idx {
+            arg_count := g_multi_ret_exprs[i + 1]
+            result := []int{}
+            j := 0
+            for j < arg_count {
+                push(result, g_multi_ret_exprs[i + 2 + j])
+                j = j + 1
+            }
+            return result
+        }
+        arg_count := g_multi_ret_exprs[i + 1]
+        i = i + 2 + arg_count
+    }
+    return []int{}
+}
+
 // Global storage for struct literal field values
 // Maps struct_lit node index -> field value indices
 // Layout: same as g_call_args
@@ -82,6 +120,9 @@ g_field_reg_types := []int{}
 g_field_reg_is_array := []int{}
 g_field_reg_struct_names := []string{}
 g_func_ret_struct_names := []string{}
+g_func_ret_tuple_types := []int{}
+g_func_ret_tuple_starts := []int{}
+g_func_ret_tuple_counts := []int{}
 g_method_struct_names := []string{}
 g_method_names := []string{}
 g_method_func_names := []string{}
@@ -225,11 +266,76 @@ fn lookup_field_is_array(name: string) -> int {
     return 0
 }
 
+fn parse_type_name_to_tag(t: string) -> int {
+    if t == "int" { return TYPE_INT }
+    if t == "string" { return TYPE_STRING }
+    if t == "bool" { return TYPE_BOOL }
+    return TYPE_UNKNOWN
+}
+
 fn register_func_return_type(name: string, ret_type: int, is_array: int, struct_name: string) {
     push(g_func_ret_names, name)
     push(g_func_ret_types, ret_type)
     push(g_func_ret_is_array, is_array)
     push(g_func_ret_struct_names, struct_name)
+    // Check for tuple return type: struct_name starts with "__tuple"
+    if strings.HasPrefix(struct_name, "__tuple") {
+        // Parse "__tupleN:type1,type2,..."
+        // Find ':' separator
+        colon_pos := -1
+        ci := 0
+        for ci < len(struct_name) {
+            if str_char_at(struct_name, ci) == 58 { colon_pos = ci break }
+            ci = ci + 1
+        }
+        if colon_pos > 0 {
+            push(g_func_ret_tuple_starts, len(g_func_ret_tuple_types))
+            // Parse comma-separated types after ':'
+            types_str := str_substring(struct_name, colon_pos + 1, len(struct_name))
+            count := 0
+            tstart := 0
+            ti := 0
+            for ti <= len(types_str) {
+                if ti == len(types_str) || str_char_at(types_str, ti) == 44 {
+                    tname := str_substring(types_str, tstart, ti)
+                    push(g_func_ret_tuple_types, parse_type_name_to_tag(tname))
+                    count = count + 1
+                    tstart = ti + 1
+                }
+                ti = ti + 1
+            }
+            push(g_func_ret_tuple_counts, count)
+        } else {
+            push(g_func_ret_tuple_starts, len(g_func_ret_tuple_types))
+            push(g_func_ret_tuple_counts, 0)
+        }
+    } else {
+        push(g_func_ret_tuple_starts, len(g_func_ret_tuple_types))
+        push(g_func_ret_tuple_counts, 0)
+    }
+}
+
+fn lookup_func_return_tuple_count(name: string) -> int {
+    i := len(g_func_ret_names) - 1
+    for i >= 0 {
+        if g_func_ret_names[i] == name {
+            return g_func_ret_tuple_counts[i]
+        }
+        i = i - 1
+    }
+    return 0
+}
+
+fn lookup_func_return_tuple_type(name: string, elem_idx: int) -> int {
+    i := len(g_func_ret_names) - 1
+    for i >= 0 {
+        if g_func_ret_names[i] == name {
+            start := g_func_ret_tuple_starts[i]
+            return g_func_ret_tuple_types[start + elem_idx]
+        }
+        i = i - 1
+    }
+    return TYPE_UNKNOWN
 }
 
 fn lookup_func_return_type(name: string) -> int {
