@@ -72,7 +72,7 @@ ease/
 │       └── lsp/lsp.ease           # LSP server (diagnostics)
 ├── editors/              # Editor integrations
 │   └── vscode/           # VS Code extension (LSP client)
-├── tests/                # Go-style tests (111 passing)
+├── tests/                # Go-style tests (125 passing)
 ├── examples/             # Example programs
 │   └── testdemo/         # Go-style test demo (math.ease + math_test.ease)
 └── findings/             # Compiler engineering notes
@@ -84,7 +84,7 @@ The compiler is fully self-hosting. No Go or C runtime needed — just `clang` (
 
 ```bash
 make                    # Build compiler from seed LLVM IR
-make test               # Run tests (111 passing)
+make test               # Run tests (125 passing)
 make test DIR=path      # Run tests in specific directory
 make bench              # Run tests + benchmarks
 make verify             # Verify self-hosting convergence (gen1 == gen2)

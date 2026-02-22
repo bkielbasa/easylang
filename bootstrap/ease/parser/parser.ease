@@ -11,6 +11,11 @@ g_method_decl_node_idx := []int{}
 g_method_decl_struct := []string{}
 g_method_decl_name := []string{}
 
+// Closure function side table
+g_closure_func_indices := []int{}
+g_closure_func_names := []string{}
+g_closure_counter := []int{}
+
 fn lookup_type_name(node_idx: int) -> string {
     i := 0
     for i < len(g_type_name_node_idx) {
@@ -1665,12 +1670,162 @@ fn parse_match_stmt(src: string, pos: int, nodes: []AstNode) -> ParseResult {
     return ParseResult { node_idx: len(nodes) - 1, new_pos: p }
 }
 
+// Parse closure expression: [move] |params| [-> type] { body } or [move] |params| [-> type] expr
+// Parse closure parameters: consume params between | delimiters (or || for empty)
+fn parse_closure_params(src: string, pos: int, nodes: []AstNode) -> ParseResult {
+    p := pos
+
+    // Hidden __env parameter (always first)
+    env_param := AstNode {
+        tag: DECL_PARAM, int_val: 0, str_val: "__env",
+        left: -1, right: -1, extra: -1, type_tag: TYPE_INT
+    }
+    push(nodes, env_param)
+    first_param_idx := len(nodes) - 1
+
+    // Handle || (TK_OR) as empty param list, or |params| (TK_PIPE delimited)
+    if lex_kind(src, p) == TK_OR {
+        p = lex_end(src, p, TK_OR)
+        p = lex_skip(src, p)
+        return ParseResult { node_idx: first_param_idx, new_pos: p }
+    }
+    if lex_kind(src, p) == TK_PIPE {
+        p = lex_end(src, p, TK_PIPE)
+        p = lex_skip(src, p)
+    } else {
+        return ParseResult { node_idx: -1, new_pos: p }
+    }
+
+    for {
+        if lex_kind(src, p) == TK_PIPE || lex_kind(src, p) == TK_EOF { break }
+        param_result := parse_param(src, p, nodes)
+        if param_result.node_idx < 0 { break }
+        p = param_result.new_pos
+        p = lex_skip(src, p)
+        if lex_kind(src, p) == TK_COMMA {
+            p = lex_end(src, p, TK_COMMA)
+            p = lex_skip(src, p)
+        }
+    }
+    if lex_kind(src, p) == TK_PIPE {
+        p = lex_end(src, p, TK_PIPE)
+        p = lex_skip(src, p)
+    }
+    return ParseResult { node_idx: first_param_idx, new_pos: p }
+}
+
+// Parse closure body: block { ... } or single expression (wrapped in return+block)
+fn parse_closure_body(src: string, pos: int, nodes: []AstNode) -> ParseResult {
+    p := pos
+    if lex_kind(src, p) == TK_LBRACE {
+        return parse_block(src, p, nodes)
+    }
+    // Single expression body — wrap in STMT_RETURN + STMT_BLOCK
+    expr_result := parse_expr_with_pos(src, p, nodes)
+    if expr_result.node_idx < 0 { return expr_result }
+    ret_stmt := AstNode {
+        tag: STMT_RETURN, int_val: 0, str_val: "",
+        left: expr_result.node_idx, right: -1, extra: -1, type_tag: TYPE_UNKNOWN
+    }
+    push(nodes, ret_stmt)
+    ret_idx := len(nodes) - 1
+    blk := AstNode {
+        tag: STMT_BLOCK, int_val: 1, str_val: "",
+        left: ret_idx, right: ret_idx, extra: -1, type_tag: TYPE_UNKNOWN
+    }
+    push(nodes, blk)
+    return ParseResult { node_idx: len(nodes) - 1, new_pos: expr_result.new_pos }
+}
+
+fn parse_closure_expr(src: string, pos: int, nodes: []AstNode) -> ParseResult {
+    p := pos
+    p = lex_skip(src, p)
+
+    // Check for optional 'move' keyword
+    is_move := 0
+    if lex_kind(src, p) == TK_IDENT && lex_string_value(src, p, TK_IDENT) == "move" {
+        is_move = 1
+        p = lex_end(src, p, TK_IDENT)
+        p = lex_skip(src, p)
+    }
+
+    // Generate unique closure name
+    cl_id := len(g_closure_counter)
+    push(g_closure_counter, 0)
+    cl_name := "__closure_" + strconv.Itoa(cl_id)
+
+    // Parse parameters
+    params_result := parse_closure_params(src, p, nodes)
+    if params_result.node_idx < 0 {
+        return ParseResult { node_idx: -1, new_pos: p }
+    }
+    first_param_idx := params_result.node_idx
+    p = params_result.new_pos
+
+    // Optional return type: -> type
+    ret_type_tag := TYPE_UNKNOWN
+    if lex_kind(src, p) == TK_ARROW {
+        p = lex_end(src, p, TK_ARROW)
+        p = lex_skip(src, p)
+        rk := lex_kind(src, p)
+        if rk == TK_IDENT {
+            rt := lex_string_value(src, p, rk)
+            if rt == "int" { ret_type_tag = TYPE_INT }
+            if rt == "string" { ret_type_tag = TYPE_STRING }
+            if rt == "bool" { ret_type_tag = TYPE_BOOL }
+            p = lex_end(src, p, rk)
+            p = lex_skip(src, p)
+        }
+    }
+
+    // Parse body
+    body_result := parse_closure_body(src, p, nodes)
+    body_idx := -1
+    if body_result.node_idx >= 0 {
+        body_idx = body_result.node_idx
+        p = body_result.new_pos
+    }
+
+    // Create DECL_FUNC node for closure body
+    func_node := AstNode {
+        tag: DECL_FUNC, int_val: 0, str_val: cl_name,
+        left: first_param_idx, right: body_idx, extra: -1, type_tag: ret_type_tag
+    }
+    push(nodes, func_node)
+    push(g_closure_func_indices, len(nodes) - 1)
+    push(g_closure_func_names, cl_name)
+
+    // Create EXPR_CLOSURE node
+    cl_node := AstNode {
+        tag: EXPR_CLOSURE, int_val: is_move, str_val: cl_name,
+        left: first_param_idx, right: body_idx, extra: -1, type_tag: ret_type_tag
+    }
+    push(nodes, cl_node)
+    return ParseResult { node_idx: len(nodes) - 1, new_pos: p }
+}
+
 // Parse atom (literal or identifier - no parentheses yet)
 fn parse_atom(src: string, pos: int, nodes: []AstNode) -> ParseResult {
     p := pos
     p = lex_skip(src, p)
     kind := lex_kind(src, p)
 
+    // Closure: |params| body, || body, or move |params| body
+    if kind == TK_PIPE {
+        return parse_closure_expr(src, p, nodes)
+    }
+    if kind == TK_OR {
+        // || is no-param closure: || -> type { body }
+        return parse_closure_expr(src, p, nodes)
+    }
+    if kind == TK_IDENT && lex_string_value(src, p, kind) == "move" {
+        // Check if next non-whitespace token is '|' or '||' — then it's a closure
+        saved := lex_end(src, p, kind)
+        saved = lex_skip(src, saved)
+        if lex_kind(src, saved) == TK_PIPE || lex_kind(src, saved) == TK_OR {
+            return parse_closure_expr(src, p, nodes)
+        }
+    }
     if kind == TK_MATCH {
         return parse_match_stmt(src, p, nodes)
     }

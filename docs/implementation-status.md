@@ -21,7 +21,7 @@ The Ease compiler is written in Ease and compiles itself with byte-identical con
 - **Vreg-based type system** — tracks types via `g_vreg_types`/`g_param_types` arrays, replaces `is_string_expr` heuristic
 - String `==`/`!=`/`+` auto-dispatch via vreg type lookups (no heuristic needed)
 - Dynamic struct field registry for user-defined structs
-- Go-style test suite (90 tests passing, 2 benchmarks)
+- Go-style test suite (125 tests passing, 2 benchmarks)
 
 **Compiler Components** (all in `bootstrap/ease/`):
 - [x] Lexer with comment handling (// comments)
@@ -75,6 +75,7 @@ The Ease compiler is written in Ease and compiles itself with byte-identical con
 - [x] **Struct type name tracking** — Parallel arrays (`g_vreg_struct_names`, `g_param_struct_names`) track which struct type each vreg holds, enabling method dispatch.
 - [x] **Method receivers** — Go-style `fn (recv: Type) Method()` syntax, name mangling (`Type_Method`), receiver injected as first parameter, method call dispatch via struct type lookup.
 - [x] **Implicit interfaces** — Go-style `interface Name { Method() -> Type }` with implicit satisfaction. Interface values are heap-allocated `[concrete_ptr, vtable_ptr]` pairs. Vtables initialized at startup via `@ease_init_vtables()`. Auto-wrapping at call sites when passing concrete structs to interface-typed parameters.
+- [x] **Closures and lambdas** — `|params| -> type { body }` or `|params| -> type expr` syntax. Closures are heap-allocated `[func_ptr, env_ptr]` pairs. Captures by value with automatic capture analysis. Support for `move` keyword, no-param closures (`||`), expression bodies, factory functions returning closures.
 
 ### Language Features
 - [x] **Go-style `:=` declarations** — Replaced `let`/`let mut` with `:=`. All variables are mutable.

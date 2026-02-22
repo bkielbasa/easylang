@@ -213,6 +213,42 @@ fn (b: Box) String() -> string {
 }
 ```
 
+## Closures and Lambdas
+
+Closures are anonymous functions that can capture variables from their enclosing scope.
+
+```ease
+// Basic closure with block body
+add := |a: int, b: int| -> int { return a + b }
+add(3, 5)  // 8
+
+// Expression body (implicit return)
+double := |x: int| -> int x * 2
+double(7)  // 14
+
+// No parameters
+get := || -> int { return 42 }
+get()  // 42
+
+// Capturing variables from enclosing scope
+x := 10
+add_x := |y: int| -> int { return x + y }
+add_x(5)  // 15
+
+// Factory function returning a closure
+fn make_adder(n: int) -> int {
+    return |x: int| -> int { return n + x }
+}
+add5 := make_adder(5)
+add5(3)  // 8
+
+// Move semantics (currently same as default capture)
+val := 42
+get_val := move |x: int| -> int { return val + x }
+```
+
+Closures are represented as heap-allocated `[func_ptr, env_ptr]` pairs. Captured variables are copied by value into the environment at closure creation time.
+
 ## Concurrency
 - **Goroutines**: `go expression`
 - **Channels**: `chan<T>()`, `ch <- value`, `<-ch`

@@ -53,6 +53,7 @@ const DECL_IMETHOD = 53
 const STMT_INDEX_ASSIGN = 54
 const EXPR_MAP_LIT = 55
 const STMT_MULTI_LET = 56
+const EXPR_CLOSURE = 57
 
 // Type tags
 const TYPE_UNKNOWN = 0
@@ -66,6 +67,7 @@ const TYPE_STRUCT = 7
 const TYPE_PTR = 8
 const TYPE_INTERFACE = 9
 const TYPE_MAP = 10
+const TYPE_CLOSURE = 11
 
 struct ParseResult {
     node_idx: int,

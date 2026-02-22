@@ -674,6 +674,18 @@ fn build_registries(nodes: []AstNode, func_names: []string, func_indices: []int)
     }
 }
 
+// Register closure functions from parser side table
+fn register_closures(nodes: []AstNode, func_names: []string, func_indices: []int) {
+    ci := 0
+    for ci < len(g_closure_func_indices) {
+        push(func_names, g_closure_func_names[ci])
+        push(func_indices, g_closure_func_indices[ci])
+        fn_node := nodes[g_closure_func_indices[ci]]
+        register_func_return_type(g_closure_func_names[ci], fn_node.type_tag, fn_node.int_val, "")
+        ci = ci + 1
+    }
+}
+
 // IR generation loop: compile all functions with symtab setup
 fn generate_all_ir(func_names: []string, func_indices: []int, nodes: []AstNode, gvar_names: []string, instrs: []IRInstr) {
     fn_count := len(func_names)
@@ -800,6 +812,7 @@ fn run_test_mode(test_path: string, run_bench: int) -> int {
     load_stdlib(dir + "/dummy.ease", stdlib_mods, nodes, func_names, func_indices, global_var_names)
     sema.AddRename("print", "io.Print")
     build_registries(nodes, func_names, func_indices)
+    register_closures(nodes, func_names, func_indices)
 
     // IR Generation — compile all user functions
     instrs := []IRInstr{}
@@ -1146,6 +1159,7 @@ fn main() -> int {
     load_stdlib(filename, stdlib_mods, nodes, func_names, func_indices, global_var_names)
     sema.AddRename("print", "io.Print")
     build_registries(nodes, func_names, func_indices)
+    register_closures(nodes, func_names, func_indices)
 
     // Phase 3: IR Generation
     instrs := []IRInstr{}

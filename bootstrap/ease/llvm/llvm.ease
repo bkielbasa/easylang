@@ -193,7 +193,7 @@ fn collect_vregs(instrs: []IRInstr, start: int, end_pos: int, param_count: int) 
         instr := instrs[i]
         op := instr.op
         // dest is vreg for result-producing operations
-        if op == OP_LOADCONST || op == OP_ADD || op == OP_SUB || op == OP_MUL || op == OP_DIV || op == OP_CMP_LT || op == OP_CMP_GT || op == OP_CMP_LE || op == OP_CMP_GE || op == OP_CMP_EQ || op == OP_CMP_NE || op == OP_AND || op == OP_OR || op == OP_NOT || op == OP_XOR || op == OP_BITAND || op == OP_BITOR || op == OP_ALLOCA || op == OP_LOAD || op == OP_INDEXADDR || op == OP_ARRAY_LEN || op == OP_STR_LEN || op == OP_STR_CHAR_AT || op == OP_PEEK || op == OP_HEAP_ALLOC || op == OP_CALL || op == OP_ARGC || op == OP_ARGV || op == OP_INT_TO_STR || op == OP_STR_EQ || op == OP_STR_NE || op == OP_STR_CONCAT || op == OP_LOAD_GLOBAL || op == OP_SYSCALL_OPEN || op == OP_SYSCALL_WRITE || op == OP_SYSCALL_CLOSE || op == OP_SYSCALL_READ || op == OP_IS_DIR || op == OP_LIST_DIR || op == OP_SETJMP || op == OP_TIME_NANOS || op == OP_TIME_WALLCLOCK || op == OP_IFACE_WRAP || op == OP_IFACE_CALL || op == OP_MAP_NEW || op == OP_MAP_GET || op == OP_MAP_SET || op == OP_MAP_DELETE || op == OP_MAP_LEN || op == OP_MAP_HAS {
+        if op == OP_LOADCONST || op == OP_ADD || op == OP_SUB || op == OP_MUL || op == OP_DIV || op == OP_CMP_LT || op == OP_CMP_GT || op == OP_CMP_LE || op == OP_CMP_GE || op == OP_CMP_EQ || op == OP_CMP_NE || op == OP_AND || op == OP_OR || op == OP_NOT || op == OP_XOR || op == OP_BITAND || op == OP_BITOR || op == OP_ALLOCA || op == OP_LOAD || op == OP_INDEXADDR || op == OP_ARRAY_LEN || op == OP_STR_LEN || op == OP_STR_CHAR_AT || op == OP_PEEK || op == OP_HEAP_ALLOC || op == OP_CALL || op == OP_ARGC || op == OP_ARGV || op == OP_INT_TO_STR || op == OP_STR_EQ || op == OP_STR_NE || op == OP_STR_CONCAT || op == OP_LOAD_GLOBAL || op == OP_SYSCALL_OPEN || op == OP_SYSCALL_WRITE || op == OP_SYSCALL_CLOSE || op == OP_SYSCALL_READ || op == OP_IS_DIR || op == OP_LIST_DIR || op == OP_SETJMP || op == OP_TIME_NANOS || op == OP_TIME_WALLCLOCK || op == OP_IFACE_WRAP || op == OP_IFACE_CALL || op == OP_MAP_NEW || op == OP_MAP_GET || op == OP_MAP_SET || op == OP_MAP_DELETE || op == OP_MAP_LEN || op == OP_MAP_HAS || op == OP_CLOSURE_NEW || op == OP_CLOSURE_CALL {
             if instr.dest >= 0 { add_unique(vregs, instr.dest) }
         }
         // RET dest is vreg
@@ -206,7 +206,7 @@ fn collect_vregs(instrs: []IRInstr, start: int, end_pos: int, param_count: int) 
             if instr.arg1 >= 0 { add_unique(vregs, instr.arg1) }
         }
         // arg1 is vreg for most ops (not LOADCONST, ALLOCA, LABEL, JUMP, BRANCH, ARGC, CALL)
-        if op != OP_LOADCONST && op != OP_LOAD_GLOBAL && op != OP_ALLOCA && op != OP_LABEL && op != OP_JUMP && op != OP_BRANCH && op != OP_ARGC && op != OP_TIME_NANOS && op != OP_TIME_WALLCLOCK && op != OP_CALL && op != OP_IFACE_CALL && op != OP_MAP_NEW {
+        if op != OP_LOADCONST && op != OP_LOAD_GLOBAL && op != OP_ALLOCA && op != OP_LABEL && op != OP_JUMP && op != OP_BRANCH && op != OP_ARGC && op != OP_TIME_NANOS && op != OP_TIME_WALLCLOCK && op != OP_CALL && op != OP_IFACE_CALL && op != OP_CLOSURE_CALL && op != OP_MAP_NEW {
             if instr.arg1 >= 0 { add_unique(vregs, instr.arg1) }
         }
         // arg2 is vreg for binary ops, STORE, ARRAY_PUSH, POKE, STR_EQ/NE, STR_CHAR_AT, etc
@@ -1105,6 +1105,61 @@ fn emit_llvm_function(fd: int, instrs: []IRInstr, start: int, end_pos: int, func
             ic_result := "%ic.result." + strconv.Itoa(ti)
             write_str(fd, "  " + ic_result + " = call i64 " + ic_fn + "(" + ic_args_str + ")\n")
             emit_store_vreg(fd, instr.dest, ic_result)
+            // Reset call args
+            call_args = []int{}
+        }
+
+        if terminated == 0 && instr.op == OP_CLOSURE_NEW {
+            // Allocate 16 bytes for closure [func_ptr, env_ptr]
+            cl_ptr := "%cl.ptr." + strconv.Itoa(ti)
+            write_str(fd, "  " + cl_ptr + " = call ptr @malloc(i64 16)\n")
+            // Store function pointer at offset 0
+            cl_fp := "%cl.fp." + strconv.Itoa(ti)
+            write_str(fd, "  " + cl_fp + " = ptrtoint ptr @" + llvm_func_name(instr.str_val) + " to i64\n")
+            write_str(fd, "  store i64 " + cl_fp + ", ptr " + cl_ptr + "\n")
+            // Store env pointer at offset 8
+            cl_env_slot := "%cl.env.slot." + strconv.Itoa(ti)
+            write_str(fd, "  " + cl_env_slot + " = getelementptr i8, ptr " + cl_ptr + ", i64 8\n")
+            if instr.arg1 >= 0 {
+                cl_env_val := emit_load_vreg(fd, instr.arg1, ti, 0)
+                write_str(fd, "  store i64 " + cl_env_val + ", ptr " + cl_env_slot + "\n")
+            } else {
+                write_str(fd, "  store i64 0, ptr " + cl_env_slot + "\n")
+            }
+            // Result = closure as i64
+            cl_result := "%cl.result." + strconv.Itoa(ti)
+            write_str(fd, "  " + cl_result + " = ptrtoint ptr " + cl_ptr + " to i64\n")
+            emit_store_vreg(fd, instr.dest, cl_result)
+        }
+
+        if terminated == 0 && instr.op == OP_CLOSURE_CALL {
+            // Indirect call through closure object
+            // instr.arg1 = closure vreg, instr.arg2 = user arg count
+            cc_obj := "%cc.obj." + strconv.Itoa(ti)
+            cc_obj_val := emit_load_vreg(fd, instr.arg1, ti, 0)
+            write_str(fd, "  " + cc_obj + " = inttoptr i64 " + cc_obj_val + " to ptr\n")
+            // Load func_ptr at offset 0
+            cc_fp := "%cc.fp." + strconv.Itoa(ti)
+            write_str(fd, "  " + cc_fp + " = load i64, ptr " + cc_obj + "\n")
+            cc_fn := "%cc.fn." + strconv.Itoa(ti)
+            write_str(fd, "  " + cc_fn + " = inttoptr i64 " + cc_fp + " to ptr\n")
+            // Load env_ptr at offset 8
+            cc_env_slot := "%cc.env.slot." + strconv.Itoa(ti)
+            write_str(fd, "  " + cc_env_slot + " = getelementptr i8, ptr " + cc_obj + ", i64 8\n")
+            cc_env := "%cc.env." + strconv.Itoa(ti)
+            write_str(fd, "  " + cc_env + " = load i64, ptr " + cc_env_slot + "\n")
+            // Build argument string: env_ptr as first arg, then user args
+            cc_args_str := "i64 " + cc_env
+            cc_ai := 0
+            for cc_ai < len(call_args) {
+                cc_arg_val := emit_load_vreg(fd, call_args[cc_ai], ti, cc_ai + 1)
+                cc_args_str = cc_args_str + ", i64 " + cc_arg_val
+                cc_ai = cc_ai + 1
+            }
+            // Emit indirect call
+            cc_result := "%cc.result." + strconv.Itoa(ti)
+            write_str(fd, "  " + cc_result + " = call i64 " + cc_fn + "(" + cc_args_str + ")\n")
+            emit_store_vreg(fd, instr.dest, cc_result)
             // Reset call args
             call_args = []int{}
         }

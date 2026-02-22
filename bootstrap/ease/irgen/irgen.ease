@@ -1116,6 +1116,17 @@ fn gen_ir_stmt_block(node: AstNode, nodes: []AstNode, instrs: []IRInstr, st_n: [
                 mark_i = mark_i + 1
             }
         }
+        if scan_tag == EXPR_CLOSURE {
+            // Mark all closure-internal nodes (params, body, func decl) as children
+            scan_node := nodes[scan_i]
+            if scan_node.left >= 0 {
+                mark_i := scan_node.left
+                for mark_i < scan_i {
+                    push(child_indices, mark_i)
+                    mark_i = mark_i + 1
+                }
+            }
+        }
         if scan_tag == STMT_IF || scan_tag == STMT_FOR {
             scan_node := nodes[scan_i]
             // Mark direct children
@@ -1160,20 +1171,23 @@ fn gen_ir_stmt_block(node: AstNode, nodes: []AstNode, instrs: []IRInstr, st_n: [
     for i < e {
         if i >= nodes_len { break }
         node_tag := nodes[i].tag
-        if node_tag >= STMT_LET && node_tag != STMT_BLOCK {
-            // Check if this node is a child of another statement
-            is_child := 0
-            check_j := 0
-            child_count := len(child_indices)
-            for check_j < child_count {
-                if child_indices[check_j] == i {
-                    is_child = 1
-                    break
+        // Skip declaration nodes that belong to closures or other non-statement constructs
+        if node_tag != DECL_PARAM && node_tag != DECL_FUNC && node_tag != EXPR_CLOSURE {
+            if node_tag >= STMT_LET && node_tag != STMT_BLOCK {
+                // Check if this node is a child of another statement
+                is_child := 0
+                check_j := 0
+                child_count := len(child_indices)
+                for check_j < child_count {
+                    if child_indices[check_j] == i {
+                        is_child = 1
+                        break
+                    }
+                    check_j = check_j + 1
                 }
-                check_j = check_j + 1
-            }
-            if is_child == 0 {
-                last = gen_ir_from_ast_with_symtab(i, nodes, instrs, st_n, st_v)
+                if is_child == 0 {
+                    last = gen_ir_from_ast_with_symtab(i, nodes, instrs, st_n, st_v)
+                }
             }
         }
         i = i + 1
@@ -1433,6 +1447,14 @@ fn gen_ir_from_ast_with_symtab(ast_idx: int, nodes: []AstNode, instrs: []IRInstr
 
     if node.tag == EXPR_CALL {
         func_name := lookup_rename(node.str_val)
+        // Check if callee is a local variable (closure or closure-as-int)
+        cl_vreg := symtab_lookup_linear(symtab_names, symtab_vregs, func_name)
+        if cl_vreg >= 0 {
+            cl_type := get_vreg_type(cl_vreg)
+            if cl_type == TYPE_CLOSURE || cl_type == TYPE_INT {
+                return gen_ir_closure_call(cl_vreg, ast_idx, nodes, instrs, symtab_names, symtab_vregs)
+            }
+        }
         if func_name == "len" {
             return gen_ir_call_len(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
         }
@@ -1668,11 +1690,172 @@ fn gen_ir_from_ast_with_symtab(ast_idx: int, nodes: []AstNode, instrs: []IRInstr
             }
         }
 
+        // If this is a closure function, load captures from env (param 0 = __env)
+        if strings.HasPrefix(node.str_val, "__closure_") {
+            cap_count := sema.ClosureCaptureCount(node.str_val)
+            if cap_count > 0 {
+                env_reg := 90000  // __env is always param 0
+                cap_i := 0
+                for cap_i < cap_count {
+                    cap_name := sema.ClosureCaptureName(node.str_val, cap_i)
+                    addr_vreg := len(instrs)
+                    push(instrs, IRInstr { op: OP_INDEXADDR, dest: addr_vreg, arg1: env_reg, arg2: cap_i * 8, arg3: 0, str_val: "" })
+                    set_vreg_type(addr_vreg, TYPE_INT)
+                    val_vreg := len(instrs)
+                    push(instrs, IRInstr { op: OP_LOAD, dest: val_vreg, arg1: addr_vreg, arg2: 0, arg3: 0, str_val: "" })
+                    set_vreg_type(val_vreg, TYPE_INT)
+                    push(symtab_names, cap_name)
+                    push(symtab_vregs, val_vreg)
+                    cap_i = cap_i + 1
+                }
+            }
+        }
+
         // Generate body
         if node.right >= 0 {
             return gen_ir_from_ast_with_symtab(node.right, nodes, instrs, symtab_names, symtab_vregs)
         }
     }
 
+    if node.tag == EXPR_CLOSURE {
+        return gen_ir_closure(node, nodes, instrs, symtab_names, symtab_vregs)
+    }
+
     return 0
+}
+
+// Generate IR for closure creation (EXPR_CLOSURE)
+fn gen_ir_closure(node: AstNode, nodes: []AstNode, instrs: []IRInstr, st_n: []string, st_v: []int) -> int {
+    cl_name := node.str_val
+    // Analyze captures: walk closure body, find references to enclosing scope
+    capture_names := analyze_captures(node, nodes, st_n)
+    env_vreg := -1
+    if len(capture_names) > 0 {
+        // Allocate environment: num_captures * 8 bytes
+        env_size := len(capture_names) * 8
+        size_vreg := len(instrs)
+        push(instrs, IRInstr { op: OP_LOADCONST, dest: size_vreg, arg1: env_size, arg2: 0, arg3: 0, str_val: "" })
+        set_vreg_type(size_vreg, TYPE_INT)
+        env_vreg = len(instrs)
+        push(instrs, IRInstr { op: OP_HEAP_ALLOC, dest: env_vreg, arg1: size_vreg, arg2: 0, arg3: 0, str_val: "" })
+        set_vreg_type(env_vreg, TYPE_INT)
+        // Store each captured variable into the environment
+        ci := 0
+        for ci < len(capture_names) {
+            cap_vreg := symtab_lookup_linear(st_n, st_v, capture_names[ci])
+            if cap_vreg >= 0 || cap_vreg <= -1000 {
+                addr_vreg := len(instrs)
+                push(instrs, IRInstr { op: OP_INDEXADDR, dest: addr_vreg, arg1: env_vreg, arg2: ci * 8, arg3: 0, str_val: "" })
+                set_vreg_type(addr_vreg, TYPE_INT)
+                push(instrs, IRInstr { op: OP_STORE, dest: addr_vreg, arg1: addr_vreg, arg2: cap_vreg, arg3: 0, str_val: "" })
+            }
+            ci = ci + 1
+        }
+        // Store capture info in sema
+        sema.StoreClosureCaptures(cl_name, capture_names)
+    }
+    // Emit OP_CLOSURE_NEW
+    res := len(instrs)
+    push(instrs, IRInstr { op: OP_CLOSURE_NEW, dest: res, arg1: env_vreg, arg2: 0, arg3: 0, str_val: cl_name })
+    set_vreg_type(res, TYPE_CLOSURE)
+    return res
+}
+
+fn symtab_lookup_linear(names: []string, vregs: []int, name: string) -> int {
+    i := len(names) - 1
+    for i >= 0 {
+        if names[i] == name { return vregs[i] }
+        i = i - 1
+    }
+    return -1
+}
+
+// Generate IR for calling a closure
+fn gen_ir_closure_call(closure_vreg: int, ast_idx: int, nodes: []AstNode, instrs: []IRInstr, st_n: []string, st_v: []int) -> int {
+    args := gen_ir_eval_args(ast_idx, nodes, instrs, st_n, st_v)
+    // Emit OP_ARG for each user argument
+    i := 0
+    for i < len(args) {
+        push(instrs, IRInstr { op: OP_ARG, dest: i, arg1: args[i], arg2: -1, arg3: 0, str_val: "" })
+        i = i + 1
+    }
+    res := len(instrs)
+    push(instrs, IRInstr { op: OP_CLOSURE_CALL, dest: res, arg1: closure_vreg, arg2: len(args), arg3: 0, str_val: "" })
+    set_vreg_type(res, TYPE_INT)
+    return res
+}
+
+// Analyze which variables from enclosing scope are referenced in the closure body
+fn analyze_captures(closure_node: AstNode, nodes: []AstNode, enclosing_names: []string) -> []string {
+    captures := []string{}
+    if closure_node.right < 0 { return captures }
+    // Collect parameter names to exclude them
+    param_names := []string{}
+    if closure_node.left >= 0 {
+        pi := closure_node.left
+        for pi < len(nodes) {
+            if nodes[pi].tag == DECL_PARAM {
+                push(param_names, nodes[pi].str_val)
+            } else {
+                break
+            }
+            pi = pi + 1
+        }
+    }
+    // Walk body AST recursively collecting EXPR_IDENT references
+    collect_ident_refs(closure_node.right, nodes, param_names, enclosing_names, captures)
+    return captures
+}
+
+fn collect_ident_refs(idx: int, nodes: []AstNode, params: []string, enclosing: []string, captures: []string) {
+    if idx < 0 || idx >= len(nodes) { return }
+    node := nodes[idx]
+    if node.tag == EXPR_IDENT {
+        name := node.str_val
+        // Skip if it's a parameter
+        pi := 0
+        for pi < len(params) {
+            if params[pi] == name { return }
+            pi = pi + 1
+        }
+        // Skip if already captured
+        ci := 0
+        for ci < len(captures) {
+            if captures[ci] == name { return }
+            ci = ci + 1
+        }
+        // Check if it's in the enclosing scope
+        ei := 0
+        for ei < len(enclosing) {
+            if enclosing[ei] == name {
+                push(captures, name)
+                return
+            }
+            ei = ei + 1
+        }
+        return
+    }
+    // Recurse into children
+    if node.left >= 0 { collect_ident_refs(node.left, nodes, params, enclosing, captures) }
+    if node.right >= 0 { collect_ident_refs(node.right, nodes, params, enclosing, captures) }
+    if node.extra >= 0 { collect_ident_refs(node.extra, nodes, params, enclosing, captures) }
+    // For block nodes, walk all statements
+    if node.tag == STMT_BLOCK && node.int_val > 0 {
+        si := node.left
+        sc := 0
+        for sc < node.int_val && si >= 0 && si < len(nodes) {
+            collect_ident_refs(si, nodes, params, enclosing, captures)
+            si = si + 1
+            sc = sc + 1
+        }
+    }
+    // For call nodes, walk arguments
+    if node.tag == EXPR_CALL {
+        call_args := get_call_args(idx)
+        ai := 0
+        for ai < len(call_args) {
+            collect_ident_refs(call_args[ai], nodes, params, enclosing, captures)
+            ai = ai + 1
+        }
+    }
 }
