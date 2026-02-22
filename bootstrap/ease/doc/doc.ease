@@ -1,0 +1,307 @@
+package doc
+
+// Documentation generator — produces HTML documentation from Ease source files
+
+fn HtmlEscape(s: string) -> string {
+    out := ""
+    i := 0
+    slen := len(s)
+    for i < slen {
+        ch := str_char_at(s, i)
+        if ch == 38 {
+            out = out + "&amp;"
+        } else if ch == 60 {
+            out = out + "&lt;"
+        } else if ch == 62 {
+            out = out + "&gt;"
+        } else {
+            out = out + str_substring(s, i, i + 1)
+        }
+        i = i + 1
+    }
+    return out
+}
+
+// Recursively collect directories containing .ease files (BFS)
+fn CollectPackages(root: string, pkg_dirs: []string) {
+    dirs_to_visit := []string{}
+    push(dirs_to_visit, root)
+    qi := 0
+    for qi < len(dirs_to_visit) {
+        dir := dirs_to_visit[qi]
+        entries := os.ListDir(dir)
+        has_ease := 0
+        epos := 0
+        estart := 0
+        entries_len := len(entries)
+        for epos <= entries_len {
+            if epos == entries_len || str_char_at(entries, epos) == 10 {
+                if epos > estart {
+                    entry := str_substring(entries, estart, epos)
+                    if len(entry) > 0 && str_char_at(entry, 0) != 46 {
+                        full_path := dir + "/" + entry
+                        if os.IsDir(full_path) == 1 {
+                            push(dirs_to_visit, full_path)
+                        }
+                        if has_ease_suffix(entry) == 1 && has_test_suffix(entry) == 0 {
+                            has_ease = 1
+                        }
+                    }
+                }
+                estart = epos + 1
+            }
+            epos = epos + 1
+        }
+        if has_ease == 1 {
+            push(pkg_dirs, dir)
+        }
+        qi = qi + 1
+    }
+}
+
+// List .ease source files (non-test) in a directory
+fn ListEaseFiles(dir: string, files: []string) {
+    entries := os.ListDir(dir)
+    epos := 0
+    estart := 0
+    entries_len := len(entries)
+    for epos <= entries_len {
+        if epos == entries_len || str_char_at(entries, epos) == 10 {
+            if epos > estart {
+                entry := str_substring(entries, estart, epos)
+                if has_ease_suffix(entry) == 1 && has_test_suffix(entry) == 0 {
+                    push(files, dir + "/" + entry)
+                }
+            }
+            estart = epos + 1
+        }
+        epos = epos + 1
+    }
+}
+
+// Extract package name from first file in a list
+fn ExtractPkgName(files: []string) -> string {
+    fi := 0
+    for fi < len(files) {
+        src := os.ReadFile(files[fi])
+        if len(src) > 0 {
+            pp := 0
+            pp = lex_skip(src, pp)
+            if lex_kind(src, pp) == TK_PACKAGE {
+                pp = lex_end(src, pp, TK_PACKAGE)
+                pp = lex_skip(src, pp)
+                if lex_kind(src, pp) == TK_IDENT {
+                    return lex_string_value(src, pp, TK_IDENT)
+                }
+            }
+        }
+        fi = fi + 1
+    }
+    return ""
+}
+
+// Extract package doc comment from first file in a list
+fn ExtractPkgDoc(files: []string) -> string {
+    fi := 0
+    for fi < len(files) {
+        src := os.ReadFile(files[fi])
+        if len(src) > 0 {
+            pp := 0
+            pp = lex_skip(src, pp)
+            if lex_kind(src, pp) == TK_PACKAGE {
+                return extract_doc_comment(src, pp)
+            }
+        }
+        fi = fi + 1
+    }
+    return ""
+}
+
+// Emit HTML for one symbol category within a package section
+fn EmitCategory(label: string, kind: int, prefix: string, names: []string, sigs: []string, kinds: []int, docs: []string, start: int, count: int) {
+    has_items := 0
+    i := 0
+    for i < count {
+        idx := start + i
+        if kinds[idx] == kind && is_exported(names[idx]) == 1 {
+            if has_items == 0 {
+                print("<h3>" + label + "</h3>\n")
+                has_items = 1
+            }
+            anchor := prefix + "-" + names[idx]
+            print("<div class=\"decl\">\n")
+            print("<h4 id=\"" + anchor + "\"><a href=\"#" + anchor + "\">" + HtmlEscape(names[idx]) + "</a></h4>\n")
+            print("<pre><code>" + HtmlEscape(sigs[idx]) + "</code></pre>\n")
+            if len(docs[idx]) > 0 {
+                print("<p class=\"doc\">" + HtmlEscape(docs[idx]) + "</p>\n")
+            }
+            print("</div>\n")
+        }
+        i = i + 1
+    }
+}
+
+fn IsInternalPkg(name: string) -> int {
+    if name == "token" { return 1 }
+    if name == "lexer" { return 1 }
+    if name == "ast" { return 1 }
+    if name == "parser" { return 1 }
+    if name == "ir" { return 1 }
+    if name == "irgen" { return 1 }
+    if name == "llvm" { return 1 }
+    if name == "lsp" { return 1 }
+    return 0
+}
+
+fn Run(doc_path: string) -> int {
+    // Strip trailing slash
+    path := doc_path
+    if len(path) > 1 && str_char_at(path, len(path) - 1) == 47 {
+        path = str_substring(path, 0, len(path) - 1)
+    }
+
+    // Phase 1: Collect package directories
+    pkg_dirs := []string{}
+    is_single_file := 0
+    if os.IsDir(path) == 1 {
+        CollectPackages(path, pkg_dirs)
+    } else {
+        // Single file — treat its parent dir as the package
+        slash := find_last_slash(path)
+        if slash >= 0 {
+            push(pkg_dirs, str_substring(path, 0, slash))
+        } else {
+            push(pkg_dirs, ".")
+        }
+        is_single_file = 1
+    }
+
+    if len(pkg_dirs) == 0 {
+        print("No .ease files found\n")
+        return 1
+    }
+
+    // Phase 2: For each package, collect name and symbols
+    pkg_names := []string{}
+    pkg_doc_texts := []string{}
+    sym_names := []string{}
+    sym_sigs := []string{}
+    sym_kinds := []int{}
+    sym_docs := []string{}
+    pkg_sym_start := []int{}
+    pkg_sym_count := []int{}
+
+    pi := 0
+    for pi < len(pkg_dirs) {
+        files := []string{}
+        if is_single_file == 1 {
+            push(files, path)
+        } else {
+            ListEaseFiles(pkg_dirs[pi], files)
+        }
+
+        pname := ExtractPkgName(files)
+        if len(pname) == 0 {
+            // Derive from directory name
+            pname = extract_module_name(pkg_dirs[pi])
+        }
+        // Skip compiler-internal packages
+        if IsInternalPkg(pname) == 0 {
+            push(pkg_names, pname)
+            push(pkg_doc_texts, ExtractPkgDoc(files))
+            push(pkg_sym_start, len(sym_names))
+
+            fi := 0
+            for fi < len(files) {
+                src := os.ReadFile(files[fi])
+                if len(src) > 0 {
+                    sym_before := lsp_symbol_count()
+                    parse_for_diagnostics(src)
+                    si := sym_before
+                    sc := lsp_symbol_count()
+                    for si < sc {
+                        push(sym_names, lsp_symbol_name(si))
+                        push(sym_sigs, lsp_symbol_sig(si))
+                        push(sym_kinds, lsp_symbol_kind(si))
+                        push(sym_docs, lsp_symbol_doc(si))
+                        si = si + 1
+                    }
+                }
+                fi = fi + 1
+            }
+            push(pkg_sym_count, len(sym_names) - pkg_sym_start[pi])
+        }
+        pi = pi + 1
+    }
+
+    // Phase 3: Emit HTML
+    // --- Header ---
+    print("<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n")
+    print("<meta charset=\"UTF-8\">\n")
+    print("<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n")
+    print("<title>Ease Documentation</title>\n")
+    print("<style>\n")
+    print("*{margin:0;padding:0;box-sizing:border-box}\n")
+    print("body{font-family:-apple-system,BlinkMacSystemFont,\"Segoe UI\",Helvetica,Arial,sans-serif;line-height:1.6;color:#24292f;display:flex;min-height:100vh}\n")
+    print("nav{width:260px;position:fixed;top:0;left:0;bottom:0;overflow-y:auto;padding:24px 16px;border-right:1px solid #d0d7de;background:#f6f8fa}\n")
+    print("nav h2{font-size:13px;color:#656d76;text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px}\n")
+    print("nav a{display:block;padding:4px 10px;color:#0969da;text-decoration:none;font-size:14px;border-radius:6px}\n")
+    print("nav a:hover{background:#ddf4ff}\n")
+    print("main{margin-left:260px;padding:40px 48px;max-width:860px;width:100%}\n")
+    print("h1{font-size:28px;margin-bottom:4px}\n")
+    print(".subtitle{color:#656d76;margin-bottom:32px;font-size:15px}\n")
+    print("section{margin-bottom:48px}\n")
+    print("section>h2{font-size:22px;padding-bottom:8px;border-bottom:1px solid #d0d7de;margin-bottom:20px}\n")
+    print("h3{font-size:14px;color:#656d76;text-transform:uppercase;letter-spacing:.3px;margin-top:28px;margin-bottom:12px}\n")
+    print(".decl{margin-bottom:20px;padding-left:16px;border-left:3px solid #d0d7de}\n")
+    print(".decl h4{font-size:16px;margin-bottom:4px}\n")
+    print(".decl h4 a{color:#24292f;text-decoration:none}\n")
+    print(".decl h4 a:hover{color:#0969da}\n")
+    print("pre{background:#f6f8fa;border:1px solid #d0d7de;border-radius:6px;padding:12px 16px;overflow-x:auto;margin-bottom:8px}\n")
+    print("code{font-family:\"SFMono-Regular\",Consolas,\"Liberation Mono\",Menlo,monospace;font-size:13px}\n")
+    print(".doc{color:#57606a;font-size:14px;line-height:1.5}\n")
+    print(".pkg-doc{color:#57606a;font-size:15px;margin-bottom:20px;line-height:1.6}\n")
+    print("</style>\n</head>\n<body>\n")
+
+    // --- Navigation sidebar ---
+    print("<nav>\n<h2>Packages</h2>\n")
+    ni := 0
+    for ni < len(pkg_names) {
+        print("<a href=\"#pkg-" + pkg_names[ni] + "\">" + pkg_names[ni] + "</a>\n")
+        ni = ni + 1
+    }
+    print("</nav>\n")
+
+    // --- Main content ---
+    print("<main>\n")
+    print("<h1>Ease Documentation</h1>\n")
+    print("<p class=\"subtitle\">" + strconv.Itoa(len(pkg_names)) + " packages</p>\n")
+
+    pi = 0
+    for pi < len(pkg_names) {
+        pn := pkg_names[pi]
+        print("<section id=\"pkg-" + pn + "\">\n")
+        print("<h2>Package " + pn + "</h2>\n")
+        if len(pkg_doc_texts[pi]) > 0 {
+            print("<p class=\"pkg-doc\">" + HtmlEscape(pkg_doc_texts[pi]) + "</p>\n")
+        }
+
+        start := pkg_sym_start[pi]
+        count := pkg_sym_count[pi]
+
+        // Constants (kind 14)
+        EmitCategory("Constants", 14, pn, sym_names, sym_sigs, sym_kinds, sym_docs, start, count)
+        // Types (kind 23 = struct)
+        EmitCategory("Types", 23, pn, sym_names, sym_sigs, sym_kinds, sym_docs, start, count)
+        // Enums (kind 10)
+        EmitCategory("Enums", 10, pn, sym_names, sym_sigs, sym_kinds, sym_docs, start, count)
+        // Functions (kind 12)
+        EmitCategory("Functions", 12, pn, sym_names, sym_sigs, sym_kinds, sym_docs, start, count)
+
+        print("</section>\n")
+        pi = pi + 1
+    }
+
+    print("</main>\n</body>\n</html>\n")
+    return 0
+}

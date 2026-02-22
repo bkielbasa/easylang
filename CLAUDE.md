@@ -28,6 +28,15 @@ See [docs/language.md](docs/language.md) for full language design (syntax, types
  - Never add information to commits that I used Claude
  - for commit message use Conventional Commits pattern, example: `feat(lsp): Add LSP completion and document symbols support`
 
+## Code quality
+
+ - function shouldn't be longer thant 100 lines of code
+ - split longer files into smaller files with functions and types grouped 
+ - any language feature should have unit test
+ - remove tests that are covered in other tests in the meantime
+ - avoid using global variables
+ - after a successful implementation make a refactoring round to make the code simpler and easier to understand
+
 ## Project Structure
 
 ```
@@ -109,4 +118,4 @@ See [docs/lsp.md](docs/lsp.md) for supported methods, features, and VS Code exte
 - **[Language Design](docs/language.md)** — syntax, types, error handling, enums, methods, imports, pointers, concurrency
 - **[Implementation Status](docs/implementation-status.md)** — compiler capabilities, known issues, future work
 - **[Testing](docs/testing.md)** — test framework, benchmark framework, test suite (58 tests), example programs
-- **[LSP Server](docs/lsp.md)** — supported methods, features, VS Code extension
+[-](-) **[LSP Server](docs/lsp.md)** — supported methods, features, VS Code extension

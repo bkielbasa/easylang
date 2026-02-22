@@ -1,0 +1,774 @@
+package sema
+
+// Semantic analysis — side tables, registries, rename table, and utility functions
+
+// ============================================================
+// Side table: function call arguments
+// ============================================================
+
+g_call_args := []int{}
+
+fn store_call_args(call_node_idx: int, arg_indices: []int) {
+    push(g_call_args, call_node_idx)
+    push(g_call_args, len(arg_indices))
+    i := 0
+    count := len(arg_indices)
+    for i < count {
+        push(g_call_args, arg_indices[i])
+        i = i + 1
+    }
+}
+
+fn get_call_args(call_node_idx: int) -> []int {
+    i := 0
+    for {
+        if i >= len(g_call_args) {
+            break
+        }
+        if g_call_args[i] == call_node_idx {
+            arg_count := g_call_args[i + 1]
+            result := []int{}
+            j := 0
+            for j < arg_count {
+                push(result, g_call_args[i + 2 + j])
+                j = j + 1
+            }
+            return result
+        }
+        arg_count := g_call_args[i + 1]
+        i = i + 2 + arg_count
+    }
+    return []int{}
+}
+
+// ============================================================
+// Side table: multi-return expression indices
+// ============================================================
+
+g_multi_ret_exprs := []int{}
+
+fn store_multi_ret_exprs(ret_node_idx: int, expr_indices: []int) {
+    push(g_multi_ret_exprs, ret_node_idx)
+    push(g_multi_ret_exprs, len(expr_indices))
+    i := 0
+    count := len(expr_indices)
+    for i < count {
+        push(g_multi_ret_exprs, expr_indices[i])
+        i = i + 1
+    }
+}
+
+fn get_multi_ret_exprs(ret_node_idx: int) -> []int {
+    i := 0
+    for {
+        if i >= len(g_multi_ret_exprs) {
+            break
+        }
+        if g_multi_ret_exprs[i] == ret_node_idx {
+            arg_count := g_multi_ret_exprs[i + 1]
+            result := []int{}
+            j := 0
+            for j < arg_count {
+                push(result, g_multi_ret_exprs[i + 2 + j])
+                j = j + 1
+            }
+            return result
+        }
+        arg_count := g_multi_ret_exprs[i + 1]
+        i = i + 2 + arg_count
+    }
+    return []int{}
+}
+
+// ============================================================
+// Side table: struct literal field values
+// ============================================================
+
+g_struct_fields := []int{}
+
+fn store_struct_fields(struct_node_idx: int, field_indices: []int) {
+    push(g_struct_fields, struct_node_idx)
+    push(g_struct_fields, len(field_indices))
+    i := 0
+    count := len(field_indices)
+    for i < count {
+        push(g_struct_fields, field_indices[i])
+        i = i + 1
+    }
+}
+
+fn get_struct_fields(struct_node_idx: int) -> []int {
+    i := 0
+    for {
+        if i >= len(g_struct_fields) {
+            break
+        }
+        if g_struct_fields[i] == struct_node_idx {
+            field_count := g_struct_fields[i + 1]
+            result := []int{}
+            j := 0
+            for j < field_count {
+                push(result, g_struct_fields[i + 2 + j])
+                j = j + 1
+            }
+            return result
+        }
+        field_count := g_struct_fields[i + 1]
+        i = i + 2 + field_count
+    }
+    return []int{}
+}
+
+// ============================================================
+// Side table: match arm bindings
+// ============================================================
+
+g_match_arm_bindings := []int{}
+g_match_arm_binding_names := []string{}
+
+fn store_match_arm_bindings(arm_node_idx: int, names: []string) {
+    push(g_match_arm_bindings, arm_node_idx)
+    push(g_match_arm_bindings, len(names))
+    start := len(g_match_arm_binding_names)
+    push(g_match_arm_bindings, start)
+    i := 0
+    for i < len(names) {
+        push(g_match_arm_binding_names, names[i])
+        i = i + 1
+    }
+}
+
+fn get_match_arm_bindings(arm_node_idx: int) -> []string {
+    i := 0
+    for i < len(g_match_arm_bindings) {
+        if g_match_arm_bindings[i] == arm_node_idx {
+            count := g_match_arm_bindings[i + 1]
+            start := g_match_arm_bindings[i + 2]
+            result := []string{}
+            j := 0
+            for j < count {
+                push(result, g_match_arm_binding_names[start + j])
+                j = j + 1
+            }
+            return result
+        }
+        i = i + 3
+    }
+    return []string{}
+}
+
+// ============================================================
+// Field type registry
+// ============================================================
+
+g_field_reg_names := []string{}
+g_field_reg_types := []int{}
+g_field_reg_is_array := []int{}
+g_field_reg_struct_names := []string{}
+
+fn register_field_type(name: string, field_type: int, is_array: int) {
+    i := 0
+    for i < len(g_field_reg_names) {
+        if g_field_reg_names[i] == name { return }
+        i = i + 1
+    }
+    push(g_field_reg_names, name)
+    push(g_field_reg_types, field_type)
+    push(g_field_reg_is_array, is_array)
+    push(g_field_reg_struct_names, "")
+}
+
+fn register_field_struct_name(name: string, sname: string) {
+    i := 0
+    for i < len(g_field_reg_names) {
+        if g_field_reg_names[i] == name {
+            g_field_reg_struct_names[i] = sname
+            return
+        }
+        i = i + 1
+    }
+}
+
+fn lookup_field_struct_name(name: string) -> string {
+    i := 0
+    for i < len(g_field_reg_names) {
+        if g_field_reg_names[i] == name {
+            return g_field_reg_struct_names[i]
+        }
+        i = i + 1
+    }
+    return ""
+}
+
+fn lookup_field_type(name: string) -> int {
+    i := 0
+    for i < len(g_field_reg_names) {
+        if g_field_reg_names[i] == name {
+            return g_field_reg_types[i]
+        }
+        i = i + 1
+    }
+    return TYPE_UNKNOWN
+}
+
+fn lookup_field_is_array(name: string) -> int {
+    i := 0
+    for i < len(g_field_reg_names) {
+        if g_field_reg_names[i] == name {
+            return g_field_reg_is_array[i]
+        }
+        i = i + 1
+    }
+    return 0
+}
+
+// ============================================================
+// Function return type registry
+// ============================================================
+
+g_func_ret_names := []string{}
+g_func_ret_types := []int{}
+g_func_ret_is_array := []int{}
+g_func_ret_struct_names := []string{}
+g_func_ret_tuple_types := []int{}
+g_func_ret_tuple_starts := []int{}
+g_func_ret_tuple_counts := []int{}
+
+fn parse_type_name_to_tag(t: string) -> int {
+    if t == "int" { return TYPE_INT }
+    if t == "string" { return TYPE_STRING }
+    if t == "bool" { return TYPE_BOOL }
+    return TYPE_UNKNOWN
+}
+
+fn register_func_return_type(name: string, ret_type: int, is_array: int, struct_name: string) {
+    push(g_func_ret_names, name)
+    push(g_func_ret_types, ret_type)
+    push(g_func_ret_is_array, is_array)
+    push(g_func_ret_struct_names, struct_name)
+    // Check for tuple return type: struct_name starts with "__tuple"
+    if strings.HasPrefix(struct_name, "__tuple") {
+        // Parse "__tupleN:type1,type2,..."
+        // Find ':' separator
+        colon_pos := -1
+        ci := 0
+        for ci < len(struct_name) {
+            if str_char_at(struct_name, ci) == 58 { colon_pos = ci break }
+            ci = ci + 1
+        }
+        if colon_pos > 0 {
+            push(g_func_ret_tuple_starts, len(g_func_ret_tuple_types))
+            // Parse comma-separated types after ':'
+            types_str := str_substring(struct_name, colon_pos + 1, len(struct_name))
+            count := 0
+            tstart := 0
+            ti := 0
+            for ti <= len(types_str) {
+                if ti == len(types_str) || str_char_at(types_str, ti) == 44 {
+                    tname := str_substring(types_str, tstart, ti)
+                    push(g_func_ret_tuple_types, parse_type_name_to_tag(tname))
+                    count = count + 1
+                    tstart = ti + 1
+                }
+                ti = ti + 1
+            }
+            push(g_func_ret_tuple_counts, count)
+        } else {
+            push(g_func_ret_tuple_starts, len(g_func_ret_tuple_types))
+            push(g_func_ret_tuple_counts, 0)
+        }
+    } else {
+        push(g_func_ret_tuple_starts, len(g_func_ret_tuple_types))
+        push(g_func_ret_tuple_counts, 0)
+    }
+}
+
+fn lookup_func_return_tuple_count(name: string) -> int {
+    i := len(g_func_ret_names) - 1
+    for i >= 0 {
+        if g_func_ret_names[i] == name {
+            return g_func_ret_tuple_counts[i]
+        }
+        i = i - 1
+    }
+    return 0
+}
+
+fn lookup_func_return_tuple_type(name: string, elem_idx: int) -> int {
+    i := len(g_func_ret_names) - 1
+    for i >= 0 {
+        if g_func_ret_names[i] == name {
+            start := g_func_ret_tuple_starts[i]
+            return g_func_ret_tuple_types[start + elem_idx]
+        }
+        i = i - 1
+    }
+    return TYPE_UNKNOWN
+}
+
+fn lookup_func_return_type(name: string) -> int {
+    i := len(g_func_ret_names) - 1
+    for i >= 0 {
+        if g_func_ret_names[i] == name {
+            return g_func_ret_types[i]
+        }
+        i = i - 1
+    }
+    return TYPE_UNKNOWN
+}
+
+fn lookup_func_return_is_array(name: string) -> int {
+    i := len(g_func_ret_names) - 1
+    for i >= 0 {
+        if g_func_ret_names[i] == name {
+            return g_func_ret_is_array[i]
+        }
+        i = i - 1
+    }
+    return 0
+}
+
+fn lookup_func_return_struct_name(name: string) -> string {
+    i := len(g_func_ret_names) - 1
+    for i >= 0 {
+        if g_func_ret_names[i] == name {
+            return g_func_ret_struct_names[i]
+        }
+        i = i - 1
+    }
+    return ""
+}
+
+// ============================================================
+// Method registry
+// ============================================================
+
+g_method_struct_names := []string{}
+g_method_names := []string{}
+g_method_func_names := []string{}
+
+fn lookup_method(struct_name: string, method_name: string) -> string {
+    i := 0
+    for i < len(g_method_struct_names) {
+        if g_method_struct_names[i] == struct_name && g_method_names[i] == method_name {
+            return g_method_func_names[i]
+        }
+        i = i + 1
+    }
+    return ""
+}
+
+fn RegisterMethod(struct_name: string, method_name: string, func_name: string) {
+    push(g_method_struct_names, struct_name)
+    push(g_method_names, method_name)
+    push(g_method_func_names, func_name)
+}
+
+// ============================================================
+// Function parameter type registry
+// ============================================================
+
+g_func_param_names := []string{}
+g_func_param_indices := []int{}
+g_func_param_type_names := []string{}
+
+fn lookup_func_param_type_name(func_name: string, param_idx: int) -> string {
+    i := 0
+    for i < len(g_func_param_names) {
+        if g_func_param_names[i] == func_name && g_func_param_indices[i] == param_idx {
+            return g_func_param_type_names[i]
+        }
+        i = i + 1
+    }
+    return ""
+}
+
+fn RegisterFuncParam(func_name: string, param_idx: int, type_name: string) {
+    push(g_func_param_names, func_name)
+    push(g_func_param_indices, param_idx)
+    push(g_func_param_type_names, type_name)
+}
+
+// ============================================================
+// Interface vtable tracking
+// ============================================================
+
+g_vtable_struct_names := []string{}
+g_vtable_iface_names := []string{}
+
+fn struct_satisfies_interface(struct_name: string, iface_name: string) -> int {
+    mc := iface_method_count(iface_name)
+    mi := 0
+    for mi < mc {
+        mname := iface_method_name(iface_name, mi)
+        if lookup_method(struct_name, mname) == "" {
+            return 0
+        }
+        mi = mi + 1
+    }
+    return 1
+}
+
+fn record_vtable_pair(struct_name: string, iface_name: string) {
+    i := 0
+    for i < len(g_vtable_struct_names) {
+        if g_vtable_struct_names[i] == struct_name && g_vtable_iface_names[i] == iface_name {
+            return
+        }
+        i = i + 1
+    }
+    push(g_vtable_struct_names, struct_name)
+    push(g_vtable_iface_names, iface_name)
+}
+
+fn VtableCount() -> int {
+    return len(g_vtable_struct_names)
+}
+
+fn VtableStructName(i: int) -> string {
+    return g_vtable_struct_names[i]
+}
+
+fn VtableIfaceName(i: int) -> string {
+    return g_vtable_iface_names[i]
+}
+
+// ============================================================
+// Constants registry
+// ============================================================
+
+g_const_names := []string{}
+g_const_int_values := []int{}
+g_const_str_values := []string{}
+g_const_types := []int{}
+
+fn register_const(nodes: []AstNode, const_idx: int) {
+    cnode := nodes[const_idx]
+    push(g_const_names, cnode.str_val)
+    push(g_const_types, cnode.type_tag)
+    // Evaluate the literal value from the initializer
+    init_idx := cnode.left
+    if init_idx < 0 {
+        push(g_const_int_values, 0)
+        push(g_const_str_values, "")
+        return
+    }
+    init := nodes[init_idx]
+    if init.tag == EXPR_INT {
+        push(g_const_int_values, init.int_val)
+        push(g_const_str_values, "")
+    } else if init.tag == EXPR_BOOL {
+        push(g_const_int_values, init.int_val)
+        push(g_const_str_values, "")
+    } else if init.tag == EXPR_STRING {
+        push(g_const_int_values, 0)
+        push(g_const_str_values, init.str_val)
+    } else if init.tag == EXPR_UNARY {
+        // Negative int: -N => 0 - N (need to evaluate the child)
+        if init.left >= 0 {
+            child := nodes[init.left]
+            push(g_const_int_values, 0 - child.int_val)
+        } else {
+            push(g_const_int_values, 0)
+        }
+        push(g_const_str_values, "")
+    } else {
+        push(g_const_int_values, 0)
+        push(g_const_str_values, "")
+    }
+}
+
+fn ConstCount() -> int {
+    return len(g_const_names)
+}
+
+fn ConstName(i: int) -> string {
+    return g_const_names[i]
+}
+
+fn ConstType(i: int) -> int {
+    if i < len(g_const_types) {
+        return g_const_types[i]
+    }
+    return TYPE_UNKNOWN
+}
+
+fn ConstIntValue(i: int) -> int {
+    if i < len(g_const_int_values) {
+        return g_const_int_values[i]
+    }
+    return 0
+}
+
+fn ConstStrValue(i: int) -> string {
+    if i < len(g_const_str_values) {
+        return g_const_str_values[i]
+    }
+    return ""
+}
+
+// ============================================================
+// Rename table
+// ============================================================
+
+g_rename_from := []string{}
+g_rename_to := []string{}
+
+fn lookup_rename(name: string) -> string {
+    i := 0
+    for i < len(g_rename_from) {
+        if g_rename_from[i] == name {
+            return g_rename_to[i]
+        }
+        i = i + 1
+    }
+    return name
+}
+
+fn AddRename(from: string, to: string) {
+    push(g_rename_from, from)
+    push(g_rename_to, to)
+}
+
+// ============================================================
+// Import tracking
+// ============================================================
+
+g_import_paths := []string{}
+g_import_names := []string{}
+
+fn AddImport(path: string, name: string) {
+    push(g_import_paths, path)
+    push(g_import_names, name)
+}
+
+fn IsModuleLoaded(name: string) -> int {
+    i := 0
+    for i < len(g_import_names) {
+        if g_import_names[i] == name {
+            return 1
+        }
+        i = i + 1
+    }
+    return 0
+}
+
+// ============================================================
+// Utility functions
+// ============================================================
+
+// Find the position of '.' in a string, returns -1 if not found
+fn find_dot(name: string) -> int {
+    i := 0
+    for i < len(name) {
+        if str_char_at(name, i) == 46 { return i }
+        i = i + 1
+    }
+    return -1
+}
+
+// Find the last '/' in a string, returns -1 if not found
+fn find_last_slash(path: string) -> int {
+    i := len(path) - 1
+    for i >= 0 {
+        if str_char_at(path, i) == 47 { return i }
+        i = i - 1
+    }
+    return -1
+}
+
+// Extract module name from import path: "./lexer" -> "lexer", "./sub/parser" -> "parser"
+fn extract_module_name(import_path: string) -> string {
+    slash_pos := find_last_slash(import_path)
+    if slash_pos >= 0 {
+        return str_substring(import_path, slash_pos + 1, len(import_path))
+    }
+    return import_path
+}
+
+// Resolve import base path relative to source file: "./lexer" -> "dir/lexer"
+fn resolve_import_base(source_path: string, import_path: string) -> string {
+    slash_pos := find_last_slash(source_path)
+    dir := "."
+    if slash_pos >= 0 {
+        dir = str_substring(source_path, 0, slash_pos)
+    }
+    // Strip leading "./" from import_path if present
+    rel_path := import_path
+    if len(import_path) >= 2 && str_char_at(import_path, 0) == 46 && str_char_at(import_path, 1) == 47 {
+        rel_path = str_substring(import_path, 2, len(import_path))
+    }
+    return dir + "/" + rel_path
+}
+
+// Resolve import path relative to source file: "./lexer" -> "dir/lexer.ease"
+// For directories, returns the directory path (without .ease)
+fn resolve_import_path(source_path: string, import_path: string) -> string {
+    base := resolve_import_base(source_path, import_path)
+    // Check if path is a directory first
+    if os.IsDir(base) == 1 {
+        return base
+    }
+    return base + ".ease"
+}
+
+// Check if a string ends with ".ease" (used for filtering directory entries)
+fn has_ease_suffix(s: string) -> int {
+    slen := len(s)
+    if slen < 5 { return 0 }
+    if str_char_at(s, slen - 5) != 46 { return 0 }
+    if str_char_at(s, slen - 4) != 101 { return 0 }
+    if str_char_at(s, slen - 3) != 97 { return 0 }
+    if str_char_at(s, slen - 2) != 115 { return 0 }
+    if str_char_at(s, slen - 1) != 101 { return 0 }
+    return 1
+}
+
+// Check if a name starts with an uppercase letter (A-Z = 65-90)
+fn is_exported(name: string) -> int {
+    if len(name) == 0 { return 0 }
+    ch := str_char_at(name, 0)
+    if ch >= 65 && ch <= 90 { return 1 }
+    return 0
+}
+
+// Check if a string ends with "_test.ease"
+fn has_test_suffix(s: string) -> int {
+    slen := len(s)
+    if slen < 10 { return 0 }
+    // Check "_test.ease" (10 chars from end)
+    suffix := str_substring(s, slen - 10, slen)
+    if suffix == "_test.ease" { return 1 }
+    return 0
+}
+
+// Check if a function name starts with "Test" (uppercase T)
+fn is_test_func(name: string) -> int {
+    if len(name) < 5 { return 0 }
+    if str_char_at(name, 0) != 84 { return 0 }  // T
+    if str_char_at(name, 1) != 101 { return 0 } // e
+    if str_char_at(name, 2) != 115 { return 0 } // s
+    if str_char_at(name, 3) != 116 { return 0 } // t
+    return 1
+}
+
+fn is_benchmark_func(name: string) -> int {
+    if len(name) < 10 { return 0 }
+    if str_char_at(name, 0) != 66 { return 0 }
+    if str_char_at(name, 1) != 101 { return 0 }
+    if str_char_at(name, 2) != 110 { return 0 }
+    if str_char_at(name, 3) != 99 { return 0 }
+    if str_char_at(name, 4) != 104 { return 0 }
+    if str_char_at(name, 5) != 109 { return 0 }
+    if str_char_at(name, 6) != 97 { return 0 }
+    if str_char_at(name, 7) != 114 { return 0 }
+    if str_char_at(name, 8) != 107 { return 0 }
+    return 1
+}
+
+fn count_func_params(nodes: []AstNode, func_idx: int) -> int {
+    node := nodes[func_idx]
+    if node.left < 0 { return 0 }
+    count := 0
+    pi := node.left
+    nodes_len := len(nodes)
+    for pi < nodes_len {
+        if nodes[pi].tag == DECL_PARAM {
+            count = count + 1
+        } else {
+            break
+        }
+        pi = pi + 1
+    }
+    return count
+}
+
+fn infer_init_type(nodes: []AstNode, init_idx: int) -> int {
+    if init_idx < 0 { return TYPE_UNKNOWN }
+    init_node := nodes[init_idx]
+    if init_node.tag == EXPR_INT { return TYPE_INT }
+    if init_node.tag == EXPR_UNARY { return TYPE_INT }
+    if init_node.tag == EXPR_STRING { return TYPE_STRING }
+    if init_node.tag == EXPR_BOOL { return TYPE_BOOL }
+    if init_node.tag == EXPR_ARRAY_LIT {
+        if init_node.str_val == "string" { return TYPE_STRING_ARRAY }
+        return TYPE_INT_ARRAY
+    }
+    return TYPE_UNKNOWN
+}
+
+// Extract doc comment lines preceding a declaration at position dpos.
+// Scans backward in the raw source to find consecutive // comment lines.
+// Returns the combined comment text (without // prefix), or "" if none.
+fn extract_doc_comment(source: string, dpos: int) -> string {
+    slen := len(source)
+    if dpos <= 0 { return "" }
+
+    // Step 1: From dpos, scan left past spaces/tabs to find the preceding newline
+    p := dpos - 1
+    for p >= 0 {
+        ch := str_char_at(source, p)
+        if ch == 32 || ch == 9 {
+            p = p - 1
+        } else {
+            break
+        }
+    }
+    // p should now be at a newline (10) or at start of file or at some other char
+    if p < 0 { return "" }
+    if str_char_at(source, p) != 10 { return "" }
+
+    // Step 2: Scan backward line-by-line collecting comment lines
+    result := ""
+    for {
+        // We're at a newline position. Find the start of this line.
+        line_end := p
+        p = p - 1
+        if p < 0 { break }
+
+        // Find start of line (after previous newline or start of file)
+        line_start := p
+        for line_start > 0 {
+            if str_char_at(source, line_start - 1) == 10 { break }
+            line_start = line_start - 1
+        }
+
+        // Extract the line content
+        line := str_substring(source, line_start, line_end)
+
+        // Skip leading whitespace to find first non-space char
+        li := 0
+        line_len := len(line)
+        for li < line_len {
+            lch := str_char_at(line, li)
+            if lch != 32 && lch != 9 { break }
+            li = li + 1
+        }
+
+        // Check if this line starts with "//"
+        if li + 1 < line_len && str_char_at(line, li) == 47 && str_char_at(line, li + 1) == 47 {
+            // Strip "// " or "//" prefix
+            comment_start := li + 2
+            if comment_start < line_len && str_char_at(line, comment_start) == 32 {
+                comment_start = comment_start + 1
+            }
+            comment_text := ""
+            if comment_start < line_len {
+                comment_text = str_substring(line, comment_start, line_len)
+            }
+            // Prepend to result (building bottom-up)
+            if len(result) > 0 {
+                result = comment_text + "\n" + result
+            } else {
+                result = comment_text
+            }
+            // Move to previous line
+            p = line_start - 1
+            if p < 0 { break }
+        } else {
+            // Not a comment line — stop
+            break
+        }
+    }
+    return result
+}

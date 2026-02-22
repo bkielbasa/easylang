@@ -429,15 +429,51 @@ fn gen_ir_eval_args(ast_idx: int, nodes: []AstNode, instrs: []IRInstr, st_names:
 fn gen_ir_index(node: AstNode, nodes: []AstNode, instrs: []IRInstr, st_names: []string, st_vregs: []int) -> int {
     arr := gen_ir_from_ast_with_symtab(node.left, nodes, instrs, st_names, st_vregs)
     idx := gen_ir_from_ast_with_symtab(node.right, nodes, instrs, st_names, st_vregs)
-    // Map indexing: m["key"] → OP_MAP_GET
+    // Map indexing: m["key"] → Option/StringOption via branchless construction
     if get_vreg_type(arr) == TYPE_MAP {
-        res := len(instrs)
-        push(instrs, IRInstr { op: OP_MAP_GET, dest: res, arg1: arr, arg2: idx, arg3: 0, str_val: "" })
+        // Step 1: Get value and has-flag
+        get_vreg := len(instrs)
+        push(instrs, IRInstr { op: OP_MAP_GET, dest: get_vreg, arg1: arr, arg2: idx, arg3: 0, str_val: "" })
         map_type := get_vreg_struct_name(arr)
         val_type := TYPE_INT
         if map_type != "" { val_type = type_tag_from_name(map_val_type_str(map_type)) }
-        set_vreg_type(res, val_type)
-        return res
+        set_vreg_type(get_vreg, val_type)
+
+        has_vreg := len(instrs)
+        push(instrs, IRInstr { op: OP_MAP_HAS, dest: has_vreg, arg1: arr, arg2: idx, arg3: 0, str_val: "" })
+        set_vreg_type(has_vreg, TYPE_INT)
+
+        // Step 2: Allocate 16-byte Option struct (tag@0, value@8)
+        size_vreg := len(instrs)
+        push(instrs, IRInstr { op: OP_LOADCONST, dest: size_vreg, arg1: 16, arg2: 0, arg3: 0, str_val: "" })
+        set_vreg_type(size_vreg, TYPE_INT)
+        ptr_vreg := len(instrs)
+        push(instrs, IRInstr { op: OP_HEAP_ALLOC, dest: ptr_vreg, arg1: size_vreg, arg2: 0, arg3: 0, str_val: "" })
+        set_vreg_type(ptr_vreg, TYPE_INT)
+
+        // Step 3: Compute tag = 1 - has (Some=0 when found, None=1 when not)
+        one_vreg := len(instrs)
+        push(instrs, IRInstr { op: OP_LOADCONST, dest: one_vreg, arg1: 1, arg2: 0, arg3: 0, str_val: "" })
+        set_vreg_type(one_vreg, TYPE_INT)
+        tag_vreg := len(instrs)
+        push(instrs, IRInstr { op: OP_SUB, dest: tag_vreg, arg1: one_vreg, arg2: has_vreg, arg3: 0, str_val: "" })
+        set_vreg_type(tag_vreg, TYPE_INT)
+
+        // Step 4: Store tag at offset 0
+        push(instrs, IRInstr { op: OP_STORE, dest: -1, arg1: ptr_vreg, arg2: tag_vreg, arg3: 0, str_val: "" })
+
+        // Step 5: Store value at offset 8 (INDEXADDR uses immediate offset, not vreg)
+        addr_vreg := len(instrs)
+        push(instrs, IRInstr { op: OP_INDEXADDR, dest: addr_vreg, arg1: ptr_vreg, arg2: 8, arg3: 0, str_val: "" })
+        set_vreg_type(addr_vreg, TYPE_INT)
+        push(instrs, IRInstr { op: OP_STORE, dest: -1, arg1: addr_vreg, arg2: get_vreg, arg3: 0, str_val: "" })
+
+        // Step 6: Set vreg type to struct with Option or StringOption
+        opt_name := "Option"
+        if val_type == TYPE_STRING { opt_name = "StringOption" }
+        set_vreg_type(ptr_vreg, TYPE_STRUCT)
+        set_vreg_struct_name(ptr_vreg, opt_name)
+        return ptr_vreg
     }
     res := len(instrs)
     instr := IRInstr { op: OP_LOAD, dest: res, arg1: arr, arg2: idx, arg3: 0, str_val: "array_index" }
@@ -702,23 +738,14 @@ fn gen_ir_expr(node: AstNode, ast_idx: int, nodes: []AstNode, instrs: []IRInstr,
         if found_vreg <= -2000 {
             // Const sentinel - inline the constant value directly
             ci := -(found_vreg + 2000)
-            ctype := TYPE_UNKNOWN
-            if ci < len(g_const_types) {
-                ctype = g_const_types[ci]
-            }
+            ctype := ConstType(ci)
             vreg := len(instrs)
             if ctype == TYPE_STRING {
-                cstr := ""
-                if ci < len(g_const_str_values) {
-                    cstr = g_const_str_values[ci]
-                }
+                cstr := ConstStrValue(ci)
                 push(instrs, IRInstr { op: OP_LOADCONST, dest: vreg, arg1: 0, arg2: 0, arg3: 0, str_val: cstr })
                 set_vreg_type(vreg, TYPE_STRING)
             } else {
-                cval := 0
-                if ci < len(g_const_int_values) {
-                    cval = g_const_int_values[ci]
-                }
+                cval := ConstIntValue(ci)
                 push(instrs, IRInstr { op: OP_LOADCONST, dest: vreg, arg1: cval, arg2: 0, arg3: 0, str_val: "" })
                 if ctype == TYPE_BOOL {
                     set_vreg_type(vreg, TYPE_BOOL)
