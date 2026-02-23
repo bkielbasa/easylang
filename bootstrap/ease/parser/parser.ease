@@ -606,8 +606,10 @@ fn parse_param(src: string, pos: int, nodes: []AstNode) -> ParseResult {
     if type_name == "string" { param_type_tag = TYPE_STRING }
     if type_name == "int" { param_type_tag = TYPE_INT }
     if type_name == "bool" { param_type_tag = TYPE_BOOL }
+    if type_name == "float" { param_type_tag = TYPE_FLOAT }
     if type_name == "[]string" { param_type_tag = TYPE_STRING param_is_array = 1 }
     if type_name == "[]int" { param_type_tag = TYPE_INT param_is_array = 1 }
+    if type_name == "[]float" { param_type_tag = TYPE_FLOAT param_is_array = 1 }
     if strings.HasPrefix(type_name, "map[") { param_type_tag = TYPE_MAP }
     if param_type_tag == TYPE_UNKNOWN && type_name != "" {
         param_type_tag = TYPE_STRUCT
@@ -857,6 +859,7 @@ fn parse_const_decl(src: string, pos: int, nodes: []AstNode) -> ParseResult {
     if init_node.tag == EXPR_INT { type_tag = TYPE_INT }
     if init_node.tag == EXPR_STRING { type_tag = TYPE_STRING }
     if init_node.tag == EXPR_BOOL { type_tag = TYPE_BOOL }
+    if init_node.tag == EXPR_FLOAT { type_tag = TYPE_FLOAT }
     if init_node.tag == EXPR_UNARY { type_tag = TYPE_INT }
 
     // Create DECL_CONST node
@@ -1054,10 +1057,14 @@ fn parse_func_decl(src: string, pos: int, nodes: []AstNode) -> ParseResult {
     if ret_type == "int" { ret_type_tag = TYPE_INT }
     if ret_type == "string" { ret_type_tag = TYPE_STRING }
     if ret_type == "bool" { ret_type_tag = TYPE_BOOL }
+    if ret_type == "float" { ret_type_tag = TYPE_FLOAT }
     if ret_type == "[]int" { ret_type_tag = TYPE_INT
         ret_is_array = 1
     }
     if ret_type == "[]string" { ret_type_tag = TYPE_STRING
+        ret_is_array = 1
+    }
+    if ret_type == "[]float" { ret_type_tag = TYPE_FLOAT
         ret_is_array = 1
     }
     if strings.HasPrefix(ret_type, "map[") { ret_type_tag = TYPE_MAP }
@@ -1175,9 +1182,11 @@ fn parse_field(src: string, pos: int, nodes: []AstNode) -> ParseResult {
     if type_name == "int" { field_type_tag = TYPE_INT }
     if type_name == "bool" { field_type_tag = TYPE_BOOL }
     if type_name == "string" { field_type_tag = TYPE_STRING }
+    if type_name == "float" { field_type_tag = TYPE_FLOAT }
     if type_name == "[]int" { field_type_tag = TYPE_INT field_is_array = 1 }
     if type_name == "[]bool" { field_type_tag = TYPE_BOOL field_is_array = 1 }
     if type_name == "[]string" { field_type_tag = TYPE_STRING field_is_array = 1 }
+    if type_name == "[]float" { field_type_tag = TYPE_FLOAT field_is_array = 1 }
     if strings.HasPrefix(type_name, "map[") { field_type_tag = TYPE_MAP }
     if field_type_tag == TYPE_UNKNOWN && type_name != "" {
         field_type_tag = TYPE_STRUCT
@@ -1498,6 +1507,7 @@ fn parse_interface_decl(src: string, pos: int, nodes: []AstNode) -> ParseResult 
                     if ret_elem == "int" { ret_type_tag = TYPE_INT }
                     if ret_elem == "string" { ret_type_tag = TYPE_STRING }
                     if ret_elem == "bool" { ret_type_tag = TYPE_BOOL }
+                    if ret_elem == "float" { ret_type_tag = TYPE_FLOAT }
                     ret_is_array = 1
                 }
             } else if ret_kind == TK_IDENT {
@@ -1507,6 +1517,7 @@ fn parse_interface_decl(src: string, pos: int, nodes: []AstNode) -> ParseResult 
                 if ret_name == "int" { ret_type_tag = TYPE_INT }
                 if ret_name == "string" { ret_type_tag = TYPE_STRING }
                 if ret_name == "bool" { ret_type_tag = TYPE_BOOL }
+                if ret_name == "float" { ret_type_tag = TYPE_FLOAT }
                 if ret_type_tag == TYPE_UNKNOWN { ret_type_tag = TYPE_STRUCT }
             }
         }
@@ -1816,6 +1827,7 @@ fn parse_closure_expr(src: string, pos: int, nodes: []AstNode) -> ParseResult {
             if rt == "int" { ret_type_tag = TYPE_INT }
             if rt == "string" { ret_type_tag = TYPE_STRING }
             if rt == "bool" { ret_type_tag = TYPE_BOOL }
+            if rt == "float" { ret_type_tag = TYPE_FLOAT }
             p = lex_end(src, p, rk)
             p = lex_skip(src, p)
         }
@@ -1877,6 +1889,21 @@ fn parse_atom(src: string, pos: int, nodes: []AstNode) -> ParseResult {
         node := new_int_node(val, nodes)
         p = lex_end(src, p, kind)
         return ParseResult { node_idx: node, new_pos: p }
+    }
+    if kind == TK_FLOAT {
+        fval := lex_float_string_value(src, p)
+        node := AstNode {
+            tag: EXPR_FLOAT,
+            int_val: 0,
+            str_val: fval,
+            left: -1,
+            right: -1,
+            extra: -1,
+            type_tag: TYPE_FLOAT
+        }
+        push(nodes, node)
+        p = lex_end(src, p, kind)
+        return ParseResult { node_idx: len(nodes) - 1, new_pos: p }
     }
     if kind == TK_TRUE {
         node := new_bool_node(1, nodes)

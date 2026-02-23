@@ -5,6 +5,7 @@ package token
 const TK_IDENT = 1
 const TK_INT = 2
 const TK_STRING = 3
+const TK_FLOAT = 4
 
 // Keywords
 const TK_FN = 10
@@ -78,6 +79,7 @@ fn TokenName(kind: int) -> string {
     if kind == 1 { return "identifier" }
     if kind == 2 { return "integer" }
     if kind == 3 { return "string" }
+    if kind == 4 { return "float" }
     if kind == 10 { return "'fn'" }
     if kind == 11 { return "'let'" }
     if kind == 12 { return "'mut'" }

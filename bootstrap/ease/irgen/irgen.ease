@@ -59,10 +59,12 @@ fn make_type(type_tag: int, is_array: int) -> int {
         if type_tag == TYPE_INT { return TYPE_INT_ARRAY }
         if type_tag == TYPE_STRING { return TYPE_STRING_ARRAY }
         if type_tag == TYPE_BOOL { return TYPE_BOOL_ARRAY }
+        if type_tag == TYPE_FLOAT { return TYPE_FLOAT_ARRAY }
     }
     if type_tag == TYPE_INT { return TYPE_INT }
     if type_tag == TYPE_STRING { return TYPE_STRING }
     if type_tag == TYPE_BOOL { return TYPE_BOOL }
+    if type_tag == TYPE_FLOAT { return TYPE_FLOAT }
     return type_tag
 }
 
@@ -691,6 +693,45 @@ fn gen_ir_binary(node: AstNode, nodes: []AstNode, instrs: []IRInstr, symtab_name
             op = OP_STR_NE
         }
     }
+    // Float dispatch: if either operand is float, promote int operands and use float ops
+    left_type := get_vreg_type(left_vreg)
+    right_type := get_vreg_type(right_vreg)
+    if left_type == TYPE_FLOAT || right_type == TYPE_FLOAT {
+        // Promote int to float if needed
+        if left_type != TYPE_FLOAT {
+            conv := len(instrs)
+            push(instrs, IRInstr { op: OP_INT_TO_FLOAT, dest: conv, arg1: left_vreg, arg2: 0, arg3: 0, str_val: "" })
+            set_vreg_type(conv, TYPE_FLOAT)
+            left_vreg = conv
+        }
+        if right_type != TYPE_FLOAT {
+            conv := len(instrs)
+            push(instrs, IRInstr { op: OP_INT_TO_FLOAT, dest: conv, arg1: right_vreg, arg2: 0, arg3: 0, str_val: "" })
+            set_vreg_type(conv, TYPE_FLOAT)
+            right_vreg = conv
+        }
+        fop := OP_FADD
+        is_cmp := 0
+        if node.int_val == TK_PLUS { fop = OP_FADD }
+        if node.int_val == TK_MINUS { fop = OP_FSUB }
+        if node.int_val == TK_STAR { fop = OP_FMUL }
+        if node.int_val == TK_SLASH { fop = OP_FDIV }
+        if node.int_val == TK_PERCENT { fop = OP_FMOD }
+        if node.int_val == TK_LT { fop = OP_FCMP_LT is_cmp = 1 }
+        if node.int_val == TK_GT { fop = OP_FCMP_GT is_cmp = 1 }
+        if node.int_val == TK_LE { fop = OP_FCMP_LE is_cmp = 1 }
+        if node.int_val == TK_GE { fop = OP_FCMP_GE is_cmp = 1 }
+        if node.int_val == TK_EQ { fop = OP_FCMP_EQ is_cmp = 1 }
+        if node.int_val == TK_NE { fop = OP_FCMP_NE is_cmp = 1 }
+        dest_vreg := len(instrs)
+        push(instrs, IRInstr { op: fop, dest: dest_vreg, arg1: left_vreg, arg2: right_vreg, arg3: 0, str_val: "" })
+        if is_cmp == 1 {
+            set_vreg_type(dest_vreg, TYPE_BOOL)
+        } else {
+            set_vreg_type(dest_vreg, TYPE_FLOAT)
+        }
+        return dest_vreg
+    }
     dest_vreg := len(instrs)
     instr := IRInstr { op: op, dest: dest_vreg, arg1: left_vreg, arg2: right_vreg, arg3: 0, str_val: "" }
     push(instrs, instr)
@@ -787,6 +828,13 @@ fn gen_ir_expr(node: AstNode, ast_idx: int, nodes: []AstNode, instrs: []IRInstr,
         instr := IRInstr { op: OP_LOADCONST, dest: vreg, arg1: 0, arg2: 0, arg3: 0, str_val: node.str_val }
         push(instrs, instr)
         set_vreg_type(vreg, TYPE_STRING)
+        return vreg
+    }
+
+    if node.tag == EXPR_FLOAT {
+        vreg := len(instrs)
+        push(instrs, IRInstr { op: OP_LOADFLOAT, dest: vreg, arg1: 0, arg2: 0, arg3: 0, str_val: node.str_val })
+        set_vreg_type(vreg, TYPE_FLOAT)
         return vreg
     }
 
@@ -1416,14 +1464,24 @@ fn gen_ir_from_ast_with_symtab(ast_idx: int, nodes: []AstNode, instrs: []IRInstr
     node := nodes[ast_idx]
 
     // Dispatch simple expressions to helper
-    if node.tag == EXPR_INT || node.tag == EXPR_BOOL || node.tag == EXPR_IDENT || node.tag == EXPR_STRING {
+    if node.tag == EXPR_INT || node.tag == EXPR_BOOL || node.tag == EXPR_IDENT || node.tag == EXPR_STRING || node.tag == EXPR_FLOAT {
         return gen_ir_expr(node, ast_idx, nodes, instrs, symtab_names, symtab_vregs)
     }
 
     if node.tag == EXPR_UNARY {
         operand := gen_ir_from_ast_with_symtab(node.left, nodes, instrs, symtab_names, symtab_vregs)
         if node.int_val == TK_MINUS {
-            // Unary minus: 0 - operand
+            if get_vreg_type(operand) == TYPE_FLOAT {
+                // Float unary minus: 0.0 - operand
+                zero_vreg := len(instrs)
+                push(instrs, IRInstr { op: OP_LOADFLOAT, dest: zero_vreg, arg1: 0, arg2: 0, arg3: 0, str_val: "0.0" })
+                set_vreg_type(zero_vreg, TYPE_FLOAT)
+                result_vreg := len(instrs)
+                push(instrs, IRInstr { op: OP_FSUB, dest: result_vreg, arg1: zero_vreg, arg2: operand, arg3: 0, str_val: "" })
+                set_vreg_type(result_vreg, TYPE_FLOAT)
+                return result_vreg
+            }
+            // Int unary minus: 0 - operand
             zero_vreg := len(instrs)
             push(instrs, IRInstr { op: OP_LOADCONST, dest: zero_vreg, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
             result_vreg := len(instrs)
@@ -1524,6 +1582,27 @@ fn gen_ir_from_ast_with_symtab(ast_idx: int, nodes: []AstNode, instrs: []IRInstr
         if func_name == "time_wallclock_nanos" {
             dest := len(instrs)
             push(instrs, IRInstr { op: OP_TIME_WALLCLOCK, dest: dest, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
+            set_vreg_type(dest, TYPE_INT)
+            return dest
+        }
+        if func_name == "strconv.FloatToStr" {
+            arg_vregs := gen_ir_eval_args(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
+            dest := len(instrs)
+            push(instrs, IRInstr { op: OP_FLOAT_TO_STR, dest: dest, arg1: arg_vregs[0], arg2: 0, arg3: 0, str_val: "" })
+            set_vreg_type(dest, TYPE_STRING)
+            return dest
+        }
+        if func_name == "strconv.IntToFloat" {
+            arg_vregs := gen_ir_eval_args(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
+            dest := len(instrs)
+            push(instrs, IRInstr { op: OP_INT_TO_FLOAT, dest: dest, arg1: arg_vregs[0], arg2: 0, arg3: 0, str_val: "" })
+            set_vreg_type(dest, TYPE_FLOAT)
+            return dest
+        }
+        if func_name == "strconv.FloatToInt" {
+            arg_vregs := gen_ir_eval_args(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
+            dest := len(instrs)
+            push(instrs, IRInstr { op: OP_FLOAT_TO_INT, dest: dest, arg1: arg_vregs[0], arg2: 0, arg3: 0, str_val: "" })
             set_vreg_type(dest, TYPE_INT)
             return dest
         }

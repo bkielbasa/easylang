@@ -238,6 +238,7 @@ fn parse_type_name_to_tag(t: string) -> int {
     if t == "int" { return TYPE_INT }
     if t == "string" { return TYPE_STRING }
     if t == "bool" { return TYPE_BOOL }
+    if t == "float" { return TYPE_FLOAT }
     return TYPE_UNKNOWN
 }
 
@@ -690,6 +691,7 @@ fn infer_init_type(nodes: []AstNode, init_idx: int) -> int {
     if init_node.tag == EXPR_UNARY { return TYPE_INT }
     if init_node.tag == EXPR_STRING { return TYPE_STRING }
     if init_node.tag == EXPR_BOOL { return TYPE_BOOL }
+    if init_node.tag == EXPR_FLOAT { return TYPE_FLOAT }
     if init_node.tag == EXPR_ARRAY_LIT {
         if init_node.str_val == "string" { return TYPE_STRING_ARRAY }
         return TYPE_INT_ARRAY

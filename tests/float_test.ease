@@ -1,0 +1,97 @@
+package main
+
+// Float type tests
+
+fn TestFloatLiteral(t: T) {
+    x := 3.14
+    if x < 3.0 {
+        testing.Fatal("float literal should be >= 3.0")
+    }
+    if x > 4.0 {
+        testing.Fatal("float literal should be < 4.0")
+    }
+}
+
+fn TestFloatArithmetic(t: T) {
+    a := 10.0
+    b := 3.0
+    sum := a + b
+    if sum < 12.9 {
+        testing.Fatal("10.0 + 3.0 should be ~13.0")
+    }
+    if sum > 13.1 {
+        testing.Fatal("10.0 + 3.0 should be ~13.0")
+    }
+    diff := a - b
+    if diff < 6.9 {
+        testing.Fatal("10.0 - 3.0 should be ~7.0")
+    }
+    if diff > 7.1 {
+        testing.Fatal("10.0 - 3.0 should be ~7.0")
+    }
+    prod := a * b
+    if prod < 29.9 {
+        testing.Fatal("10.0 * 3.0 should be ~30.0")
+    }
+    if prod > 30.1 {
+        testing.Fatal("10.0 * 3.0 should be ~30.0")
+    }
+    quot := a / b
+    if quot < 3.3 {
+        testing.Fatal("10.0 / 3.0 should be ~3.333")
+    }
+    if quot > 3.4 {
+        testing.Fatal("10.0 / 3.0 should be ~3.333")
+    }
+}
+
+fn TestFloatComparison(t: T) {
+    a := 1.5
+    b := 2.5
+    if a > b {
+        testing.Fatal("1.5 should not be > 2.5")
+    }
+    if b < a {
+        testing.Fatal("2.5 should not be < 1.5")
+    }
+    if a == b {
+        testing.Fatal("1.5 should not == 2.5")
+    }
+    c := 1.5
+    if a != c {
+        testing.Fatal("1.5 should == 1.5")
+    }
+    if a >= b {
+        testing.Fatal("1.5 should not be >= 2.5")
+    }
+    if b <= a {
+        testing.Fatal("2.5 should not be <= 1.5")
+    }
+}
+
+fn TestIntFloatPromotion(t: T) {
+    x := 2.5
+    result := x + 1
+    if result < 3.4 {
+        testing.Fatal("2.5 + 1 should be ~3.5")
+    }
+    if result > 3.6 {
+        testing.Fatal("2.5 + 1 should be ~3.5")
+    }
+}
+
+fn TestFloatNegation(t: T) {
+    x := 5.0
+    y := 0.0 - x
+    if y > -4.9 {
+        testing.Fatal("-5.0 should be < -4.9")
+    }
+}
+
+fn TestFloatToString(t: T) {
+    x := 3.14
+    s := strconv.FloatToStr(x)
+    if s != "3.14" {
+        testing.Fatal("FloatToStr(3.14) should be '3.14', got: " + s)
+    }
+}

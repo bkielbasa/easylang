@@ -110,6 +110,21 @@ const OP_MAP_LEN = 67
 const OP_MAP_HAS = 68
 const OP_CLOSURE_NEW = 69
 const OP_CLOSURE_CALL = 70
+const OP_LOADFLOAT = 71
+const OP_FADD = 72
+const OP_FSUB = 73
+const OP_FMUL = 74
+const OP_FDIV = 75
+const OP_FMOD = 76
+const OP_FCMP_LT = 77
+const OP_FCMP_GT = 78
+const OP_FCMP_LE = 79
+const OP_FCMP_GE = 80
+const OP_FCMP_EQ = 81
+const OP_FCMP_NE = 82
+const OP_FLOAT_TO_STR = 83
+const OP_INT_TO_FLOAT = 84
+const OP_FLOAT_TO_INT = 85
 
 // Struct definitions and offsets (hardcoded for known structs)
 // AstNode: tag(8), int_val(8), str_val(8), left(8), right(8), extra(8), type_tag(8) = 56 bytes

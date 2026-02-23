@@ -55,6 +55,20 @@ fn lex_skip(src: string, pos: int) -> int {
     return p
 }
 
+fn lex_classify_number(src: string, pos: int, src_len: int) -> int {
+    // Scan past digits to check if there's a '.' followed by a digit (float)
+    end := pos
+    for end < src_len && is_digit(lex_peek(src, end)) {
+        end = end + 1
+    }
+    if end < src_len && lex_peek(src, end) == 46 {
+        if end + 1 < src_len && is_digit(lex_peek(src, end + 1)) {
+            return TK_FLOAT
+        }
+    }
+    return TK_INT
+}
+
 fn lex_kind(src: string, pos: int) -> int {
     src_len := len(src)
     if pos >= src_len {
@@ -105,9 +119,9 @@ fn lex_kind(src: string, pos: int) -> int {
     if ch == 33 { return TK_NOT }       // !
     if ch == 63 { return TK_QUESTION }  // ?
 
-    // Numbers
+    // Numbers (check for float: digit followed eventually by '.' then digit)
     if is_digit(ch) {
-        return TK_INT
+        return lex_classify_number(src, pos, src_len)
     }
 
     // String literals
@@ -179,6 +193,21 @@ fn lex_end(src: string, pos: int, kind: int) -> int {
             for end < len(src) && is_digit(lex_peek(src, end)) {
                 end = end + 1
             }
+        }
+        return end
+    }
+
+    // Float literals: digits, '.', digits
+    if kind == TK_FLOAT {
+        end := pos
+        for end < len(src) && is_digit(lex_peek(src, end)) {
+            end = end + 1
+        }
+        if end < len(src) && lex_peek(src, end) == 46 {
+            end = end + 1
+        }
+        for end < len(src) && is_digit(lex_peek(src, end)) {
+            end = end + 1
         }
         return end
     }
@@ -260,6 +289,11 @@ fn lex_string_value(src: string, pos: int, kind: int) -> string {
         return result
     }
     return ""
+}
+
+fn lex_float_string_value(src: string, pos: int) -> string {
+    end := lex_end(src, pos, TK_FLOAT)
+    return str_substring(src, pos, end)
 }
 
 fn lex_int_value(src: string, pos: int) -> int {

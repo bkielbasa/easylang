@@ -55,6 +55,7 @@ const EXPR_MAP_LIT = 55
 const STMT_MULTI_LET = 56
 const EXPR_CLOSURE = 57
 const STMT_FIELD_ASSIGN = 58
+const EXPR_FLOAT = 59
 
 // Type tags
 const TYPE_UNKNOWN = 0
@@ -69,6 +70,8 @@ const TYPE_PTR = 8
 const TYPE_INTERFACE = 9
 const TYPE_MAP = 10
 const TYPE_CLOSURE = 11
+const TYPE_FLOAT = 12
+const TYPE_FLOAT_ARRAY = 13
 
 struct ParseResult {
     node_idx: int,

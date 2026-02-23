@@ -176,6 +176,7 @@ fn emit_llvm_decls(fd: int) {
     write_str(fd, "@g_argc = global i64 0\n")
     write_str(fd, "@g_argv = global ptr null\n")
     write_str(fd, "@.fmt.ld = private unnamed_addr constant [4 x i8] c\"%ld\\00\"\n")
+    write_str(fd, "@.fmt.g = private unnamed_addr constant [5 x i8] c\"%.6g\\00\"\n")
     write_str(fd, "@.str.empty = private unnamed_addr constant [1 x i8] c\"\\00\"\n")
     write_str(fd, "attributes #0 = { returns_twice }\n")
     write_str(fd, "\n")
@@ -193,7 +194,7 @@ fn collect_vregs(instrs: []IRInstr, start: int, end_pos: int, param_count: int) 
         instr := instrs[i]
         op := instr.op
         // dest is vreg for result-producing operations
-        if op == OP_LOADCONST || op == OP_ADD || op == OP_SUB || op == OP_MUL || op == OP_DIV || op == OP_CMP_LT || op == OP_CMP_GT || op == OP_CMP_LE || op == OP_CMP_GE || op == OP_CMP_EQ || op == OP_CMP_NE || op == OP_AND || op == OP_OR || op == OP_NOT || op == OP_XOR || op == OP_BITAND || op == OP_BITOR || op == OP_ALLOCA || op == OP_LOAD || op == OP_INDEXADDR || op == OP_ARRAY_LEN || op == OP_STR_LEN || op == OP_STR_CHAR_AT || op == OP_PEEK || op == OP_HEAP_ALLOC || op == OP_CALL || op == OP_ARGC || op == OP_ARGV || op == OP_INT_TO_STR || op == OP_STR_EQ || op == OP_STR_NE || op == OP_STR_CONCAT || op == OP_LOAD_GLOBAL || op == OP_SYSCALL_OPEN || op == OP_SYSCALL_WRITE || op == OP_SYSCALL_CLOSE || op == OP_SYSCALL_READ || op == OP_IS_DIR || op == OP_LIST_DIR || op == OP_SETJMP || op == OP_TIME_NANOS || op == OP_TIME_WALLCLOCK || op == OP_IFACE_WRAP || op == OP_IFACE_CALL || op == OP_MAP_NEW || op == OP_MAP_GET || op == OP_MAP_SET || op == OP_MAP_DELETE || op == OP_MAP_LEN || op == OP_MAP_HAS || op == OP_CLOSURE_NEW || op == OP_CLOSURE_CALL {
+        if op == OP_LOADCONST || op == OP_ADD || op == OP_SUB || op == OP_MUL || op == OP_DIV || op == OP_CMP_LT || op == OP_CMP_GT || op == OP_CMP_LE || op == OP_CMP_GE || op == OP_CMP_EQ || op == OP_CMP_NE || op == OP_AND || op == OP_OR || op == OP_NOT || op == OP_XOR || op == OP_BITAND || op == OP_BITOR || op == OP_ALLOCA || op == OP_LOAD || op == OP_INDEXADDR || op == OP_ARRAY_LEN || op == OP_STR_LEN || op == OP_STR_CHAR_AT || op == OP_PEEK || op == OP_HEAP_ALLOC || op == OP_CALL || op == OP_ARGC || op == OP_ARGV || op == OP_INT_TO_STR || op == OP_STR_EQ || op == OP_STR_NE || op == OP_STR_CONCAT || op == OP_LOAD_GLOBAL || op == OP_SYSCALL_OPEN || op == OP_SYSCALL_WRITE || op == OP_SYSCALL_CLOSE || op == OP_SYSCALL_READ || op == OP_IS_DIR || op == OP_LIST_DIR || op == OP_SETJMP || op == OP_TIME_NANOS || op == OP_TIME_WALLCLOCK || op == OP_IFACE_WRAP || op == OP_IFACE_CALL || op == OP_MAP_NEW || op == OP_MAP_GET || op == OP_MAP_SET || op == OP_MAP_DELETE || op == OP_MAP_LEN || op == OP_MAP_HAS || op == OP_CLOSURE_NEW || op == OP_CLOSURE_CALL || op == OP_LOADFLOAT || op == OP_FADD || op == OP_FSUB || op == OP_FMUL || op == OP_FDIV || op == OP_FMOD || op == OP_FCMP_LT || op == OP_FCMP_GT || op == OP_FCMP_LE || op == OP_FCMP_GE || op == OP_FCMP_EQ || op == OP_FCMP_NE || op == OP_FLOAT_TO_STR || op == OP_INT_TO_FLOAT || op == OP_FLOAT_TO_INT {
             if instr.dest >= 0 { add_unique(vregs, instr.dest) }
         }
         // RET dest is vreg
@@ -206,11 +207,11 @@ fn collect_vregs(instrs: []IRInstr, start: int, end_pos: int, param_count: int) 
             if instr.arg1 >= 0 { add_unique(vregs, instr.arg1) }
         }
         // arg1 is vreg for most ops (not LOADCONST, ALLOCA, LABEL, JUMP, BRANCH, ARGC, CALL)
-        if op != OP_LOADCONST && op != OP_LOAD_GLOBAL && op != OP_ALLOCA && op != OP_LABEL && op != OP_JUMP && op != OP_BRANCH && op != OP_ARGC && op != OP_TIME_NANOS && op != OP_TIME_WALLCLOCK && op != OP_CALL && op != OP_IFACE_CALL && op != OP_CLOSURE_CALL && op != OP_MAP_NEW {
+        if op != OP_LOADCONST && op != OP_LOAD_GLOBAL && op != OP_ALLOCA && op != OP_LABEL && op != OP_JUMP && op != OP_BRANCH && op != OP_ARGC && op != OP_TIME_NANOS && op != OP_TIME_WALLCLOCK && op != OP_CALL && op != OP_IFACE_CALL && op != OP_CLOSURE_CALL && op != OP_MAP_NEW && op != OP_LOADFLOAT {
             if instr.arg1 >= 0 { add_unique(vregs, instr.arg1) }
         }
         // arg2 is vreg for binary ops, STORE, ARRAY_PUSH, POKE, STR_EQ/NE, STR_CHAR_AT, etc
-        if op == OP_ADD || op == OP_SUB || op == OP_MUL || op == OP_DIV || op == OP_CMP_LT || op == OP_CMP_GT || op == OP_CMP_LE || op == OP_CMP_GE || op == OP_CMP_EQ || op == OP_CMP_NE || op == OP_AND || op == OP_OR || op == OP_XOR || op == OP_BITAND || op == OP_BITOR || op == OP_STORE || op == OP_ARRAY_PUSH || op == OP_POKE || op == OP_STR_EQ || op == OP_STR_NE || op == OP_STR_CONCAT || op == OP_STR_CHAR_AT || op == OP_MEMCOPY || op == OP_SYSCALL_OPEN || op == OP_SYSCALL_WRITE || op == OP_SYSCALL_CLOSE || op == OP_SYSCALL_READ || op == OP_STORE_INDEX || op == OP_MAP_GET || op == OP_MAP_SET || op == OP_MAP_DELETE || op == OP_MAP_HAS {
+        if op == OP_ADD || op == OP_SUB || op == OP_MUL || op == OP_DIV || op == OP_CMP_LT || op == OP_CMP_GT || op == OP_CMP_LE || op == OP_CMP_GE || op == OP_CMP_EQ || op == OP_CMP_NE || op == OP_AND || op == OP_OR || op == OP_XOR || op == OP_BITAND || op == OP_BITOR || op == OP_STORE || op == OP_ARRAY_PUSH || op == OP_POKE || op == OP_STR_EQ || op == OP_STR_NE || op == OP_STR_CONCAT || op == OP_STR_CHAR_AT || op == OP_MEMCOPY || op == OP_SYSCALL_OPEN || op == OP_SYSCALL_WRITE || op == OP_SYSCALL_CLOSE || op == OP_SYSCALL_READ || op == OP_STORE_INDEX || op == OP_MAP_GET || op == OP_MAP_SET || op == OP_MAP_DELETE || op == OP_MAP_HAS || op == OP_FADD || op == OP_FSUB || op == OP_FMUL || op == OP_FDIV || op == OP_FMOD || op == OP_FCMP_LT || op == OP_FCMP_GT || op == OP_FCMP_LE || op == OP_FCMP_GE || op == OP_FCMP_EQ || op == OP_FCMP_NE {
             if instr.arg2 >= 0 { add_unique(vregs, instr.arg2) }
         }
         // MEMCOPY arg3 is vreg (size)
@@ -1208,6 +1209,82 @@ fn emit_llvm_function(fd: int, instrs: []IRInstr, start: int, end_pos: int, func
             r := tmp_name(ti, 2)
             write_str(fd, "  " + r + " = call i64 @maps_Has(i64 " + m + ", i64 " + k + ")\n")
             emit_store_vreg(fd, instr.dest, r)
+        }
+
+        // Float operations
+        if terminated == 0 && instr.op == OP_LOADFLOAT {
+            // bitcast double <literal> to i64
+            r := tmp_name(ti, 0)
+            write_str(fd, "  " + r + " = bitcast double " + instr.str_val + " to i64\n")
+            emit_store_vreg(fd, instr.dest, r)
+        }
+
+        if terminated == 0 && (instr.op == OP_FADD || instr.op == OP_FSUB || instr.op == OP_FMUL || instr.op == OP_FDIV || instr.op == OP_FMOD) {
+            // bitcast i64→double, float op, bitcast back
+            lhs := emit_load_vreg(fd, instr.arg1, ti, 0)
+            rhs := emit_load_vreg(fd, instr.arg2, ti, 1)
+            ld := tmp_name(ti, 2)
+            write_str(fd, "  " + ld + " = bitcast i64 " + lhs + " to double\n")
+            rd := tmp_name(ti, 3)
+            write_str(fd, "  " + rd + " = bitcast i64 " + rhs + " to double\n")
+            fop_name := "fadd"
+            if instr.op == OP_FSUB { fop_name = "fsub" }
+            if instr.op == OP_FMUL { fop_name = "fmul" }
+            if instr.op == OP_FDIV { fop_name = "fdiv" }
+            if instr.op == OP_FMOD { fop_name = "frem" }
+            res_d := tmp_name(ti, 4)
+            write_str(fd, "  " + res_d + " = " + fop_name + " double " + ld + ", " + rd + "\n")
+            res_i := tmp_name(ti, 5)
+            write_str(fd, "  " + res_i + " = bitcast double " + res_d + " to i64\n")
+            emit_store_vreg(fd, instr.dest, res_i)
+        }
+
+        if terminated == 0 && (instr.op == OP_FCMP_LT || instr.op == OP_FCMP_GT || instr.op == OP_FCMP_LE || instr.op == OP_FCMP_GE || instr.op == OP_FCMP_EQ || instr.op == OP_FCMP_NE) {
+            lhs := emit_load_vreg(fd, instr.arg1, ti, 0)
+            rhs := emit_load_vreg(fd, instr.arg2, ti, 1)
+            ld := tmp_name(ti, 2)
+            write_str(fd, "  " + ld + " = bitcast i64 " + lhs + " to double\n")
+            rd := tmp_name(ti, 3)
+            write_str(fd, "  " + rd + " = bitcast i64 " + rhs + " to double\n")
+            pred := "olt"
+            if instr.op == OP_FCMP_GT { pred = "ogt" }
+            if instr.op == OP_FCMP_LE { pred = "ole" }
+            if instr.op == OP_FCMP_GE { pred = "oge" }
+            if instr.op == OP_FCMP_EQ { pred = "oeq" }
+            if instr.op == OP_FCMP_NE { pred = "une" }
+            cmp := tmp_name(ti, 4)
+            write_str(fd, "  " + cmp + " = fcmp " + pred + " double " + ld + ", " + rd + "\n")
+            ext := tmp_name(ti, 5)
+            write_str(fd, "  " + ext + " = zext i1 " + cmp + " to i64\n")
+            emit_store_vreg(fd, instr.dest, ext)
+        }
+
+        if terminated == 0 && instr.op == OP_INT_TO_FLOAT {
+            val := emit_load_vreg(fd, instr.arg1, ti, 0)
+            dbl := tmp_name(ti, 1)
+            write_str(fd, "  " + dbl + " = sitofp i64 " + val + " to double\n")
+            r := tmp_name(ti, 2)
+            write_str(fd, "  " + r + " = bitcast double " + dbl + " to i64\n")
+            emit_store_vreg(fd, instr.dest, r)
+        }
+
+        if terminated == 0 && instr.op == OP_FLOAT_TO_INT {
+            val := emit_load_vreg(fd, instr.arg1, ti, 0)
+            dbl := tmp_name(ti, 1)
+            write_str(fd, "  " + dbl + " = bitcast i64 " + val + " to double\n")
+            r := tmp_name(ti, 2)
+            write_str(fd, "  " + r + " = fptosi double " + dbl + " to i64\n")
+            emit_store_vreg(fd, instr.dest, r)
+        }
+
+        if terminated == 0 && instr.op == OP_FLOAT_TO_STR {
+            val := emit_load_vreg(fd, instr.arg1, ti, 0)
+            dbl := tmp_name(ti, 1)
+            write_str(fd, "  " + dbl + " = bitcast i64 " + val + " to double\n")
+            buf := tmp_name(ti, 2)
+            write_str(fd, "  " + buf + " = call ptr @malloc(i64 32)\n")
+            write_str(fd, "  call i32 (ptr, i64, ptr, ...) @snprintf(ptr " + buf + ", i64 32, ptr @.fmt.g, double " + dbl + ")\n")
+            emit_ptrtoint_store(fd, instr.dest, buf, ti, 3)
         }
 
         if terminated == 0 && instr.op == OP_RET {
