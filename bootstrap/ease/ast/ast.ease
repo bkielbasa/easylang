@@ -54,6 +54,7 @@ const STMT_INDEX_ASSIGN = 54
 const EXPR_MAP_LIT = 55
 const STMT_MULTI_LET = 56
 const EXPR_CLOSURE = 57
+const STMT_FIELD_ASSIGN = 58
 
 // Type tags
 const TYPE_UNKNOWN = 0

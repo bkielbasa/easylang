@@ -421,6 +421,49 @@ fn parse_stmt(src: string, pos: int, nodes: []AstNode) -> ParseResult {
         if next_kind == TK_ASSIGN {
             return parse_assign_stmt(src, saved_pos, nodes)
         }
+        if next_kind == TK_DOT {
+            // Might be field assignment: p.x = val, or method call: p.Method()
+            p = saved_pos
+            lhs_result := parse_expr_with_pos(src, p, nodes)
+            if lhs_result.node_idx >= 0 {
+                p = lhs_result.new_pos
+                p = lex_skip(src, p)
+                if lex_kind(src, p) == TK_ASSIGN {
+                    // Field assignment: p.field = value
+                    p = lex_end(src, p, TK_ASSIGN)
+                    p = lex_skip(src, p)
+                    rhs_result := parse_expr_with_pos(src, p, nodes)
+                    if rhs_result.node_idx >= 0 {
+                        // Extract base and field name from the LHS EXPR_FIELD node
+                        lhs_node := nodes[lhs_result.node_idx]
+                        fa_node := AstNode {
+                            tag: STMT_FIELD_ASSIGN,
+                            int_val: 0,
+                            str_val: lhs_node.str_val,
+                            left: lhs_node.left,
+                            right: rhs_result.node_idx,
+                            extra: -1,
+                            type_tag: TYPE_UNKNOWN
+                        }
+                        push(nodes, fa_node)
+                        return ParseResult { node_idx: len(nodes) - 1, new_pos: rhs_result.new_pos }
+                    }
+                }
+                // Not an assignment — wrap as expression statement
+                stmt := AstNode {
+                    tag: STMT_EXPR,
+                    int_val: 0,
+                    str_val: "",
+                    left: lhs_result.node_idx,
+                    right: -1,
+                    extra: -1,
+                    type_tag: TYPE_UNKNOWN
+                }
+                push(nodes, stmt)
+                return ParseResult { node_idx: len(nodes) - 1, new_pos: p }
+            }
+            p = saved_pos
+        }
         if next_kind == TK_LBRACKET {
             // Might be arr[i] = val (index assignment) or arr[i] (expression statement)
             p = saved_pos
