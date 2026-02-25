@@ -1468,6 +1468,26 @@ fn gen_ir_from_ast_with_symtab(ast_idx: int, nodes: []AstNode, instrs: []IRInstr
         return gen_ir_expr(node, ast_idx, nodes, instrs, symtab_names, symtab_vregs)
     }
 
+    if node.tag == EXPR_TO_STRING {
+        inner_vreg := gen_ir_from_ast_with_symtab(node.left, nodes, instrs, symtab_names, symtab_vregs)
+        inner_type := get_vreg_type(inner_vreg)
+        if inner_type == TYPE_STRING {
+            return inner_vreg
+        }
+        vreg := len(instrs)
+        if inner_type == TYPE_FLOAT {
+            push(instrs, IRInstr { op: OP_FLOAT_TO_STR, dest: vreg, arg1: inner_vreg, arg2: 0, arg3: 0, str_val: "" })
+        } else {
+            if inner_type == TYPE_BOOL {
+                push(instrs, IRInstr { op: OP_BOOL_TO_STR, dest: vreg, arg1: inner_vreg, arg2: 0, arg3: 0, str_val: "" })
+            } else {
+                push(instrs, IRInstr { op: OP_INT_TO_STR, dest: vreg, arg1: inner_vreg, arg2: 0, arg3: 0, str_val: "" })
+            }
+        }
+        set_vreg_type(vreg, TYPE_STRING)
+        return vreg
+    }
+
     if node.tag == EXPR_UNARY {
         operand := gen_ir_from_ast_with_symtab(node.left, nodes, instrs, symtab_names, symtab_vregs)
         if node.int_val == TK_MINUS {

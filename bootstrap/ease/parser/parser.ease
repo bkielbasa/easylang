@@ -1859,6 +1859,142 @@ fn parse_closure_expr(src: string, pos: int, nodes: []AstNode) -> ParseResult {
     return ParseResult { node_idx: len(nodes) - 1, new_pos: p }
 }
 
+fn parse_string_literal(src: string, pos: int, nodes: []AstNode) -> ParseResult {
+    p := pos
+    end_pos := lex_end(src, p, TK_STRING)
+    raw := str_substring(src, p + 1, end_pos - 1)
+    if has_interpolation(raw) == 1 {
+        result_idx := parse_interp_string(raw, nodes)
+        return ParseResult { node_idx: result_idx, new_pos: end_pos }
+    }
+    val := lex_string_value(src, p, TK_STRING)
+    node := AstNode {
+        tag: EXPR_STRING, int_val: 0, str_val: val,
+        left: -1, right: -1, extra: -1, type_tag: TYPE_UNKNOWN
+    }
+    push(nodes, node)
+    return ParseResult { node_idx: len(nodes) - 1, new_pos: end_pos }
+}
+
+fn has_interpolation(raw: string) -> int {
+    raw_len := len(raw)
+    si := 0
+    for si < raw_len {
+        sc := str_char_at(raw, si)
+        if sc == 92 {
+            si = si + 2
+        } else {
+            if sc == 36 && si + 1 < raw_len && str_char_at(raw, si + 1) == 123 {
+                return 1
+            }
+            si = si + 1
+        }
+    }
+    return 0
+}
+
+fn parse_interp_string(raw: string, nodes: []AstNode) -> int {
+    raw_len := len(raw)
+    parts := []int{}
+    ri := 0
+    literal := ""
+
+    for ri < raw_len {
+        ch := str_char_at(raw, ri)
+        if ch == 92 && ri + 1 < raw_len {
+            next := str_char_at(raw, ri + 1)
+            if next == 110 { literal = literal + "\n" }
+            if next == 116 { literal = literal + "\t" }
+            if next == 92  { literal = literal + "\\" }
+            if next == 34  { literal = literal + "\"" }
+            if next == 48  { poke(literal, len(literal), 0) }
+            ri = ri + 2
+        } else {
+            if ch == 36 && ri + 1 < raw_len && str_char_at(raw, ri + 1) == 123 {
+                if len(literal) > 0 {
+                    str_node := AstNode {
+                        tag: EXPR_STRING, int_val: 0, str_val: literal,
+                        left: -1, right: -1, extra: -1, type_tag: TYPE_UNKNOWN
+                    }
+                    push(nodes, str_node)
+                    push(parts, len(nodes) - 1)
+                    literal = ""
+                }
+                ri = ri + 2
+                ident := ""
+                for ri < raw_len && str_char_at(raw, ri) != 125 {
+                    ident = ident + str_substring(raw, ri, ri + 1)
+                    ri = ri + 1
+                }
+                if ri < raw_len {
+                    ri = ri + 1
+                }
+                dot_pos := -1
+                di := 0
+                for di < len(ident) {
+                    if str_char_at(ident, di) == 46 {
+                        dot_pos = di
+                        break
+                    }
+                    di = di + 1
+                }
+                inner_idx := -1
+                if dot_pos >= 0 {
+                    obj_name := str_substring(ident, 0, dot_pos)
+                    field_name := str_substring(ident, dot_pos + 1, len(ident))
+                    obj_idx := new_ident_node(obj_name, nodes)
+                    field_node := AstNode {
+                        tag: EXPR_FIELD, int_val: 0, str_val: field_name,
+                        left: obj_idx, right: -1, extra: -1, type_tag: TYPE_UNKNOWN
+                    }
+                    push(nodes, field_node)
+                    inner_idx = len(nodes) - 1
+                } else {
+                    inner_idx = new_ident_node(ident, nodes)
+                }
+                to_str_node := AstNode {
+                    tag: EXPR_TO_STRING, int_val: 0, str_val: "",
+                    left: inner_idx, right: -1, extra: -1, type_tag: TYPE_STRING
+                }
+                push(nodes, to_str_node)
+                push(parts, len(nodes) - 1)
+            } else {
+                literal = literal + str_substring(raw, ri, ri + 1)
+                ri = ri + 1
+            }
+        }
+    }
+
+    if len(literal) > 0 {
+        str_node := AstNode {
+            tag: EXPR_STRING, int_val: 0, str_val: literal,
+            left: -1, right: -1, extra: -1, type_tag: TYPE_UNKNOWN
+        }
+        push(nodes, str_node)
+        push(parts, len(nodes) - 1)
+    }
+
+    if len(parts) == 0 {
+        str_node := AstNode {
+            tag: EXPR_STRING, int_val: 0, str_val: "",
+            left: -1, right: -1, extra: -1, type_tag: TYPE_UNKNOWN
+        }
+        push(nodes, str_node)
+        return len(nodes) - 1
+    }
+    if len(parts) == 1 {
+        return parts[0]
+    }
+
+    result := parts[0]
+    i := 1
+    for i < len(parts) {
+        result = new_binary_node(TK_PLUS, result, parts[i], nodes)
+        i = i + 1
+    }
+    return result
+}
+
 // Parse atom (literal or identifier - no parentheses yet)
 fn parse_atom(src: string, pos: int, nodes: []AstNode) -> ParseResult {
     p := pos
@@ -1916,19 +2052,7 @@ fn parse_atom(src: string, pos: int, nodes: []AstNode) -> ParseResult {
         return ParseResult { node_idx: node, new_pos: p }
     }
     if kind == TK_STRING {
-        val := lex_string_value(src, p, kind)
-        node := AstNode {
-            tag: EXPR_STRING,
-            int_val: 0,
-            str_val: val,
-            left: -1,
-            right: -1,
-            extra: -1,
-            type_tag: TYPE_UNKNOWN
-        }
-        push(nodes, node)
-        p = lex_end(src, p, kind)
-        return ParseResult { node_idx: len(nodes) - 1, new_pos: p }
+        return parse_string_literal(src, p, nodes)
     }
     if kind == TK_IDENT {
         name := lex_string_value(src, p, kind)

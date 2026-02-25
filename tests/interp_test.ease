@@ -1,0 +1,58 @@
+package main
+
+// String interpolation tests
+
+fn TestStringInterpBasic(t: T) {
+    name := "world"
+    result := "hello ${name}"
+    if result != "hello world" {
+        testing.Fatal("expected 'hello world', got: " + result)
+    }
+}
+
+fn TestStringInterpInt(t: T) {
+    age := 25
+    result := "age is ${age}"
+    if result != "age is 25" {
+        testing.Fatal("expected 'age is 25', got: " + result)
+    }
+}
+
+fn TestStringInterpMultiple(t: T) {
+    name := "Alice"
+    age := 30
+    result := "${name} is ${age} years old"
+    if result != "Alice is 30 years old" {
+        testing.Fatal("expected 'Alice is 30 years old', got: " + result)
+    }
+}
+
+fn TestStringInterpBool(t: T) {
+    flag := true
+    result := "value is ${flag}"
+    if result != "value is true" {
+        testing.Fatal("expected 'value is true', got: " + result)
+    }
+}
+
+fn TestStringInterpFloat(t: T) {
+    pi := 3.14
+    result := "pi is ${pi}"
+    if result != "pi is 3.14" {
+        testing.Fatal("expected 'pi is 3.14', got: " + result)
+    }
+}
+
+fn TestStringInterpNoInterp(t: T) {
+    result := "no interpolation here"
+    if result != "no interpolation here" {
+        testing.Fatal("expected 'no interpolation here', got: " + result)
+    }
+}
+
+fn TestStringInterpLiteralBraces(t: T) {
+    result := "json: {\"key\": 1}"
+    if result != "json: {\"key\": 1}" {
+        testing.Fatal("expected json with braces, got: " + result)
+    }
+}

@@ -125,6 +125,7 @@ const OP_FCMP_NE = 82
 const OP_FLOAT_TO_STR = 83
 const OP_INT_TO_FLOAT = 84
 const OP_FLOAT_TO_INT = 85
+const OP_BOOL_TO_STR = 86
 
 // Struct definitions and offsets (hardcoded for known structs)
 // AstNode: tag(8), int_val(8), str_val(8), left(8), right(8), extra(8), type_tag(8) = 56 bytes
