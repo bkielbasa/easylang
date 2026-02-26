@@ -1,42 +1,46 @@
 package main
 
+import (
+    "testing"
+)
+
 // Struct field mutation tests
 
-fn TestFieldAssignBasic(t: T) {
+fn TestFieldAssignBasic(t: testing.T) {
     p := Point { x: 10, y: 20 }
     p.x = 42
     if p.x != 42 {
-        testing.Fatal("p.x should be 42 after assignment")
+        t.Fatal("p.x should be 42 after assignment")
     }
     if p.y != 20 {
-        testing.Fatal("p.y should still be 20")
+        t.Fatal("p.y should still be 20")
     }
 }
 
-fn TestFieldAssignMultiple(t: T) {
+fn TestFieldAssignMultiple(t: testing.T) {
     p := Point { x: 1, y: 2 }
     p.x = 100
     p.y = 200
     if p.x != 100 {
-        testing.Fatal("p.x should be 100")
+        t.Fatal("p.x should be 100")
     }
     if p.y != 200 {
-        testing.Fatal("p.y should be 200")
+        t.Fatal("p.y should be 200")
     }
 }
 
-fn TestFieldAssignFromExpression(t: T) {
+fn TestFieldAssignFromExpression(t: testing.T) {
     p := Point { x: 5, y: 10 }
     p.x = p.x + p.y
     if p.x != 15 {
-        testing.Fatal("p.x should be 15 after p.x + p.y")
+        t.Fatal("p.x should be 15 after p.x + p.y")
     }
 }
 
-fn TestFieldAssignInMethod(t: T) {
+fn TestFieldAssignInMethod(t: testing.T) {
     c := NewCounter(0)
     c.count = 42
     if c.Value() != 42 {
-        testing.Fatal("Counter value should be 42 after field assign")
+        t.Fatal("Counter value should be 42 after field assign")
     }
 }

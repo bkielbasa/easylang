@@ -595,6 +595,16 @@ fn parse_param(src: string, pos: int, nodes: []AstNode) -> ParseResult {
         // Simple type
         type_name = lex_string_value(src, p, type_kind)
         p = lex_end(src, p, type_kind)
+        // Handle module-qualified types: module.Type -> use Type
+        p_check := lex_skip(src, p)
+        if lex_kind(src, p_check) == TK_DOT {
+            p_check = lex_end(src, p_check, TK_DOT)
+            p_check = lex_skip(src, p_check)
+            if lex_kind(src, p_check) == TK_IDENT {
+                type_name = lex_string_value(src, p_check, TK_IDENT)
+                p = lex_end(src, p_check, TK_IDENT)
+            }
+        }
     } else {
         return ParseResult { node_idx: -1, new_pos: p }
     }
@@ -2865,4 +2875,118 @@ fn parse_primary_expr(src: string, pos: int, nodes: []AstNode) -> ParseResult {
 fn parse_expr_simple(src: string, nodes: []AstNode) -> int {
     result := parse_expr_with_pos(src, 0, nodes)
     return result.node_idx
+}
+
+// Extern function declaration side tables
+g_extern_decl_names := []string{}
+g_extern_decl_param_counts := []int{}
+g_extern_decl_param_starts := []int{}
+g_extern_decl_param_types := []int{}
+g_extern_decl_ret_types := []int{}
+
+fn extern_type_from_name(name: string) -> int {
+    if name == "i32" { return EXTERN_I32 }
+    if name == "i64" { return EXTERN_I64 }
+    if name == "ptr" { return EXTERN_PTR }
+    if name == "void" { return EXTERN_VOID }
+    return 0
+}
+
+// Parse extern fn declaration: extern fn name(param: type, ...) -> ret_type
+fn parse_extern_fn_decl(src: string, pos: int, nodes: []AstNode) -> ParseResult {
+    p := pos
+
+    // Skip 'extern'
+    p = lex_end(src, p, TK_EXTERN)
+    p = lex_skip(src, p)
+
+    // Expect 'fn'
+    if lex_kind(src, p) != TK_FN {
+        return ParseResult { node_idx: -1, new_pos: p }
+    }
+    p = lex_end(src, p, TK_FN)
+    p = lex_skip(src, p)
+
+    // Parse function name
+    if lex_kind(src, p) != TK_IDENT {
+        return ParseResult { node_idx: -1, new_pos: p }
+    }
+    func_name := lex_string_value(src, p, TK_IDENT)
+    p = lex_end(src, p, TK_IDENT)
+    p = lex_skip(src, p)
+
+    // Expect '('
+    if lex_kind(src, p) != TK_LPAREN {
+        return ParseResult { node_idx: -1, new_pos: p }
+    }
+    p = lex_end(src, p, TK_LPAREN)
+    p = lex_skip(src, p)
+
+    // Parse parameters: name: type, ...
+    param_types := []int{}
+    for lex_kind(src, p) != TK_RPAREN {
+        if len(param_types) > 0 {
+            // Expect comma
+            if lex_kind(src, p) == TK_COMMA {
+                p = lex_end(src, p, TK_COMMA)
+                p = lex_skip(src, p)
+            }
+        }
+        // Parse param name
+        if lex_kind(src, p) != TK_IDENT {
+            return ParseResult { node_idx: -1, new_pos: p }
+        }
+        p = lex_end(src, p, TK_IDENT)
+        p = lex_skip(src, p)
+        // Expect ':'
+        if lex_kind(src, p) != TK_COLON {
+            return ParseResult { node_idx: -1, new_pos: p }
+        }
+        p = lex_end(src, p, TK_COLON)
+        p = lex_skip(src, p)
+        // Parse type name (i32, i64, ptr)
+        type_name := lex_string_value(src, p, TK_IDENT)
+        p = lex_end(src, p, TK_IDENT)
+        p = lex_skip(src, p)
+        push(param_types, extern_type_from_name(type_name))
+    }
+
+    // Skip ')'
+    p = lex_end(src, p, TK_RPAREN)
+    p = lex_skip(src, p)
+
+    // Parse return type (optional: -> type)
+    ret_type := EXTERN_VOID
+    if lex_kind(src, p) == TK_ARROW {
+        p = lex_end(src, p, TK_ARROW)
+        p = lex_skip(src, p)
+        ret_name := lex_string_value(src, p, TK_IDENT)
+        p = lex_end(src, p, TK_IDENT)
+        p = lex_skip(src, p)
+        ret_type = extern_type_from_name(ret_name)
+    }
+
+    // Store in side tables
+    push(g_extern_decl_names, func_name)
+    push(g_extern_decl_param_counts, len(param_types))
+    push(g_extern_decl_param_starts, len(g_extern_decl_param_types))
+    ei := 0
+    for ei < len(param_types) {
+        push(g_extern_decl_param_types, param_types[ei])
+        ei = ei + 1
+    }
+    push(g_extern_decl_ret_types, ret_type)
+
+    // Create a DECL_FUNC node with right = -1 (no body)
+    func_node := AstNode {
+        tag: DECL_FUNC,
+        int_val: 0,
+        str_val: func_name,
+        left: -1,
+        right: -1,
+        extra: -1,
+        type_tag: TYPE_UNKNOWN
+    }
+    push(nodes, func_node)
+    return ParseResult { node_idx: len(nodes) - 1, new_pos: p }
 }

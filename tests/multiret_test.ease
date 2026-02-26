@@ -1,5 +1,9 @@
 package main
 
+import (
+    "testing"
+)
+
 // Multiple return values
 
 fn divmod(a: int, b: int) -> (int, int) {
@@ -18,45 +22,45 @@ fn three_vals() -> (int, int, int) {
     return 1, 2, 3
 }
 
-fn TestDivmod(t: T) {
+fn TestDivmod(t: testing.T) {
     q, r := divmod(10, 3)
     if q != 3 {
-        testing.Fatal("divmod quotient should be 3")
+        t.Fatal("divmod quotient should be 3")
     }
     if r != 1 {
-        testing.Fatal("divmod remainder should be 1")
+        t.Fatal("divmod remainder should be 1")
     }
 }
 
-fn TestSwap(t: T) {
+fn TestSwap(t: testing.T) {
     a, b := swap(1, 2)
     if a != 2 {
-        testing.Fatal("swap first should be 2")
+        t.Fatal("swap first should be 2")
     }
     if b != 1 {
-        testing.Fatal("swap second should be 1")
+        t.Fatal("swap second should be 1")
     }
 }
 
-fn TestIntAndString(t: T) {
+fn TestIntAndString(t: testing.T) {
     n, s := int_and_string(42)
     if n != 42 {
-        testing.Fatal("int_and_string n should be 42")
+        t.Fatal("int_and_string n should be 42")
     }
     if s != "hello" {
-        testing.Fatal("int_and_string s should be hello")
+        t.Fatal("int_and_string s should be hello")
     }
 }
 
-fn TestThreeValues(t: T) {
+fn TestThreeValues(t: testing.T) {
     a, b, c := three_vals()
     if a != 1 {
-        testing.Fatal("three_vals a should be 1")
+        t.Fatal("three_vals a should be 1")
     }
     if b != 2 {
-        testing.Fatal("three_vals b should be 2")
+        t.Fatal("three_vals b should be 2")
     }
     if c != 3 {
-        testing.Fatal("three_vals c should be 3")
+        t.Fatal("three_vals c should be 3")
     }
 }

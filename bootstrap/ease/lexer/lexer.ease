@@ -153,6 +153,7 @@ fn lex_kind(src: string, pos: int) -> int {
         if word == "const" { return TK_CONST }
         if word == "interface" { return TK_INTERFACE }
         if word == "map" { return TK_MAP }
+        if word == "extern" { return TK_EXTERN }
         return TK_IDENT
     }
 
@@ -235,7 +236,7 @@ fn lex_end(src: string, pos: int, kind: int) -> int {
        kind == TK_RETURN || kind == TK_BREAK || kind == TK_STRUCT ||
        kind == TK_TRUE || kind == TK_FALSE || kind == TK_IMPORT ||
        kind == TK_PACKAGE || kind == TK_ENUM || kind == TK_MATCH ||
-       kind == TK_CONST || kind == TK_INTERFACE || kind == TK_MAP {
+       kind == TK_CONST || kind == TK_INTERFACE || kind == TK_MAP || kind == TK_EXTERN {
         end := pos
         for end < len(src) && (is_alpha(lex_peek(src, end)) || is_digit(lex_peek(src, end))) {
             end = end + 1
@@ -260,7 +261,7 @@ fn lex_string_value(src: string, pos: int, kind: int) -> string {
        kind == TK_RETURN || kind == TK_BREAK || kind == TK_STRUCT ||
        kind == TK_TRUE || kind == TK_FALSE || kind == TK_IMPORT ||
        kind == TK_PACKAGE || kind == TK_ENUM || kind == TK_MATCH ||
-       kind == TK_CONST || kind == TK_INTERFACE || kind == TK_MAP {
+       kind == TK_CONST || kind == TK_INTERFACE || kind == TK_MAP || kind == TK_EXTERN {
         end := lex_end(src, pos, kind)
         return str_substring(src, pos, end)
     }

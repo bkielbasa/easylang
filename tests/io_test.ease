@@ -1,5 +1,9 @@
 package main
 
+import (
+    "testing"
+)
+
 fn write_to(w: Writer, s: string) -> int {
     return w.Write(s)
 }
@@ -12,74 +16,74 @@ fn close_it(c: Closer) -> int {
     return c.Close()
 }
 
-fn TestStdoutWriter(t: T) {
+fn TestStdoutWriter(t: testing.T) {
     w := io.NewStdoutWriter()
     n := w.Write("io test\n")
     if n != 8 {
-        testing.Fatal("expected Write to return 8, got " + strconv.Itoa(n))
+        t.Fatal("expected Write to return 8, got " + strconv.Itoa(n))
     }
 }
 
-fn TestWriterInterface(t: T) {
+fn TestWriterInterface(t: testing.T) {
     w := io.NewStdoutWriter()
     n := write_to(w, "hello\n")
     if n != 6 {
-        testing.Fatal("expected 6, got " + strconv.Itoa(n))
+        t.Fatal("expected 6, got " + strconv.Itoa(n))
     }
 }
 
-fn TestBuilderAsWriter(t: T) {
+fn TestBuilderAsWriter(t: testing.T) {
     b := strings.NewBuilder()
     n := write_to(b, "hello")
     if n != 5 {
-        testing.Fatal("expected 5, got " + strconv.Itoa(n))
+        t.Fatal("expected 5, got " + strconv.Itoa(n))
     }
     result := b.String()
     if result != "hello" {
-        testing.Fatal("expected hello, got " + result)
+        t.Fatal("expected hello, got " + result)
     }
 }
 
-fn TestStringWriterInterface(t: T) {
+fn TestStringWriterInterface(t: testing.T) {
     w := io.NewStdoutWriter()
     n := write_string_to(w, "sw test\n")
     if n != 8 {
-        testing.Fatal("expected 8, got " + strconv.Itoa(n))
+        t.Fatal("expected 8, got " + strconv.Itoa(n))
     }
 }
 
-fn TestBuilderAsStringWriter(t: T) {
+fn TestBuilderAsStringWriter(t: testing.T) {
     b := strings.NewBuilder()
     n := write_string_to(b, "built")
     if n != 5 {
-        testing.Fatal("expected 5, got " + strconv.Itoa(n))
+        t.Fatal("expected 5, got " + strconv.Itoa(n))
     }
     result := b.String()
     if result != "built" {
-        testing.Fatal("expected built, got " + result)
+        t.Fatal("expected built, got " + result)
     }
 }
 
-fn TestCloserInterface(t: T) {
+fn TestCloserInterface(t: testing.T) {
     w := io.NewStdoutWriter()
     rc := close_it(w)
     if rc != 0 {
-        testing.Fatal("expected Close to return 0")
+        t.Fatal("expected Close to return 0")
     }
 }
 
-fn TestStdinReaderCloser(t: T) {
+fn TestStdinReaderCloser(t: testing.T) {
     r := io.NewStdinReader()
     rc := close_it(r)
     if rc != 0 {
-        testing.Fatal("expected Close to return 0")
+        t.Fatal("expected Close to return 0")
     }
 }
 
-fn TestStderrWriter(t: T) {
+fn TestStderrWriter(t: testing.T) {
     w := io.NewStderrWriter()
     n := write_to(w, "")
     if n != 0 {
-        testing.Fatal("expected 0 for empty write")
+        t.Fatal("expected 0 for empty write")
     }
 }

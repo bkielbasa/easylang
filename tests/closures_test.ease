@@ -1,71 +1,75 @@
 package main
 
+import (
+    "testing"
+)
+
 // Closure and lambda tests
 
 fn make_adder(n: int) -> int {
     return |x: int| -> int { return n + x }
 }
 
-fn TestClosureBasic(t: T) {
+fn TestClosureBasic(t: testing.T) {
     add := |a: int, b: int| -> int { return a + b }
     if add(3, 5) != 8 {
-        testing.Fatal("expected 8")
+        t.Fatal("expected 8")
     }
 }
 
-fn TestClosureNoParams(t: T) {
+fn TestClosureNoParams(t: testing.T) {
     get := || -> int { return 42 }
     if get() != 42 {
-        testing.Fatal("expected 42")
+        t.Fatal("expected 42")
     }
 }
 
-fn TestClosureExprBody(t: T) {
+fn TestClosureExprBody(t: testing.T) {
     double := |x: int| -> int x * 2
     if double(7) != 14 {
-        testing.Fatal("expected 14")
+        t.Fatal("expected 14")
     }
 }
 
-fn TestClosureCapture(t: T) {
+fn TestClosureCapture(t: testing.T) {
     x := 10
     add_x := |y: int| -> int { return x + y }
     if add_x(5) != 15 {
-        testing.Fatal("expected 15")
+        t.Fatal("expected 15")
     }
 }
 
-fn TestClosureMultiCapture(t: T) {
+fn TestClosureMultiCapture(t: testing.T) {
     a := 10
     b := 20
     sum := |x: int| -> int { return a + b + x }
     if sum(5) != 35 {
-        testing.Fatal("expected 35")
+        t.Fatal("expected 35")
     }
 }
 
-fn TestClosureReturnValue(t: T) {
+fn TestClosureReturnValue(t: testing.T) {
     add5 := make_adder(5)
     if add5(3) != 8 {
-        testing.Fatal("expected 8")
+        t.Fatal("expected 8")
     }
 }
 
-fn TestClosureIndependent(t: T) {
+fn TestClosureIndependent(t: testing.T) {
     add5 := make_adder(5)
     add10 := make_adder(10)
     if add5(1) != 6 {
-        testing.Fatal("add5(1) expected 6")
+        t.Fatal("add5(1) expected 6")
     }
     if add10(1) != 11 {
-        testing.Fatal("add10(1) expected 11")
+        t.Fatal("add10(1) expected 11")
     }
 }
 
-fn TestClosureMove(t: T) {
+fn TestClosureMove(t: testing.T) {
     val := 42
     get := move |x: int| -> int { return val + x }
     if get(0) != 42 {
-        testing.Fatal("expected 42")
+        t.Fatal("expected 42")
     }
 }

@@ -2,6 +2,12 @@ package os
 
 // OS functions for the Ease bootstrap compiler
 
+extern fn system(cmd: ptr) -> i32
+
+fn System(cmd: string) -> int {
+    return system(cmd)
+}
+
 fn ReadFile(path: string) -> string {
     fd := syscall.open(path, 0, 0)
     if fd < 0 { return "" }

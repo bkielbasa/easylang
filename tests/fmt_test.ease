@@ -1,5 +1,9 @@
 package main
 
+import (
+    "testing"
+)
+
 struct Point { x: int, y: int }
 
 fn (p: Point) String() -> string {
@@ -12,23 +16,23 @@ fn (c: Color) String() -> string {
     return c.name
 }
 
-fn TestFmtSprint(t: T) {
+fn TestFmtSprint(t: testing.T) {
     p := Point { x: 3, y: 4 }
     result := fmt.Sprint(p)
     if result != "(3, 4)" {
-        testing.Fatal("expected (3, 4), got " + result)
+        t.Fatal("expected (3, 4), got " + result)
     }
 }
 
-fn TestFmtSprintDifferentTypes(t: T) {
+fn TestFmtSprintDifferentTypes(t: testing.T) {
     c := Color { name: "red" }
     result := fmt.Sprint(c)
     if result != "red" {
-        testing.Fatal("expected red, got " + result)
+        t.Fatal("expected red, got " + result)
     }
 }
 
-fn TestFmtPrintln(t: T) {
+fn TestFmtPrintln(t: testing.T) {
     p := Point { x: 5, y: 6 }
     fmt.Println(p)
 }

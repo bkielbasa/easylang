@@ -1,31 +1,35 @@
 package main
 
+import (
+    "testing"
+)
+
 // Struct operations
 
-fn TestStructLiteral(t: T) {
+fn TestStructLiteral(t: testing.T) {
     p1 := Point { x: 10, y: 20 }
     if p1.x != 10 {
-        testing.Fatal("p1.x should be 10")
+        t.Fatal("p1.x should be 10")
     }
     if p1.y != 20 {
-        testing.Fatal("p1.y should be 20")
+        t.Fatal("p1.y should be 20")
     }
 }
 
-fn TestStructFromFunction(t: T) {
+fn TestStructFromFunction(t: testing.T) {
     p2 := make_point(5, 15)
     if p2.x != 5 {
-        testing.Fatal("p2.x should be 5")
+        t.Fatal("p2.x should be 5")
     }
     if p2.y != 15 {
-        testing.Fatal("p2.y should be 15")
+        t.Fatal("p2.y should be 15")
     }
 }
 
-fn TestStructPassedToFunction(t: T) {
+fn TestStructPassedToFunction(t: testing.T) {
     rect := Rectangle { width: 8, height: 12 }
     a := area(rect)
     if a != 96 {
-        testing.Fatal("area should be 96")
+        t.Fatal("area should be 96")
     }
 }

@@ -1,15 +1,19 @@
 package main
 
+import (
+    "testing"
+)
+
 // Loops and control flow
 
-fn TestRangeLoop(t: T) {
+fn TestRangeLoop(t: testing.T) {
     s := sum_range(1, 6)
     if s != 15 {
-        testing.Fatal("sum_range(1,6) should be 15")
+        t.Fatal("sum_range(1,6) should be 15")
     }
 }
 
-fn TestConditionLoop(t: T) {
+fn TestConditionLoop(t: testing.T) {
     n := 0
     sum := 0
     for n < 10 {
@@ -17,47 +21,47 @@ fn TestConditionLoop(t: T) {
         n = n + 1
     }
     if sum != 45 {
-        testing.Fatal("sum 0..9 should be 45")
+        t.Fatal("sum 0..9 should be 45")
     }
 }
 
-fn TestCountEven(t: T) {
+fn TestCountEven(t: testing.T) {
     arr := []int{1, 2, 3, 4, 5, 6}
     evens := count_even(arr)
     if evens != 3 {
-        testing.Fatal("should have 3 even numbers")
+        t.Fatal("should have 3 even numbers")
     }
 }
 
-fn TestForInArray(t: T) {
+fn TestForInArray(t: testing.T) {
     arr := []int{10, 20, 30}
     sum := 0
     for x in arr {
         sum = sum + x
     }
     if sum != 60 {
-        testing.Fatal("for-in int array: expected sum 60")
+        t.Fatal("for-in int array: expected sum 60")
     }
 }
 
-fn TestForInStringArray(t: T) {
+fn TestForInStringArray(t: testing.T) {
     arr := []string{"a", "b", "c"}
     result := ""
     for s in arr {
         result = result + s
     }
     if result != "abc" {
-        testing.Fatal("for-in string array: expected abc")
+        t.Fatal("for-in string array: expected abc")
     }
 }
 
-fn TestForInEmptyArray(t: T) {
+fn TestForInEmptyArray(t: testing.T) {
     arr := []int{}
     count := 0
     for x in arr {
         count = count + 1
     }
     if count != 0 {
-        testing.Fatal("for-in empty array: body should not execute")
+        t.Fatal("for-in empty array: body should not execute")
     }
 }

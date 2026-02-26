@@ -1,14 +1,18 @@
 package main
 
-fn TestTimeNow(t: T) {
+import (
+    "testing"
+)
+
+fn TestTimeNow(t: testing.T) {
     now := time.Now()
     sec := time.Unix(now)
     if sec < 1700000000 {
-        testing.Fatal("expected Unix() to be a recent timestamp")
+        t.Fatal("expected Unix() to be a recent timestamp")
     }
 }
 
-fn TestTimeSub(t: T) {
+fn TestTimeSub(t: testing.T) {
     t1 := time.Now()
     sum := 0
     i := 0
@@ -18,54 +22,54 @@ fn TestTimeSub(t: T) {
     }
     elapsed := time.Since(t1)
     if elapsed < 0 {
-        testing.Fatal("expected positive elapsed time")
+        t.Fatal("expected positive elapsed time")
     }
 }
 
-fn TestTimeUnixNano(t: T) {
+fn TestTimeUnixNano(t: testing.T) {
     now := time.Now()
     nanos := time.UnixNano(now)
     if nanos < 1700000000000000000 {
-        testing.Fatal("expected UnixNano to be a large number")
+        t.Fatal("expected UnixNano to be a large number")
     }
 }
 
-fn TestTimeAdd(t: T) {
+fn TestTimeAdd(t: testing.T) {
     now := time.Now()
     later := time.Add(now, 1000000000)
     diff := time.Sub(later, now)
     if diff != 1000000000 {
-        testing.Fatal("expected Add to advance by 1 second")
+        t.Fatal("expected Add to advance by 1 second")
     }
 }
 
-fn TestTimeBefore(t: T) {
+fn TestTimeBefore(t: testing.T) {
     t1 := time.Now()
     t2 := time.Add(t1, 1000000000)
     if time.Before(t1, t2) != 1 {
-        testing.Fatal("expected t1 Before t2")
+        t.Fatal("expected t1 Before t2")
     }
     if time.Before(t2, t1) != 0 {
-        testing.Fatal("expected t2 not Before t1")
+        t.Fatal("expected t2 not Before t1")
     }
 }
 
-fn TestTimeAfter(t: T) {
+fn TestTimeAfter(t: testing.T) {
     t1 := time.Now()
     t2 := time.Add(t1, 1000000000)
     if time.After(t2, t1) != 1 {
-        testing.Fatal("expected t2 After t1")
+        t.Fatal("expected t2 After t1")
     }
     if time.After(t1, t2) != 0 {
-        testing.Fatal("expected t1 not After t2")
+        t.Fatal("expected t1 not After t2")
     }
 }
 
-fn TestTimeString(t: T) {
+fn TestTimeString(t: testing.T) {
     now := time.Now()
     result := fmt.Sprint(now)
     if len(result) < 3 {
-        testing.Fatal("expected time string with dot, got " + result)
+        t.Fatal("expected time string with dot, got " + result)
     }
     // Check that the string contains a dot separator
     found_dot := 0
@@ -77,6 +81,6 @@ fn TestTimeString(t: T) {
         i = i + 1
     }
     if found_dot != 1 {
-        testing.Fatal("expected dot in time string, got " + result)
+        t.Fatal("expected dot in time string, got " + result)
     }
 }

@@ -1,25 +1,29 @@
 package main
 
-fn TestSimpleEnum(t: T) {
+import (
+    "testing"
+)
+
+fn TestSimpleEnum(t: testing.T) {
     r := TestColor::Red
     g := TestColor::Green
     b := TestColor::Blue
-    if test_color_code(r) != 1 { testing.Fatal("Red should be 1") }
-    if test_color_code(g) != 2 { testing.Fatal("Green should be 2") }
-    if test_color_code(b) != 3 { testing.Fatal("Blue should be 3") }
+    if test_color_code(r) != 1 { t.Fatal("Red should be 1") }
+    if test_color_code(g) != 2 { t.Fatal("Green should be 2") }
+    if test_color_code(b) != 3 { t.Fatal("Blue should be 3") }
 }
 
-fn TestEnumWithData(t: T) {
+fn TestEnumWithData(t: testing.T) {
     some := TestOption::Some { value: 42 }
     none := TestOption::None
-    if test_unwrap_or(some, 0) != 42 { testing.Fatal("Some should unwrap to 42") }
-    if test_unwrap_or(none, 10) != 10 { testing.Fatal("None should give default") }
+    if test_unwrap_or(some, 0) != 42 { t.Fatal("Some should unwrap to 42") }
+    if test_unwrap_or(none, 10) != 10 { t.Fatal("None should give default") }
 }
 
-fn TestMatchExpression(t: T) {
+fn TestMatchExpression(t: testing.T) {
     some := TestOption::Some { value: 7 }
     none := TestOption::None
     a := test_unwrap_or(some, 0)
     b := test_unwrap_or(none, 99)
-    if a + b != 106 { testing.Fatal("expected 106") }
+    if a + b != 106 { t.Fatal("expected 106") }
 }

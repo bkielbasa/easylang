@@ -126,7 +126,6 @@ const OP_FLOAT_TO_STR = 83
 const OP_INT_TO_FLOAT = 84
 const OP_FLOAT_TO_INT = 85
 const OP_BOOL_TO_STR = 86
-const OP_SYSTEM = 87
 
 // Struct definitions and offsets (hardcoded for known structs)
 // AstNode: tag(8), int_val(8), str_val(8), left(8), right(8), extra(8), type_tag(8) = 56 bytes
@@ -523,6 +522,46 @@ fn iface_method_ret_is_array(iface_name: string, idx: int) -> int {
             start := g_iface_method_starts[i]
             return g_iface_method_ret_is_array[start + idx]
         }
+        i = i + 1
+    }
+    return 0
+}
+
+// Extern function registry
+// Type constants for extern fn parameter/return types
+const EXTERN_I32 = 1
+const EXTERN_I64 = 2
+const EXTERN_PTR = 3
+const EXTERN_VOID = 4
+
+g_extern_names := []string{}       // qualified Ease name (e.g., "os.system")
+g_extern_c_names := []string{}     // C function name (e.g., "system")
+g_extern_param_counts := []int{}
+g_extern_param_starts := []int{}   // index into flat param types array
+g_extern_param_types := []int{}    // flat array of param types
+g_extern_ret_types := []int{}      // return type constant
+
+fn RegisterExtern(ease_name: string, c_name: string, param_count: int, param_types: []int, ret_type: int) {
+    push(g_extern_names, ease_name)
+    push(g_extern_c_names, c_name)
+    push(g_extern_param_counts, param_count)
+    push(g_extern_param_starts, len(g_extern_param_types))
+    i := 0
+    for i < param_count {
+        push(g_extern_param_types, param_types[i])
+        i = i + 1
+    }
+    push(g_extern_ret_types, ret_type)
+}
+
+fn extern_count() -> int {
+    return len(g_extern_names)
+}
+
+fn is_extern(name: string) -> int {
+    i := 0
+    for i < len(g_extern_names) {
+        if g_extern_names[i] == name { return 1 }
         i = i + 1
     }
     return 0

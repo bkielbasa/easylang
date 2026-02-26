@@ -67,7 +67,21 @@ import (
 - Imported functions compiled into the binary
 - Unused imports = compile error (TODO)
 
-**Status**: Local file imports, directory package imports, and stdlib imports all working! Directory imports enforce visibility (uppercase = public). External imports coming soon.
+**Status**: Local file imports, directory package imports, bare stdlib imports, and `import "testing"` all working! Directory imports enforce visibility (uppercase = public). External imports coming soon.
+
+## FFI: extern fn (implemented)
+```ease
+// Declare a C function with explicit types
+extern fn system(cmd: ptr) -> i32
+
+// Ease wrapper with idiomatic types
+fn System(cmd: string) -> int {
+    return system(cmd)
+}
+```
+- Supported extern types: `ptr` (C pointer), `i32` (C int), `i64` (C long), `void` (no return)
+- The compiler generates LLVM IR wrappers that bridge Ease's all-i64 calling convention to C types
+- Use in stdlib modules to call libc functions without adding new opcodes
 
 ## Constants (implemented)
 ```ease

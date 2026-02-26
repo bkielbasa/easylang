@@ -1,104 +1,107 @@
 package main
 
+import (
+    "testing"
+)
 import ("strings")
 import ("strconv")
 
 // String operations
 
-fn TestStringConcat(t: T) {
+fn TestStringConcat(t: testing.T) {
     hello := "Hello"
     world := "World"
     greeting := strings.Concat(hello, " ")
     greeting = strings.Concat(greeting, world)
     if !strings.Contains(greeting, "World") {
-        testing.Fatal("should contain World")
+        t.Fatal("should contain World")
     }
 }
 
-fn TestStringStartsWith(t: T) {
+fn TestStringStartsWith(t: testing.T) {
     s := "Hello World"
     if !strings.StartsWith(s, "Hello") {
-        testing.Fatal("should start with Hello")
+        t.Fatal("should start with Hello")
     }
 }
 
-fn TestStringEndsWith(t: T) {
+fn TestStringEndsWith(t: testing.T) {
     s := "Hello World"
     if !strings.EndsWith(s, "World") {
-        testing.Fatal("should end with World")
+        t.Fatal("should end with World")
     }
 }
 
-fn TestStringIndexOf(t: T) {
+fn TestStringIndexOf(t: testing.T) {
     s := "Hello World"
     idx := strings.IndexOf(s, "World")
     if idx != 6 {
-        testing.Fatal("IndexOf World should be 6")
+        t.Fatal("IndexOf World should be 6")
     }
 }
 
-fn TestStrconvItoa(t: T) {
+fn TestStrconvItoa(t: testing.T) {
     num_str := strconv.Itoa(42)
     if num_str != "42" {
-        testing.Fatal("Itoa(42) should be 42")
+        t.Fatal("Itoa(42) should be 42")
     }
 }
 
-fn TestStrconvAtoi(t: T) {
+fn TestStrconvAtoi(t: testing.T) {
     num := strconv.Atoi("123")
     if num != 123 {
-        testing.Fatal("Atoi(123) should be 123")
+        t.Fatal("Atoi(123) should be 123")
     }
 }
 
-fn TestStringBuilderBasic(t: T) {
+fn TestStringBuilderBasic(t: testing.T) {
     b := strings.NewBuilder()
     b.WriteString("hello")
     b.WriteString(" ")
     b.WriteString("world")
     result := b.String()
     if result != "hello world" {
-        testing.Fatal("expected hello world, got " + result)
+        t.Fatal("expected hello world, got " + result)
     }
 }
 
-fn TestStringBuilderEmpty(t: T) {
+fn TestStringBuilderEmpty(t: testing.T) {
     b := strings.NewBuilder()
     result := b.String()
     if result != "" {
-        testing.Fatal("expected empty string, got " + result)
+        t.Fatal("expected empty string, got " + result)
     }
 }
 
-fn TestStringBuilderAsStringer(t: T) {
+fn TestStringBuilderAsStringer(t: testing.T) {
     b := strings.NewBuilder()
     b.WriteString("built")
     result := fmt.Sprint(b)
     if result != "built" {
-        testing.Fatal("expected built, got " + result)
+        t.Fatal("expected built, got " + result)
     }
 }
 
-fn TestStringBuilderAsWriter(t: T) {
+fn TestStringBuilderAsWriter(t: testing.T) {
     b := strings.NewBuilder()
     b.WriteString("test")
     if b.Len() != 4 {
-        testing.Fatal("expected len 4, got " + strconv.Itoa(b.Len()))
+        t.Fatal("expected len 4, got " + strconv.Itoa(b.Len()))
     }
 }
 
-fn TestStringBuilderReset(t: T) {
+fn TestStringBuilderReset(t: testing.T) {
     b := strings.NewBuilder()
     b.WriteString("hello")
     b.Reset()
     result := b.String()
     if result != "" {
-        testing.Fatal("expected empty after reset, got " + result)
+        t.Fatal("expected empty after reset, got " + result)
     }
     b.WriteString("world")
     result = b.String()
     if result != "world" {
-        testing.Fatal("expected world after reset+write, got " + result)
+        t.Fatal("expected world after reset+write, got " + result)
     }
 }
 

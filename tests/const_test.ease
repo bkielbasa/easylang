@@ -1,42 +1,46 @@
 package main
 
+import (
+    "testing"
+)
+
 const MAX_SIZE = 1024
 const APP_NAME = "myapp"
 const DEBUG = false
 const NEGATIVE = -1
 
-fn TestConstInt(t: T) {
-    if MAX_SIZE != 1024 { testing.Fatal("MAX_SIZE should be 1024") }
+fn TestConstInt(t: testing.T) {
+    if MAX_SIZE != 1024 { t.Fatal("MAX_SIZE should be 1024") }
 }
 
-fn TestConstString(t: T) {
-    if APP_NAME != "myapp" { testing.Fatal("APP_NAME should be myapp") }
+fn TestConstString(t: testing.T) {
+    if APP_NAME != "myapp" { t.Fatal("APP_NAME should be myapp") }
 }
 
-fn TestConstBool(t: T) {
-    if DEBUG == true { testing.Fatal("DEBUG should be false") }
+fn TestConstBool(t: testing.T) {
+    if DEBUG == true { t.Fatal("DEBUG should be false") }
 }
 
-fn TestConstNegativeInt(t: T) {
-    if NEGATIVE != -1 { testing.Fatal("NEGATIVE should be -1") }
+fn TestConstNegativeInt(t: testing.T) {
+    if NEGATIVE != -1 { t.Fatal("NEGATIVE should be -1") }
 }
 
-fn TestConstInExpression(t: T) {
+fn TestConstInExpression(t: testing.T) {
     x := MAX_SIZE * 2
-    if x != 2048 { testing.Fatal("MAX_SIZE * 2 should be 2048") }
+    if x != 2048 { t.Fatal("MAX_SIZE * 2 should be 2048") }
 }
 
-fn TestConstStringConcat(t: T) {
+fn TestConstStringConcat(t: testing.T) {
     greeting := "Hello, " + APP_NAME
-    if greeting != "Hello, myapp" { testing.Fatal("string concat with const failed") }
+    if greeting != "Hello, myapp" { t.Fatal("string concat with const failed") }
 }
 
-fn TestConstInComparison(t: T) {
-    if MAX_SIZE < 100 { testing.Fatal("MAX_SIZE should be >= 100") }
-    if MAX_SIZE > 2000 { testing.Fatal("MAX_SIZE should be <= 2000") }
+fn TestConstInComparison(t: testing.T) {
+    if MAX_SIZE < 100 { t.Fatal("MAX_SIZE should be >= 100") }
+    if MAX_SIZE > 2000 { t.Fatal("MAX_SIZE should be <= 2000") }
 }
 
-fn TestConstArithmetic(t: T) {
+fn TestConstArithmetic(t: testing.T) {
     result := MAX_SIZE + NEGATIVE
-    if result != 1023 { testing.Fatal("MAX_SIZE + NEGATIVE should be 1023") }
+    if result != 1023 { t.Fatal("MAX_SIZE + NEGATIVE should be 1023") }
 }

@@ -1,29 +1,33 @@
 package main
 
+import (
+    "testing"
+)
+
 // Basic arithmetic operations
 
-fn TestAddition(t: T) {
+fn TestAddition(t: testing.T) {
     if add(10, 20) != 30 {
-        testing.Fatal("10 + 20 should be 30")
+        t.Fatal("10 + 20 should be 30")
     }
 }
 
-fn TestSubtraction(t: T) {
+fn TestSubtraction(t: testing.T) {
     diff := 20 - 10
     if diff != 10 {
-        testing.Fatal("20 - 10 should be 10")
+        t.Fatal("20 - 10 should be 10")
     }
 }
 
-fn TestMultiplication(t: T) {
+fn TestMultiplication(t: testing.T) {
     if multiply(10, 20) != 200 {
-        testing.Fatal("10 * 20 should be 200")
+        t.Fatal("10 * 20 should be 200")
     }
 }
 
-fn TestDivision(t: T) {
+fn TestDivision(t: testing.T) {
     quot := 20 / 10
     if quot != 2 {
-        testing.Fatal("20 / 10 should be 2")
+        t.Fatal("20 / 10 should be 2")
     }
 }

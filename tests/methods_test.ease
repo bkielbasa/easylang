@@ -1,49 +1,53 @@
 package main
 
-fn TestMethodValueReceiver(t: T) {
+import (
+    "testing"
+)
+
+fn TestMethodValueReceiver(t: testing.T) {
     c := NewCounter(42)
     v := c.Value()
     if v != 42 {
-        testing.Fatal("expected Value() == 42, got " + strconv.Itoa(v))
+        t.Fatal("expected Value() == 42, got " + strconv.Itoa(v))
     }
 }
 
-fn TestMethodDouble(t: T) {
+fn TestMethodDouble(t: testing.T) {
     c := NewCounter(21)
     d := c.Double()
     if d != 42 {
-        testing.Fatal("expected Double() == 42, got " + strconv.Itoa(d))
+        t.Fatal("expected Double() == 42, got " + strconv.Itoa(d))
     }
 }
 
-fn TestMethodWithArgs(t: T) {
+fn TestMethodWithArgs(t: testing.T) {
     c := NewCounter(10)
     result := c.Add(32)
     if result != 42 {
-        testing.Fatal("expected Add(32) == 42, got " + strconv.Itoa(result))
+        t.Fatal("expected Add(32) == 42, got " + strconv.Itoa(result))
     }
 }
 
-fn TestMethodOnPoint(t: T) {
+fn TestMethodOnPoint(t: testing.T) {
     p := make_point(3, 7)
     s := p.Sum()
     if s != 10 {
-        testing.Fatal("expected Sum() == 10, got " + strconv.Itoa(s))
+        t.Fatal("expected Sum() == 10, got " + strconv.Itoa(s))
     }
 }
 
-fn TestMethodReturningString(t: T) {
+fn TestMethodReturningString(t: testing.T) {
     p := make_point(5, 12)
     desc := p.Describe()
     if desc != "(5, 12)" {
-        testing.Fatal("expected (5, 12), got " + desc)
+        t.Fatal("expected (5, 12), got " + desc)
     }
 }
 
-fn TestMethodOnStructLiteral(t: T) {
+fn TestMethodOnStructLiteral(t: testing.T) {
     c := Counter { count: 100 }
     v := c.Value()
     if v != 100 {
-        testing.Fatal("expected Value() == 100, got " + strconv.Itoa(v))
+        t.Fatal("expected Value() == 100, got " + strconv.Itoa(v))
     }
 }

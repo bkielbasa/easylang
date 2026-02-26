@@ -21,7 +21,9 @@ The Ease compiler is written in Ease and compiles itself with byte-identical con
 - **Vreg-based type system** — tracks types via `g_vreg_types`/`g_param_types` arrays, replaces `is_string_expr` heuristic
 - String `==`/`!=`/`+` auto-dispatch via vreg type lookups (no heuristic needed)
 - Dynamic struct field registry for user-defined structs
-- Go-style test suite (125 tests passing, 2 benchmarks)
+- Go-style test suite (116 tests passing, 2 benchmarks)
+- **`extern fn` FFI** — declare C functions directly in stdlib modules (e.g., `extern fn system(cmd: ptr) -> i32`), auto-generates LLVM IR wrappers with type conversion
+- **Bare imports** — `import "testing"` resolves to `bootstrap/ease/testing` (no `./` prefix needed for stdlib)
 
 **Compiler Components** (all in `bootstrap/ease/`):
 - [x] Lexer with comment handling (// comments)
@@ -60,23 +62,6 @@ The Ease compiler is written in Ease and compiles itself with byte-identical con
 - [ ] x86_64 backend for Intel Macs and Linux
 - [x] LLVM backend for optimization and portability
 
-### Compiler Improvements
-- [x] **Vreg-based type system** — Every vreg gets a type recorded in `g_vreg_types` (regular vregs) / `g_param_types` (params, scoped per function via `g_param_types_start`). Replaces the old `is_string_expr`/`is_string_array_expr` heuristics and `g_string_vars`/`g_string_array_vars` tracking. Type lookups drive opcode dispatch for `+`/`==`/`!=`/`len()`.
-- [x] **Function return type registry** — Built from parsed `-> type` annotations, used by type system for EXPR_CALL type propagation.
-- [x] **Struct field type registry** — Built from parsed DECL_FIELD type annotations, used by type system for EXPR_FIELD type propagation.
-- [x] **Pure Ease stdlib** — `print`, `str_substring`, `os.ReadFile` replaced with pure Ease implementations. Added `syscall.read`, `strconv.Atoi`, string utility functions.
-- [x] **Go-style directory packages** — Modules organized as `bootstrap/ease/token/token.ease` with `package token` declarations.
-- [x] **NOT prefix operator** — `!expr` support in parser and IRgen.
-- [x] **Range-based for loops** — `for i in start..end` parsed and desugared to init/compare/body/increment.
-- [x] **Modulo operator** — `%` → `OP_MOD` → LLVM `srem`.
-- [x] **Dynamic struct field registry** — `RegisterStruct` + `RegisterFieldOffset` for user-defined structs.
-- [x] **Go-style testing framework** — `fn TestXxx(t: T)` in `*_test.ease`, `testing.T` struct with name field, `testing.Fatal(msg)`, setjmp/longjmp for test recovery, synthetic runner with `=== RUN` / `--- PASS/FAIL` output.
-- [x] **Go-style benchmark framework** — `fn BenchmarkXxx(b: B)` with `testing.B` struct (`name: string`, `N: int`), auto-calibration (doubles N until >= 1s elapsed), `ease_time_nanos()` C runtime + `OP_TIME_NANOS` IR opcode, reports `iterations\tns/op`.
-- [x] **Struct type name tracking** — Parallel arrays (`g_vreg_struct_names`, `g_param_struct_names`) track which struct type each vreg holds, enabling method dispatch.
-- [x] **Method receivers** — Go-style `fn (recv: Type) Method()` syntax, name mangling (`Type_Method`), receiver injected as first parameter, method call dispatch via struct type lookup.
-- [x] **Implicit interfaces** — Go-style `interface Name { Method() -> Type }` with implicit satisfaction. Interface values are heap-allocated `[concrete_ptr, vtable_ptr]` pairs. Vtables initialized at startup via `@ease_init_vtables()`. Auto-wrapping at call sites when passing concrete structs to interface-typed parameters.
-- [x] **Closures and lambdas** — `|params| -> type { body }` or `|params| -> type expr` syntax. Closures are heap-allocated `[func_ptr, env_ptr]` pairs. Captures by value with automatic capture analysis. Support for `move` keyword, no-param closures (`||`), expression bodies, factory functions returning closures.
-
 ### Language Features
 - [x] **Go-style `:=` declarations** — Replaced `let`/`let mut` with `:=`. All variables are mutable.
 - [ ] **`const` keyword** — Compile-time constants (e.g. `const MAX_SIZE = 1024`)
@@ -86,7 +71,7 @@ The Ease compiler is written in Ease and compiles itself with byte-identical con
 - [x] Pointer syntax (`*T`, `&x`, `*x`) — parsed and recognized, identity ops since structs are heap pointers
 - [x] Interfaces (implicit satisfaction, vtable dispatch, auto-wrapping)
 - [ ] Generics (design TODO)
-- [ ] Closures and lambdas
+- [x] Closures and lambdas
 - [x] Error propagation operator (`?`) — postfix `expr?` extracts success value or early-returns error/none
 - [x] Result and Option types
 

@@ -1,58 +1,62 @@
 package main
 
+import (
+    "testing"
+)
+
 // String interpolation tests
 
-fn TestStringInterpBasic(t: T) {
+fn TestStringInterpBasic(t: testing.T) {
     name := "world"
     result := "hello ${name}"
     if result != "hello world" {
-        testing.Fatal("expected 'hello world', got: " + result)
+        t.Fatal("expected 'hello world', got: " + result)
     }
 }
 
-fn TestStringInterpInt(t: T) {
+fn TestStringInterpInt(t: testing.T) {
     age := 25
     result := "age is ${age}"
     if result != "age is 25" {
-        testing.Fatal("expected 'age is 25', got: " + result)
+        t.Fatal("expected 'age is 25', got: " + result)
     }
 }
 
-fn TestStringInterpMultiple(t: T) {
+fn TestStringInterpMultiple(t: testing.T) {
     name := "Alice"
     age := 30
     result := "${name} is ${age} years old"
     if result != "Alice is 30 years old" {
-        testing.Fatal("expected 'Alice is 30 years old', got: " + result)
+        t.Fatal("expected 'Alice is 30 years old', got: " + result)
     }
 }
 
-fn TestStringInterpBool(t: T) {
+fn TestStringInterpBool(t: testing.T) {
     flag := true
     result := "value is ${flag}"
     if result != "value is true" {
-        testing.Fatal("expected 'value is true', got: " + result)
+        t.Fatal("expected 'value is true', got: " + result)
     }
 }
 
-fn TestStringInterpFloat(t: T) {
+fn TestStringInterpFloat(t: testing.T) {
     pi := 3.14
     result := "pi is ${pi}"
     if result != "pi is 3.14" {
-        testing.Fatal("expected 'pi is 3.14', got: " + result)
+        t.Fatal("expected 'pi is 3.14', got: " + result)
     }
 }
 
-fn TestStringInterpNoInterp(t: T) {
+fn TestStringInterpNoInterp(t: testing.T) {
     result := "no interpolation here"
     if result != "no interpolation here" {
-        testing.Fatal("expected 'no interpolation here', got: " + result)
+        t.Fatal("expected 'no interpolation here', got: " + result)
     }
 }
 
-fn TestStringInterpLiteralBraces(t: T) {
+fn TestStringInterpLiteralBraces(t: testing.T) {
     result := "json: {\"key\": 1}"
     if result != "json: {\"key\": 1}" {
-        testing.Fatal("expected json with braces, got: " + result)
+        t.Fatal("expected json with braces, got: " + result)
     }
 }

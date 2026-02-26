@@ -1,21 +1,25 @@
 package main
 
+import (
+    "testing"
+)
+
 // Function calls and recursion
 
-fn TestFunctionCalls(t: T) {
+fn TestFunctionCalls(t: testing.T) {
     sum := add(5, 3)
     if sum != 8 {
-        testing.Fatal("add(5, 3) should be 8")
+        t.Fatal("add(5, 3) should be 8")
     }
     prod := multiply(4, 7)
     if prod != 28 {
-        testing.Fatal("multiply(4, 7) should be 28")
+        t.Fatal("multiply(4, 7) should be 28")
     }
 }
 
-fn TestRecursion(t: T) {
+fn TestRecursion(t: testing.T) {
     fact := factorial(5)
     if fact != 120 {
-        testing.Fatal("factorial(5) should be 120")
+        t.Fatal("factorial(5) should be 120")
     }
 }

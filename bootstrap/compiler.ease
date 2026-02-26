@@ -262,6 +262,11 @@ fn parse_for_diagnostics(source: string) {
             } else {
                 break
             }
+        } else if dkind == TK_EXTERN {
+            dextern := parse_extern_fn_decl(source, dpos, diag_nodes)
+            if dextern.node_idx < 0 { break }
+            dpos = dextern.new_pos
+            dpos = lex_skip(source, dpos)
         } else if dkind == TK_FN {
             dfunc := parse_func_decl(source, dpos, diag_nodes)
             if dfunc.node_idx < 0 {
@@ -398,6 +403,13 @@ fn parse_source_file(source: string, nodes: []AstNode, func_names: []string, fun
             } else {
                 break
             }
+        } else if kind == TK_EXTERN {
+            extern_result := parse_extern_fn_decl(source, parse_pos, nodes)
+            if extern_result.node_idx < 0 {
+                break
+            }
+            parse_pos = extern_result.new_pos
+            parse_pos = lex_skip(source, parse_pos)
         } else if kind == TK_FN {
             parse_result := parse_func_decl(source, parse_pos, nodes)
             if parse_result.node_idx < 0 {
@@ -420,6 +432,29 @@ fn parse_source_file(source: string, nodes: []AstNode, func_names: []string, fun
         }
     }
     return 0
+}
+
+// Consume extern declarations from parser side tables and register them
+g_extern_decl_consumed := 0
+
+fn register_extern_decls(mod_name: string) {
+    for g_extern_decl_consumed < len(g_extern_decl_names) {
+        c_name := g_extern_decl_names[g_extern_decl_consumed]
+        ease_name := mod_name + "." + c_name
+        pc := g_extern_decl_param_counts[g_extern_decl_consumed]
+        ps := g_extern_decl_param_starts[g_extern_decl_consumed]
+        pt := []int{}
+        pi := 0
+        for pi < pc {
+            push(pt, g_extern_decl_param_types[ps + pi])
+            pi = pi + 1
+        }
+        rt := g_extern_decl_ret_types[g_extern_decl_consumed]
+        RegisterExtern(ease_name, c_name, pc, pt, rt)
+        // Also add sema rename so unqualified calls within the module resolve
+        sema.AddRename(c_name, ease_name)
+        g_extern_decl_consumed = g_extern_decl_consumed + 1
+    }
 }
 
 // Load a directory package: list .ease files, parse each, register functions
@@ -446,6 +481,8 @@ fn load_dir_package(resolved: string, mod_name: string, nodes: []AstNode, func_n
         }
         epos = epos + 1
     }
+    // Register extern functions from parser side tables
+    register_extern_decls(mod_name)
     // Register functions with visibility enforcement
     mfi := 0
     for mfi < len(mod_fn_names) {
@@ -475,6 +512,8 @@ fn load_single_module(resolved: string, mod_name: string, nodes: []AstNode, func
     mod_fn_indices := []int{}
     mod_source := os.ReadFile(resolved)
     parse_source_file(mod_source, nodes, mod_fn_names, mod_fn_indices, gvar_names, 0)
+    // Register extern functions from parser side tables
+    register_extern_decls(mod_name)
     mfi := 0
     for mfi < len(mod_fn_names) {
         qualified := mod_name + "." + mod_fn_names[mfi]
@@ -493,12 +532,24 @@ fn process_imports(source_file: string, nodes: []AstNode, func_names: []string, 
         if nodes[imp_i].tag == DECL_IMPORT {
             import_path := nodes[imp_i].str_val
             if len(import_path) >= 2 && str_char_at(import_path, 0) == 46 && str_char_at(import_path, 1) == 47 {
+                // Relative import: ./path
                 mod_name := extract_module_name(import_path)
                 resolved := resolve_import_path(source_file, import_path)
                 if os.IsDir(resolved) == 1 {
                     load_dir_package(resolved, mod_name, nodes, func_names, func_indices, gvar_names)
                 } else {
                     load_single_module(resolved, mod_name, nodes, func_names, func_indices, gvar_names)
+                }
+            } else {
+                // Bare import: "testing" -> bootstrap/ease/testing
+                mod_name := import_path
+                if sema.IsModuleLoaded(mod_name) == 0 {
+                    fallback := "bootstrap/ease/" + mod_name
+                    if os.IsDir(fallback) == 1 {
+                        load_dir_package(fallback, mod_name, nodes, func_names, func_indices, gvar_names)
+                    } else {
+                        load_single_module(fallback + ".ease", mod_name, nodes, func_names, func_indices, gvar_names)
+                    }
                 }
             }
         }
@@ -808,7 +859,7 @@ fn run_test_mode(test_path: string, run_bench: int) -> int {
 
     // Process imports, load stdlib, build registries
     process_imports(dir + "/dummy.ease", nodes, func_names, func_indices, global_var_names)
-    stdlib_mods := []string{"./ease/io", "./ease/strings", "./ease/os", "./ease/strconv", "./ease/testing", "./ease/time", "./ease/result", "./ease/json", "./ease/fmt", "./ease/maps"}
+    stdlib_mods := []string{"./ease/io", "./ease/strings", "./ease/os", "./ease/strconv", "./ease/time", "./ease/result", "./ease/json", "./ease/fmt", "./ease/maps"}
     load_stdlib(dir + "/dummy.ease", stdlib_mods, nodes, func_names, func_indices, global_var_names)
     sema.AddRename("print", "io.Print")
     build_registries(nodes, func_names, func_indices)

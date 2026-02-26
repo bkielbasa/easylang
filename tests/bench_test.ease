@@ -1,5 +1,9 @@
 package main
 
+import (
+    "testing"
+)
+
 fn BenchmarkAdd(b: B) {
     i := 0
     for i < b.N {
