@@ -53,16 +53,12 @@ update-seed: verify
 # Usage: make test [DIR=path/to/dir] (default: tests/)
 DIR ?= tests
 test: $(EASE)
-	@$(EASE) test $(DIR) > /dev/null 2>&1
-	@$(CC) -O0 $(BUILD_DIR)/output.ll -o $(BUILD_DIR)/test_bin 2>/dev/null
-	@$(BUILD_DIR)/test_bin
+	@$(EASE) test $(DIR)
 
 # Run tests + benchmarks
 # Usage: make bench [DIR=path/to/dir] (default: tests/)
 bench: $(EASE)
-	@$(EASE) test $(DIR) --bench > /dev/null 2>&1
-	@$(CC) -O0 $(BUILD_DIR)/output.ll -o $(BUILD_DIR)/test_bin 2>/dev/null
-	@$(BUILD_DIR)/test_bin
+	@$(EASE) test $(DIR) --bench
 
 clean:
 	rm -f $(BUILD_DIR)/ease $(BUILD_DIR)/ease_gen1

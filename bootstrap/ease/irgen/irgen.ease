@@ -307,6 +307,16 @@ fn gen_ir_call_str_char_at(ast_idx: int, nodes: []AstNode, instrs: []IRInstr, sy
     return result_vreg
 }
 
+fn gen_ir_call_system(ast_idx: int, nodes: []AstNode, instrs: []IRInstr, symtab_names: []string, symtab_vregs: []int) -> int {
+    arg_indices := get_call_args(ast_idx)
+    if len(arg_indices) != 1 { return -1 }
+    cmd_vreg := gen_ir_from_ast_with_symtab(arg_indices[0], nodes, instrs, symtab_names, symtab_vregs)
+    result_vreg := len(instrs)
+    push(instrs, IRInstr { op: OP_SYSTEM, dest: result_vreg, arg1: cmd_vreg, arg2: 0, arg3: 0, str_val: "" })
+    set_vreg_type(result_vreg, TYPE_INT)
+    return result_vreg
+}
+
 fn gen_ir_call_syscall_open(ast_idx: int, nodes: []AstNode, instrs: []IRInstr, symtab_names: []string, symtab_vregs: []int) -> int {
     arg_indices := get_call_args(ast_idx)
     if len(arg_indices) != 3 { return -1 }
@@ -1588,6 +1598,9 @@ fn gen_ir_from_ast_with_symtab(ast_idx: int, nodes: []AstNode, instrs: []IRInstr
         }
         if func_name == "syscall.read" {
             return gen_ir_call_syscall_read(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
+        }
+        if func_name == "os.System" {
+            return gen_ir_call_system(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
         }
         if func_name == "os.IsDir" {
             return gen_ir_call_is_dir(ast_idx, nodes, instrs, symtab_names, symtab_vregs)

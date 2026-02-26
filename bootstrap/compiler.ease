@@ -881,6 +881,13 @@ fn run_test_mode(test_path: string, run_bench: int) -> int {
         call_vreg := len(instrs)
         push(instrs, IRInstr { op: OP_CALL, dest: call_vreg, arg1: 0, arg2: 1, arg3: 0, str_val: tname })
 
+        // Check soft fail (IsTrue assertions that failed but didn't stop execution)
+        sf_vreg := len(instrs)
+        push(instrs, IRInstr { op: OP_CALL, dest: sf_vreg, arg1: 0, arg2: 0, arg3: 0, str_val: "testing.CheckSoftFail" })
+        sf_cmp := len(instrs)
+        push(instrs, IRInstr { op: OP_CMP_EQ, dest: sf_cmp, arg1: sf_vreg, arg2: zero_vreg, arg3: 0, str_val: "" })
+        push(instrs, IRInstr { op: OP_BRANCH, dest: sf_cmp, arg1: fail_label, arg2: 0, arg3: 0, str_val: "" })
+
         // Print "--- PASS: TestXxx\n" via io.Print
         pass_msg_vreg := len(instrs)
         push(instrs, IRInstr { op: OP_LOADCONST, dest: pass_msg_vreg, arg1: 0, arg2: 0, arg3: 0, str_val: "--- PASS: " + tname + "\n" })
@@ -1079,7 +1086,16 @@ fn run_test_mode(test_path: string, run_bench: int) -> int {
         return 1
     }
 
-    return 0
+    // Compile LLVM IR to executable
+    compile_rc := os.System("clang -O0 ./tmp/output.ll -o ./tmp/test_bin 2>/dev/null")
+    if compile_rc != 0 {
+        print("Failed to compile test binary\n")
+        return 1
+    }
+
+    // Run the test binary
+    run_rc := os.System("./tmp/test_bin")
+    return run_rc / 256
 }
 
 fn main() -> int {
