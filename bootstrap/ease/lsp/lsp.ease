@@ -78,7 +78,13 @@ fn make_notification(method: string, params_doc: Doc) -> string {
 }
 
 // Handle initialize request — return server capabilities
-fn handle_initialize(id: int) {
+fn handle_initialize(id: int, doc: Doc) {
+    // Extract rootUri from initialize params
+    params := doc.GetObject("params")
+    root_uri := params.GetString("rootUri")
+    if len(root_uri) > 0 {
+        set_lsp_root_uri(root_uri)
+    }
     // textDocumentSync: 1 = Full (send full text on open/change/save)
     sync_opts := json.New()
     sync_opts.SetInt("openClose", 1)
@@ -157,6 +163,15 @@ fn clear_diagnostics(uri: string) {
     write_message(notif)
 }
 
+// Returns 1 if character is alphanumeric or underscore
+fn is_word_char(ch: int) -> int {
+    if ch >= 65 && ch <= 90 { return 1 }
+    if ch >= 97 && ch <= 122 { return 1 }
+    if ch == 95 { return 1 }
+    if ch >= 48 && ch <= 57 { return 1 }
+    return 0
+}
+
 // Extract the identifier word at the given byte offset
 fn get_word_at(src: string, offset: int) -> string {
     slen := len(src)
@@ -212,6 +227,153 @@ fn offset_to_line_col_0(src: string, offset: int) -> []int {
     return result
 }
 
+// Check if a word occurrence at position pos is a local declaration.
+// Returns pos if it is a declaration, otherwise returns prev (the previous best result).
+fn check_local_decl(src: string, pos: int, wlen: int, slen: int, prev: int) -> int {
+    // Check word boundaries
+    if pos > 0 {
+        if is_word_char(str_char_at(src, pos - 1)) == 1 { return prev }
+    }
+    if pos + wlen < slen {
+        if is_word_char(str_char_at(src, pos + wlen)) == 1 { return prev }
+    }
+
+    // Skip whitespace after word
+    k := pos + wlen
+    for k < slen && str_char_at(src, k) == 32 {
+        k = k + 1
+    }
+    if k >= slen { return prev }
+
+    ch := str_char_at(src, k)
+
+    // Check ":=" declaration
+    if ch == 58 {
+        if k + 1 < slen {
+            if str_char_at(src, k + 1) == 61 {
+                return pos
+            }
+        }
+        // Parameter: ":" but not ":="
+        return pos
+    }
+
+    // Check multi-return: word followed by "," with ":=" later on same line
+    if ch == 44 {
+        m := k + 1
+        for m + 1 < slen {
+            if str_char_at(src, m) == 10 { break }
+            if str_char_at(src, m) == 58 {
+                if str_char_at(src, m + 1) == 61 {
+                    return pos
+                }
+            }
+            m = m + 1
+        }
+    }
+
+    // Check for-in variable: preceded by "for "
+    if pos >= 4 {
+        if str_char_at(src, pos - 4) == 102 {
+            if str_char_at(src, pos - 3) == 111 {
+                if str_char_at(src, pos - 2) == 114 {
+                    if str_char_at(src, pos - 1) == 32 {
+                        return pos
+                    }
+                }
+            }
+        }
+    }
+
+    return prev
+}
+
+// Find the byte offset of a local variable declaration within the enclosing function.
+// Returns the offset of the word in its declaration, or -1 if not found.
+fn find_local_definition(src: string, cursor_offset: int, word: string) -> int {
+    slen := len(src)
+    wlen := len(word)
+    if wlen == 0 { return -1 }
+
+    // Step 1: Find enclosing function by scanning backward for "\nfn "
+    fn_start := 0
+    i := cursor_offset
+    for i > 0 {
+        if str_char_at(src, i) == 10 {
+            if i + 3 < slen {
+                if str_char_at(src, i + 1) == 102 {
+                    if str_char_at(src, i + 2) == 110 {
+                        if str_char_at(src, i + 3) == 32 {
+                            fn_start = i + 1
+                            break
+                        }
+                    }
+                }
+            }
+        }
+        i = i - 1
+    }
+    // Also check start-of-file "fn "
+    if fn_start == 0 && slen >= 3 {
+        if str_char_at(src, 0) == 102 {
+            if str_char_at(src, 1) == 110 {
+                if str_char_at(src, 2) == 32 {
+                    fn_start = 0
+                }
+            }
+        }
+    }
+
+    // Step 2: Scan forward from fn_start looking for whole-word declaration matches
+    result := -1
+    i = fn_start
+    for i <= cursor_offset {
+        if i + wlen > slen { break }
+        // Check if word matches at position i
+        eq := 1
+        j := 0
+        for j < wlen {
+            if str_char_at(src, i + j) != str_char_at(word, j) {
+                eq = 0
+                break
+            }
+            j = j + 1
+        }
+        if eq == 1 {
+            result = check_local_decl(src, i, wlen, slen, result)
+        }
+        i = i + 1
+    }
+
+    return result
+}
+
+// Build and send an LSP Location response for a symbol at the given byte offset
+fn send_definition_response(id: int, uri: string, src: string, sym_offset: int, word: string) {
+    lc := offset_to_line_col_0(src, sym_offset)
+    sym_line := lc[0]
+    sym_col := lc[1]
+
+    start_pos := json.New()
+    start_pos.SetInt("line", sym_line)
+    start_pos.SetInt("character", sym_col)
+
+    end_pos := json.New()
+    end_pos.SetInt("line", sym_line)
+    end_pos.SetInt("character", sym_col + len(word))
+
+    range_obj := json.New()
+    range_obj.SetObject("start", start_pos)
+    range_obj.SetObject("end", end_pos)
+
+    location := json.New()
+    location.SetString("uri", uri)
+    location.SetObject("range", range_obj)
+
+    resp := make_response(id, location)
+    write_message(resp)
+}
+
 // Handle textDocument/definition request
 fn handle_definition(id: int, doc: Doc) {
     params := doc.GetObject("params")
@@ -260,36 +422,27 @@ fn handle_definition(id: int, doc: Doc) {
         si = si + 1
     }
 
-    if found < 0 {
-        resp := make_null_response(id)
-        write_message(resp)
+    if found >= 0 {
+        sym_offset := lsp_symbol_offset(found)
+        // Use cross-file URI and source if symbol is from an imported file
+        sym_uri := lsp_symbol_uri(found)
+        sym_src := lsp_symbol_file_src(found)
+        if len(sym_uri) > 0 {
+            send_definition_response(id, sym_uri, sym_src, sym_offset, word)
+        } else {
+            send_definition_response(id, uri, src, sym_offset, word)
+        }
         return
     }
 
-    // Convert symbol offset to 0-based line/col
-    sym_offset := lsp_symbol_offset(found)
-    lc := offset_to_line_col_0(src, sym_offset)
-    sym_line := lc[0]
-    sym_col := lc[1]
+    // Fallback: search for local variable declaration in enclosing function
+    local_offset := find_local_definition(src, offset, word)
+    if local_offset >= 0 {
+        send_definition_response(id, uri, src, local_offset, word)
+        return
+    }
 
-    // Build LSP Location response
-    start_pos := json.New()
-    start_pos.SetInt("line", sym_line)
-    start_pos.SetInt("character", sym_col)
-
-    end_pos := json.New()
-    end_pos.SetInt("line", sym_line)
-    end_pos.SetInt("character", sym_col + len(word))
-
-    range_obj := json.New()
-    range_obj.SetObject("start", start_pos)
-    range_obj.SetObject("end", end_pos)
-
-    location := json.New()
-    location.SetString("uri", uri)
-    location.SetObject("range", range_obj)
-
-    resp := make_response(id, location)
+    resp := make_null_response(id)
     write_message(resp)
 }
 
@@ -529,7 +682,7 @@ fn handle_message(msg: string) -> int {
     id := doc.GetInt("id")
 
     if method == "initialize" {
-        handle_initialize(id)
+        handle_initialize(id, doc)
         return 1
     }
 

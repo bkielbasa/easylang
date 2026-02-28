@@ -25,6 +25,7 @@ g_global_var_types := []int{}
 g_vreg_type_patches_idx := []int{}
 g_vreg_type_patches_val := []int{}
 g_current_file_list := []string{}
+g_func_source_files := []string{}
 g_break_label := -1
 g_next_label := 100000
 
@@ -38,6 +39,9 @@ g_lsp_sym_offsets := []int{}
 g_lsp_sym_sigs := []string{}
 g_lsp_sym_kinds := []int{}
 g_lsp_sym_docs := []string{}
+g_lsp_sym_uris := []string{}
+g_lsp_sym_file_srcs := []string{}
+g_lsp_root_uris := []string{}
 
 fn lsp_diagnostic_count() -> int {
     return len(g_lsp_diag_msgs)
@@ -77,6 +81,23 @@ fn lsp_symbol_kind(i: int) -> int {
 
 fn lsp_symbol_doc(i: int) -> string {
     return g_lsp_sym_docs[i]
+}
+
+fn lsp_symbol_uri(i: int) -> string {
+    return g_lsp_sym_uris[i]
+}
+
+fn lsp_symbol_file_src(i: int) -> string {
+    return g_lsp_sym_file_srcs[i]
+}
+
+fn set_lsp_root_uri(uri: string) {
+    push(g_lsp_root_uris, uri)
+}
+
+fn get_lsp_root_uri() -> string {
+    if len(g_lsp_root_uris) == 0 { return "" }
+    return g_lsp_root_uris[len(g_lsp_root_uris) - 1]
 }
 
 fn lsp_type_str(type_tag: int, is_array: int, node_idx: int) -> string {
@@ -134,6 +155,166 @@ fn report_error(src: string, offset: int, msg: string) {
     }
 }
 
+// Collect top-level symbols from an imported file into the LSP symbol arrays
+fn lsp_collect_file_symbols(source: string, file_uri: string) {
+    imp_nodes := []AstNode{}
+    ipos := 0
+    ipos = lex_skip(source, ipos)
+    for {
+        ipos = lex_skip(source, ipos)
+        ikind := lex_kind(source, ipos)
+        if ikind == TK_EOF { break }
+
+        if ikind == TK_PACKAGE {
+            ipos = lex_end(source, ipos, ikind)
+            ipos = lex_skip(source, ipos)
+            ipos = lex_end(source, ipos, lex_kind(source, ipos))
+        } else if ikind == TK_IMPORT {
+            iimp := parse_import_decl(source, ipos, imp_nodes)
+            if iimp.node_idx >= 0 {
+                ipos = iimp.new_pos
+                ipos = lex_skip(source, ipos)
+            } else {
+                break
+            }
+        } else if ikind == TK_STRUCT {
+            istruct := parse_struct_decl(source, ipos, imp_nodes)
+            if istruct.node_idx >= 0 {
+                sname := imp_nodes[istruct.node_idx].str_val
+                push(g_lsp_sym_names, sname)
+                push(g_lsp_sym_offsets, ipos)
+                push(g_lsp_sym_sigs, "struct " + sname)
+                push(g_lsp_sym_kinds, 23)
+                push(g_lsp_sym_docs, extract_doc_comment(source, ipos))
+                push(g_lsp_sym_uris, file_uri)
+                push(g_lsp_sym_file_srcs, source)
+            }
+            ipos = istruct.new_pos
+        } else if ikind == TK_ENUM {
+            ienum := parse_enum_decl(source, ipos, imp_nodes)
+            if ienum.node_idx >= 0 {
+                ename := imp_nodes[ienum.node_idx].str_val
+                push(g_lsp_sym_names, ename)
+                push(g_lsp_sym_offsets, ipos)
+                push(g_lsp_sym_sigs, "enum " + ename)
+                push(g_lsp_sym_kinds, 10)
+                push(g_lsp_sym_docs, extract_doc_comment(source, ipos))
+                push(g_lsp_sym_uris, file_uri)
+                push(g_lsp_sym_file_srcs, source)
+            }
+            ipos = ienum.new_pos
+        } else if ikind == TK_INTERFACE {
+            iiface := parse_interface_decl(source, ipos, imp_nodes)
+            ipos = iiface.new_pos
+        } else if ikind == TK_FN {
+            ifunc := parse_func_decl(source, ipos, imp_nodes)
+            if ifunc.node_idx < 0 { break }
+            fname := imp_nodes[ifunc.node_idx].str_val
+            push(g_lsp_sym_names, fname)
+            push(g_lsp_sym_offsets, ipos)
+            push(g_lsp_sym_sigs, "fn " + fname + "(...)")
+            push(g_lsp_sym_kinds, 12)
+            push(g_lsp_sym_docs, extract_doc_comment(source, ipos))
+            push(g_lsp_sym_uris, file_uri)
+            push(g_lsp_sym_file_srcs, source)
+            ipos = ifunc.new_pos
+            ipos = lex_skip(source, ipos)
+        } else if ikind == TK_CONST {
+            iconst := parse_const_decl(source, ipos, imp_nodes)
+            if iconst.node_idx >= 0 {
+                cname := imp_nodes[iconst.node_idx].str_val
+                push(g_lsp_sym_names, cname)
+                push(g_lsp_sym_offsets, ipos)
+                push(g_lsp_sym_sigs, "const " + cname)
+                push(g_lsp_sym_kinds, 14)
+                push(g_lsp_sym_docs, extract_doc_comment(source, ipos))
+                push(g_lsp_sym_uris, file_uri)
+                push(g_lsp_sym_file_srcs, source)
+            }
+            ipos = iconst.new_pos
+        } else if ikind == TK_EXTERN {
+            iextern := parse_extern_fn_decl(source, ipos, imp_nodes)
+            if iextern.node_idx < 0 { break }
+            ipos = iextern.new_pos
+            ipos = lex_skip(source, ipos)
+        } else if ikind == TK_IDENT {
+            // Skip global variable declarations
+            ice_end := lex_end(source, ipos, ikind)
+            ice_next := lex_skip(source, ice_end)
+            if lex_kind(source, ice_next) == TK_COLONEQUAL {
+                ice := parse_colonequal_stmt(source, ipos, imp_nodes)
+                if ice.node_idx >= 0 {
+                    // Skip global vars from imports (they are internal)
+                }
+                ipos = ice.new_pos
+            } else {
+                break
+            }
+        } else {
+            break
+        }
+    }
+}
+
+// Load imported files and collect their symbols for LSP cross-file navigation
+fn lsp_load_imports(diag_nodes: []AstNode) {
+    di := 0
+    node_count := len(diag_nodes)
+    for di < node_count {
+        if diag_nodes[di].tag == DECL_IMPORT {
+            import_path := diag_nodes[di].str_val
+            resolved := ""
+            if len(import_path) >= 2 && str_char_at(import_path, 0) == 46 && str_char_at(import_path, 1) == 47 {
+                // Relative import: resolve relative to working directory
+                // For now, resolve relative to working directory
+                mod_name := extract_module_name(import_path)
+                resolved = str_substring(import_path, 2, len(import_path))
+            } else {
+                // Bare import: "result" -> "bootstrap/ease/result"
+                resolved = "bootstrap/ease/" + import_path
+            }
+            if len(resolved) > 0 {
+                if os.IsDir(resolved) == 1 {
+                    lsp_load_dir_symbols(resolved)
+                } else {
+                    file_path := resolved + ".ease"
+                    file_src := os.ReadFile(file_path)
+                    if len(file_src) > 0 {
+                        file_uri := get_lsp_root_uri() + "/" + file_path
+                        lsp_collect_file_symbols(file_src, file_uri)
+                    }
+                }
+            }
+        }
+        di = di + 1
+    }
+}
+
+// Load all .ease files from a directory and collect their symbols
+fn lsp_load_dir_symbols(dir: string) {
+    entries := os.ListDir(dir)
+    epos := 0
+    estart := 0
+    entries_len := len(entries)
+    for epos <= entries_len {
+        if epos == entries_len || str_char_at(entries, epos) == 10 {
+            if epos > estart {
+                entry := str_substring(entries, estart, epos)
+                if has_ease_suffix(entry) == 1 {
+                    file_path := dir + "/" + entry
+                    file_src := os.ReadFile(file_path)
+                    if len(file_src) > 0 {
+                        file_uri := get_lsp_root_uri() + "/" + file_path
+                        lsp_collect_file_symbols(file_src, file_uri)
+                    }
+                }
+            }
+            estart = epos + 1
+        }
+        epos = epos + 1
+    }
+}
+
 fn parse_for_diagnostics(source: string) {
     // Clear previous diagnostics
     g_lsp_diag_lines = []int{}
@@ -144,6 +325,8 @@ fn parse_for_diagnostics(source: string) {
     g_lsp_sym_sigs = []string{}
     g_lsp_sym_kinds = []int{}
     g_lsp_sym_docs = []string{}
+    g_lsp_sym_uris = []string{}
+    g_lsp_sym_file_srcs = []string{}
     g_lsp_mode = 1
 
     // Phase 1: Lexing
@@ -204,6 +387,8 @@ fn parse_for_diagnostics(source: string) {
                 push(g_lsp_sym_sigs, ssig)
                 push(g_lsp_sym_kinds, 23)
                 push(g_lsp_sym_docs, extract_doc_comment(source, dpos))
+                push(g_lsp_sym_uris, "")
+                push(g_lsp_sym_file_srcs, "")
             }
             dpos = dstruct.new_pos
         } else if dkind == TK_ENUM {
@@ -241,6 +426,8 @@ fn parse_for_diagnostics(source: string) {
                 push(g_lsp_sym_sigs, esig)
                 push(g_lsp_sym_kinds, 10)
                 push(g_lsp_sym_docs, extract_doc_comment(source, dpos))
+                push(g_lsp_sym_uris, "")
+                push(g_lsp_sym_file_srcs, "")
             }
             dpos = denum.new_pos
         } else if dkind == TK_INTERFACE {
@@ -257,6 +444,8 @@ fn parse_for_diagnostics(source: string) {
                     push(g_lsp_sym_sigs, diag_nodes[dce.node_idx].str_val + " := ...")
                     push(g_lsp_sym_kinds, 13)
                     push(g_lsp_sym_docs, extract_doc_comment(source, dpos))
+                    push(g_lsp_sym_uris, "")
+                    push(g_lsp_sym_file_srcs, "")
                 }
                 dpos = dce.new_pos
             } else {
@@ -294,6 +483,8 @@ fn parse_for_diagnostics(source: string) {
             push(g_lsp_sym_sigs, fsig)
             push(g_lsp_sym_kinds, 12)
             push(g_lsp_sym_docs, extract_doc_comment(source, dpos))
+            push(g_lsp_sym_uris, "")
+            push(g_lsp_sym_file_srcs, "")
             dpos = dfunc.new_pos
             dpos = lex_skip(source, dpos)
         } else if dkind == TK_CONST {
@@ -332,12 +523,17 @@ fn parse_for_diagnostics(source: string) {
                 push(g_lsp_sym_sigs, csig)
                 push(g_lsp_sym_kinds, 14)
                 push(g_lsp_sym_docs, extract_doc_comment(source, dpos))
+                push(g_lsp_sym_uris, "")
+                push(g_lsp_sym_file_srcs, "")
             }
             dpos = dconst.new_pos
         } else {
             break
         }
     }
+
+    // Load symbols from imported files for cross-file go-to-definition
+    lsp_load_imports(diag_nodes)
 
     g_lsp_mode = 0
 }
@@ -489,6 +685,7 @@ fn load_dir_package(resolved: string, mod_name: string, nodes: []AstNode, func_n
         qualified := mod_name + "." + mod_fn_names[mfi]
         push(func_names, qualified)
         push(func_indices, mod_fn_indices[mfi])
+        push(g_func_source_files, resolved)
         if is_exported(mod_fn_names[mfi]) == 1 {
             sema.AddRename(mod_fn_names[mfi], qualified)
         }
@@ -519,6 +716,7 @@ fn load_single_module(resolved: string, mod_name: string, nodes: []AstNode, func
         qualified := mod_name + "." + mod_fn_names[mfi]
         push(func_names, qualified)
         push(func_indices, mod_fn_indices[mfi])
+        push(g_func_source_files, resolved)
         sema.AddRename(mod_fn_names[mfi], qualified)
         mfi = mfi + 1
     }
@@ -770,6 +968,9 @@ fn generate_all_ir(func_names: []string, func_indices: []int, nodes: []AstNode, 
             ci = ci + 1
         }
         push(g_current_func_name_arr, func_names[gen_i])
+        if gen_i < len(g_func_source_files) {
+            push(g_irgen_current_file_arr, g_func_source_files[gen_i])
+        }
         gen_ir_from_ast_with_symtab(func_idx, nodes, instrs, symtab_names, symtab_vregs)
         gen_i = gen_i + 1
     }
@@ -824,8 +1025,14 @@ fn run_test_mode(test_path: string, run_bench: int) -> int {
     // Parse source files (skip main — test runner replaces it)
     sf_i := 0
     for sf_i < len(source_files) {
+        before_sf := len(func_names)
         src := os.ReadFile(source_files[sf_i])
         parse_source_file(src, nodes, func_names, func_indices, global_var_names, 1)
+        sfi := before_sf
+        for sfi < len(func_names) {
+            push(g_func_source_files, source_files[sf_i])
+            sfi = sfi + 1
+        }
         sf_i = sf_i + 1
     }
 
@@ -838,6 +1045,12 @@ fn run_test_mode(test_path: string, run_bench: int) -> int {
         // Track func count before parsing to identify new test/bench funcs
         before_count := len(func_names)
         parse_source_file(tsrc, nodes, func_names, func_indices, global_var_names, 1)
+        // Tag new functions with their source file
+        tfi2 := before_count
+        for tfi2 < len(func_names) {
+            push(g_func_source_files, test_files[tf_i])
+            tfi2 = tfi2 + 1
+        }
         // Identify test and benchmark functions from newly parsed ones
         tfi := before_count
         for tfi < len(func_names) {
@@ -868,6 +1081,11 @@ fn run_test_mode(test_path: string, run_bench: int) -> int {
     // IR Generation — compile all user functions
     instrs := []IRInstr{}
     generate_all_ir(func_names, func_indices, nodes, global_var_names, instrs)
+
+    if g_irgen_error_count > 0 {
+        return 1
+    }
+
     fn_count := len(func_names)
 
     // Generate synthetic test runner main()
@@ -1138,7 +1356,7 @@ fn run_test_mode(test_path: string, run_bench: int) -> int {
     }
 
     // Compile LLVM IR to executable
-    compile_rc := os.System("clang -O0 ./tmp/output.ll -o ./tmp/test_bin 2>/dev/null")
+    compile_rc := os.System("clang -O0 ./tmp/output.ll -o ./tmp/test_bin")
     if compile_rc != 0 {
         print("Failed to compile test binary\n")
         return 1
@@ -1219,6 +1437,11 @@ fn main() -> int {
     func_indices := []int{}
     global_var_names := []string{}
     parse_source_file(source, nodes, func_names, func_indices, global_var_names, 0)
+    mfi2 := 0
+    for mfi2 < len(func_names) {
+        push(g_func_source_files, filename)
+        mfi2 = mfi2 + 1
+    }
 
     // Process imports, load stdlib, build registries
     process_imports(filename, nodes, func_names, func_indices, global_var_names)
@@ -1231,6 +1454,10 @@ fn main() -> int {
     // Phase 3: IR Generation
     instrs := []IRInstr{}
     generate_all_ir(func_names, func_indices, nodes, global_var_names, instrs)
+
+    if g_irgen_error_count > 0 {
+        return 1
+    }
 
     // Phase 4: LLVM IR Generation
     output_ll := "./tmp/output.ll"
