@@ -100,6 +100,22 @@ fn get_lsp_root_uri() -> string {
     return g_lsp_root_uris[len(g_lsp_root_uris) - 1]
 }
 
+// Convert file:// URI to filesystem path by stripping the "file://" prefix
+fn uri_to_path(uri: string) -> string {
+    // "file:///Users/..." -> "/Users/..."
+    if len(uri) >= 7 {
+        if str_char_at(uri, 0) == 102 && str_char_at(uri, 1) == 105 && str_char_at(uri, 2) == 108 && str_char_at(uri, 3) == 101 && str_char_at(uri, 4) == 58 && str_char_at(uri, 5) == 47 && str_char_at(uri, 6) == 47 {
+            return str_substring(uri, 7, len(uri))
+        }
+    }
+    return uri
+}
+
+// Get the workspace root as a filesystem path (from rootUri)
+fn get_lsp_root_path() -> string {
+    return uri_to_path(get_lsp_root_uri())
+}
+
 fn lsp_type_str(type_tag: int, is_array: int, node_idx: int) -> string {
     if is_array == 1 {
         if type_tag == TYPE_INT { return "[]int" }
@@ -258,6 +274,7 @@ fn lsp_collect_file_symbols(source: string, file_uri: string) {
 
 // Load imported files and collect their symbols for LSP cross-file navigation
 fn lsp_load_imports(diag_nodes: []AstNode) {
+    root_path := get_lsp_root_path()
     di := 0
     node_count := len(diag_nodes)
     for di < node_count {
@@ -265,22 +282,29 @@ fn lsp_load_imports(diag_nodes: []AstNode) {
             import_path := diag_nodes[di].str_val
             resolved := ""
             if len(import_path) >= 2 && str_char_at(import_path, 0) == 46 && str_char_at(import_path, 1) == 47 {
-                // Relative import: resolve relative to working directory
-                // For now, resolve relative to working directory
-                mod_name := extract_module_name(import_path)
-                resolved = str_substring(import_path, 2, len(import_path))
+                // Relative import: "./ease/testing" -> strip "./"
+                rel := str_substring(import_path, 2, len(import_path))
+                if len(root_path) > 0 {
+                    resolved = root_path + "/bootstrap/" + rel
+                } else {
+                    resolved = "bootstrap/" + rel
+                }
             } else {
                 // Bare import: "result" -> "bootstrap/ease/result"
-                resolved = "bootstrap/ease/" + import_path
+                if len(root_path) > 0 {
+                    resolved = root_path + "/bootstrap/ease/" + import_path
+                } else {
+                    resolved = "bootstrap/ease/" + import_path
+                }
             }
             if len(resolved) > 0 {
                 if os.IsDir(resolved) == 1 {
                     lsp_load_dir_symbols(resolved)
-                } else {
+                } else if os.IsDir(resolved + ".ease") == 0 {
                     file_path := resolved + ".ease"
                     file_src := os.ReadFile(file_path)
                     if len(file_src) > 0 {
-                        file_uri := get_lsp_root_uri() + "/" + file_path
+                        file_uri := "file://" + file_path
                         lsp_collect_file_symbols(file_src, file_uri)
                     }
                 }
@@ -304,7 +328,7 @@ fn lsp_load_dir_symbols(dir: string) {
                     file_path := dir + "/" + entry
                     file_src := os.ReadFile(file_path)
                     if len(file_src) > 0 {
-                        file_uri := get_lsp_root_uri() + "/" + file_path
+                        file_uri := "file://" + file_path
                         lsp_collect_file_symbols(file_src, file_uri)
                     }
                 }
