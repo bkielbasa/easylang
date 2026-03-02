@@ -108,9 +108,9 @@ fn main() -> int {
 
     // Generate IR
     instrs := []IRInstr{}
-    push(instrs, IRInstr { op: 1, dest: 0, arg1: val1, arg2: 0 })  // loadconst val1
-    push(instrs, IRInstr { op: 1, dest: 1, arg1: val2, arg2: 0 })  // loadconst val2
-    push(instrs, IRInstr { op: OP_MUL, dest: 2, arg1: 0, arg2: 1 })  // mul
+    instrs = append(instrs, IRInstr { op: 1, dest: 0, arg1: val1, arg2: 0 })  // loadconst val1
+    instrs = append(instrs, IRInstr { op: 1, dest: 1, arg1: val2, arg2: 0 })  // loadconst val2
+    instrs = append(instrs, IRInstr { op: OP_MUL, dest: 2, arg1: 0, arg2: 1 })  // mul
 
     print("IR: v2 = mul v0, v1\n\n")
 
@@ -121,7 +121,7 @@ fn main() -> int {
     v := encoded
     digits := []int{}
     for i in 0..8 {
-        push(digits, v % 16)
+        digits = append(digits, v % 16)
         v = v / 16
     }
     for i in 0..8 {

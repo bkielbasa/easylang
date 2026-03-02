@@ -137,10 +137,10 @@ fn main() -> int {
     }
     print("\n\n")
     
-    // Test push operation
-    print("Pushing 100...\n")
-    push(numbers, 100)
-    print("Array after push: ")
+    // Test append operation
+    print("Appending 100...\n")
+    numbers = append(numbers, 100)
+    print("Array after append: ")
     print_array(numbers)
     print("\n")
     

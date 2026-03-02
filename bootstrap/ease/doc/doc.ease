@@ -25,7 +25,7 @@ fn HtmlEscape(s: string) -> string {
 // Recursively collect directories containing .ease files (BFS)
 fn CollectPackages(root: string, pkg_dirs: []string) {
     dirs_to_visit := []string{}
-    push(dirs_to_visit, root)
+    dirs_to_visit = append(dirs_to_visit, root)
     qi := 0
     for qi < len(dirs_to_visit) {
         dir := dirs_to_visit[qi]
@@ -41,7 +41,7 @@ fn CollectPackages(root: string, pkg_dirs: []string) {
                     if len(entry) > 0 && str_char_at(entry, 0) != 46 {
                         full_path := dir + "/" + entry
                         if os.IsDir(full_path) == 1 {
-                            push(dirs_to_visit, full_path)
+                            dirs_to_visit = append(dirs_to_visit, full_path)
                         }
                         if has_ease_suffix(entry) == 1 && has_test_suffix(entry) == 0 {
                             has_ease = 1
@@ -53,7 +53,7 @@ fn CollectPackages(root: string, pkg_dirs: []string) {
             epos = epos + 1
         }
         if has_ease == 1 {
-            push(pkg_dirs, dir)
+            pkg_dirs = append(pkg_dirs, dir)
         }
         qi = qi + 1
     }
@@ -70,7 +70,7 @@ fn ListEaseFiles(dir: string, files: []string) {
             if epos > estart {
                 entry := str_substring(entries, estart, epos)
                 if has_ease_suffix(entry) == 1 && has_test_suffix(entry) == 0 {
-                    push(files, dir + "/" + entry)
+                    files = append(files, dir + "/" + entry)
                 }
             }
             estart = epos + 1
@@ -169,9 +169,9 @@ fn Run(doc_path: string) -> int {
         // Single file — treat its parent dir as the package
         slash := find_last_slash(path)
         if slash >= 0 {
-            push(pkg_dirs, str_substring(path, 0, slash))
+            pkg_dirs = append(pkg_dirs, str_substring(path, 0, slash))
         } else {
-            push(pkg_dirs, ".")
+            pkg_dirs = append(pkg_dirs, ".")
         }
         is_single_file = 1
     }
@@ -195,7 +195,7 @@ fn Run(doc_path: string) -> int {
     for pi < len(pkg_dirs) {
         files := []string{}
         if is_single_file == 1 {
-            push(files, path)
+            files = append(files, path)
         } else {
             ListEaseFiles(pkg_dirs[pi], files)
         }
@@ -207,9 +207,9 @@ fn Run(doc_path: string) -> int {
         }
         // Skip compiler-internal packages
         if IsInternalPkg(pname) == 0 {
-            push(pkg_names, pname)
-            push(pkg_doc_texts, ExtractPkgDoc(files))
-            push(pkg_sym_start, len(sym_names))
+            pkg_names = append(pkg_names, pname)
+            pkg_doc_texts = append(pkg_doc_texts, ExtractPkgDoc(files))
+            pkg_sym_start = append(pkg_sym_start, len(sym_names))
 
             fi := 0
             for fi < len(files) {
@@ -220,16 +220,16 @@ fn Run(doc_path: string) -> int {
                     si := sym_before
                     sc := lsp_symbol_count()
                     for si < sc {
-                        push(sym_names, lsp_symbol_name(si))
-                        push(sym_sigs, lsp_symbol_sig(si))
-                        push(sym_kinds, lsp_symbol_kind(si))
-                        push(sym_docs, lsp_symbol_doc(si))
+                        sym_names = append(sym_names, lsp_symbol_name(si))
+                        sym_sigs = append(sym_sigs, lsp_symbol_sig(si))
+                        sym_kinds = append(sym_kinds, lsp_symbol_kind(si))
+                        sym_docs = append(sym_docs, lsp_symbol_doc(si))
                         si = si + 1
                     }
                 }
                 fi = fi + 1
             }
-            push(pkg_sym_count, len(sym_names) - pkg_sym_start[pi])
+            pkg_sym_count = append(pkg_sym_count, len(sym_names) - pkg_sym_start[pi])
         }
         pi = pi + 1
     }

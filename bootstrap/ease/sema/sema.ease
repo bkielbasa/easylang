@@ -9,12 +9,12 @@ package sema
 g_call_args := []int{}
 
 fn store_call_args(call_node_idx: int, arg_indices: []int) {
-    push(g_call_args, call_node_idx)
-    push(g_call_args, len(arg_indices))
+    g_call_args = append(g_call_args, call_node_idx)
+    g_call_args = append(g_call_args, len(arg_indices))
     i := 0
     count := len(arg_indices)
     for i < count {
-        push(g_call_args, arg_indices[i])
+        g_call_args = append(g_call_args, arg_indices[i])
         i = i + 1
     }
 }
@@ -30,7 +30,7 @@ fn get_call_args(call_node_idx: int) -> []int {
             result := []int{}
             j := 0
             for j < arg_count {
-                push(result, g_call_args[i + 2 + j])
+                result = append(result, g_call_args[i + 2 + j])
                 j = j + 1
             }
             return result
@@ -48,12 +48,12 @@ fn get_call_args(call_node_idx: int) -> []int {
 g_multi_ret_exprs := []int{}
 
 fn store_multi_ret_exprs(ret_node_idx: int, expr_indices: []int) {
-    push(g_multi_ret_exprs, ret_node_idx)
-    push(g_multi_ret_exprs, len(expr_indices))
+    g_multi_ret_exprs = append(g_multi_ret_exprs, ret_node_idx)
+    g_multi_ret_exprs = append(g_multi_ret_exprs, len(expr_indices))
     i := 0
     count := len(expr_indices)
     for i < count {
-        push(g_multi_ret_exprs, expr_indices[i])
+        g_multi_ret_exprs = append(g_multi_ret_exprs, expr_indices[i])
         i = i + 1
     }
 }
@@ -69,7 +69,7 @@ fn get_multi_ret_exprs(ret_node_idx: int) -> []int {
             result := []int{}
             j := 0
             for j < arg_count {
-                push(result, g_multi_ret_exprs[i + 2 + j])
+                result = append(result, g_multi_ret_exprs[i + 2 + j])
                 j = j + 1
             }
             return result
@@ -87,12 +87,12 @@ fn get_multi_ret_exprs(ret_node_idx: int) -> []int {
 g_struct_fields := []int{}
 
 fn store_struct_fields(struct_node_idx: int, field_indices: []int) {
-    push(g_struct_fields, struct_node_idx)
-    push(g_struct_fields, len(field_indices))
+    g_struct_fields = append(g_struct_fields, struct_node_idx)
+    g_struct_fields = append(g_struct_fields, len(field_indices))
     i := 0
     count := len(field_indices)
     for i < count {
-        push(g_struct_fields, field_indices[i])
+        g_struct_fields = append(g_struct_fields, field_indices[i])
         i = i + 1
     }
 }
@@ -108,7 +108,7 @@ fn get_struct_fields(struct_node_idx: int) -> []int {
             result := []int{}
             j := 0
             for j < field_count {
-                push(result, g_struct_fields[i + 2 + j])
+                result = append(result, g_struct_fields[i + 2 + j])
                 j = j + 1
             }
             return result
@@ -127,13 +127,13 @@ g_match_arm_bindings := []int{}
 g_match_arm_binding_names := []string{}
 
 fn store_match_arm_bindings(arm_node_idx: int, names: []string) {
-    push(g_match_arm_bindings, arm_node_idx)
-    push(g_match_arm_bindings, len(names))
+    g_match_arm_bindings = append(g_match_arm_bindings, arm_node_idx)
+    g_match_arm_bindings = append(g_match_arm_bindings, len(names))
     start := len(g_match_arm_binding_names)
-    push(g_match_arm_bindings, start)
+    g_match_arm_bindings = append(g_match_arm_bindings, start)
     i := 0
     for i < len(names) {
-        push(g_match_arm_binding_names, names[i])
+        g_match_arm_binding_names = append(g_match_arm_binding_names, names[i])
         i = i + 1
     }
 }
@@ -147,7 +147,7 @@ fn get_match_arm_bindings(arm_node_idx: int) -> []string {
             result := []string{}
             j := 0
             for j < count {
-                push(result, g_match_arm_binding_names[start + j])
+                result = append(result, g_match_arm_binding_names[start + j])
                 j = j + 1
             }
             return result
@@ -172,10 +172,10 @@ fn register_field_type(name: string, field_type: int, is_array: int) {
         if g_field_reg_names[i] == name { return }
         i = i + 1
     }
-    push(g_field_reg_names, name)
-    push(g_field_reg_types, field_type)
-    push(g_field_reg_is_array, is_array)
-    push(g_field_reg_struct_names, "")
+    g_field_reg_names = append(g_field_reg_names, name)
+    g_field_reg_types = append(g_field_reg_types, field_type)
+    g_field_reg_is_array = append(g_field_reg_is_array, is_array)
+    g_field_reg_struct_names = append(g_field_reg_struct_names, "")
 }
 
 fn register_field_struct_name(name: string, sname: string) {
@@ -243,10 +243,10 @@ fn parse_type_name_to_tag(t: string) -> int {
 }
 
 fn register_func_return_type(name: string, ret_type: int, is_array: int, struct_name: string) {
-    push(g_func_ret_names, name)
-    push(g_func_ret_types, ret_type)
-    push(g_func_ret_is_array, is_array)
-    push(g_func_ret_struct_names, struct_name)
+    g_func_ret_names = append(g_func_ret_names, name)
+    g_func_ret_types = append(g_func_ret_types, ret_type)
+    g_func_ret_is_array = append(g_func_ret_is_array, is_array)
+    g_func_ret_struct_names = append(g_func_ret_struct_names, struct_name)
     // Check for tuple return type: struct_name starts with "__tuple"
     if strings.HasPrefix(struct_name, "__tuple") {
         // Parse "__tupleN:type1,type2,..."
@@ -258,7 +258,7 @@ fn register_func_return_type(name: string, ret_type: int, is_array: int, struct_
             ci = ci + 1
         }
         if colon_pos > 0 {
-            push(g_func_ret_tuple_starts, len(g_func_ret_tuple_types))
+            g_func_ret_tuple_starts = append(g_func_ret_tuple_starts, len(g_func_ret_tuple_types))
             // Parse comma-separated types after ':'
             types_str := str_substring(struct_name, colon_pos + 1, len(struct_name))
             count := 0
@@ -267,20 +267,20 @@ fn register_func_return_type(name: string, ret_type: int, is_array: int, struct_
             for ti <= len(types_str) {
                 if ti == len(types_str) || str_char_at(types_str, ti) == 44 {
                     tname := str_substring(types_str, tstart, ti)
-                    push(g_func_ret_tuple_types, parse_type_name_to_tag(tname))
+                    g_func_ret_tuple_types = append(g_func_ret_tuple_types, parse_type_name_to_tag(tname))
                     count = count + 1
                     tstart = ti + 1
                 }
                 ti = ti + 1
             }
-            push(g_func_ret_tuple_counts, count)
+            g_func_ret_tuple_counts = append(g_func_ret_tuple_counts, count)
         } else {
-            push(g_func_ret_tuple_starts, len(g_func_ret_tuple_types))
-            push(g_func_ret_tuple_counts, 0)
+            g_func_ret_tuple_starts = append(g_func_ret_tuple_starts, len(g_func_ret_tuple_types))
+            g_func_ret_tuple_counts = append(g_func_ret_tuple_counts, 0)
         }
     } else {
-        push(g_func_ret_tuple_starts, len(g_func_ret_tuple_types))
-        push(g_func_ret_tuple_counts, 0)
+        g_func_ret_tuple_starts = append(g_func_ret_tuple_starts, len(g_func_ret_tuple_types))
+        g_func_ret_tuple_counts = append(g_func_ret_tuple_counts, 0)
     }
 }
 
@@ -369,9 +369,9 @@ fn lookup_method(struct_name: string, method_name: string) -> string {
 }
 
 fn RegisterMethod(struct_name: string, method_name: string, func_name: string) {
-    push(g_method_struct_names, struct_name)
-    push(g_method_names, method_name)
-    push(g_method_func_names, func_name)
+    g_method_struct_names = append(g_method_struct_names, struct_name)
+    g_method_names = append(g_method_names, method_name)
+    g_method_func_names = append(g_method_func_names, func_name)
 }
 
 // ============================================================
@@ -394,9 +394,9 @@ fn lookup_func_param_type_name(func_name: string, param_idx: int) -> string {
 }
 
 fn RegisterFuncParam(func_name: string, param_idx: int, type_name: string) {
-    push(g_func_param_names, func_name)
-    push(g_func_param_indices, param_idx)
-    push(g_func_param_type_names, type_name)
+    g_func_param_names = append(g_func_param_names, func_name)
+    g_func_param_indices = append(g_func_param_indices, param_idx)
+    g_func_param_type_names = append(g_func_param_type_names, type_name)
 }
 
 // ============================================================
@@ -427,8 +427,8 @@ fn record_vtable_pair(struct_name: string, iface_name: string) {
         }
         i = i + 1
     }
-    push(g_vtable_struct_names, struct_name)
-    push(g_vtable_iface_names, iface_name)
+    g_vtable_struct_names = append(g_vtable_struct_names, struct_name)
+    g_vtable_iface_names = append(g_vtable_iface_names, iface_name)
 }
 
 fn VtableCount() -> int {
@@ -454,37 +454,37 @@ g_const_types := []int{}
 
 fn register_const(nodes: []AstNode, const_idx: int) {
     cnode := nodes[const_idx]
-    push(g_const_names, cnode.str_val)
-    push(g_const_types, cnode.type_tag)
+    g_const_names = append(g_const_names, cnode.str_val)
+    g_const_types = append(g_const_types, cnode.type_tag)
     // Evaluate the literal value from the initializer
     init_idx := cnode.left
     if init_idx < 0 {
-        push(g_const_int_values, 0)
-        push(g_const_str_values, "")
+        g_const_int_values = append(g_const_int_values, 0)
+        g_const_str_values = append(g_const_str_values, "")
         return
     }
     init := nodes[init_idx]
     if init.tag == EXPR_INT {
-        push(g_const_int_values, init.int_val)
-        push(g_const_str_values, "")
+        g_const_int_values = append(g_const_int_values, init.int_val)
+        g_const_str_values = append(g_const_str_values, "")
     } else if init.tag == EXPR_BOOL {
-        push(g_const_int_values, init.int_val)
-        push(g_const_str_values, "")
+        g_const_int_values = append(g_const_int_values, init.int_val)
+        g_const_str_values = append(g_const_str_values, "")
     } else if init.tag == EXPR_STRING {
-        push(g_const_int_values, 0)
-        push(g_const_str_values, init.str_val)
+        g_const_int_values = append(g_const_int_values, 0)
+        g_const_str_values = append(g_const_str_values, init.str_val)
     } else if init.tag == EXPR_UNARY {
         // Negative int: -N => 0 - N (need to evaluate the child)
         if init.left >= 0 {
             child := nodes[init.left]
-            push(g_const_int_values, 0 - child.int_val)
+            g_const_int_values = append(g_const_int_values, 0 - child.int_val)
         } else {
-            push(g_const_int_values, 0)
+            g_const_int_values = append(g_const_int_values, 0)
         }
-        push(g_const_str_values, "")
+        g_const_str_values = append(g_const_str_values, "")
     } else {
-        push(g_const_int_values, 0)
-        push(g_const_str_values, "")
+        g_const_int_values = append(g_const_int_values, 0)
+        g_const_str_values = append(g_const_str_values, "")
     }
 }
 
@@ -536,8 +536,8 @@ fn lookup_rename(name: string) -> string {
 }
 
 fn AddRename(from: string, to: string) {
-    push(g_rename_from, from)
-    push(g_rename_to, to)
+    g_rename_from = append(g_rename_from, from)
+    g_rename_to = append(g_rename_to, to)
 }
 
 // ============================================================
@@ -548,8 +548,8 @@ g_import_paths := []string{}
 g_import_names := []string{}
 
 fn AddImport(path: string, name: string) {
-    push(g_import_paths, path)
-    push(g_import_names, name)
+    g_import_paths = append(g_import_paths, path)
+    g_import_names = append(g_import_names, name)
 }
 
 fn IsModuleLoaded(name: string) -> int {
@@ -795,12 +795,12 @@ g_closure_capture_counts := []int{}
 g_closure_capture_names := []string{}
 
 fn StoreClosureCaptures(func_name: string, names: []string) {
-    push(g_closure_capture_func_names, func_name)
-    push(g_closure_capture_starts, len(g_closure_capture_names))
-    push(g_closure_capture_counts, len(names))
+    g_closure_capture_func_names = append(g_closure_capture_func_names, func_name)
+    g_closure_capture_starts = append(g_closure_capture_starts, len(g_closure_capture_names))
+    g_closure_capture_counts = append(g_closure_capture_counts, len(names))
     i := 0
     for i < len(names) {
-        push(g_closure_capture_names, names[i])
+        g_closure_capture_names = append(g_closure_capture_names, names[i])
         i = i + 1
     }
 }

@@ -189,8 +189,8 @@ fn NewBuilder() -> Builder {
 }
 
 fn (b: Builder) WriteString(s: string) -> int {
-    push(g_builder_doc, b.id)
-    push(g_builder_parts, s)
+    g_builder_doc = append(g_builder_doc, b.id)
+    g_builder_parts = append(g_builder_parts, s)
     return len(s)
 }
 

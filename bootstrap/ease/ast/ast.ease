@@ -90,7 +90,7 @@ fn new_int_node(val: int, nodes: []AstNode) -> int {
         extra: -1,
         type_tag: TYPE_INT
     }
-    push(nodes, node)
+    nodes = append(nodes, node)
     return len(nodes) - 1
 }
 
@@ -104,7 +104,7 @@ fn new_bool_node(val: int, nodes: []AstNode) -> int {
         extra: -1,
         type_tag: TYPE_BOOL
     }
-    push(nodes, node)
+    nodes = append(nodes, node)
     return len(nodes) - 1
 }
 
@@ -118,7 +118,7 @@ fn new_ident_node(name: string, nodes: []AstNode) -> int {
         extra: -1,
         type_tag: TYPE_UNKNOWN
     }
-    push(nodes, node)
+    nodes = append(nodes, node)
     return len(nodes) - 1
 }
 
@@ -132,7 +132,7 @@ fn new_binary_node(op: int, left_idx: int, right_idx: int, nodes: []AstNode) -> 
         extra: -1,
         type_tag: TYPE_UNKNOWN
     }
-    push(nodes, node)
+    nodes = append(nodes, node)
     return len(nodes) - 1
 }
 
@@ -146,6 +146,6 @@ fn new_unary_node(op: int, operand: int, nodes: []AstNode) -> int {
         extra: -1,
         type_tag: TYPE_UNKNOWN
     }
-    push(nodes, node)
+    nodes = append(nodes, node)
     return len(nodes) - 1
 }

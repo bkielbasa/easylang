@@ -28,10 +28,10 @@ fn TestArrayLen(t: testing.T) {
 
 fn TestArrayPush(t: testing.T) {
     darr := []int{1, 2}
-    push(darr, 3)
-    push(darr, 4)
+    darr = append(darr, 3)
+    darr = append(darr, 4)
     if len(darr) != 4 {
-        t.Fatal("len after push should be 4")
+        t.Fatal("len after append should be 4")
     }
     if darr[3] != 4 {
         t.Fatal("darr[3] should be 4")

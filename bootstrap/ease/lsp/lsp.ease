@@ -222,8 +222,8 @@ fn offset_to_line_col_0(src: string, offset: int) -> []int {
         i = i + 1
     }
     result := []int{}
-    push(result, line)
-    push(result, col)
+    result = append(result, line)
+    result = append(result, col)
     return result
 }
 
@@ -715,8 +715,8 @@ fn handle_message(msg: string) -> int {
         td := params.GetObject("textDocument")
         uri := td.GetString("uri")
         text := td.GetString("text")
-        push(g_lsp_uris, uri)
-        push(g_lsp_sources, text)
+        g_lsp_uris = append(g_lsp_uris, uri)
+        g_lsp_sources = append(g_lsp_sources, text)
         publish_diagnostics(uri, text)
         return 1
     }
@@ -730,8 +730,8 @@ fn handle_message(msg: string) -> int {
         if changes.Len() > 0 {
             first_change := changes.AtObject(0)
             text := first_change.GetString("text")
-            push(g_lsp_uris, uri)
-            push(g_lsp_sources, text)
+            g_lsp_uris = append(g_lsp_uris, uri)
+            g_lsp_sources = append(g_lsp_sources, text)
             publish_diagnostics(uri, text)
         }
         return 1

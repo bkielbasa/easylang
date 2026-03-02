@@ -92,7 +92,7 @@ fn lsp_symbol_file_src(i: int) -> string {
 }
 
 fn set_lsp_root_uri(uri: string) {
-    push(g_lsp_root_uris, uri)
+    g_lsp_root_uris = append(g_lsp_root_uris, uri)
 }
 
 fn get_lsp_root_uri() -> string {
@@ -148,9 +148,9 @@ fn report_error(src: string, offset: int, msg: string) {
             }
             ri = ri + 1
         }
-        push(g_lsp_diag_lines, line)
-        push(g_lsp_diag_cols, col)
-        push(g_lsp_diag_msgs, msg)
+        g_lsp_diag_lines = append(g_lsp_diag_lines, line)
+        g_lsp_diag_cols = append(g_lsp_diag_cols, col)
+        g_lsp_diag_msgs = append(g_lsp_diag_msgs, msg)
         return
     }
     filename := "<unknown>"
@@ -197,26 +197,26 @@ fn lsp_collect_file_symbols(source: string, file_uri: string) {
             istruct := parse_struct_decl(source, ipos, imp_nodes)
             if istruct.node_idx >= 0 {
                 sname := imp_nodes[istruct.node_idx].str_val
-                push(g_lsp_sym_names, sname)
-                push(g_lsp_sym_offsets, ipos)
-                push(g_lsp_sym_sigs, "struct " + sname)
-                push(g_lsp_sym_kinds, 23)
-                push(g_lsp_sym_docs, extract_doc_comment(source, ipos))
-                push(g_lsp_sym_uris, file_uri)
-                push(g_lsp_sym_file_srcs, source)
+                g_lsp_sym_names = append(g_lsp_sym_names, sname)
+                g_lsp_sym_offsets = append(g_lsp_sym_offsets, ipos)
+                g_lsp_sym_sigs = append(g_lsp_sym_sigs, "struct " + sname)
+                g_lsp_sym_kinds = append(g_lsp_sym_kinds, 23)
+                g_lsp_sym_docs = append(g_lsp_sym_docs, extract_doc_comment(source, ipos))
+                g_lsp_sym_uris = append(g_lsp_sym_uris, file_uri)
+                g_lsp_sym_file_srcs = append(g_lsp_sym_file_srcs, source)
             }
             ipos = istruct.new_pos
         } else if ikind == TK_ENUM {
             ienum := parse_enum_decl(source, ipos, imp_nodes)
             if ienum.node_idx >= 0 {
                 ename := imp_nodes[ienum.node_idx].str_val
-                push(g_lsp_sym_names, ename)
-                push(g_lsp_sym_offsets, ipos)
-                push(g_lsp_sym_sigs, "enum " + ename)
-                push(g_lsp_sym_kinds, 10)
-                push(g_lsp_sym_docs, extract_doc_comment(source, ipos))
-                push(g_lsp_sym_uris, file_uri)
-                push(g_lsp_sym_file_srcs, source)
+                g_lsp_sym_names = append(g_lsp_sym_names, ename)
+                g_lsp_sym_offsets = append(g_lsp_sym_offsets, ipos)
+                g_lsp_sym_sigs = append(g_lsp_sym_sigs, "enum " + ename)
+                g_lsp_sym_kinds = append(g_lsp_sym_kinds, 10)
+                g_lsp_sym_docs = append(g_lsp_sym_docs, extract_doc_comment(source, ipos))
+                g_lsp_sym_uris = append(g_lsp_sym_uris, file_uri)
+                g_lsp_sym_file_srcs = append(g_lsp_sym_file_srcs, source)
             }
             ipos = ienum.new_pos
         } else if ikind == TK_INTERFACE {
@@ -226,26 +226,26 @@ fn lsp_collect_file_symbols(source: string, file_uri: string) {
             ifunc := parse_func_decl(source, ipos, imp_nodes)
             if ifunc.node_idx < 0 { break }
             fname := imp_nodes[ifunc.node_idx].str_val
-            push(g_lsp_sym_names, fname)
-            push(g_lsp_sym_offsets, ipos)
-            push(g_lsp_sym_sigs, "fn " + fname + "(...)")
-            push(g_lsp_sym_kinds, 12)
-            push(g_lsp_sym_docs, extract_doc_comment(source, ipos))
-            push(g_lsp_sym_uris, file_uri)
-            push(g_lsp_sym_file_srcs, source)
+            g_lsp_sym_names = append(g_lsp_sym_names, fname)
+            g_lsp_sym_offsets = append(g_lsp_sym_offsets, ipos)
+            g_lsp_sym_sigs = append(g_lsp_sym_sigs, "fn " + fname + "(...)")
+            g_lsp_sym_kinds = append(g_lsp_sym_kinds, 12)
+            g_lsp_sym_docs = append(g_lsp_sym_docs, extract_doc_comment(source, ipos))
+            g_lsp_sym_uris = append(g_lsp_sym_uris, file_uri)
+            g_lsp_sym_file_srcs = append(g_lsp_sym_file_srcs, source)
             ipos = ifunc.new_pos
             ipos = lex_skip(source, ipos)
         } else if ikind == TK_CONST {
             iconst := parse_const_decl(source, ipos, imp_nodes)
             if iconst.node_idx >= 0 {
                 cname := imp_nodes[iconst.node_idx].str_val
-                push(g_lsp_sym_names, cname)
-                push(g_lsp_sym_offsets, ipos)
-                push(g_lsp_sym_sigs, "const " + cname)
-                push(g_lsp_sym_kinds, 14)
-                push(g_lsp_sym_docs, extract_doc_comment(source, ipos))
-                push(g_lsp_sym_uris, file_uri)
-                push(g_lsp_sym_file_srcs, source)
+                g_lsp_sym_names = append(g_lsp_sym_names, cname)
+                g_lsp_sym_offsets = append(g_lsp_sym_offsets, ipos)
+                g_lsp_sym_sigs = append(g_lsp_sym_sigs, "const " + cname)
+                g_lsp_sym_kinds = append(g_lsp_sym_kinds, 14)
+                g_lsp_sym_docs = append(g_lsp_sym_docs, extract_doc_comment(source, ipos))
+                g_lsp_sym_uris = append(g_lsp_sym_uris, file_uri)
+                g_lsp_sym_file_srcs = append(g_lsp_sym_file_srcs, source)
             }
             ipos = iconst.new_pos
         } else if ikind == TK_EXTERN {
@@ -394,8 +394,8 @@ fn parse_for_diagnostics(source: string) {
         } else if dkind == TK_STRUCT {
             dstruct := parse_struct_decl(source, dpos, diag_nodes)
             if dstruct.node_idx >= 0 {
-                push(g_lsp_sym_names, diag_nodes[dstruct.node_idx].str_val)
-                push(g_lsp_sym_offsets, dpos)
+                g_lsp_sym_names = append(g_lsp_sym_names, diag_nodes[dstruct.node_idx].str_val)
+                g_lsp_sym_offsets = append(g_lsp_sym_offsets, dpos)
                 // Build struct signature: struct Name { field1: type1, field2: type2 }
                 ssig := "struct " + diag_nodes[dstruct.node_idx].str_val + " { "
                 sfi := diag_nodes[dstruct.node_idx].left
@@ -408,18 +408,18 @@ fn parse_for_diagnostics(source: string) {
                     sfi = sfi + 1
                 }
                 ssig = ssig + " }"
-                push(g_lsp_sym_sigs, ssig)
-                push(g_lsp_sym_kinds, 23)
-                push(g_lsp_sym_docs, extract_doc_comment(source, dpos))
-                push(g_lsp_sym_uris, "")
-                push(g_lsp_sym_file_srcs, "")
+                g_lsp_sym_sigs = append(g_lsp_sym_sigs, ssig)
+                g_lsp_sym_kinds = append(g_lsp_sym_kinds, 23)
+                g_lsp_sym_docs = append(g_lsp_sym_docs, extract_doc_comment(source, dpos))
+                g_lsp_sym_uris = append(g_lsp_sym_uris, "")
+                g_lsp_sym_file_srcs = append(g_lsp_sym_file_srcs, "")
             }
             dpos = dstruct.new_pos
         } else if dkind == TK_ENUM {
             denum := parse_enum_decl(source, dpos, diag_nodes)
             if denum.node_idx >= 0 {
-                push(g_lsp_sym_names, diag_nodes[denum.node_idx].str_val)
-                push(g_lsp_sym_offsets, dpos)
+                g_lsp_sym_names = append(g_lsp_sym_names, diag_nodes[denum.node_idx].str_val)
+                g_lsp_sym_offsets = append(g_lsp_sym_offsets, dpos)
                 // Build enum signature: enum Name { V1, V2 { f: type } }
                 esig := "enum " + diag_nodes[denum.node_idx].str_val + " { "
                 evi := diag_nodes[denum.node_idx].left
@@ -447,11 +447,11 @@ fn parse_for_diagnostics(source: string) {
                     evi = evi + 1
                 }
                 esig = esig + " }"
-                push(g_lsp_sym_sigs, esig)
-                push(g_lsp_sym_kinds, 10)
-                push(g_lsp_sym_docs, extract_doc_comment(source, dpos))
-                push(g_lsp_sym_uris, "")
-                push(g_lsp_sym_file_srcs, "")
+                g_lsp_sym_sigs = append(g_lsp_sym_sigs, esig)
+                g_lsp_sym_kinds = append(g_lsp_sym_kinds, 10)
+                g_lsp_sym_docs = append(g_lsp_sym_docs, extract_doc_comment(source, dpos))
+                g_lsp_sym_uris = append(g_lsp_sym_uris, "")
+                g_lsp_sym_file_srcs = append(g_lsp_sym_file_srcs, "")
             }
             dpos = denum.new_pos
         } else if dkind == TK_INTERFACE {
@@ -463,13 +463,13 @@ fn parse_for_diagnostics(source: string) {
             if lex_kind(source, dce_next) == TK_COLONEQUAL {
                 dce := parse_colonequal_stmt(source, dpos, diag_nodes)
                 if dce.node_idx >= 0 {
-                    push(g_lsp_sym_names, diag_nodes[dce.node_idx].str_val)
-                    push(g_lsp_sym_offsets, dpos)
-                    push(g_lsp_sym_sigs, diag_nodes[dce.node_idx].str_val + " := ...")
-                    push(g_lsp_sym_kinds, 13)
-                    push(g_lsp_sym_docs, extract_doc_comment(source, dpos))
-                    push(g_lsp_sym_uris, "")
-                    push(g_lsp_sym_file_srcs, "")
+                    g_lsp_sym_names = append(g_lsp_sym_names, diag_nodes[dce.node_idx].str_val)
+                    g_lsp_sym_offsets = append(g_lsp_sym_offsets, dpos)
+                    g_lsp_sym_sigs = append(g_lsp_sym_sigs, diag_nodes[dce.node_idx].str_val + " := ...")
+                    g_lsp_sym_kinds = append(g_lsp_sym_kinds, 13)
+                    g_lsp_sym_docs = append(g_lsp_sym_docs, extract_doc_comment(source, dpos))
+                    g_lsp_sym_uris = append(g_lsp_sym_uris, "")
+                    g_lsp_sym_file_srcs = append(g_lsp_sym_file_srcs, "")
                 }
                 dpos = dce.new_pos
             } else {
@@ -486,8 +486,8 @@ fn parse_for_diagnostics(source: string) {
                 report_error(source, dpos, "failed to parse function")
                 break
             }
-            push(g_lsp_sym_names, diag_nodes[dfunc.node_idx].str_val)
-            push(g_lsp_sym_offsets, dpos)
+            g_lsp_sym_names = append(g_lsp_sym_names, diag_nodes[dfunc.node_idx].str_val)
+            g_lsp_sym_offsets = append(g_lsp_sym_offsets, dpos)
             // Build function signature: fn name(p1: type1, p2: type2) -> rettype
             fsig := "fn " + diag_nodes[dfunc.node_idx].str_val + "("
             fpi := diag_nodes[dfunc.node_idx].left
@@ -504,19 +504,19 @@ fn parse_for_diagnostics(source: string) {
             if len(frt) > 0 {
                 fsig = fsig + " -> " + frt
             }
-            push(g_lsp_sym_sigs, fsig)
-            push(g_lsp_sym_kinds, 12)
-            push(g_lsp_sym_docs, extract_doc_comment(source, dpos))
-            push(g_lsp_sym_uris, "")
-            push(g_lsp_sym_file_srcs, "")
+            g_lsp_sym_sigs = append(g_lsp_sym_sigs, fsig)
+            g_lsp_sym_kinds = append(g_lsp_sym_kinds, 12)
+            g_lsp_sym_docs = append(g_lsp_sym_docs, extract_doc_comment(source, dpos))
+            g_lsp_sym_uris = append(g_lsp_sym_uris, "")
+            g_lsp_sym_file_srcs = append(g_lsp_sym_file_srcs, "")
             dpos = dfunc.new_pos
             dpos = lex_skip(source, dpos)
         } else if dkind == TK_CONST {
             dconst := parse_const_decl(source, dpos, diag_nodes)
             if dconst.node_idx >= 0 {
                 cname := diag_nodes[dconst.node_idx].str_val
-                push(g_lsp_sym_names, cname)
-                push(g_lsp_sym_offsets, dpos)
+                g_lsp_sym_names = append(g_lsp_sym_names, cname)
+                g_lsp_sym_offsets = append(g_lsp_sym_offsets, dpos)
                 // Build const signature: const NAME = value
                 csig := "const " + cname + " = "
                 cinit := diag_nodes[dconst.node_idx].left
@@ -544,11 +544,11 @@ fn parse_for_diagnostics(source: string) {
                 } else {
                     csig = csig + "..."
                 }
-                push(g_lsp_sym_sigs, csig)
-                push(g_lsp_sym_kinds, 14)
-                push(g_lsp_sym_docs, extract_doc_comment(source, dpos))
-                push(g_lsp_sym_uris, "")
-                push(g_lsp_sym_file_srcs, "")
+                g_lsp_sym_sigs = append(g_lsp_sym_sigs, csig)
+                g_lsp_sym_kinds = append(g_lsp_sym_kinds, 14)
+                g_lsp_sym_docs = append(g_lsp_sym_docs, extract_doc_comment(source, dpos))
+                g_lsp_sym_uris = append(g_lsp_sym_uris, "")
+                g_lsp_sym_file_srcs = append(g_lsp_sym_file_srcs, "")
             }
             dpos = dconst.new_pos
         } else {
@@ -607,15 +607,15 @@ fn parse_source_file(source: string, nodes: []AstNode, func_names: []string, fun
                 ce_result := parse_colonequal_stmt(source, parse_pos, nodes)
                 if ce_result.node_idx >= 0 {
                     ce_node := nodes[ce_result.node_idx]
-                    push(global_var_names, ce_node.str_val)
-                    push(g_global_var_types, infer_init_type(nodes, ce_node.right))
+                    global_var_names = append(global_var_names, ce_node.str_val)
+                    g_global_var_types = append(g_global_var_types, infer_init_type(nodes, ce_node.right))
                     if ce_node.right >= 0 {
                         ce_init := nodes[ce_node.right]
                         if ce_init.tag == EXPR_INT {
-                            push(g_scalar_globals, ce_node.str_val)
+                            g_scalar_globals = append(g_scalar_globals, ce_node.str_val)
                         }
                         if ce_init.tag == EXPR_UNARY {
-                            push(g_scalar_globals, ce_node.str_val)
+                            g_scalar_globals = append(g_scalar_globals, ce_node.str_val)
                         }
                     }
                 }
@@ -642,8 +642,8 @@ fn parse_source_file(source: string, nodes: []AstNode, func_names: []string, fun
                 parse_pos = parse_result.new_pos
                 parse_pos = lex_skip(source, parse_pos)
             } else {
-                push(func_names, func_node.str_val)
-                push(func_indices, func_idx)
+                func_names = append(func_names, func_node.str_val)
+                func_indices = append(func_indices, func_idx)
                 parse_pos = parse_result.new_pos
                 parse_pos = lex_skip(source, parse_pos)
             }
@@ -666,7 +666,7 @@ fn register_extern_decls(mod_name: string) {
         pt := []int{}
         pi := 0
         for pi < pc {
-            push(pt, g_extern_decl_param_types[ps + pi])
+            pt = append(pt, g_extern_decl_param_types[ps + pi])
             pi = pi + 1
         }
         rt := g_extern_decl_ret_types[g_extern_decl_consumed]
@@ -692,7 +692,7 @@ fn load_dir_package(resolved: string, mod_name: string, nodes: []AstNode, func_n
                 entry := str_substring(entries, estart, epos)
                 if has_ease_suffix(entry) == 1 {
                     file_path := resolved + "/" + entry
-                    push(g_current_file_list, file_path)
+                    g_current_file_list = append(g_current_file_list, file_path)
                     dir_source := os.ReadFile(file_path)
                     parse_source_file(dir_source, nodes, mod_fn_names, mod_fn_indices, gvar_names, 0)
                 }
@@ -707,9 +707,9 @@ fn load_dir_package(resolved: string, mod_name: string, nodes: []AstNode, func_n
     mfi := 0
     for mfi < len(mod_fn_names) {
         qualified := mod_name + "." + mod_fn_names[mfi]
-        push(func_names, qualified)
-        push(func_indices, mod_fn_indices[mfi])
-        push(g_func_source_files, resolved)
+        func_names = append(func_names, qualified)
+        func_indices = append(func_indices, mod_fn_indices[mfi])
+        g_func_source_files = append(g_func_source_files, resolved)
         if is_exported(mod_fn_names[mfi]) == 1 {
             sema.AddRename(mod_fn_names[mfi], qualified)
         }
@@ -727,7 +727,7 @@ fn load_dir_package(resolved: string, mod_name: string, nodes: []AstNode, func_n
 
 // Load a single-file module: read, parse, register all functions
 fn load_single_module(resolved: string, mod_name: string, nodes: []AstNode, func_names: []string, func_indices: []int, gvar_names: []string) {
-    push(g_current_file_list, resolved)
+    g_current_file_list = append(g_current_file_list, resolved)
     sema.AddImport(resolved, mod_name)
     mod_fn_names := []string{}
     mod_fn_indices := []int{}
@@ -738,9 +738,9 @@ fn load_single_module(resolved: string, mod_name: string, nodes: []AstNode, func
     mfi := 0
     for mfi < len(mod_fn_names) {
         qualified := mod_name + "." + mod_fn_names[mfi]
-        push(func_names, qualified)
-        push(func_indices, mod_fn_indices[mfi])
-        push(g_func_source_files, resolved)
+        func_names = append(func_names, qualified)
+        func_indices = append(func_indices, mod_fn_indices[mfi])
+        g_func_source_files = append(g_func_source_files, resolved)
         sema.AddRename(mod_fn_names[mfi], qualified)
         mfi = mfi + 1
     }
@@ -822,7 +822,7 @@ fn register_type_decls(nodes: []AstNode) {
                 field_idx := 0
                 for fi < nodes_len {
                     if nodes[fi].tag != DECL_FIELD { break }
-                    push(field_names_list, nodes[fi].str_val)
+                    field_names_list = append(field_names_list, nodes[fi].str_val)
                     if nodes[fi].type_tag != TYPE_UNKNOWN {
                         register_field_type(nodes[fi].str_val, nodes[fi].type_tag, nodes[fi].int_val)
                     }
@@ -853,19 +853,19 @@ fn register_type_decls(nodes: []AstNode) {
             for evci < evc {
                 if evi >= nodes_len { break }
                 if nodes[evi].tag != DECL_VARIANT { break }
-                push(evariants, nodes[evi].str_val)
+                evariants = append(evariants, nodes[evi].str_val)
                 vfi := nodes[evi].left
                 vfc := 0
                 if vfi >= 0 {
                     for vfi < nodes_len {
                         if nodes[vfi].tag != DECL_FIELD { break }
-                        push(efield_names, nodes[vfi].str_val)
-                        push(efield_types, nodes[vfi].type_tag)
+                        efield_names = append(efield_names, nodes[vfi].str_val)
+                        efield_types = append(efield_types, nodes[vfi].type_tag)
                         vfc = vfc + 1
                         vfi = vfi + 1
                     }
                 }
-                push(efield_counts, vfc)
+                efield_counts = append(efield_counts, vfc)
                 evi = evi + 1
                 evci = evci + 1
             }
@@ -888,10 +888,10 @@ fn register_type_decls(nodes: []AstNode) {
             for imci < imc {
                 if imi >= nodes_len { break }
                 if nodes[imi].tag != DECL_IMETHOD { break }
-                push(imethods, nodes[imi].str_val)
-                push(iparam_counts, nodes[imi].int_val)
-                push(iret_types, nodes[imi].type_tag)
-                push(iret_is_arrays, nodes[imi].extra)
+                imethods = append(imethods, nodes[imi].str_val)
+                iparam_counts = append(iparam_counts, nodes[imi].int_val)
+                iret_types = append(iret_types, nodes[imi].type_tag)
+                iret_is_arrays = append(iret_is_arrays, nodes[imi].extra)
                 imi = imi + 1
                 imci = imci + 1
             }
@@ -951,8 +951,8 @@ fn build_registries(nodes: []AstNode, func_names: []string, func_indices: []int)
 fn register_closures(nodes: []AstNode, func_names: []string, func_indices: []int) {
     ci := 0
     for ci < len(g_closure_func_indices) {
-        push(func_names, g_closure_func_names[ci])
-        push(func_indices, g_closure_func_indices[ci])
+        func_names = append(func_names, g_closure_func_names[ci])
+        func_indices = append(func_indices, g_closure_func_indices[ci])
         fn_node := nodes[g_closure_func_indices[ci]]
         register_func_return_type(g_closure_func_names[ci], fn_node.type_tag, fn_node.int_val, "")
         ci = ci + 1
@@ -969,7 +969,7 @@ fn generate_all_ir(func_names: []string, func_indices: []int, nodes: []AstNode, 
         func_idx := func_indices[gen_i]
         param_count := count_func_params(nodes, func_idx)
         func_label := 5000 + gen_i
-        push(instrs, IRInstr {
+        instrs = append(instrs, IRInstr {
             op: OP_LABEL,
             dest: func_label,
             arg1: param_count,
@@ -981,19 +981,19 @@ fn generate_all_ir(func_names: []string, func_indices: []int, nodes: []AstNode, 
         symtab_vregs := []int{}
         gvi := 0
         for gvi < len(gvar_names) {
-            push(symtab_names, gvar_names[gvi])
-            push(symtab_vregs, -1000 - gvi)
+            symtab_names = append(symtab_names, gvar_names[gvi])
+            symtab_vregs = append(symtab_vregs, -1000 - gvi)
             gvi = gvi + 1
         }
         ci := 0
         for ci < sema.ConstCount() {
-            push(symtab_names, sema.ConstName(ci))
-            push(symtab_vregs, -2000 - ci)
+            symtab_names = append(symtab_names, sema.ConstName(ci))
+            symtab_vregs = append(symtab_vregs, -2000 - ci)
             ci = ci + 1
         }
-        push(g_current_func_name_arr, func_names[gen_i])
+        g_current_func_name_arr = append(g_current_func_name_arr, func_names[gen_i])
         if gen_i < len(g_func_source_files) {
-            push(g_irgen_current_file_arr, g_func_source_files[gen_i])
+            g_irgen_current_file_arr = append(g_irgen_current_file_arr, g_func_source_files[gen_i])
         }
         gen_ir_from_ast_with_symtab(func_idx, nodes, instrs, symtab_names, symtab_vregs)
         gen_i = gen_i + 1
@@ -1024,9 +1024,9 @@ fn run_test_mode(test_path: string, run_bench: int) -> int {
                 if has_ease_suffix(entry) == 1 {
                     full_path := dir + "/" + entry
                     if has_test_suffix(entry) == 1 {
-                        push(test_files, full_path)
+                        test_files = append(test_files, full_path)
                     } else {
-                        push(source_files, full_path)
+                        source_files = append(source_files, full_path)
                     }
                 }
             }
@@ -1054,7 +1054,7 @@ fn run_test_mode(test_path: string, run_bench: int) -> int {
         parse_source_file(src, nodes, func_names, func_indices, global_var_names, 1)
         sfi := before_sf
         for sfi < len(func_names) {
-            push(g_func_source_files, source_files[sf_i])
+            g_func_source_files = append(g_func_source_files, source_files[sf_i])
             sfi = sfi + 1
         }
         sf_i = sf_i + 1
@@ -1072,17 +1072,17 @@ fn run_test_mode(test_path: string, run_bench: int) -> int {
         // Tag new functions with their source file
         tfi2 := before_count
         for tfi2 < len(func_names) {
-            push(g_func_source_files, test_files[tf_i])
+            g_func_source_files = append(g_func_source_files, test_files[tf_i])
             tfi2 = tfi2 + 1
         }
         // Identify test and benchmark functions from newly parsed ones
         tfi := before_count
         for tfi < len(func_names) {
             if is_test_func(func_names[tfi]) == 1 && count_func_params(nodes, func_indices[tfi]) == 1 {
-                push(test_func_names, func_names[tfi])
+                test_func_names = append(test_func_names, func_names[tfi])
             }
             if run_bench == 1 && is_benchmark_func(func_names[tfi]) == 1 && count_func_params(nodes, func_indices[tfi]) == 1 {
-                push(bench_func_names, func_names[tfi])
+                bench_func_names = append(bench_func_names, func_names[tfi])
             }
             tfi = tfi + 1
         }
@@ -1117,17 +1117,17 @@ fn run_test_mode(test_path: string, run_bench: int) -> int {
 
     // Emit function label for main
     main_label := 5000 + fn_count
-    push(instrs, IRInstr { op: OP_LABEL, dest: main_label, arg1: 0, arg2: 0, arg3: 0, str_val: "main" })
+    instrs = append(instrs, IRInstr { op: OP_LABEL, dest: main_label, arg1: 0, arg2: 0, arg3: 0, str_val: "main" })
 
     // Initialize failed counter: failed = 0
     failed_vreg := len(instrs)
-    push(instrs, IRInstr { op: OP_LOADCONST, dest: failed_vreg, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
+    instrs = append(instrs, IRInstr { op: OP_LOADCONST, dest: failed_vreg, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
 
     zero_vreg := len(instrs)
-    push(instrs, IRInstr { op: OP_LOADCONST, dest: zero_vreg, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
+    instrs = append(instrs, IRInstr { op: OP_LOADCONST, dest: zero_vreg, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
 
     one_vreg := len(instrs)
-    push(instrs, IRInstr { op: OP_LOADCONST, dest: one_vreg, arg1: 1, arg2: 0, arg3: 0, str_val: "" })
+    instrs = append(instrs, IRInstr { op: OP_LOADCONST, dest: one_vreg, arg1: 1, arg2: 0, arg3: 0, str_val: "" })
 
     // For each test function, generate:
     //   io.Print("=== RUN   TestXxx\n")
@@ -1141,18 +1141,18 @@ fn run_test_mode(test_path: string, run_bench: int) -> int {
 
         // Print "=== RUN   TestXxx\n" via io.Print
         run_msg_vreg := len(instrs)
-        push(instrs, IRInstr { op: OP_LOADCONST, dest: run_msg_vreg, arg1: 0, arg2: 0, arg3: 0, str_val: "=== RUN   " + tname + "\n" })
-        push(instrs, IRInstr { op: OP_ARG, dest: 0, arg1: run_msg_vreg, arg2: -1, arg3: 0, str_val: "" })
+        instrs = append(instrs, IRInstr { op: OP_LOADCONST, dest: run_msg_vreg, arg1: 0, arg2: 0, arg3: 0, str_val: "=== RUN   " + tname + "\n" })
+        instrs = append(instrs, IRInstr { op: OP_ARG, dest: 0, arg1: run_msg_vreg, arg2: -1, arg3: 0, str_val: "" })
         run_call := len(instrs)
-        push(instrs, IRInstr { op: OP_CALL, dest: run_call, arg1: 0, arg2: 1, arg3: 0, str_val: "io.Print" })
+        instrs = append(instrs, IRInstr { op: OP_CALL, dest: run_call, arg1: 0, arg2: 1, arg3: 0, str_val: "io.Print" })
 
         // setjmp
         sjmp_vreg := len(instrs)
-        push(instrs, IRInstr { op: OP_SETJMP, dest: sjmp_vreg, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
+        instrs = append(instrs, IRInstr { op: OP_SETJMP, dest: sjmp_vreg, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
 
         // Compare: sjmp_vreg == 0 ?
         cmp_vreg := len(instrs)
-        push(instrs, IRInstr { op: OP_CMP_EQ, dest: cmp_vreg, arg1: sjmp_vreg, arg2: zero_vreg, arg3: 0, str_val: "" })
+        instrs = append(instrs, IRInstr { op: OP_CMP_EQ, dest: cmp_vreg, arg1: sjmp_vreg, arg2: zero_vreg, arg3: 0, str_val: "" })
 
         // Branch: if cmp_vreg == 0 (i.e., setjmp returned non-zero = failure), go to fail label
         fail_label := g_next_label
@@ -1160,57 +1160,57 @@ fn run_test_mode(test_path: string, run_bench: int) -> int {
         next_label := g_next_label
         g_next_label = g_next_label + 1
 
-        push(instrs, IRInstr { op: OP_BRANCH, dest: cmp_vreg, arg1: fail_label, arg2: 0, arg3: 0, str_val: "" })
+        instrs = append(instrs, IRInstr { op: OP_BRANCH, dest: cmp_vreg, arg1: fail_label, arg2: 0, arg3: 0, str_val: "" })
 
         // Pass path: create T struct and call TestXxx(t)
         t_alloc := len(instrs)
-        push(instrs, IRInstr { op: OP_ALLOCA, dest: t_alloc, arg1: 8, arg2: 0, arg3: 0, str_val: "" })
+        instrs = append(instrs, IRInstr { op: OP_ALLOCA, dest: t_alloc, arg1: 8, arg2: 0, arg3: 0, str_val: "" })
         name_const := len(instrs)
-        push(instrs, IRInstr { op: OP_LOADCONST, dest: name_const, arg1: 0, arg2: 0, arg3: 0, str_val: tname })
+        instrs = append(instrs, IRInstr { op: OP_LOADCONST, dest: name_const, arg1: 0, arg2: 0, arg3: 0, str_val: tname })
         name_addr := len(instrs)
-        push(instrs, IRInstr { op: OP_INDEXADDR, dest: name_addr, arg1: t_alloc, arg2: 0, arg3: 0, str_val: "" })
-        push(instrs, IRInstr { op: OP_STORE, dest: -1, arg1: name_addr, arg2: name_const, arg3: 0, str_val: "" })
-        push(instrs, IRInstr { op: OP_ARG, dest: 0, arg1: t_alloc, arg2: -1, arg3: 0, str_val: "" })
+        instrs = append(instrs, IRInstr { op: OP_INDEXADDR, dest: name_addr, arg1: t_alloc, arg2: 0, arg3: 0, str_val: "" })
+        instrs = append(instrs, IRInstr { op: OP_STORE, dest: -1, arg1: name_addr, arg2: name_const, arg3: 0, str_val: "" })
+        instrs = append(instrs, IRInstr { op: OP_ARG, dest: 0, arg1: t_alloc, arg2: -1, arg3: 0, str_val: "" })
         call_vreg := len(instrs)
-        push(instrs, IRInstr { op: OP_CALL, dest: call_vreg, arg1: 0, arg2: 1, arg3: 0, str_val: tname })
+        instrs = append(instrs, IRInstr { op: OP_CALL, dest: call_vreg, arg1: 0, arg2: 1, arg3: 0, str_val: tname })
 
         // Check soft fail (IsTrue assertions that failed but didn't stop execution)
         sf_vreg := len(instrs)
-        push(instrs, IRInstr { op: OP_CALL, dest: sf_vreg, arg1: 0, arg2: 0, arg3: 0, str_val: "testing.CheckSoftFail" })
+        instrs = append(instrs, IRInstr { op: OP_CALL, dest: sf_vreg, arg1: 0, arg2: 0, arg3: 0, str_val: "testing.CheckSoftFail" })
         sf_cmp := len(instrs)
-        push(instrs, IRInstr { op: OP_CMP_EQ, dest: sf_cmp, arg1: sf_vreg, arg2: zero_vreg, arg3: 0, str_val: "" })
-        push(instrs, IRInstr { op: OP_BRANCH, dest: sf_cmp, arg1: fail_label, arg2: 0, arg3: 0, str_val: "" })
+        instrs = append(instrs, IRInstr { op: OP_CMP_EQ, dest: sf_cmp, arg1: sf_vreg, arg2: zero_vreg, arg3: 0, str_val: "" })
+        instrs = append(instrs, IRInstr { op: OP_BRANCH, dest: sf_cmp, arg1: fail_label, arg2: 0, arg3: 0, str_val: "" })
 
         // Print "--- PASS: TestXxx\n" via io.Print
         pass_msg_vreg := len(instrs)
-        push(instrs, IRInstr { op: OP_LOADCONST, dest: pass_msg_vreg, arg1: 0, arg2: 0, arg3: 0, str_val: "--- PASS: " + tname + "\n" })
-        push(instrs, IRInstr { op: OP_ARG, dest: 0, arg1: pass_msg_vreg, arg2: -1, arg3: 0, str_val: "" })
+        instrs = append(instrs, IRInstr { op: OP_LOADCONST, dest: pass_msg_vreg, arg1: 0, arg2: 0, arg3: 0, str_val: "--- PASS: " + tname + "\n" })
+        instrs = append(instrs, IRInstr { op: OP_ARG, dest: 0, arg1: pass_msg_vreg, arg2: -1, arg3: 0, str_val: "" })
         pass_call := len(instrs)
-        push(instrs, IRInstr { op: OP_CALL, dest: pass_call, arg1: 0, arg2: 1, arg3: 0, str_val: "io.Print" })
+        instrs = append(instrs, IRInstr { op: OP_CALL, dest: pass_call, arg1: 0, arg2: 1, arg3: 0, str_val: "io.Print" })
 
         // Jump to next
-        push(instrs, IRInstr { op: OP_JUMP, dest: next_label, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
+        instrs = append(instrs, IRInstr { op: OP_JUMP, dest: next_label, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
 
         // Fail path
-        push(instrs, IRInstr { op: OP_LABEL, dest: fail_label, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
+        instrs = append(instrs, IRInstr { op: OP_LABEL, dest: fail_label, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
 
         // Print "--- FAIL: TestXxx\n" via io.Print
         fail_msg_vreg := len(instrs)
-        push(instrs, IRInstr { op: OP_LOADCONST, dest: fail_msg_vreg, arg1: 0, arg2: 0, arg3: 0, str_val: "--- FAIL: " + tname + "\n" })
-        push(instrs, IRInstr { op: OP_ARG, dest: 0, arg1: fail_msg_vreg, arg2: -1, arg3: 0, str_val: "" })
+        instrs = append(instrs, IRInstr { op: OP_LOADCONST, dest: fail_msg_vreg, arg1: 0, arg2: 0, arg3: 0, str_val: "--- FAIL: " + tname + "\n" })
+        instrs = append(instrs, IRInstr { op: OP_ARG, dest: 0, arg1: fail_msg_vreg, arg2: -1, arg3: 0, str_val: "" })
         fail_call := len(instrs)
-        push(instrs, IRInstr { op: OP_CALL, dest: fail_call, arg1: 0, arg2: 1, arg3: 0, str_val: "io.Print" })
+        instrs = append(instrs, IRInstr { op: OP_CALL, dest: fail_call, arg1: 0, arg2: 1, arg3: 0, str_val: "io.Print" })
 
         // Increment failed counter: failed = failed + 1
         new_failed := len(instrs)
-        push(instrs, IRInstr { op: OP_ADD, dest: new_failed, arg1: failed_vreg, arg2: one_vreg, arg3: 0, str_val: "" })
-        push(instrs, IRInstr { op: OP_COPY, dest: failed_vreg, arg1: new_failed, arg2: 0, arg3: 0, str_val: "" })
+        instrs = append(instrs, IRInstr { op: OP_ADD, dest: new_failed, arg1: failed_vreg, arg2: one_vreg, arg3: 0, str_val: "" })
+        instrs = append(instrs, IRInstr { op: OP_COPY, dest: failed_vreg, arg1: new_failed, arg2: 0, arg3: 0, str_val: "" })
 
         // Jump to next
-        push(instrs, IRInstr { op: OP_JUMP, dest: next_label, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
+        instrs = append(instrs, IRInstr { op: OP_JUMP, dest: next_label, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
 
         // Next label
-        push(instrs, IRInstr { op: OP_LABEL, dest: next_label, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
+        instrs = append(instrs, IRInstr { op: OP_LABEL, dest: next_label, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
 
         ti = ti + 1
     }
@@ -1219,16 +1219,16 @@ fn run_test_mode(test_path: string, run_bench: int) -> int {
     if len(bench_func_names) > 0 {
         // Skip benchmarks if any test failed: CMP_EQ(failed, 0) → skip if != 0
         bench_skip_cmp := len(instrs)
-        push(instrs, IRInstr { op: OP_CMP_EQ, dest: bench_skip_cmp, arg1: failed_vreg, arg2: zero_vreg, arg3: 0, str_val: "" })
+        instrs = append(instrs, IRInstr { op: OP_CMP_EQ, dest: bench_skip_cmp, arg1: failed_vreg, arg2: zero_vreg, arg3: 0, str_val: "" })
         bench_skip_label := g_next_label
         g_next_label = g_next_label + 1
-        push(instrs, IRInstr { op: OP_BRANCH, dest: bench_skip_cmp, arg1: bench_skip_label, arg2: 0, arg3: 0, str_val: "" })
+        instrs = append(instrs, IRInstr { op: OP_BRANCH, dest: bench_skip_cmp, arg1: bench_skip_label, arg2: 0, arg3: 0, str_val: "" })
 
         // Constants for benchmark calibration
         billion_vreg := len(instrs)
-        push(instrs, IRInstr { op: OP_LOADCONST, dest: billion_vreg, arg1: 1000000000, arg2: 0, arg3: 0, str_val: "" })
+        instrs = append(instrs, IRInstr { op: OP_LOADCONST, dest: billion_vreg, arg1: 1000000000, arg2: 0, arg3: 0, str_val: "" })
         two_vreg := len(instrs)
-        push(instrs, IRInstr { op: OP_LOADCONST, dest: two_vreg, arg1: 2, arg2: 0, arg3: 0, str_val: "" })
+        instrs = append(instrs, IRInstr { op: OP_LOADCONST, dest: two_vreg, arg1: 2, arg2: 0, arg3: 0, str_val: "" })
 
         bi := 0
         for bi < len(bench_func_names) {
@@ -1236,59 +1236,59 @@ fn run_test_mode(test_path: string, run_bench: int) -> int {
 
             // Print "BenchmarkXxx\t"
             bname_vreg := len(instrs)
-            push(instrs, IRInstr { op: OP_LOADCONST, dest: bname_vreg, arg1: 0, arg2: 0, arg3: 0, str_val: bname + "\t" })
-            push(instrs, IRInstr { op: OP_ARG, dest: 0, arg1: bname_vreg, arg2: -1, arg3: 0, str_val: "" })
+            instrs = append(instrs, IRInstr { op: OP_LOADCONST, dest: bname_vreg, arg1: 0, arg2: 0, arg3: 0, str_val: bname + "\t" })
+            instrs = append(instrs, IRInstr { op: OP_ARG, dest: 0, arg1: bname_vreg, arg2: -1, arg3: 0, str_val: "" })
             bname_call := len(instrs)
-            push(instrs, IRInstr { op: OP_CALL, dest: bname_call, arg1: 0, arg2: 1, arg3: 0, str_val: "io.Print" })
+            instrs = append(instrs, IRInstr { op: OP_CALL, dest: bname_call, arg1: 0, arg2: 1, arg3: 0, str_val: "io.Print" })
 
             // n = 1
             n_vreg := len(instrs)
-            push(instrs, IRInstr { op: OP_LOADCONST, dest: n_vreg, arg1: 1, arg2: 0, arg3: 0, str_val: "" })
+            instrs = append(instrs, IRInstr { op: OP_LOADCONST, dest: n_vreg, arg1: 1, arg2: 0, arg3: 0, str_val: "" })
 
             // elapsed = 0
             elapsed_vreg := len(instrs)
-            push(instrs, IRInstr { op: OP_LOADCONST, dest: elapsed_vreg, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
+            instrs = append(instrs, IRInstr { op: OP_LOADCONST, dest: elapsed_vreg, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
 
             // loop_start:
             loop_start_label := g_next_label
             g_next_label = g_next_label + 1
-            push(instrs, IRInstr { op: OP_LABEL, dest: loop_start_label, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
+            instrs = append(instrs, IRInstr { op: OP_LABEL, dest: loop_start_label, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
 
             // Allocate B struct (16 bytes): name at offset 0, n at offset 8
             b_alloc := len(instrs)
-            push(instrs, IRInstr { op: OP_ALLOCA, dest: b_alloc, arg1: 16, arg2: 0, arg3: 0, str_val: "" })
+            instrs = append(instrs, IRInstr { op: OP_ALLOCA, dest: b_alloc, arg1: 16, arg2: 0, arg3: 0, str_val: "" })
             // Set B.name
             b_name_const := len(instrs)
-            push(instrs, IRInstr { op: OP_LOADCONST, dest: b_name_const, arg1: 0, arg2: 0, arg3: 0, str_val: bname })
+            instrs = append(instrs, IRInstr { op: OP_LOADCONST, dest: b_name_const, arg1: 0, arg2: 0, arg3: 0, str_val: bname })
             b_name_addr := len(instrs)
-            push(instrs, IRInstr { op: OP_INDEXADDR, dest: b_name_addr, arg1: b_alloc, arg2: 0, arg3: 0, str_val: "" })
-            push(instrs, IRInstr { op: OP_STORE, dest: -1, arg1: b_name_addr, arg2: b_name_const, arg3: 0, str_val: "" })
+            instrs = append(instrs, IRInstr { op: OP_INDEXADDR, dest: b_name_addr, arg1: b_alloc, arg2: 0, arg3: 0, str_val: "" })
+            instrs = append(instrs, IRInstr { op: OP_STORE, dest: -1, arg1: b_name_addr, arg2: b_name_const, arg3: 0, str_val: "" })
             // Set B.n = n_vreg
             b_n_addr := len(instrs)
-            push(instrs, IRInstr { op: OP_INDEXADDR, dest: b_n_addr, arg1: b_alloc, arg2: 8, arg3: 0, str_val: "" })
-            push(instrs, IRInstr { op: OP_STORE, dest: -1, arg1: b_n_addr, arg2: n_vreg, arg3: 0, str_val: "" })
+            instrs = append(instrs, IRInstr { op: OP_INDEXADDR, dest: b_n_addr, arg1: b_alloc, arg2: 8, arg3: 0, str_val: "" })
+            instrs = append(instrs, IRInstr { op: OP_STORE, dest: -1, arg1: b_n_addr, arg2: n_vreg, arg3: 0, str_val: "" })
 
             // start = TIME_NANOS()
             start_vreg := len(instrs)
-            push(instrs, IRInstr { op: OP_TIME_NANOS, dest: start_vreg, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
+            instrs = append(instrs, IRInstr { op: OP_TIME_NANOS, dest: start_vreg, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
 
             // Call BenchmarkXxx(b)
-            push(instrs, IRInstr { op: OP_ARG, dest: 0, arg1: b_alloc, arg2: -1, arg3: 0, str_val: "" })
+            instrs = append(instrs, IRInstr { op: OP_ARG, dest: 0, arg1: b_alloc, arg2: -1, arg3: 0, str_val: "" })
             bench_call := len(instrs)
-            push(instrs, IRInstr { op: OP_CALL, dest: bench_call, arg1: 0, arg2: 1, arg3: 0, str_val: bname })
+            instrs = append(instrs, IRInstr { op: OP_CALL, dest: bench_call, arg1: 0, arg2: 1, arg3: 0, str_val: bname })
 
             // end = TIME_NANOS()
             end_vreg := len(instrs)
-            push(instrs, IRInstr { op: OP_TIME_NANOS, dest: end_vreg, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
+            instrs = append(instrs, IRInstr { op: OP_TIME_NANOS, dest: end_vreg, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
 
             // elapsed = end - start
             new_elapsed := len(instrs)
-            push(instrs, IRInstr { op: OP_SUB, dest: new_elapsed, arg1: end_vreg, arg2: start_vreg, arg3: 0, str_val: "" })
-            push(instrs, IRInstr { op: OP_COPY, dest: elapsed_vreg, arg1: new_elapsed, arg2: 0, arg3: 0, str_val: "" })
+            instrs = append(instrs, IRInstr { op: OP_SUB, dest: new_elapsed, arg1: end_vreg, arg2: start_vreg, arg3: 0, str_val: "" })
+            instrs = append(instrs, IRInstr { op: OP_COPY, dest: elapsed_vreg, arg1: new_elapsed, arg2: 0, arg3: 0, str_val: "" })
 
             // ge_cmp = CMP_GE(elapsed, 1_000_000_000)
             ge_cmp := len(instrs)
-            push(instrs, IRInstr { op: OP_CMP_GE, dest: ge_cmp, arg1: elapsed_vreg, arg2: billion_vreg, arg3: 0, str_val: "" })
+            instrs = append(instrs, IRInstr { op: OP_CMP_GE, dest: ge_cmp, arg1: elapsed_vreg, arg2: billion_vreg, arg3: 0, str_val: "" })
 
             // If elapsed < 1s (ge_cmp == 0), jump to double_label
             double_label := g_next_label
@@ -1296,81 +1296,81 @@ fn run_test_mode(test_path: string, run_bench: int) -> int {
             done_label := g_next_label
             g_next_label = g_next_label + 1
 
-            push(instrs, IRInstr { op: OP_BRANCH, dest: ge_cmp, arg1: double_label, arg2: 0, arg3: 0, str_val: "" })
+            instrs = append(instrs, IRInstr { op: OP_BRANCH, dest: ge_cmp, arg1: double_label, arg2: 0, arg3: 0, str_val: "" })
 
             // Falls through: elapsed >= 1s, jump to done
-            push(instrs, IRInstr { op: OP_JUMP, dest: done_label, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
+            instrs = append(instrs, IRInstr { op: OP_JUMP, dest: done_label, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
 
             // double_label: n = n * 2, goto loop_start
-            push(instrs, IRInstr { op: OP_LABEL, dest: double_label, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
+            instrs = append(instrs, IRInstr { op: OP_LABEL, dest: double_label, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
             new_n := len(instrs)
-            push(instrs, IRInstr { op: OP_MUL, dest: new_n, arg1: n_vreg, arg2: two_vreg, arg3: 0, str_val: "" })
-            push(instrs, IRInstr { op: OP_COPY, dest: n_vreg, arg1: new_n, arg2: 0, arg3: 0, str_val: "" })
-            push(instrs, IRInstr { op: OP_JUMP, dest: loop_start_label, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
+            instrs = append(instrs, IRInstr { op: OP_MUL, dest: new_n, arg1: n_vreg, arg2: two_vreg, arg3: 0, str_val: "" })
+            instrs = append(instrs, IRInstr { op: OP_COPY, dest: n_vreg, arg1: new_n, arg2: 0, arg3: 0, str_val: "" })
+            instrs = append(instrs, IRInstr { op: OP_JUMP, dest: loop_start_label, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
 
             // done_label: compute and print results
-            push(instrs, IRInstr { op: OP_LABEL, dest: done_label, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
+            instrs = append(instrs, IRInstr { op: OP_LABEL, dest: done_label, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
 
             // ns_per_op = elapsed / n
             ns_per_op := len(instrs)
-            push(instrs, IRInstr { op: OP_DIV, dest: ns_per_op, arg1: elapsed_vreg, arg2: n_vreg, arg3: 0, str_val: "" })
+            instrs = append(instrs, IRInstr { op: OP_DIV, dest: ns_per_op, arg1: elapsed_vreg, arg2: n_vreg, arg3: 0, str_val: "" })
 
             // Print: n_str + "\t" + ns_per_op_str + " ns/op\n"
             n_str := len(instrs)
-            push(instrs, IRInstr { op: OP_INT_TO_STR, dest: n_str, arg1: n_vreg, arg2: 0, arg3: 0, str_val: "" })
+            instrs = append(instrs, IRInstr { op: OP_INT_TO_STR, dest: n_str, arg1: n_vreg, arg2: 0, arg3: 0, str_val: "" })
             tab_vreg := len(instrs)
-            push(instrs, IRInstr { op: OP_LOADCONST, dest: tab_vreg, arg1: 0, arg2: 0, arg3: 0, str_val: "\t" })
+            instrs = append(instrs, IRInstr { op: OP_LOADCONST, dest: tab_vreg, arg1: 0, arg2: 0, arg3: 0, str_val: "\t" })
             nsop_str := len(instrs)
-            push(instrs, IRInstr { op: OP_INT_TO_STR, dest: nsop_str, arg1: ns_per_op, arg2: 0, arg3: 0, str_val: "" })
+            instrs = append(instrs, IRInstr { op: OP_INT_TO_STR, dest: nsop_str, arg1: ns_per_op, arg2: 0, arg3: 0, str_val: "" })
             suffix_vreg := len(instrs)
-            push(instrs, IRInstr { op: OP_LOADCONST, dest: suffix_vreg, arg1: 0, arg2: 0, arg3: 0, str_val: " ns/op\n" })
+            instrs = append(instrs, IRInstr { op: OP_LOADCONST, dest: suffix_vreg, arg1: 0, arg2: 0, arg3: 0, str_val: " ns/op\n" })
 
             // Concatenate: n_str + "\t" + nsop_str + " ns/op\n"
             cat1 := len(instrs)
-            push(instrs, IRInstr { op: OP_STR_CONCAT, dest: cat1, arg1: n_str, arg2: tab_vreg, arg3: 0, str_val: "" })
+            instrs = append(instrs, IRInstr { op: OP_STR_CONCAT, dest: cat1, arg1: n_str, arg2: tab_vreg, arg3: 0, str_val: "" })
             cat2 := len(instrs)
-            push(instrs, IRInstr { op: OP_STR_CONCAT, dest: cat2, arg1: cat1, arg2: nsop_str, arg3: 0, str_val: "" })
+            instrs = append(instrs, IRInstr { op: OP_STR_CONCAT, dest: cat2, arg1: cat1, arg2: nsop_str, arg3: 0, str_val: "" })
             cat3 := len(instrs)
-            push(instrs, IRInstr { op: OP_STR_CONCAT, dest: cat3, arg1: cat2, arg2: suffix_vreg, arg3: 0, str_val: "" })
+            instrs = append(instrs, IRInstr { op: OP_STR_CONCAT, dest: cat3, arg1: cat2, arg2: suffix_vreg, arg3: 0, str_val: "" })
 
             // Print result line
-            push(instrs, IRInstr { op: OP_ARG, dest: 0, arg1: cat3, arg2: -1, arg3: 0, str_val: "" })
+            instrs = append(instrs, IRInstr { op: OP_ARG, dest: 0, arg1: cat3, arg2: -1, arg3: 0, str_val: "" })
             bench_print_call := len(instrs)
-            push(instrs, IRInstr { op: OP_CALL, dest: bench_print_call, arg1: 0, arg2: 1, arg3: 0, str_val: "io.Print" })
+            instrs = append(instrs, IRInstr { op: OP_CALL, dest: bench_print_call, arg1: 0, arg2: 1, arg3: 0, str_val: "io.Print" })
 
             bi = bi + 1
         }
 
         // bench_skip_label — falls through to summary
-        push(instrs, IRInstr { op: OP_LABEL, dest: bench_skip_label, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
+        instrs = append(instrs, IRInstr { op: OP_LABEL, dest: bench_skip_label, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
     }
 
     // Print summary via io.Print
     // if failed > 0: print "FAIL\n" and return 1; else print "ok\n" and return 0
     summary_cmp := len(instrs)
-    push(instrs, IRInstr { op: OP_CMP_GT, dest: summary_cmp, arg1: failed_vreg, arg2: zero_vreg, arg3: 0, str_val: "" })
+    instrs = append(instrs, IRInstr { op: OP_CMP_GT, dest: summary_cmp, arg1: failed_vreg, arg2: zero_vreg, arg3: 0, str_val: "" })
 
     summary_fail_label := g_next_label
     g_next_label = g_next_label + 1
 
-    push(instrs, IRInstr { op: OP_BRANCH, dest: summary_cmp, arg1: summary_fail_label, arg2: 0, arg3: 0, str_val: "" })
+    instrs = append(instrs, IRInstr { op: OP_BRANCH, dest: summary_cmp, arg1: summary_fail_label, arg2: 0, arg3: 0, str_val: "" })
 
     // failed > 0 path: print FAIL, return 1
     fail_str_vreg := len(instrs)
-    push(instrs, IRInstr { op: OP_LOADCONST, dest: fail_str_vreg, arg1: 0, arg2: 0, arg3: 0, str_val: "FAIL\n" })
-    push(instrs, IRInstr { op: OP_ARG, dest: 0, arg1: fail_str_vreg, arg2: -1, arg3: 0, str_val: "" })
+    instrs = append(instrs, IRInstr { op: OP_LOADCONST, dest: fail_str_vreg, arg1: 0, arg2: 0, arg3: 0, str_val: "FAIL\n" })
+    instrs = append(instrs, IRInstr { op: OP_ARG, dest: 0, arg1: fail_str_vreg, arg2: -1, arg3: 0, str_val: "" })
     fail_sum_call := len(instrs)
-    push(instrs, IRInstr { op: OP_CALL, dest: fail_sum_call, arg1: 0, arg2: 1, arg3: 0, str_val: "io.Print" })
-    push(instrs, IRInstr { op: OP_RET, dest: one_vreg, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
+    instrs = append(instrs, IRInstr { op: OP_CALL, dest: fail_sum_call, arg1: 0, arg2: 1, arg3: 0, str_val: "io.Print" })
+    instrs = append(instrs, IRInstr { op: OP_RET, dest: one_vreg, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
 
     // failed == 0 path: print ok, return 0
-    push(instrs, IRInstr { op: OP_LABEL, dest: summary_fail_label, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
+    instrs = append(instrs, IRInstr { op: OP_LABEL, dest: summary_fail_label, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
     ok_str_vreg := len(instrs)
-    push(instrs, IRInstr { op: OP_LOADCONST, dest: ok_str_vreg, arg1: 0, arg2: 0, arg3: 0, str_val: "ok\n" })
-    push(instrs, IRInstr { op: OP_ARG, dest: 0, arg1: ok_str_vreg, arg2: -1, arg3: 0, str_val: "" })
+    instrs = append(instrs, IRInstr { op: OP_LOADCONST, dest: ok_str_vreg, arg1: 0, arg2: 0, arg3: 0, str_val: "ok\n" })
+    instrs = append(instrs, IRInstr { op: OP_ARG, dest: 0, arg1: ok_str_vreg, arg2: -1, arg3: 0, str_val: "" })
     ok_sum_call := len(instrs)
-    push(instrs, IRInstr { op: OP_CALL, dest: ok_sum_call, arg1: 0, arg2: 1, arg3: 0, str_val: "io.Print" })
-    push(instrs, IRInstr { op: OP_RET, dest: zero_vreg, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
+    instrs = append(instrs, IRInstr { op: OP_CALL, dest: ok_sum_call, arg1: 0, arg2: 1, arg3: 0, str_val: "io.Print" })
+    instrs = append(instrs, IRInstr { op: OP_RET, dest: zero_vreg, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
 
     // LLVM IR Generation
     output_ll := "./tmp/output.ll"
@@ -1435,7 +1435,7 @@ fn main() -> int {
         return 1
     }
 
-    push(g_current_file_list, filename)
+    g_current_file_list = append(g_current_file_list, filename)
 
     // Phase 1: Lexing
     pos := 0
@@ -1463,7 +1463,7 @@ fn main() -> int {
     parse_source_file(source, nodes, func_names, func_indices, global_var_names, 0)
     mfi2 := 0
     for mfi2 < len(func_names) {
-        push(g_func_source_files, filename)
+        g_func_source_files = append(g_func_source_files, filename)
         mfi2 = mfi2 + 1
     }
 

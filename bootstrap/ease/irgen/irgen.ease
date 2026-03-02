@@ -4,30 +4,30 @@ package irgen
 
 // Type system: vreg-to-type mapping
 // New vregs are always monotonically increasing (instruction indices), so we can
-// grow the array with push and append the type at the correct position.
+// grow the array with append and set the type at the correct position.
 fn set_vreg_type(vreg: int, vtype: int) {
     if vreg < 0 { return }
     if vreg >= 90000 {
         // Parameter vreg — store in g_param_types (offset by g_param_types_start for scoping)
         pidx := (vreg - 90000) + g_param_types_start
         for len(g_param_types) < pidx {
-            push(g_param_types, 0)
+            g_param_types = append(g_param_types, 0)
         }
         if len(g_param_types) == pidx {
-            push(g_param_types, vtype)
+            g_param_types = append(g_param_types, vtype)
         }
         return
     }
     // Regular vreg — store in g_vreg_types
     for len(g_vreg_types) < vreg {
-        push(g_vreg_types, 0)
+        g_vreg_types = append(g_vreg_types, 0)
     }
     if len(g_vreg_types) == vreg {
-        push(g_vreg_types, vtype)
+        g_vreg_types = append(g_vreg_types, vtype)
     } else {
         // Retroactive update — use patches table
-        push(g_vreg_type_patches_idx, vreg)
-        push(g_vreg_type_patches_val, vtype)
+        g_vreg_type_patches_idx = append(g_vreg_type_patches_idx, vreg)
+        g_vreg_type_patches_val = append(g_vreg_type_patches_val, vtype)
     }
 }
 
@@ -89,18 +89,18 @@ fn set_vreg_struct_name(vreg: int, name: string) {
     if vreg >= 90000 {
         pidx := (vreg - 90000) + g_param_struct_names_start
         for len(g_param_struct_names) < pidx {
-            push(g_param_struct_names, "")
+            g_param_struct_names = append(g_param_struct_names, "")
         }
         if len(g_param_struct_names) == pidx {
-            push(g_param_struct_names, name)
+            g_param_struct_names = append(g_param_struct_names, name)
         }
         return
     }
     for len(g_vreg_struct_names) < vreg {
-        push(g_vreg_struct_names, "")
+        g_vreg_struct_names = append(g_vreg_struct_names, "")
     }
     if len(g_vreg_struct_names) == vreg {
-        push(g_vreg_struct_names, name)
+        g_vreg_struct_names = append(g_vreg_struct_names, name)
     }
 }
 
@@ -179,12 +179,12 @@ fn gen_ir_call_len(ast_idx: int, nodes: []AstNode, instrs: []IRInstr, symtab_nam
         op = OP_MAP_LEN
     }
     len_instr := IRInstr { op: op, dest: result_vreg, arg1: array_vreg, arg2: 0, arg3: 0, str_val: "" }
-    push(instrs, len_instr)
+    instrs = append(instrs, len_instr)
     set_vreg_type(result_vreg, TYPE_INT)
     return result_vreg
 }
 
-// Helper: Generate IR for push() builtin
+// Helper: Generate IR for append() builtin
 fn gen_ir_call_push(ast_idx: int, nodes: []AstNode, instrs: []IRInstr, symtab_names: []string, symtab_vregs: []int) -> int {
     arg_indices := get_call_args(ast_idx)
     if len(arg_indices) != 2 {
@@ -193,7 +193,7 @@ fn gen_ir_call_push(ast_idx: int, nodes: []AstNode, instrs: []IRInstr, symtab_na
     array_vreg := gen_ir_from_ast_with_symtab(arg_indices[0], nodes, instrs, symtab_names, symtab_vregs)
     elem_vreg := gen_ir_from_ast_with_symtab(arg_indices[1], nodes, instrs, symtab_names, symtab_vregs)
     push_instr := IRInstr { op: OP_ARRAY_PUSH, dest: -1, arg1: array_vreg, arg2: elem_vreg, arg3: 0, str_val: "" }
-    push(instrs, push_instr)
+    instrs = append(instrs, push_instr)
     // Returns the array vreg — type already set from definition
     return array_vreg
 }
@@ -207,7 +207,7 @@ fn gen_ir_call_poke(ast_idx: int, nodes: []AstNode, instrs: []IRInstr, symtab_na
     addr_vreg := gen_ir_from_ast_with_symtab(arg_indices[0], nodes, instrs, symtab_names, symtab_vregs)
     value_vreg := gen_ir_from_ast_with_symtab(arg_indices[1], nodes, instrs, symtab_names, symtab_vregs)
     poke_instr := IRInstr { op: OP_POKE, dest: -1, arg1: addr_vreg, arg2: value_vreg, arg3: 0, str_val: "" }
-    push(instrs, poke_instr)
+    instrs = append(instrs, poke_instr)
     return -1  // poke returns nothing
 }
 
@@ -220,7 +220,7 @@ fn gen_ir_call_peek(ast_idx: int, nodes: []AstNode, instrs: []IRInstr, symtab_na
     addr_vreg := gen_ir_from_ast_with_symtab(arg_indices[0], nodes, instrs, symtab_names, symtab_vregs)
     result_vreg := len(instrs)
     peek_instr := IRInstr { op: OP_PEEK, dest: result_vreg, arg1: addr_vreg, arg2: 0, arg3: 0, str_val: "" }
-    push(instrs, peek_instr)
+    instrs = append(instrs, peek_instr)
     set_vreg_type(result_vreg, TYPE_INT)
     return result_vreg  // peek returns the byte value
 }
@@ -233,7 +233,7 @@ fn gen_ir_call_peek64(ast_idx: int, nodes: []AstNode, instrs: []IRInstr, symtab_
     }
     addr_vreg := gen_ir_from_ast_with_symtab(arg_indices[0], nodes, instrs, symtab_names, symtab_vregs)
     result_vreg := len(instrs)
-    push(instrs, IRInstr { op: OP_LOAD, dest: result_vreg, arg1: addr_vreg, arg2: 0, arg3: 0, str_val: "" })
+    instrs = append(instrs, IRInstr { op: OP_LOAD, dest: result_vreg, arg1: addr_vreg, arg2: 0, arg3: 0, str_val: "" })
     set_vreg_type(result_vreg, TYPE_INT)
     return result_vreg
 }
@@ -246,7 +246,7 @@ fn gen_ir_call_poke64(ast_idx: int, nodes: []AstNode, instrs: []IRInstr, symtab_
     }
     addr_vreg := gen_ir_from_ast_with_symtab(arg_indices[0], nodes, instrs, symtab_names, symtab_vregs)
     value_vreg := gen_ir_from_ast_with_symtab(arg_indices[1], nodes, instrs, symtab_names, symtab_vregs)
-    push(instrs, IRInstr { op: OP_STORE, dest: -1, arg1: addr_vreg, arg2: value_vreg, arg3: 0, str_val: "" })
+    instrs = append(instrs, IRInstr { op: OP_STORE, dest: -1, arg1: addr_vreg, arg2: value_vreg, arg3: 0, str_val: "" })
     return -1
 }
 
@@ -259,7 +259,7 @@ fn gen_ir_call_delete(ast_idx: int, nodes: []AstNode, instrs: []IRInstr, symtab_
     map_vreg := gen_ir_from_ast_with_symtab(arg_indices[0], nodes, instrs, symtab_names, symtab_vregs)
     key_vreg := gen_ir_from_ast_with_symtab(arg_indices[1], nodes, instrs, symtab_names, symtab_vregs)
     result_vreg := len(instrs)
-    push(instrs, IRInstr { op: OP_MAP_DELETE, dest: result_vreg, arg1: map_vreg, arg2: key_vreg, arg3: 0, str_val: "" })
+    instrs = append(instrs, IRInstr { op: OP_MAP_DELETE, dest: result_vreg, arg1: map_vreg, arg2: key_vreg, arg3: 0, str_val: "" })
     set_vreg_type(result_vreg, TYPE_INT)
     return result_vreg
 }
@@ -273,7 +273,7 @@ fn gen_ir_call_heap_alloc(ast_idx: int, nodes: []AstNode, instrs: []IRInstr, sym
     size_vreg := gen_ir_from_ast_with_symtab(arg_indices[0], nodes, instrs, symtab_names, symtab_vregs)
     result_vreg := len(instrs)
     heap_alloc_instr := IRInstr { op: OP_HEAP_ALLOC, dest: result_vreg, arg1: size_vreg, arg2: 0, arg3: 0, str_val: "" }
-    push(instrs, heap_alloc_instr)
+    instrs = append(instrs, heap_alloc_instr)
     set_vreg_type(result_vreg, TYPE_INT)
     return result_vreg  // heap_alloc returns the allocated pointer
 }
@@ -282,7 +282,7 @@ fn gen_ir_call_argc(ast_idx: int, nodes: []AstNode, instrs: []IRInstr, symtab_na
     // os.Argc() -> int
     result_vreg := len(instrs)
     argc_instr := IRInstr { op: OP_ARGC, dest: result_vreg, arg1: 0, arg2: 0, arg3: 0, str_val: "" }
-    push(instrs, argc_instr)
+    instrs = append(instrs, argc_instr)
     set_vreg_type(result_vreg, TYPE_INT)
     return result_vreg
 }
@@ -296,7 +296,7 @@ fn gen_ir_call_argv(ast_idx: int, nodes: []AstNode, instrs: []IRInstr, symtab_na
     index_vreg := gen_ir_from_ast_with_symtab(arg_indices[0], nodes, instrs, symtab_names, symtab_vregs)
     result_vreg := len(instrs)
     argv_instr := IRInstr { op: OP_ARGV, dest: result_vreg, arg1: index_vreg, arg2: 0, arg3: 0, str_val: "" }
-    push(instrs, argv_instr)
+    instrs = append(instrs, argv_instr)
     set_vreg_type(result_vreg, TYPE_STRING)
     return result_vreg
 }
@@ -308,7 +308,7 @@ fn gen_ir_call_str_char_at(ast_idx: int, nodes: []AstNode, instrs: []IRInstr, sy
     str_vreg := gen_ir_from_ast_with_symtab(arg_indices[0], nodes, instrs, symtab_names, symtab_vregs)
     idx_vreg := gen_ir_from_ast_with_symtab(arg_indices[1], nodes, instrs, symtab_names, symtab_vregs)
     result_vreg := len(instrs)
-    push(instrs, IRInstr { op: OP_STR_CHAR_AT, dest: result_vreg, arg1: str_vreg, arg2: idx_vreg, arg3: 0, str_val: "" })
+    instrs = append(instrs, IRInstr { op: OP_STR_CHAR_AT, dest: result_vreg, arg1: str_vreg, arg2: idx_vreg, arg3: 0, str_val: "" })
     set_vreg_type(result_vreg, TYPE_INT)
     return result_vreg
 }
@@ -320,7 +320,7 @@ fn gen_ir_call_syscall_open(ast_idx: int, nodes: []AstNode, instrs: []IRInstr, s
     flags_vreg := gen_ir_from_ast_with_symtab(arg_indices[1], nodes, instrs, symtab_names, symtab_vregs)
     mode_vreg := gen_ir_from_ast_with_symtab(arg_indices[2], nodes, instrs, symtab_names, symtab_vregs)
     result_vreg := len(instrs)
-    push(instrs, IRInstr { op: OP_SYSCALL_OPEN, dest: result_vreg, arg1: path_vreg, arg2: flags_vreg, arg3: mode_vreg, str_val: "" })
+    instrs = append(instrs, IRInstr { op: OP_SYSCALL_OPEN, dest: result_vreg, arg1: path_vreg, arg2: flags_vreg, arg3: mode_vreg, str_val: "" })
     set_vreg_type(result_vreg, TYPE_INT)
     return result_vreg
 }
@@ -332,7 +332,7 @@ fn gen_ir_call_syscall_write(ast_idx: int, nodes: []AstNode, instrs: []IRInstr, 
     buf_vreg := gen_ir_from_ast_with_symtab(arg_indices[1], nodes, instrs, symtab_names, symtab_vregs)
     size_vreg := gen_ir_from_ast_with_symtab(arg_indices[2], nodes, instrs, symtab_names, symtab_vregs)
     result_vreg := len(instrs)
-    push(instrs, IRInstr { op: OP_SYSCALL_WRITE, dest: result_vreg, arg1: fd_vreg, arg2: buf_vreg, arg3: size_vreg, str_val: "" })
+    instrs = append(instrs, IRInstr { op: OP_SYSCALL_WRITE, dest: result_vreg, arg1: fd_vreg, arg2: buf_vreg, arg3: size_vreg, str_val: "" })
     set_vreg_type(result_vreg, TYPE_INT)
     return result_vreg
 }
@@ -342,7 +342,7 @@ fn gen_ir_call_syscall_close(ast_idx: int, nodes: []AstNode, instrs: []IRInstr, 
     if len(arg_indices) != 1 { return -1 }
     fd_vreg := gen_ir_from_ast_with_symtab(arg_indices[0], nodes, instrs, symtab_names, symtab_vregs)
     result_vreg := len(instrs)
-    push(instrs, IRInstr { op: OP_SYSCALL_CLOSE, dest: result_vreg, arg1: fd_vreg, arg2: 0, arg3: 0, str_val: "" })
+    instrs = append(instrs, IRInstr { op: OP_SYSCALL_CLOSE, dest: result_vreg, arg1: fd_vreg, arg2: 0, arg3: 0, str_val: "" })
     set_vreg_type(result_vreg, TYPE_INT)
     return result_vreg
 }
@@ -354,7 +354,7 @@ fn gen_ir_call_syscall_read(ast_idx: int, nodes: []AstNode, instrs: []IRInstr, s
     buf_vreg := gen_ir_from_ast_with_symtab(arg_indices[1], nodes, instrs, symtab_names, symtab_vregs)
     size_vreg := gen_ir_from_ast_with_symtab(arg_indices[2], nodes, instrs, symtab_names, symtab_vregs)
     result_vreg := len(instrs)
-    push(instrs, IRInstr { op: OP_SYSCALL_READ, dest: result_vreg, arg1: fd_vreg, arg2: buf_vreg, arg3: size_vreg, str_val: "" })
+    instrs = append(instrs, IRInstr { op: OP_SYSCALL_READ, dest: result_vreg, arg1: fd_vreg, arg2: buf_vreg, arg3: size_vreg, str_val: "" })
     set_vreg_type(result_vreg, TYPE_INT)
     return result_vreg
 }
@@ -364,7 +364,7 @@ fn gen_ir_call_is_dir(ast_idx: int, nodes: []AstNode, instrs: []IRInstr, symtab_
     if len(arg_indices) != 1 { return -1 }
     path_vreg := gen_ir_from_ast_with_symtab(arg_indices[0], nodes, instrs, symtab_names, symtab_vregs)
     result_vreg := len(instrs)
-    push(instrs, IRInstr { op: OP_IS_DIR, dest: result_vreg, arg1: path_vreg, arg2: 0, arg3: 0, str_val: "" })
+    instrs = append(instrs, IRInstr { op: OP_IS_DIR, dest: result_vreg, arg1: path_vreg, arg2: 0, arg3: 0, str_val: "" })
     set_vreg_type(result_vreg, TYPE_INT)
     return result_vreg
 }
@@ -374,7 +374,7 @@ fn gen_ir_call_list_dir(ast_idx: int, nodes: []AstNode, instrs: []IRInstr, symta
     if len(arg_indices) != 1 { return -1 }
     path_vreg := gen_ir_from_ast_with_symtab(arg_indices[0], nodes, instrs, symtab_names, symtab_vregs)
     result_vreg := len(instrs)
-    push(instrs, IRInstr { op: OP_LIST_DIR, dest: result_vreg, arg1: path_vreg, arg2: 0, arg3: 0, str_val: "" })
+    instrs = append(instrs, IRInstr { op: OP_LIST_DIR, dest: result_vreg, arg1: path_vreg, arg2: 0, arg3: 0, str_val: "" })
     set_vreg_type(result_vreg, TYPE_STRING)
     return result_vreg
 }
@@ -390,8 +390,8 @@ fn RegisterFieldOffset(name: string, offset: int) {
         if g_all_field_names[i] == name { return }
         i = i + 1
     }
-    push(g_all_field_names, name)
-    push(g_all_field_offsets, offset)
+    g_all_field_names = append(g_all_field_names, name)
+    g_all_field_offsets = append(g_all_field_offsets, offset)
 }
 
 fn get_field_offset(name: string) -> int {
@@ -428,7 +428,7 @@ fn gen_ir_eval_args(ast_idx: int, nodes: []AstNode, instrs: []IRInstr, st_names:
     i := 0
     for i < len(arg_indices) {
         vreg := gen_ir_from_ast_with_symtab(arg_indices[i], nodes, instrs, st_names, st_vregs)
-        push(arg_vregs, vreg)
+        arg_vregs = append(arg_vregs, vreg)
         i = i + 1
     }
     return arg_vregs
@@ -441,40 +441,40 @@ fn gen_ir_index(node: AstNode, nodes: []AstNode, instrs: []IRInstr, st_names: []
     if get_vreg_type(arr) == TYPE_MAP {
         // Step 1: Get value and has-flag
         get_vreg := len(instrs)
-        push(instrs, IRInstr { op: OP_MAP_GET, dest: get_vreg, arg1: arr, arg2: idx, arg3: 0, str_val: "" })
+        instrs = append(instrs, IRInstr { op: OP_MAP_GET, dest: get_vreg, arg1: arr, arg2: idx, arg3: 0, str_val: "" })
         map_type := get_vreg_struct_name(arr)
         val_type := TYPE_INT
         if map_type != "" { val_type = type_tag_from_name(map_val_type_str(map_type)) }
         set_vreg_type(get_vreg, val_type)
 
         has_vreg := len(instrs)
-        push(instrs, IRInstr { op: OP_MAP_HAS, dest: has_vreg, arg1: arr, arg2: idx, arg3: 0, str_val: "" })
+        instrs = append(instrs, IRInstr { op: OP_MAP_HAS, dest: has_vreg, arg1: arr, arg2: idx, arg3: 0, str_val: "" })
         set_vreg_type(has_vreg, TYPE_INT)
 
         // Step 2: Allocate 16-byte Option struct (tag@0, value@8)
         size_vreg := len(instrs)
-        push(instrs, IRInstr { op: OP_LOADCONST, dest: size_vreg, arg1: 16, arg2: 0, arg3: 0, str_val: "" })
+        instrs = append(instrs, IRInstr { op: OP_LOADCONST, dest: size_vreg, arg1: 16, arg2: 0, arg3: 0, str_val: "" })
         set_vreg_type(size_vreg, TYPE_INT)
         ptr_vreg := len(instrs)
-        push(instrs, IRInstr { op: OP_HEAP_ALLOC, dest: ptr_vreg, arg1: size_vreg, arg2: 0, arg3: 0, str_val: "" })
+        instrs = append(instrs, IRInstr { op: OP_HEAP_ALLOC, dest: ptr_vreg, arg1: size_vreg, arg2: 0, arg3: 0, str_val: "" })
         set_vreg_type(ptr_vreg, TYPE_INT)
 
         // Step 3: Compute tag = 1 - has (Some=0 when found, None=1 when not)
         one_vreg := len(instrs)
-        push(instrs, IRInstr { op: OP_LOADCONST, dest: one_vreg, arg1: 1, arg2: 0, arg3: 0, str_val: "" })
+        instrs = append(instrs, IRInstr { op: OP_LOADCONST, dest: one_vreg, arg1: 1, arg2: 0, arg3: 0, str_val: "" })
         set_vreg_type(one_vreg, TYPE_INT)
         tag_vreg := len(instrs)
-        push(instrs, IRInstr { op: OP_SUB, dest: tag_vreg, arg1: one_vreg, arg2: has_vreg, arg3: 0, str_val: "" })
+        instrs = append(instrs, IRInstr { op: OP_SUB, dest: tag_vreg, arg1: one_vreg, arg2: has_vreg, arg3: 0, str_val: "" })
         set_vreg_type(tag_vreg, TYPE_INT)
 
         // Step 4: Store tag at offset 0
-        push(instrs, IRInstr { op: OP_STORE, dest: -1, arg1: ptr_vreg, arg2: tag_vreg, arg3: 0, str_val: "" })
+        instrs = append(instrs, IRInstr { op: OP_STORE, dest: -1, arg1: ptr_vreg, arg2: tag_vreg, arg3: 0, str_val: "" })
 
         // Step 5: Store value at offset 8 (INDEXADDR uses immediate offset, not vreg)
         addr_vreg := len(instrs)
-        push(instrs, IRInstr { op: OP_INDEXADDR, dest: addr_vreg, arg1: ptr_vreg, arg2: 8, arg3: 0, str_val: "" })
+        instrs = append(instrs, IRInstr { op: OP_INDEXADDR, dest: addr_vreg, arg1: ptr_vreg, arg2: 8, arg3: 0, str_val: "" })
         set_vreg_type(addr_vreg, TYPE_INT)
-        push(instrs, IRInstr { op: OP_STORE, dest: -1, arg1: addr_vreg, arg2: get_vreg, arg3: 0, str_val: "" })
+        instrs = append(instrs, IRInstr { op: OP_STORE, dest: -1, arg1: addr_vreg, arg2: get_vreg, arg3: 0, str_val: "" })
 
         // Step 6: Set vreg type to struct with Option or StringOption
         opt_name := "Option"
@@ -485,7 +485,7 @@ fn gen_ir_index(node: AstNode, nodes: []AstNode, instrs: []IRInstr, st_names: []
     }
     res := len(instrs)
     instr := IRInstr { op: OP_LOAD, dest: res, arg1: arr, arg2: idx, arg3: 0, str_val: "array_index" }
-    push(instrs, instr)
+    instrs = append(instrs, instr)
     // Derive element type from array type
     arr_type := get_vreg_type(arr)
     elem_type := TYPE_INT
@@ -515,7 +515,7 @@ fn gen_ir_field(node: AstNode, nodes: []AstNode, instrs: []IRInstr, st_names: []
     }
     res := len(instrs)
     instr := IRInstr { op: OP_LOAD, dest: res, arg1: base, arg2: off, arg3: 0, str_val: node.str_val }
-    push(instrs, instr)
+    instrs = append(instrs, instr)
     set_vreg_type(res, make_type(lookup_field_type(node.str_val), lookup_field_is_array(node.str_val)))
     sname := lookup_field_struct_name(node.str_val)
     if sname != "" { set_vreg_struct_name(res, sname) }
@@ -527,9 +527,9 @@ fn gen_ir_array_lit(node: AstNode, nodes: []AstNode, instrs: []IRInstr, st_n: []
     if elem_count == 0 {
         // Empty array: allocate a 24-byte fat pointer (ptr, len, cap) initialized to zero
         size_vreg := len(instrs)
-        push(instrs, IRInstr { op: OP_LOADCONST, dest: size_vreg, arg1: 24, arg2: 0, arg3: 0, str_val: "" })
+        instrs = append(instrs, IRInstr { op: OP_LOADCONST, dest: size_vreg, arg1: 24, arg2: 0, arg3: 0, str_val: "" })
         r := len(instrs)
-        push(instrs, IRInstr { op: OP_HEAP_ALLOC, dest: r, arg1: size_vreg, arg2: 0, arg3: 0, str_val: "" })
+        instrs = append(instrs, IRInstr { op: OP_HEAP_ALLOC, dest: r, arg1: size_vreg, arg2: 0, arg3: 0, str_val: "" })
         arr_type := TYPE_INT_ARRAY
         if node.str_val == "string" { arr_type = TYPE_STRING_ARRAY }
         set_vreg_type(r, arr_type)
@@ -542,41 +542,41 @@ fn gen_ir_array_lit(node: AstNode, nodes: []AstNode, instrs: []IRInstr, st_n: []
     for i < len(nodes) && cnt < elem_count {
         if nodes[i].tag < STMT_LET {
             v := gen_ir_from_ast_with_symtab(i, nodes, instrs, st_n, st_v)
-            push(elem_vregs, v)
+            elem_vregs = append(elem_vregs, v)
             cnt = cnt + 1
         }
         i = i + 1
     }
     // Allocate element data storage: elem_count * 8 bytes
     data_size_vreg := len(instrs)
-    push(instrs, IRInstr { op: OP_LOADCONST, dest: data_size_vreg, arg1: elem_count * 8, arg2: 0, arg3: 0, str_val: "" })
+    instrs = append(instrs, IRInstr { op: OP_LOADCONST, dest: data_size_vreg, arg1: elem_count * 8, arg2: 0, arg3: 0, str_val: "" })
     data_ptr := len(instrs)
-    push(instrs, IRInstr { op: OP_HEAP_ALLOC, dest: data_ptr, arg1: data_size_vreg, arg2: 0, arg3: 0, str_val: "" })
+    instrs = append(instrs, IRInstr { op: OP_HEAP_ALLOC, dest: data_ptr, arg1: data_size_vreg, arg2: 0, arg3: 0, str_val: "" })
     // Store each element at data_ptr + (j * 8)
     j := 0
     for j < len(elem_vregs) {
         addr := len(instrs)
-        push(instrs, IRInstr { op: OP_INDEXADDR, dest: addr, arg1: data_ptr, arg2: j * 8, arg3: 0, str_val: "" })
-        push(instrs, IRInstr { op: OP_STORE, dest: -1, arg1: addr, arg2: elem_vregs[j], arg3: 0, str_val: "" })
+        instrs = append(instrs, IRInstr { op: OP_INDEXADDR, dest: addr, arg1: data_ptr, arg2: j * 8, arg3: 0, str_val: "" })
+        instrs = append(instrs, IRInstr { op: OP_STORE, dest: -1, arg1: addr, arg2: elem_vregs[j], arg3: 0, str_val: "" })
         j = j + 1
     }
     // Allocate fat pointer (24 bytes: ptr, len, cap)
     fp_size_vreg := len(instrs)
-    push(instrs, IRInstr { op: OP_LOADCONST, dest: fp_size_vreg, arg1: 24, arg2: 0, arg3: 0, str_val: "" })
+    instrs = append(instrs, IRInstr { op: OP_LOADCONST, dest: fp_size_vreg, arg1: 24, arg2: 0, arg3: 0, str_val: "" })
     fat_ptr := len(instrs)
-    push(instrs, IRInstr { op: OP_HEAP_ALLOC, dest: fat_ptr, arg1: fp_size_vreg, arg2: 0, arg3: 0, str_val: "" })
+    instrs = append(instrs, IRInstr { op: OP_HEAP_ALLOC, dest: fat_ptr, arg1: fp_size_vreg, arg2: 0, arg3: 0, str_val: "" })
     // Store data_ptr at fat_ptr + 0
-    push(instrs, IRInstr { op: OP_STORE, dest: -1, arg1: fat_ptr, arg2: data_ptr, arg3: 0, str_val: "" })
+    instrs = append(instrs, IRInstr { op: OP_STORE, dest: -1, arg1: fat_ptr, arg2: data_ptr, arg3: 0, str_val: "" })
     // Store len at fat_ptr + 8
     len_vreg := len(instrs)
-    push(instrs, IRInstr { op: OP_LOADCONST, dest: len_vreg, arg1: elem_count, arg2: 0, arg3: 0, str_val: "" })
+    instrs = append(instrs, IRInstr { op: OP_LOADCONST, dest: len_vreg, arg1: elem_count, arg2: 0, arg3: 0, str_val: "" })
     len_addr := len(instrs)
-    push(instrs, IRInstr { op: OP_INDEXADDR, dest: len_addr, arg1: fat_ptr, arg2: 8, arg3: 0, str_val: "" })
-    push(instrs, IRInstr { op: OP_STORE, dest: -1, arg1: len_addr, arg2: len_vreg, arg3: 0, str_val: "" })
+    instrs = append(instrs, IRInstr { op: OP_INDEXADDR, dest: len_addr, arg1: fat_ptr, arg2: 8, arg3: 0, str_val: "" })
+    instrs = append(instrs, IRInstr { op: OP_STORE, dest: -1, arg1: len_addr, arg2: len_vreg, arg3: 0, str_val: "" })
     // Store cap at fat_ptr + 16 (cap = len for literals)
     cap_addr := len(instrs)
-    push(instrs, IRInstr { op: OP_INDEXADDR, dest: cap_addr, arg1: fat_ptr, arg2: 16, arg3: 0, str_val: "" })
-    push(instrs, IRInstr { op: OP_STORE, dest: -1, arg1: cap_addr, arg2: len_vreg, arg3: 0, str_val: "" })
+    instrs = append(instrs, IRInstr { op: OP_INDEXADDR, dest: cap_addr, arg1: fat_ptr, arg2: 16, arg3: 0, str_val: "" })
+    instrs = append(instrs, IRInstr { op: OP_STORE, dest: -1, arg1: cap_addr, arg2: len_vreg, arg3: 0, str_val: "" })
     lit_type := TYPE_INT_ARRAY
     if node.str_val == "string" { lit_type = TYPE_STRING_ARRAY }
     set_vreg_type(fat_ptr, lit_type)
@@ -591,8 +591,8 @@ fn gen_ir_store_struct_fields(ptr: int, sname: string, idx: int, nodes: []AstNod
         v := gen_ir_from_ast_with_symtab(vals[i], nodes, instrs, st_names, st_vregs)
         off := field_offset(sname, fnames[i])
         addr := len(instrs)
-        push(instrs, IRInstr { op: OP_INDEXADDR, dest: addr, arg1: ptr, arg2: off, arg3: 0, str_val: fnames[i] })
-        push(instrs, IRInstr { op: OP_STORE, dest: -1, arg1: addr, arg2: v, arg3: 0, str_val: "" })
+        instrs = append(instrs, IRInstr { op: OP_INDEXADDR, dest: addr, arg1: ptr, arg2: off, arg3: 0, str_val: fnames[i] })
+        instrs = append(instrs, IRInstr { op: OP_STORE, dest: -1, arg1: addr, arg2: v, arg3: 0, str_val: "" })
         i = i + 1
     }
     return 0 }
@@ -601,7 +601,7 @@ fn gen_ir_struct_lit(node: AstNode, ast_idx: int, nodes: []AstNode, instrs: []IR
     size := struct_size(node.str_val)
     ptr := len(instrs)
     alloc := IRInstr { op: OP_ALLOCA, dest: ptr, arg1: size, arg2: 0, arg3: 0, str_val: node.str_val }
-    push(instrs, alloc)
+    instrs = append(instrs, alloc)
     set_vreg_type(ptr, TYPE_STRUCT)
     set_vreg_struct_name(ptr, node.str_val)
     gen_ir_store_struct_fields(ptr, node.str_val, ast_idx, nodes, instrs, st_names, st_vregs)
@@ -637,18 +637,18 @@ fn gen_ir_call_user(node: AstNode, ast_idx: int, nodes: []AstNode, instrs: []IRI
             arg_struct_name := get_vreg_struct_name(arg_vreg)
             if arg_struct_name != "" && struct_satisfies_interface(arg_struct_name, param_type_name) == 1 {
                 wrap := len(instrs)
-                push(instrs, IRInstr { op: OP_IFACE_WRAP, dest: wrap, arg1: arg_vreg, arg2: 0, arg3: 0, str_val: param_type_name + "." + arg_struct_name })
+                instrs = append(instrs, IRInstr { op: OP_IFACE_WRAP, dest: wrap, arg1: arg_vreg, arg2: 0, arg3: 0, str_val: param_type_name + "." + arg_struct_name })
                 set_vreg_type(wrap, TYPE_STRUCT)
                 set_vreg_struct_name(wrap, param_type_name)
                 record_vtable_pair(arg_struct_name, param_type_name)
                 arg_vreg = wrap
             }
         }
-        push(instrs, IRInstr { op: OP_ARG, dest: i, arg1: arg_vreg, arg2: -1, arg3: 0, str_val: "" })
+        instrs = append(instrs, IRInstr { op: OP_ARG, dest: i, arg1: arg_vreg, arg2: -1, arg3: 0, str_val: "" })
         i = i + 1
     }
     res := len(instrs)
-    push(instrs, IRInstr { op: OP_CALL, dest: res, arg1: 0, arg2: node.int_val, arg3: 0, str_val: call_name })
+    instrs = append(instrs, IRInstr { op: OP_CALL, dest: res, arg1: 0, arg2: node.int_val, arg3: 0, str_val: call_name })
     set_vreg_type(res, make_type(lookup_func_return_type(call_name), lookup_func_return_is_array(call_name)))
     set_vreg_struct_name(res, lookup_func_return_struct_name(call_name))
     return res
@@ -656,17 +656,17 @@ fn gen_ir_call_user(node: AstNode, ast_idx: int, nodes: []AstNode, instrs: []IRI
 
 fn gen_ir_method_call(recv_vreg: int, func_name: string, ast_idx: int, nodes: []AstNode, instrs: []IRInstr, st_n: []string, st_v: []int) -> int {
     // First argument is the receiver
-    push(instrs, IRInstr { op: OP_ARG, dest: 0, arg1: recv_vreg, arg2: -1, arg3: 0, str_val: "" })
+    instrs = append(instrs, IRInstr { op: OP_ARG, dest: 0, arg1: recv_vreg, arg2: -1, arg3: 0, str_val: "" })
     // Remaining arguments from the call
     args := gen_ir_eval_args(ast_idx, nodes, instrs, st_n, st_v)
     i := 0
     for i < len(args) {
-        push(instrs, IRInstr { op: OP_ARG, dest: i + 1, arg1: args[i], arg2: -1, arg3: 0, str_val: "" })
+        instrs = append(instrs, IRInstr { op: OP_ARG, dest: i + 1, arg1: args[i], arg2: -1, arg3: 0, str_val: "" })
         i = i + 1
     }
     res := len(instrs)
     arg_count := len(args) + 1
-    push(instrs, IRInstr { op: OP_CALL, dest: res, arg1: 0, arg2: arg_count, arg3: 0, str_val: func_name })
+    instrs = append(instrs, IRInstr { op: OP_CALL, dest: res, arg1: 0, arg2: arg_count, arg3: 0, str_val: func_name })
     set_vreg_type(res, make_type(lookup_func_return_type(func_name), lookup_func_return_is_array(func_name)))
     set_vreg_struct_name(res, lookup_func_return_struct_name(func_name))
     return res
@@ -723,13 +723,13 @@ fn gen_ir_binary(node: AstNode, nodes: []AstNode, instrs: []IRInstr, symtab_name
         // Promote int to float if needed
         if left_type != TYPE_FLOAT {
             conv := len(instrs)
-            push(instrs, IRInstr { op: OP_INT_TO_FLOAT, dest: conv, arg1: left_vreg, arg2: 0, arg3: 0, str_val: "" })
+            instrs = append(instrs, IRInstr { op: OP_INT_TO_FLOAT, dest: conv, arg1: left_vreg, arg2: 0, arg3: 0, str_val: "" })
             set_vreg_type(conv, TYPE_FLOAT)
             left_vreg = conv
         }
         if right_type != TYPE_FLOAT {
             conv := len(instrs)
-            push(instrs, IRInstr { op: OP_INT_TO_FLOAT, dest: conv, arg1: right_vreg, arg2: 0, arg3: 0, str_val: "" })
+            instrs = append(instrs, IRInstr { op: OP_INT_TO_FLOAT, dest: conv, arg1: right_vreg, arg2: 0, arg3: 0, str_val: "" })
             set_vreg_type(conv, TYPE_FLOAT)
             right_vreg = conv
         }
@@ -747,7 +747,7 @@ fn gen_ir_binary(node: AstNode, nodes: []AstNode, instrs: []IRInstr, symtab_name
         if node.int_val == TK_EQ { fop = OP_FCMP_EQ is_cmp = 1 }
         if node.int_val == TK_NE { fop = OP_FCMP_NE is_cmp = 1 }
         dest_vreg := len(instrs)
-        push(instrs, IRInstr { op: fop, dest: dest_vreg, arg1: left_vreg, arg2: right_vreg, arg3: 0, str_val: "" })
+        instrs = append(instrs, IRInstr { op: fop, dest: dest_vreg, arg1: left_vreg, arg2: right_vreg, arg3: 0, str_val: "" })
         if is_cmp == 1 {
             set_vreg_type(dest_vreg, TYPE_BOOL)
         } else {
@@ -757,7 +757,7 @@ fn gen_ir_binary(node: AstNode, nodes: []AstNode, instrs: []IRInstr, symtab_name
     }
     dest_vreg := len(instrs)
     instr := IRInstr { op: op, dest: dest_vreg, arg1: left_vreg, arg2: right_vreg, arg3: 0, str_val: "" }
-    push(instrs, instr)
+    instrs = append(instrs, instr)
     // Set result type: string concat → string, comparisons/logic → bool, arithmetic → int
     if op == OP_STR_CONCAT {
         set_vreg_type(dest_vreg, TYPE_STRING)
@@ -774,7 +774,7 @@ fn gen_ir_expr(node: AstNode, ast_idx: int, nodes: []AstNode, instrs: []IRInstr,
     if node.tag == EXPR_INT {
         vreg := len(instrs)
         instr := IRInstr { op: OP_LOADCONST, dest: vreg, arg1: node.int_val, arg2: 0, arg3: 0, str_val: "" }
-        push(instrs, instr)
+        instrs = append(instrs, instr)
         set_vreg_type(vreg, TYPE_INT)
         return vreg
     }
@@ -782,7 +782,7 @@ fn gen_ir_expr(node: AstNode, ast_idx: int, nodes: []AstNode, instrs: []IRInstr,
     if node.tag == EXPR_BOOL {
         vreg := len(instrs)
         instr := IRInstr { op: OP_LOADCONST, dest: vreg, arg1: node.int_val, arg2: 0, arg3: 0, str_val: "" }
-        push(instrs, instr)
+        instrs = append(instrs, instr)
         set_vreg_type(vreg, TYPE_BOOL)
         return vreg
     }
@@ -806,11 +806,11 @@ fn gen_ir_expr(node: AstNode, ast_idx: int, nodes: []AstNode, instrs: []IRInstr,
             vreg := len(instrs)
             if ctype == TYPE_STRING {
                 cstr := ConstStrValue(ci)
-                push(instrs, IRInstr { op: OP_LOADCONST, dest: vreg, arg1: 0, arg2: 0, arg3: 0, str_val: cstr })
+                instrs = append(instrs, IRInstr { op: OP_LOADCONST, dest: vreg, arg1: 0, arg2: 0, arg3: 0, str_val: cstr })
                 set_vreg_type(vreg, TYPE_STRING)
             } else {
                 cval := ConstIntValue(ci)
-                push(instrs, IRInstr { op: OP_LOADCONST, dest: vreg, arg1: cval, arg2: 0, arg3: 0, str_val: "" })
+                instrs = append(instrs, IRInstr { op: OP_LOADCONST, dest: vreg, arg1: cval, arg2: 0, arg3: 0, str_val: "" })
                 if ctype == TYPE_BOOL {
                     set_vreg_type(vreg, TYPE_BOOL)
                 } else {
@@ -827,11 +827,11 @@ fn gen_ir_expr(node: AstNode, ast_idx: int, nodes: []AstNode, instrs: []IRInstr,
                 gvar_type = g_global_var_types[gvar_idx]
             }
             vreg := len(instrs)
-            push(instrs, IRInstr { op: OP_LOAD_GLOBAL, dest: vreg, arg1: 0, arg2: 0, arg3: 0, str_val: node.str_val })
+            instrs = append(instrs, IRInstr { op: OP_LOAD_GLOBAL, dest: vreg, arg1: 0, arg2: 0, arg3: 0, str_val: node.str_val })
             if is_scalar_global(node.str_val) == 1 {
                 // For scalar globals, dereference the address to get the value
                 val_vreg := len(instrs)
-                push(instrs, IRInstr { op: OP_LOAD, dest: val_vreg, arg1: vreg, arg2: 0, arg3: 0, str_val: "" })
+                instrs = append(instrs, IRInstr { op: OP_LOAD, dest: val_vreg, arg1: vreg, arg2: 0, arg3: 0, str_val: "" })
                 set_vreg_type(val_vreg, gvar_type)
                 return val_vreg
             }
@@ -849,14 +849,14 @@ fn gen_ir_expr(node: AstNode, ast_idx: int, nodes: []AstNode, instrs: []IRInstr,
         vreg := len(instrs)
         // Store string index in arg1, use str_val to store the actual string for later embedding
         instr := IRInstr { op: OP_LOADCONST, dest: vreg, arg1: 0, arg2: 0, arg3: 0, str_val: node.str_val }
-        push(instrs, instr)
+        instrs = append(instrs, instr)
         set_vreg_type(vreg, TYPE_STRING)
         return vreg
     }
 
     if node.tag == EXPR_FLOAT {
         vreg := len(instrs)
-        push(instrs, IRInstr { op: OP_LOADFLOAT, dest: vreg, arg1: 0, arg2: 0, arg3: 0, str_val: node.str_val })
+        instrs = append(instrs, IRInstr { op: OP_LOADFLOAT, dest: vreg, arg1: 0, arg2: 0, arg3: 0, str_val: node.str_val })
         set_vreg_type(vreg, TYPE_FLOAT)
         return vreg
     }
@@ -874,22 +874,22 @@ fn gen_ir_stmt_ret(node: AstNode, ast_idx: int, nodes: []AstNode, instrs: []IRIn
         ri := 0
         for ri < len(expr_indices) {
             rv := gen_ir_from_ast_with_symtab(expr_indices[ri], nodes, instrs, st_n, st_v)
-            push(ret_vregs, rv)
+            ret_vregs = append(ret_vregs, rv)
             ri = ri + 1
         }
         // Allocate tuple: total * 8 bytes
         ptr := len(instrs)
-        push(instrs, IRInstr { op: OP_ALLOCA, dest: ptr, arg1: total * 8, arg2: 0, arg3: 0, str_val: "" })
+        instrs = append(instrs, IRInstr { op: OP_ALLOCA, dest: ptr, arg1: total * 8, arg2: 0, arg3: 0, str_val: "" })
         // Store each value at ptr + (i * 8)
         mri := 0
         for mri < len(ret_vregs) {
             addr := len(instrs)
-            push(instrs, IRInstr { op: OP_INDEXADDR, dest: addr, arg1: ptr, arg2: mri * 8, arg3: 0, str_val: "" })
-            push(instrs, IRInstr { op: OP_STORE, dest: -1, arg1: addr, arg2: ret_vregs[mri], arg3: 0, str_val: "" })
+            instrs = append(instrs, IRInstr { op: OP_INDEXADDR, dest: addr, arg1: ptr, arg2: mri * 8, arg3: 0, str_val: "" })
+            instrs = append(instrs, IRInstr { op: OP_STORE, dest: -1, arg1: addr, arg2: ret_vregs[mri], arg3: 0, str_val: "" })
             mri = mri + 1
         }
         set_vreg_type(ptr, TYPE_STRUCT)
-        push(instrs, IRInstr { op: OP_RET, dest: ptr, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
+        instrs = append(instrs, IRInstr { op: OP_RET, dest: ptr, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
         return ptr
     }
 
@@ -905,7 +905,7 @@ fn gen_ir_stmt_ret(node: AstNode, ast_idx: int, nodes: []AstNode, instrs: []IRIn
             val_struct_name := get_vreg_struct_name(v)
             if val_struct_name != "" && val_struct_name != ret_struct_name && struct_satisfies_interface(val_struct_name, ret_struct_name) == 1 {
                 wrap := len(instrs)
-                push(instrs, IRInstr { op: OP_IFACE_WRAP, dest: wrap, arg1: v, arg2: 0, arg3: 0, str_val: ret_struct_name + "." + val_struct_name })
+                instrs = append(instrs, IRInstr { op: OP_IFACE_WRAP, dest: wrap, arg1: v, arg2: 0, arg3: 0, str_val: ret_struct_name + "." + val_struct_name })
                 set_vreg_type(wrap, TYPE_STRUCT)
                 set_vreg_struct_name(wrap, ret_struct_name)
                 record_vtable_pair(val_struct_name, ret_struct_name)
@@ -913,7 +913,7 @@ fn gen_ir_stmt_ret(node: AstNode, ast_idx: int, nodes: []AstNode, instrs: []IRIn
             }
         }
     }
-    push(instrs, IRInstr { op: OP_RET, dest: v, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
+    instrs = append(instrs, IRInstr { op: OP_RET, dest: v, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
     return v
 }
 
@@ -923,11 +923,11 @@ fn gen_ir_stmt_let(node: AstNode, nodes: []AstNode, instrs: []IRInstr, st_n: []s
     // Always create a new vreg via COPY to prevent aliasing when init is a variable reference.
     // Without this, "end := pos" would map end to pos's vreg, and modifying end would corrupt pos.
     new_vreg := len(instrs)
-    push(instrs, IRInstr { op: OP_COPY, dest: new_vreg, arg1: v, arg2: 0, arg3: 0, str_val: "" })
+    instrs = append(instrs, IRInstr { op: OP_COPY, dest: new_vreg, arg1: v, arg2: 0, arg3: 0, str_val: "" })
     set_vreg_type(new_vreg, get_vreg_type(v))
     set_vreg_struct_name(new_vreg, get_vreg_struct_name(v))
-    push(st_n, node.str_val)
-    push(st_v, new_vreg)
+    st_n = append(st_n, node.str_val)
+    st_v = append(st_v, new_vreg)
     return new_vreg
 }
 
@@ -948,7 +948,7 @@ fn gen_ir_multi_let(node: AstNode, nodes: []AstNode, instrs: []IRInstr, st_n: []
         name_node := nodes[node.left + mli]
         // Load from tuple_vreg + (i * 8)
         load_vreg := len(instrs)
-        push(instrs, IRInstr { op: OP_LOAD, dest: load_vreg, arg1: tuple_vreg, arg2: mli * 8, arg3: 0, str_val: "" })
+        instrs = append(instrs, IRInstr { op: OP_LOAD, dest: load_vreg, arg1: tuple_vreg, arg2: mli * 8, arg3: 0, str_val: "" })
         elem_type := TYPE_UNKNOWN
         if call_name != "" {
             elem_type = lookup_func_return_tuple_type(call_name, mli)
@@ -956,10 +956,10 @@ fn gen_ir_multi_let(node: AstNode, nodes: []AstNode, instrs: []IRInstr, st_n: []
         set_vreg_type(load_vreg, elem_type)
         // Copy (same as gen_ir_stmt_let)
         new_vreg := len(instrs)
-        push(instrs, IRInstr { op: OP_COPY, dest: new_vreg, arg1: load_vreg, arg2: 0, arg3: 0, str_val: "" })
+        instrs = append(instrs, IRInstr { op: OP_COPY, dest: new_vreg, arg1: load_vreg, arg2: 0, arg3: 0, str_val: "" })
         set_vreg_type(new_vreg, elem_type)
-        push(st_n, name_node.str_val)
-        push(st_v, new_vreg)
+        st_n = append(st_n, name_node.str_val)
+        st_v = append(st_v, new_vreg)
         mli = mli + 1
     }
     return tuple_vreg
@@ -990,12 +990,12 @@ fn gen_ir_stmt_assign(node: AstNode, nodes: []AstNode, instrs: []IRInstr, st_n: 
         // Global variable - emit store through address
         if is_scalar_global(target_name) == 1 {
             addr_vreg := len(instrs)
-            push(instrs, IRInstr { op: OP_LOAD_GLOBAL, dest: addr_vreg, arg1: 0, arg2: 0, arg3: 0, str_val: target_name })
-            push(instrs, IRInstr { op: OP_STORE, dest: -1, arg1: addr_vreg, arg2: val_vreg, arg3: 0, str_val: "" })
+            instrs = append(instrs, IRInstr { op: OP_LOAD_GLOBAL, dest: addr_vreg, arg1: 0, arg2: 0, arg3: 0, str_val: target_name })
+            instrs = append(instrs, IRInstr { op: OP_STORE, dest: -1, arg1: addr_vreg, arg2: val_vreg, arg3: 0, str_val: "" })
         }
     } else if var_vreg >= 0 && var_vreg != val_vreg {
         // Emit copy from result vreg to variable vreg
-        push(instrs, IRInstr { op: OP_COPY, dest: var_vreg, arg1: val_vreg, arg2: 0, arg3: 0, str_val: "" })
+        instrs = append(instrs, IRInstr { op: OP_COPY, dest: var_vreg, arg1: val_vreg, arg2: 0, arg3: 0, str_val: "" })
     }
     return val_vreg
 }
@@ -1010,11 +1010,11 @@ fn gen_ir_index_assign(node: AstNode, nodes: []AstNode, instrs: []IRInstr, st_n:
     // Map index assignment: m["key"] = val → OP_MAP_SET
     if get_vreg_type(arr_vreg) == TYPE_MAP {
         res := len(instrs)
-        push(instrs, IRInstr { op: OP_MAP_SET, dest: res, arg1: arr_vreg, arg2: index_vreg, arg3: val_vreg, str_val: "" })
+        instrs = append(instrs, IRInstr { op: OP_MAP_SET, dest: res, arg1: arr_vreg, arg2: index_vreg, arg3: val_vreg, str_val: "" })
         set_vreg_type(res, TYPE_INT)
         return res
     }
-    push(instrs, IRInstr { op: OP_STORE_INDEX, dest: -1, arg1: arr_vreg, arg2: index_vreg, arg3: val_vreg, str_val: "" })
+    instrs = append(instrs, IRInstr { op: OP_STORE_INDEX, dest: -1, arg1: arr_vreg, arg2: index_vreg, arg3: val_vreg, str_val: "" })
     return val_vreg
 }
 
@@ -1024,8 +1024,8 @@ fn gen_ir_field_assign(node: AstNode, nodes: []AstNode, instrs: []IRInstr, st_n:
     val_vreg := gen_ir_from_ast_with_symtab(node.right, nodes, instrs, st_n, st_v)
     off := get_field_offset(node.str_val)
     addr := len(instrs)
-    push(instrs, IRInstr { op: OP_INDEXADDR, dest: addr, arg1: base_vreg, arg2: off, arg3: 0, str_val: "" })
-    push(instrs, IRInstr { op: OP_STORE, dest: -1, arg1: addr, arg2: val_vreg, arg3: 0, str_val: "" })
+    instrs = append(instrs, IRInstr { op: OP_INDEXADDR, dest: addr, arg1: base_vreg, arg2: off, arg3: 0, str_val: "" })
+    instrs = append(instrs, IRInstr { op: OP_STORE, dest: -1, arg1: addr, arg2: val_vreg, arg3: 0, str_val: "" })
     return val_vreg
 }
 
@@ -1036,12 +1036,12 @@ fn gen_ir_stmt_if(node: AstNode, nodes: []AstNode, instrs: []IRInstr, st_n: []st
     g_next_label = g_next_label + 1
     en := g_next_label
     g_next_label = g_next_label + 1
-    push(instrs, IRInstr { op: OP_BRANCH, dest: c, arg1: el, arg2: 0, arg3: 0, str_val: "" })
+    instrs = append(instrs, IRInstr { op: OP_BRANCH, dest: c, arg1: el, arg2: 0, arg3: 0, str_val: "" })
     if node.right >= 0 { gen_ir_from_ast_with_symtab(node.right, nodes, instrs, st_n, st_v) }
-    push(instrs, IRInstr { op: OP_JUMP, dest: en, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
-    push(instrs, IRInstr { op: OP_LABEL, dest: el, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
+    instrs = append(instrs, IRInstr { op: OP_JUMP, dest: en, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
+    instrs = append(instrs, IRInstr { op: OP_LABEL, dest: el, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
     if node.extra >= 0 { gen_ir_from_ast_with_symtab(node.extra, nodes, instrs, st_n, st_v) }
-    push(instrs, IRInstr { op: OP_LABEL, dest: en, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
+    instrs = append(instrs, IRInstr { op: OP_LABEL, dest: en, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
     return 0
 }
 
@@ -1057,10 +1057,10 @@ fn gen_ir_stmt_for(n: AstNode, nodes: []AstNode, instrs: []IRInstr, st_n: []stri
 
             // Initialize loop variable with a copy of start
             loop_vreg := len(instrs)
-            push(instrs, IRInstr { op: OP_COPY, dest: loop_vreg, arg1: start_vreg, arg2: 0, arg3: 0, str_val: "" })
+            instrs = append(instrs, IRInstr { op: OP_COPY, dest: loop_vreg, arg1: start_vreg, arg2: 0, arg3: 0, str_val: "" })
             set_vreg_type(loop_vreg, TYPE_INT)
-            push(st_n, n.str_val)
-            push(st_v, loop_vreg)
+            st_n = append(st_n, n.str_val)
+            st_v = append(st_v, loop_vreg)
 
             s := g_next_label
             g_next_label = g_next_label + 1
@@ -1068,10 +1068,10 @@ fn gen_ir_stmt_for(n: AstNode, nodes: []AstNode, instrs: []IRInstr, st_n: []stri
             g_next_label = g_next_label + 1
 
             // Loop header: compare loop_vreg < end_vreg
-            push(instrs, IRInstr { op: OP_LABEL, dest: s, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
+            instrs = append(instrs, IRInstr { op: OP_LABEL, dest: s, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
             cmp_vreg := len(instrs)
-            push(instrs, IRInstr { op: OP_CMP_LT, dest: cmp_vreg, arg1: loop_vreg, arg2: end_vreg, arg3: 0, str_val: "" })
-            push(instrs, IRInstr { op: OP_BRANCH, dest: cmp_vreg, arg1: e, arg2: 0, arg3: 0, str_val: "" })
+            instrs = append(instrs, IRInstr { op: OP_CMP_LT, dest: cmp_vreg, arg1: loop_vreg, arg2: end_vreg, arg3: 0, str_val: "" })
+            instrs = append(instrs, IRInstr { op: OP_BRANCH, dest: cmp_vreg, arg1: e, arg2: 0, arg3: 0, str_val: "" })
 
             // Body
             saved_break := g_break_label
@@ -1081,13 +1081,13 @@ fn gen_ir_stmt_for(n: AstNode, nodes: []AstNode, instrs: []IRInstr, st_n: []stri
 
             // Increment: loop_vreg = loop_vreg + 1
             one_vreg := len(instrs)
-            push(instrs, IRInstr { op: OP_LOADCONST, dest: one_vreg, arg1: 1, arg2: 0, arg3: 0, str_val: "" })
+            instrs = append(instrs, IRInstr { op: OP_LOADCONST, dest: one_vreg, arg1: 1, arg2: 0, arg3: 0, str_val: "" })
             inc_vreg := len(instrs)
-            push(instrs, IRInstr { op: OP_ADD, dest: inc_vreg, arg1: loop_vreg, arg2: one_vreg, arg3: 0, str_val: "" })
-            push(instrs, IRInstr { op: OP_COPY, dest: loop_vreg, arg1: inc_vreg, arg2: 0, arg3: 0, str_val: "" })
+            instrs = append(instrs, IRInstr { op: OP_ADD, dest: inc_vreg, arg1: loop_vreg, arg2: one_vreg, arg3: 0, str_val: "" })
+            instrs = append(instrs, IRInstr { op: OP_COPY, dest: loop_vreg, arg1: inc_vreg, arg2: 0, arg3: 0, str_val: "" })
 
-            push(instrs, IRInstr { op: OP_JUMP, dest: s, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
-            push(instrs, IRInstr { op: OP_LABEL, dest: e, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
+            instrs = append(instrs, IRInstr { op: OP_JUMP, dest: s, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
+            instrs = append(instrs, IRInstr { op: OP_LABEL, dest: e, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
             return 0
         }
 
@@ -1096,14 +1096,14 @@ fn gen_ir_stmt_for(n: AstNode, nodes: []AstNode, instrs: []IRInstr, st_n: []stri
 
         // Get array length
         len_vreg := len(instrs)
-        push(instrs, IRInstr { op: OP_ARRAY_LEN, dest: len_vreg, arg1: arr_vreg, arg2: 0, arg3: 0, str_val: "" })
+        instrs = append(instrs, IRInstr { op: OP_ARRAY_LEN, dest: len_vreg, arg1: arr_vreg, arg2: 0, arg3: 0, str_val: "" })
         set_vreg_type(len_vreg, TYPE_INT)
 
         // Hidden index counter, initialized to 0
         zero_vreg := len(instrs)
-        push(instrs, IRInstr { op: OP_LOADCONST, dest: zero_vreg, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
+        instrs = append(instrs, IRInstr { op: OP_LOADCONST, dest: zero_vreg, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
         idx_vreg := len(instrs)
-        push(instrs, IRInstr { op: OP_COPY, dest: idx_vreg, arg1: zero_vreg, arg2: 0, arg3: 0, str_val: "" })
+        instrs = append(instrs, IRInstr { op: OP_COPY, dest: idx_vreg, arg1: zero_vreg, arg2: 0, arg3: 0, str_val: "" })
         set_vreg_type(idx_vreg, TYPE_INT)
 
         // Derive element type from array type
@@ -1114,10 +1114,10 @@ fn gen_ir_stmt_for(n: AstNode, nodes: []AstNode, instrs: []IRInstr, st_n: []stri
 
         // Loop variable (dummy initial value, updated each iteration)
         elem_vreg := len(instrs)
-        push(instrs, IRInstr { op: OP_COPY, dest: elem_vreg, arg1: zero_vreg, arg2: 0, arg3: 0, str_val: "" })
+        instrs = append(instrs, IRInstr { op: OP_COPY, dest: elem_vreg, arg1: zero_vreg, arg2: 0, arg3: 0, str_val: "" })
         set_vreg_type(elem_vreg, elem_type)
-        push(st_n, n.str_val)
-        push(st_v, elem_vreg)
+        st_n = append(st_n, n.str_val)
+        st_v = append(st_v, elem_vreg)
 
         s := g_next_label
         g_next_label = g_next_label + 1
@@ -1125,16 +1125,16 @@ fn gen_ir_stmt_for(n: AstNode, nodes: []AstNode, instrs: []IRInstr, st_n: []stri
         g_next_label = g_next_label + 1
 
         // Loop header: compare idx < len
-        push(instrs, IRInstr { op: OP_LABEL, dest: s, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
+        instrs = append(instrs, IRInstr { op: OP_LABEL, dest: s, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
         cmp_vreg := len(instrs)
-        push(instrs, IRInstr { op: OP_CMP_LT, dest: cmp_vreg, arg1: idx_vreg, arg2: len_vreg, arg3: 0, str_val: "" })
-        push(instrs, IRInstr { op: OP_BRANCH, dest: cmp_vreg, arg1: e, arg2: 0, arg3: 0, str_val: "" })
+        instrs = append(instrs, IRInstr { op: OP_CMP_LT, dest: cmp_vreg, arg1: idx_vreg, arg2: len_vreg, arg3: 0, str_val: "" })
+        instrs = append(instrs, IRInstr { op: OP_BRANCH, dest: cmp_vreg, arg1: e, arg2: 0, arg3: 0, str_val: "" })
 
         // Load current element: elem = arr[idx]
         load_vreg := len(instrs)
-        push(instrs, IRInstr { op: OP_LOAD, dest: load_vreg, arg1: arr_vreg, arg2: idx_vreg, arg3: 0, str_val: "array_index" })
+        instrs = append(instrs, IRInstr { op: OP_LOAD, dest: load_vreg, arg1: arr_vreg, arg2: idx_vreg, arg3: 0, str_val: "array_index" })
         set_vreg_type(load_vreg, elem_type)
-        push(instrs, IRInstr { op: OP_COPY, dest: elem_vreg, arg1: load_vreg, arg2: 0, arg3: 0, str_val: "" })
+        instrs = append(instrs, IRInstr { op: OP_COPY, dest: elem_vreg, arg1: load_vreg, arg2: 0, arg3: 0, str_val: "" })
 
         // Body
         saved_break := g_break_label
@@ -1144,13 +1144,13 @@ fn gen_ir_stmt_for(n: AstNode, nodes: []AstNode, instrs: []IRInstr, st_n: []stri
 
         // Increment hidden index: idx = idx + 1
         one_vreg := len(instrs)
-        push(instrs, IRInstr { op: OP_LOADCONST, dest: one_vreg, arg1: 1, arg2: 0, arg3: 0, str_val: "" })
+        instrs = append(instrs, IRInstr { op: OP_LOADCONST, dest: one_vreg, arg1: 1, arg2: 0, arg3: 0, str_val: "" })
         inc_vreg := len(instrs)
-        push(instrs, IRInstr { op: OP_ADD, dest: inc_vreg, arg1: idx_vreg, arg2: one_vreg, arg3: 0, str_val: "" })
-        push(instrs, IRInstr { op: OP_COPY, dest: idx_vreg, arg1: inc_vreg, arg2: 0, arg3: 0, str_val: "" })
+        instrs = append(instrs, IRInstr { op: OP_ADD, dest: inc_vreg, arg1: idx_vreg, arg2: one_vreg, arg3: 0, str_val: "" })
+        instrs = append(instrs, IRInstr { op: OP_COPY, dest: idx_vreg, arg1: inc_vreg, arg2: 0, arg3: 0, str_val: "" })
 
-        push(instrs, IRInstr { op: OP_JUMP, dest: s, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
-        push(instrs, IRInstr { op: OP_LABEL, dest: e, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
+        instrs = append(instrs, IRInstr { op: OP_JUMP, dest: s, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
+        instrs = append(instrs, IRInstr { op: OP_LABEL, dest: e, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
         return 0
     }
 
@@ -1159,19 +1159,19 @@ fn gen_ir_stmt_for(n: AstNode, nodes: []AstNode, instrs: []IRInstr, st_n: []stri
     g_next_label = g_next_label + 1
     e := g_next_label
     g_next_label = g_next_label + 1
-    push(instrs, IRInstr { op: OP_LABEL, dest: s, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
+    instrs = append(instrs, IRInstr { op: OP_LABEL, dest: s, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
     if n.left >= 0 {
         c := gen_ir_from_ast_with_symtab(n.left, nodes, instrs, st_n, st_v)
         if c < 0 { return -1 }
-        push(instrs, IRInstr { op: OP_BRANCH, dest: c, arg1: e, arg2: 0, arg3: 0, str_val: "" })
+        instrs = append(instrs, IRInstr { op: OP_BRANCH, dest: c, arg1: e, arg2: 0, arg3: 0, str_val: "" })
     }
     // Save/restore break label for proper nesting
     saved_break := g_break_label
     g_break_label = e
     if n.right >= 0 { gen_ir_from_ast_with_symtab(n.right, nodes, instrs, st_n, st_v) }
     g_break_label = saved_break
-    push(instrs, IRInstr { op: OP_JUMP, dest: s, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
-    push(instrs, IRInstr { op: OP_LABEL, dest: e, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
+    instrs = append(instrs, IRInstr { op: OP_JUMP, dest: s, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
+    instrs = append(instrs, IRInstr { op: OP_LABEL, dest: e, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
     return 0
 }
 
@@ -1190,11 +1190,11 @@ fn gen_ir_stmt_block(node: AstNode, nodes: []AstNode, instrs: []IRInstr, st_n: [
         if scan_tag == STMT_MATCH {
             // Mark matched expression and all nodes from first_arm to the match node as children
             scan_node := nodes[scan_i]
-            if scan_node.left >= 0 { push(child_indices, scan_node.left) }
+            if scan_node.left >= 0 { child_indices = append(child_indices, scan_node.left) }
             // Mark everything between first_arm and the match node itself
             mark_i := scan_node.right
             for mark_i < scan_i {
-                push(child_indices, mark_i)
+                child_indices = append(child_indices, mark_i)
                 mark_i = mark_i + 1
             }
         }
@@ -1204,7 +1204,7 @@ fn gen_ir_stmt_block(node: AstNode, nodes: []AstNode, instrs: []IRInstr, st_n: [
             if scan_node.left >= 0 {
                 mark_i := scan_node.left
                 for mark_i < scan_i {
-                    push(child_indices, mark_i)
+                    child_indices = append(child_indices, mark_i)
                     mark_i = mark_i + 1
                 }
             }
@@ -1212,9 +1212,9 @@ fn gen_ir_stmt_block(node: AstNode, nodes: []AstNode, instrs: []IRInstr, st_n: [
         if scan_tag == STMT_IF || scan_tag == STMT_FOR {
             scan_node := nodes[scan_i]
             // Mark direct children
-            if scan_node.left >= 0 { push(child_indices, scan_node.left) }
+            if scan_node.left >= 0 { child_indices = append(child_indices, scan_node.left) }
             if scan_node.right >= 0 {
-                push(child_indices, scan_node.right)
+                child_indices = append(child_indices, scan_node.right)
                 // If child is a block, also mark all nodes in that block's range
                 if scan_node.right < len(nodes) {
                     child_node := nodes[scan_node.right]
@@ -1222,14 +1222,14 @@ fn gen_ir_stmt_block(node: AstNode, nodes: []AstNode, instrs: []IRInstr, st_n: [
                         block_i := child_node.left
                         block_e := child_node.right + 1
                         for block_i < block_e {
-                            push(child_indices, block_i)
+                            child_indices = append(child_indices, block_i)
                             block_i = block_i + 1
                         }
                     }
                 }
             }
             if scan_node.extra >= 0 {
-                push(child_indices, scan_node.extra)
+                child_indices = append(child_indices, scan_node.extra)
                 // If child is a block, also mark all nodes in that block's range
                 if scan_node.extra < len(nodes) {
                     child_node := nodes[scan_node.extra]
@@ -1237,7 +1237,7 @@ fn gen_ir_stmt_block(node: AstNode, nodes: []AstNode, instrs: []IRInstr, st_n: [
                         block_i := child_node.left
                         block_e := child_node.right + 1
                         for block_i < block_e {
-                            push(child_indices, block_i)
+                            child_indices = append(child_indices, block_i)
                             block_i = block_i + 1
                         }
                     }
@@ -1305,15 +1305,15 @@ fn gen_ir_enum_variant(node: AstNode, ast_idx: int, nodes: []AstNode, instrs: []
     // Allocate consistent size for the enum type
     alloc_size := enum_max_size(ename)
     size_vreg := len(instrs)
-    push(instrs, IRInstr { op: OP_LOADCONST, dest: size_vreg, arg1: alloc_size, arg2: 0, arg3: 0, str_val: "" })
+    instrs = append(instrs, IRInstr { op: OP_LOADCONST, dest: size_vreg, arg1: alloc_size, arg2: 0, arg3: 0, str_val: "" })
     ptr := len(instrs)
-    push(instrs, IRInstr { op: OP_HEAP_ALLOC, dest: ptr, arg1: size_vreg, arg2: 0, arg3: 0, str_val: "" })
+    instrs = append(instrs, IRInstr { op: OP_HEAP_ALLOC, dest: ptr, arg1: size_vreg, arg2: 0, arg3: 0, str_val: "" })
 
     // Store tag at offset 0
     tag_val := enum_tag(ename, vname)
     tag_vreg := len(instrs)
-    push(instrs, IRInstr { op: OP_LOADCONST, dest: tag_vreg, arg1: tag_val, arg2: 0, arg3: 0, str_val: "" })
-    push(instrs, IRInstr { op: OP_STORE, dest: -1, arg1: ptr, arg2: tag_vreg, arg3: 0, str_val: "" })
+    instrs = append(instrs, IRInstr { op: OP_LOADCONST, dest: tag_vreg, arg1: tag_val, arg2: 0, arg3: 0, str_val: "" })
+    instrs = append(instrs, IRInstr { op: OP_STORE, dest: -1, arg1: ptr, arg2: tag_vreg, arg3: 0, str_val: "" })
 
     // Store field values
     field_vals := get_struct_fields(ast_idx)
@@ -1323,8 +1323,8 @@ fn gen_ir_enum_variant(node: AstNode, ast_idx: int, nodes: []AstNode, instrs: []
         foff := enum_variant_field_offset(ename, vname, fname)
         v := gen_ir_from_ast_with_symtab(field_vals[fi], nodes, instrs, st_n, st_v)
         addr := len(instrs)
-        push(instrs, IRInstr { op: OP_INDEXADDR, dest: addr, arg1: ptr, arg2: foff, arg3: 0, str_val: "" })
-        push(instrs, IRInstr { op: OP_STORE, dest: -1, arg1: addr, arg2: v, arg3: 0, str_val: "" })
+        instrs = append(instrs, IRInstr { op: OP_INDEXADDR, dest: addr, arg1: ptr, arg2: foff, arg3: 0, str_val: "" })
+        instrs = append(instrs, IRInstr { op: OP_STORE, dest: -1, arg1: addr, arg2: v, arg3: 0, str_val: "" })
         fi = fi + 1
     }
 
@@ -1348,16 +1348,16 @@ fn gen_ir_try_expr(node: AstNode, nodes: []AstNode, instrs: []IRInstr, st_n: []s
 
     // Load tag from expr at offset 0
     tag_vreg := len(instrs)
-    push(instrs, IRInstr { op: OP_LOAD, dest: tag_vreg, arg1: expr_vreg, arg2: 0, arg3: 0, str_val: "" })
+    instrs = append(instrs, IRInstr { op: OP_LOAD, dest: tag_vreg, arg1: expr_vreg, arg2: 0, arg3: 0, str_val: "" })
 
     // Load success tag constant
     success_tag := enum_tag(ename, success_variant)
     tag_const := len(instrs)
-    push(instrs, IRInstr { op: OP_LOADCONST, dest: tag_const, arg1: success_tag, arg2: 0, arg3: 0, str_val: "" })
+    instrs = append(instrs, IRInstr { op: OP_LOADCONST, dest: tag_const, arg1: success_tag, arg2: 0, arg3: 0, str_val: "" })
 
     // Compare: tag == success_tag
     cmp_vreg := len(instrs)
-    push(instrs, IRInstr { op: OP_CMP_EQ, dest: cmp_vreg, arg1: tag_vreg, arg2: tag_const, arg3: 0, str_val: "" })
+    instrs = append(instrs, IRInstr { op: OP_CMP_EQ, dest: cmp_vreg, arg1: tag_vreg, arg2: tag_const, arg3: 0, str_val: "" })
 
     // Branch to error_label if cmp == 0 (tag != success_tag)
     error_label := g_next_label
@@ -1365,28 +1365,28 @@ fn gen_ir_try_expr(node: AstNode, nodes: []AstNode, instrs: []IRInstr, st_n: []s
     continue_label := g_next_label
     g_next_label = g_next_label + 1
 
-    push(instrs, IRInstr { op: OP_BRANCH, dest: cmp_vreg, arg1: error_label, arg2: 0, arg3: 0, str_val: "" })
+    instrs = append(instrs, IRInstr { op: OP_BRANCH, dest: cmp_vreg, arg1: error_label, arg2: 0, arg3: 0, str_val: "" })
 
     // OK path: extract "value" field
     foff := enum_variant_field_offset(ename, success_variant, "value")
     addr_vreg := len(instrs)
-    push(instrs, IRInstr { op: OP_INDEXADDR, dest: addr_vreg, arg1: expr_vreg, arg2: foff, arg3: 0, str_val: "" })
+    instrs = append(instrs, IRInstr { op: OP_INDEXADDR, dest: addr_vreg, arg1: expr_vreg, arg2: foff, arg3: 0, str_val: "" })
     value_vreg := len(instrs)
-    push(instrs, IRInstr { op: OP_LOAD, dest: value_vreg, arg1: addr_vreg, arg2: 0, arg3: 0, str_val: "" })
+    instrs = append(instrs, IRInstr { op: OP_LOAD, dest: value_vreg, arg1: addr_vreg, arg2: 0, arg3: 0, str_val: "" })
 
     // Set type of extracted value
     ftype := enum_variant_field_type(ename, success_variant, "value")
     set_vreg_type(value_vreg, ftype)
 
     // Jump to continue
-    push(instrs, IRInstr { op: OP_JUMP, dest: continue_label, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
+    instrs = append(instrs, IRInstr { op: OP_JUMP, dest: continue_label, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
 
     // Error path: early return with the enum value
-    push(instrs, IRInstr { op: OP_LABEL, dest: error_label, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
-    push(instrs, IRInstr { op: OP_RET, dest: expr_vreg, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
+    instrs = append(instrs, IRInstr { op: OP_LABEL, dest: error_label, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
+    instrs = append(instrs, IRInstr { op: OP_RET, dest: expr_vreg, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
 
     // Continue label
-    push(instrs, IRInstr { op: OP_LABEL, dest: continue_label, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
+    instrs = append(instrs, IRInstr { op: OP_LABEL, dest: continue_label, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
 
     return value_vreg
 }
@@ -1397,11 +1397,11 @@ fn gen_ir_match(node: AstNode, nodes: []AstNode, instrs: []IRInstr, st_n: []stri
 
     // Load tag from offset 0
     tag_vreg := len(instrs)
-    push(instrs, IRInstr { op: OP_LOAD, dest: tag_vreg, arg1: match_ptr, arg2: 0, arg3: 0, str_val: "" })
+    instrs = append(instrs, IRInstr { op: OP_LOAD, dest: tag_vreg, arg1: match_ptr, arg2: 0, arg3: 0, str_val: "" })
 
     // Allocate result vreg
     result_vreg := len(instrs)
-    push(instrs, IRInstr { op: OP_LOADCONST, dest: result_vreg, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
+    instrs = append(instrs, IRInstr { op: OP_LOADCONST, dest: result_vreg, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
 
     match_end_label := g_next_label
     g_next_label = g_next_label + 1
@@ -1412,7 +1412,7 @@ fn gen_ir_match(node: AstNode, nodes: []AstNode, instrs: []IRInstr, st_n: []stri
     nodes_count := len(nodes)
     for scan < nodes_count {
         if nodes[scan].tag == STMT_MATCH_ARM {
-            push(arm_indices, scan)
+            arm_indices = append(arm_indices, scan)
             if len(arm_indices) == node.int_val { break }
         }
         scan = scan + 1
@@ -1429,15 +1429,15 @@ fn gen_ir_match(node: AstNode, nodes: []AstNode, instrs: []IRInstr, st_n: []stri
         // Compare tag
         arm_tag := enum_tag(ename, vname)
         tag_const := len(instrs)
-        push(instrs, IRInstr { op: OP_LOADCONST, dest: tag_const, arg1: arm_tag, arg2: 0, arg3: 0, str_val: "" })
+        instrs = append(instrs, IRInstr { op: OP_LOADCONST, dest: tag_const, arg1: arm_tag, arg2: 0, arg3: 0, str_val: "" })
         cmp := len(instrs)
-        push(instrs, IRInstr { op: OP_CMP_EQ, dest: cmp, arg1: tag_vreg, arg2: tag_const, arg3: 0, str_val: "" })
+        instrs = append(instrs, IRInstr { op: OP_CMP_EQ, dest: cmp, arg1: tag_vreg, arg2: tag_const, arg3: 0, str_val: "" })
 
         next_arm_label := g_next_label
         g_next_label = g_next_label + 1
 
         // Branch: CBZ semantics — jump to next_arm_label if cmp==0 (not equal)
-        push(instrs, IRInstr { op: OP_BRANCH, dest: cmp, arg1: next_arm_label, arg2: 0, arg3: 0, str_val: "" })
+        instrs = append(instrs, IRInstr { op: OP_BRANCH, dest: cmp, arg1: next_arm_label, arg2: 0, arg3: 0, str_val: "" })
 
         // Bind fields: load from match_ptr and add to symtab
         binding_names := get_match_arm_bindings(arm_idx)
@@ -1446,11 +1446,11 @@ fn gen_ir_match(node: AstNode, nodes: []AstNode, instrs: []IRInstr, st_n: []stri
             bname := binding_names[bi]
             foff := enum_variant_field_offset(ename, vname, bname)
             addr := len(instrs)
-            push(instrs, IRInstr { op: OP_INDEXADDR, dest: addr, arg1: match_ptr, arg2: foff, arg3: 0, str_val: "" })
+            instrs = append(instrs, IRInstr { op: OP_INDEXADDR, dest: addr, arg1: match_ptr, arg2: foff, arg3: 0, str_val: "" })
             val := len(instrs)
-            push(instrs, IRInstr { op: OP_LOAD, dest: val, arg1: addr, arg2: 0, arg3: 0, str_val: "" })
-            push(st_n, bname)
-            push(st_v, val)
+            instrs = append(instrs, IRInstr { op: OP_LOAD, dest: val, arg1: addr, arg2: 0, arg3: 0, str_val: "" })
+            st_n = append(st_n, bname)
+            st_v = append(st_v, val)
             ftype := enum_variant_field_type(ename, vname, bname)
             set_vreg_type(val, ftype)
             bi = bi + 1
@@ -1460,19 +1460,19 @@ fn gen_ir_match(node: AstNode, nodes: []AstNode, instrs: []IRInstr, st_n: []stri
         body_result := gen_ir_from_ast_with_symtab(arm.left, nodes, instrs, st_n, st_v)
 
         // Copy result
-        push(instrs, IRInstr { op: OP_COPY, dest: result_vreg, arg1: body_result, arg2: 0, arg3: 0, str_val: "" })
+        instrs = append(instrs, IRInstr { op: OP_COPY, dest: result_vreg, arg1: body_result, arg2: 0, arg3: 0, str_val: "" })
 
         // Jump to end
-        push(instrs, IRInstr { op: OP_JUMP, dest: match_end_label, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
+        instrs = append(instrs, IRInstr { op: OP_JUMP, dest: match_end_label, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
 
         // Next arm label
-        push(instrs, IRInstr { op: OP_LABEL, dest: next_arm_label, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
+        instrs = append(instrs, IRInstr { op: OP_LABEL, dest: next_arm_label, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
 
         ai = ai + 1
     }
 
     // Match end label
-    push(instrs, IRInstr { op: OP_LABEL, dest: match_end_label, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
+    instrs = append(instrs, IRInstr { op: OP_LABEL, dest: match_end_label, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
 
     // Set result type from last arm body (all arms should produce same type)
     set_vreg_type(result_vreg, get_vreg_type(body_result))
@@ -1499,12 +1499,12 @@ fn gen_ir_from_ast_with_symtab(ast_idx: int, nodes: []AstNode, instrs: []IRInstr
         }
         vreg := len(instrs)
         if inner_type == TYPE_FLOAT {
-            push(instrs, IRInstr { op: OP_FLOAT_TO_STR, dest: vreg, arg1: inner_vreg, arg2: 0, arg3: 0, str_val: "" })
+            instrs = append(instrs, IRInstr { op: OP_FLOAT_TO_STR, dest: vreg, arg1: inner_vreg, arg2: 0, arg3: 0, str_val: "" })
         } else {
             if inner_type == TYPE_BOOL {
-                push(instrs, IRInstr { op: OP_BOOL_TO_STR, dest: vreg, arg1: inner_vreg, arg2: 0, arg3: 0, str_val: "" })
+                instrs = append(instrs, IRInstr { op: OP_BOOL_TO_STR, dest: vreg, arg1: inner_vreg, arg2: 0, arg3: 0, str_val: "" })
             } else {
-                push(instrs, IRInstr { op: OP_INT_TO_STR, dest: vreg, arg1: inner_vreg, arg2: 0, arg3: 0, str_val: "" })
+                instrs = append(instrs, IRInstr { op: OP_INT_TO_STR, dest: vreg, arg1: inner_vreg, arg2: 0, arg3: 0, str_val: "" })
             }
         }
         set_vreg_type(vreg, TYPE_STRING)
@@ -1517,27 +1517,27 @@ fn gen_ir_from_ast_with_symtab(ast_idx: int, nodes: []AstNode, instrs: []IRInstr
             if get_vreg_type(operand) == TYPE_FLOAT {
                 // Float unary minus: 0.0 - operand
                 zero_vreg := len(instrs)
-                push(instrs, IRInstr { op: OP_LOADFLOAT, dest: zero_vreg, arg1: 0, arg2: 0, arg3: 0, str_val: "0.0" })
+                instrs = append(instrs, IRInstr { op: OP_LOADFLOAT, dest: zero_vreg, arg1: 0, arg2: 0, arg3: 0, str_val: "0.0" })
                 set_vreg_type(zero_vreg, TYPE_FLOAT)
                 result_vreg := len(instrs)
-                push(instrs, IRInstr { op: OP_FSUB, dest: result_vreg, arg1: zero_vreg, arg2: operand, arg3: 0, str_val: "" })
+                instrs = append(instrs, IRInstr { op: OP_FSUB, dest: result_vreg, arg1: zero_vreg, arg2: operand, arg3: 0, str_val: "" })
                 set_vreg_type(result_vreg, TYPE_FLOAT)
                 return result_vreg
             }
             // Int unary minus: 0 - operand
             zero_vreg := len(instrs)
-            push(instrs, IRInstr { op: OP_LOADCONST, dest: zero_vreg, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
+            instrs = append(instrs, IRInstr { op: OP_LOADCONST, dest: zero_vreg, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
             result_vreg := len(instrs)
-            push(instrs, IRInstr { op: OP_SUB, dest: result_vreg, arg1: zero_vreg, arg2: operand, arg3: 0, str_val: "" })
+            instrs = append(instrs, IRInstr { op: OP_SUB, dest: result_vreg, arg1: zero_vreg, arg2: operand, arg3: 0, str_val: "" })
             set_vreg_type(result_vreg, TYPE_INT)
             return result_vreg
         }
         if node.int_val == TK_NOT {
             // Logical NOT: operand == 0
             zero_vreg := len(instrs)
-            push(instrs, IRInstr { op: OP_LOADCONST, dest: zero_vreg, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
+            instrs = append(instrs, IRInstr { op: OP_LOADCONST, dest: zero_vreg, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
             result_vreg := len(instrs)
-            push(instrs, IRInstr { op: OP_CMP_EQ, dest: result_vreg, arg1: operand, arg2: zero_vreg, arg3: 0, str_val: "" })
+            instrs = append(instrs, IRInstr { op: OP_CMP_EQ, dest: result_vreg, arg1: operand, arg2: zero_vreg, arg3: 0, str_val: "" })
             set_vreg_type(result_vreg, TYPE_BOOL)
             return result_vreg
         }
@@ -1570,7 +1570,7 @@ fn gen_ir_from_ast_with_symtab(ast_idx: int, nodes: []AstNode, instrs: []IRInstr
         if func_name == "len" {
             return gen_ir_call_len(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
         }
-        if func_name == "push" {
+        if func_name == "append" {
             return gen_ir_call_push(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
         }
         if func_name == "poke" {
@@ -1619,33 +1619,33 @@ fn gen_ir_from_ast_with_symtab(ast_idx: int, nodes: []AstNode, instrs: []IRInstr
             return gen_ir_call_list_dir(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
         }
         if func_name == "test_fail" {
-            push(instrs, IRInstr { op: OP_TEST_FAIL, dest: -1, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
+            instrs = append(instrs, IRInstr { op: OP_TEST_FAIL, dest: -1, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
             return -1
         }
         if func_name == "time_wallclock_nanos" {
             dest := len(instrs)
-            push(instrs, IRInstr { op: OP_TIME_WALLCLOCK, dest: dest, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
+            instrs = append(instrs, IRInstr { op: OP_TIME_WALLCLOCK, dest: dest, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
             set_vreg_type(dest, TYPE_INT)
             return dest
         }
         if func_name == "strconv.FloatToStr" {
             arg_vregs := gen_ir_eval_args(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
             dest := len(instrs)
-            push(instrs, IRInstr { op: OP_FLOAT_TO_STR, dest: dest, arg1: arg_vregs[0], arg2: 0, arg3: 0, str_val: "" })
+            instrs = append(instrs, IRInstr { op: OP_FLOAT_TO_STR, dest: dest, arg1: arg_vregs[0], arg2: 0, arg3: 0, str_val: "" })
             set_vreg_type(dest, TYPE_STRING)
             return dest
         }
         if func_name == "strconv.IntToFloat" {
             arg_vregs := gen_ir_eval_args(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
             dest := len(instrs)
-            push(instrs, IRInstr { op: OP_INT_TO_FLOAT, dest: dest, arg1: arg_vregs[0], arg2: 0, arg3: 0, str_val: "" })
+            instrs = append(instrs, IRInstr { op: OP_INT_TO_FLOAT, dest: dest, arg1: arg_vregs[0], arg2: 0, arg3: 0, str_val: "" })
             set_vreg_type(dest, TYPE_FLOAT)
             return dest
         }
         if func_name == "strconv.FloatToInt" {
             arg_vregs := gen_ir_eval_args(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
             dest := len(instrs)
-            push(instrs, IRInstr { op: OP_FLOAT_TO_INT, dest: dest, arg1: arg_vregs[0], arg2: 0, arg3: 0, str_val: "" })
+            instrs = append(instrs, IRInstr { op: OP_FLOAT_TO_INT, dest: dest, arg1: arg_vregs[0], arg2: 0, arg3: 0, str_val: "" })
             set_vreg_type(dest, TYPE_INT)
             return dest
         }
@@ -1672,16 +1672,16 @@ fn gen_ir_from_ast_with_symtab(ast_idx: int, nodes: []AstNode, instrs: []IRInstr
                         vtable_idx := iface_method_index(struct_name, method_name)
                         if vtable_idx >= 0 {
                             // Emit OP_ARG for interface value + remaining args
-                            push(instrs, IRInstr { op: OP_ARG, dest: 0, arg1: recv_vreg, arg2: -1, arg3: 0, str_val: "" })
+                            instrs = append(instrs, IRInstr { op: OP_ARG, dest: 0, arg1: recv_vreg, arg2: -1, arg3: 0, str_val: "" })
                             ic_args := gen_ir_eval_args(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
                             ic_ai := 0
                             for ic_ai < len(ic_args) {
-                                push(instrs, IRInstr { op: OP_ARG, dest: ic_ai + 1, arg1: ic_args[ic_ai], arg2: -1, arg3: 0, str_val: "" })
+                                instrs = append(instrs, IRInstr { op: OP_ARG, dest: ic_ai + 1, arg1: ic_args[ic_ai], arg2: -1, arg3: 0, str_val: "" })
                                 ic_ai = ic_ai + 1
                             }
                             ic_total_args := len(ic_args) + 1
                             ic_res := len(instrs)
-                            push(instrs, IRInstr { op: OP_IFACE_CALL, dest: ic_res, arg1: vtable_idx, arg2: ic_total_args, arg3: 0, str_val: struct_name })
+                            instrs = append(instrs, IRInstr { op: OP_IFACE_CALL, dest: ic_res, arg1: vtable_idx, arg2: ic_total_args, arg3: 0, str_val: struct_name })
                             // Set return type from interface method signature
                             ic_ret := iface_method_ret_type(struct_name, vtable_idx)
                             ic_ret_arr := iface_method_ret_is_array(struct_name, vtable_idx)
@@ -1704,7 +1704,7 @@ fn gen_ir_from_ast_with_symtab(ast_idx: int, nodes: []AstNode, instrs: []IRInstr
         map_type := node.str_val
         kt_code := map_key_type_code(map_type)
         result_vreg := len(instrs)
-        push(instrs, IRInstr { op: OP_MAP_NEW, dest: result_vreg, arg1: kt_code, arg2: 0, arg3: 0, str_val: "" })
+        instrs = append(instrs, IRInstr { op: OP_MAP_NEW, dest: result_vreg, arg1: kt_code, arg2: 0, arg3: 0, str_val: "" })
         set_vreg_type(result_vreg, TYPE_MAP)
         set_vreg_struct_name(result_vreg, map_type)
         return result_vreg
@@ -1784,7 +1784,7 @@ fn gen_ir_from_ast_with_symtab(ast_idx: int, nodes: []AstNode, instrs: []IRInstr
     if node.tag == STMT_BREAK {
         // Use global break label (set by gen_ir_stmt_for with save/restore)
         if g_break_label >= 0 {
-            push(instrs, IRInstr { op: OP_JUMP, dest: g_break_label, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
+            instrs = append(instrs, IRInstr { op: OP_JUMP, dest: g_break_label, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
         }
         return 0
     }
@@ -1809,8 +1809,8 @@ fn gen_ir_from_ast_with_symtab(ast_idx: int, nodes: []AstNode, instrs: []IRInstr
                 param_node := nodes[param_i]
                 if param_node.tag == DECL_PARAM {
                     // Add parameter to symbol table
-                    push(symtab_names, param_node.str_val)
-                    push(symtab_vregs, param_reg)
+                    symtab_names = append(symtab_names, param_node.str_val)
+                    symtab_vregs = append(symtab_vregs, param_reg)
                     ptype := make_type(param_node.type_tag, param_node.int_val)
                     set_vreg_type(param_reg, ptype)
                     // Set struct name for struct/map-typed params
@@ -1836,13 +1836,13 @@ fn gen_ir_from_ast_with_symtab(ast_idx: int, nodes: []AstNode, instrs: []IRInstr
                 for cap_i < cap_count {
                     cap_name := sema.ClosureCaptureName(node.str_val, cap_i)
                     addr_vreg := len(instrs)
-                    push(instrs, IRInstr { op: OP_INDEXADDR, dest: addr_vreg, arg1: env_reg, arg2: cap_i * 8, arg3: 0, str_val: "" })
+                    instrs = append(instrs, IRInstr { op: OP_INDEXADDR, dest: addr_vreg, arg1: env_reg, arg2: cap_i * 8, arg3: 0, str_val: "" })
                     set_vreg_type(addr_vreg, TYPE_INT)
                     val_vreg := len(instrs)
-                    push(instrs, IRInstr { op: OP_LOAD, dest: val_vreg, arg1: addr_vreg, arg2: 0, arg3: 0, str_val: "" })
+                    instrs = append(instrs, IRInstr { op: OP_LOAD, dest: val_vreg, arg1: addr_vreg, arg2: 0, arg3: 0, str_val: "" })
                     set_vreg_type(val_vreg, TYPE_INT)
-                    push(symtab_names, cap_name)
-                    push(symtab_vregs, val_vreg)
+                    symtab_names = append(symtab_names, cap_name)
+                    symtab_vregs = append(symtab_vregs, val_vreg)
                     cap_i = cap_i + 1
                 }
             }
@@ -1871,10 +1871,10 @@ fn gen_ir_closure(node: AstNode, nodes: []AstNode, instrs: []IRInstr, st_n: []st
         // Allocate environment: num_captures * 8 bytes
         env_size := len(capture_names) * 8
         size_vreg := len(instrs)
-        push(instrs, IRInstr { op: OP_LOADCONST, dest: size_vreg, arg1: env_size, arg2: 0, arg3: 0, str_val: "" })
+        instrs = append(instrs, IRInstr { op: OP_LOADCONST, dest: size_vreg, arg1: env_size, arg2: 0, arg3: 0, str_val: "" })
         set_vreg_type(size_vreg, TYPE_INT)
         env_vreg = len(instrs)
-        push(instrs, IRInstr { op: OP_HEAP_ALLOC, dest: env_vreg, arg1: size_vreg, arg2: 0, arg3: 0, str_val: "" })
+        instrs = append(instrs, IRInstr { op: OP_HEAP_ALLOC, dest: env_vreg, arg1: size_vreg, arg2: 0, arg3: 0, str_val: "" })
         set_vreg_type(env_vreg, TYPE_INT)
         // Store each captured variable into the environment
         ci := 0
@@ -1882,9 +1882,9 @@ fn gen_ir_closure(node: AstNode, nodes: []AstNode, instrs: []IRInstr, st_n: []st
             cap_vreg := symtab_lookup_linear(st_n, st_v, capture_names[ci])
             if cap_vreg >= 0 || cap_vreg <= -1000 {
                 addr_vreg := len(instrs)
-                push(instrs, IRInstr { op: OP_INDEXADDR, dest: addr_vreg, arg1: env_vreg, arg2: ci * 8, arg3: 0, str_val: "" })
+                instrs = append(instrs, IRInstr { op: OP_INDEXADDR, dest: addr_vreg, arg1: env_vreg, arg2: ci * 8, arg3: 0, str_val: "" })
                 set_vreg_type(addr_vreg, TYPE_INT)
-                push(instrs, IRInstr { op: OP_STORE, dest: addr_vreg, arg1: addr_vreg, arg2: cap_vreg, arg3: 0, str_val: "" })
+                instrs = append(instrs, IRInstr { op: OP_STORE, dest: addr_vreg, arg1: addr_vreg, arg2: cap_vreg, arg3: 0, str_val: "" })
             }
             ci = ci + 1
         }
@@ -1893,7 +1893,7 @@ fn gen_ir_closure(node: AstNode, nodes: []AstNode, instrs: []IRInstr, st_n: []st
     }
     // Emit OP_CLOSURE_NEW
     res := len(instrs)
-    push(instrs, IRInstr { op: OP_CLOSURE_NEW, dest: res, arg1: env_vreg, arg2: 0, arg3: 0, str_val: cl_name })
+    instrs = append(instrs, IRInstr { op: OP_CLOSURE_NEW, dest: res, arg1: env_vreg, arg2: 0, arg3: 0, str_val: cl_name })
     set_vreg_type(res, TYPE_CLOSURE)
     return res
 }
@@ -1913,11 +1913,11 @@ fn gen_ir_closure_call(closure_vreg: int, ast_idx: int, nodes: []AstNode, instrs
     // Emit OP_ARG for each user argument
     i := 0
     for i < len(args) {
-        push(instrs, IRInstr { op: OP_ARG, dest: i, arg1: args[i], arg2: -1, arg3: 0, str_val: "" })
+        instrs = append(instrs, IRInstr { op: OP_ARG, dest: i, arg1: args[i], arg2: -1, arg3: 0, str_val: "" })
         i = i + 1
     }
     res := len(instrs)
-    push(instrs, IRInstr { op: OP_CLOSURE_CALL, dest: res, arg1: closure_vreg, arg2: len(args), arg3: 0, str_val: "" })
+    instrs = append(instrs, IRInstr { op: OP_CLOSURE_CALL, dest: res, arg1: closure_vreg, arg2: len(args), arg3: 0, str_val: "" })
     set_vreg_type(res, TYPE_INT)
     return res
 }
@@ -1932,7 +1932,7 @@ fn analyze_captures(closure_node: AstNode, nodes: []AstNode, enclosing_names: []
         pi := closure_node.left
         for pi < len(nodes) {
             if nodes[pi].tag == DECL_PARAM {
-                push(param_names, nodes[pi].str_val)
+                param_names = append(param_names, nodes[pi].str_val)
             } else {
                 break
             }
@@ -1965,7 +1965,7 @@ fn collect_ident_refs(idx: int, nodes: []AstNode, params: []string, enclosing: [
         ei := 0
         for ei < len(enclosing) {
             if enclosing[ei] == name {
-                push(captures, name)
+                captures = append(captures, name)
                 return
             }
             ei = ei + 1

@@ -34,115 +34,115 @@ g_parse_pos := 0
 fn New() -> Doc {
     doc_id := g_doc_count
     g_doc_count = g_doc_count + 1
-    push(g_doc_is_array, 0)
+    g_doc_is_array = append(g_doc_is_array, 0)
     return Doc { id: doc_id }
 }
 
 fn NewArray() -> Doc {
     doc_id := g_doc_count
     g_doc_count = g_doc_count + 1
-    push(g_doc_is_array, 1)
+    g_doc_is_array = append(g_doc_is_array, 1)
     return Doc { id: doc_id }
 }
 
 // --- Object setters ---
 
 fn (d: Doc) SetString(key: string, val: string) {
-    push(g_entry_doc, d.id)
-    push(g_entry_key, key)
-    push(g_entry_type, json_string)
-    push(g_entry_str, val)
-    push(g_entry_int, 0)
+    g_entry_doc = append(g_entry_doc, d.id)
+    g_entry_key = append(g_entry_key, key)
+    g_entry_type = append(g_entry_type, json_string)
+    g_entry_str = append(g_entry_str, val)
+    g_entry_int = append(g_entry_int, 0)
 }
 
 fn (d: Doc) SetInt(key: string, val: int) {
-    push(g_entry_doc, d.id)
-    push(g_entry_key, key)
-    push(g_entry_type, json_int)
-    push(g_entry_str, "")
-    push(g_entry_int, val)
+    g_entry_doc = append(g_entry_doc, d.id)
+    g_entry_key = append(g_entry_key, key)
+    g_entry_type = append(g_entry_type, json_int)
+    g_entry_str = append(g_entry_str, "")
+    g_entry_int = append(g_entry_int, val)
 }
 
 fn (d: Doc) SetBool(key: string, val: int) {
-    push(g_entry_doc, d.id)
-    push(g_entry_key, key)
-    push(g_entry_type, json_bool)
-    push(g_entry_str, "")
-    push(g_entry_int, val)
+    g_entry_doc = append(g_entry_doc, d.id)
+    g_entry_key = append(g_entry_key, key)
+    g_entry_type = append(g_entry_type, json_bool)
+    g_entry_str = append(g_entry_str, "")
+    g_entry_int = append(g_entry_int, val)
 }
 
 fn (d: Doc) SetNull(key: string) {
-    push(g_entry_doc, d.id)
-    push(g_entry_key, key)
-    push(g_entry_type, json_null)
-    push(g_entry_str, "")
-    push(g_entry_int, 0)
+    g_entry_doc = append(g_entry_doc, d.id)
+    g_entry_key = append(g_entry_key, key)
+    g_entry_type = append(g_entry_type, json_null)
+    g_entry_str = append(g_entry_str, "")
+    g_entry_int = append(g_entry_int, 0)
 }
 
 fn (d: Doc) SetObject(key: string, child: Doc) {
-    push(g_entry_doc, d.id)
-    push(g_entry_key, key)
-    push(g_entry_type, json_object)
-    push(g_entry_str, "")
-    push(g_entry_int, child.id)
+    g_entry_doc = append(g_entry_doc, d.id)
+    g_entry_key = append(g_entry_key, key)
+    g_entry_type = append(g_entry_type, json_object)
+    g_entry_str = append(g_entry_str, "")
+    g_entry_int = append(g_entry_int, child.id)
 }
 
 fn (d: Doc) SetArray(key: string, child: Doc) {
-    push(g_entry_doc, d.id)
-    push(g_entry_key, key)
-    push(g_entry_type, json_array)
-    push(g_entry_str, "")
-    push(g_entry_int, child.id)
+    g_entry_doc = append(g_entry_doc, d.id)
+    g_entry_key = append(g_entry_key, key)
+    g_entry_type = append(g_entry_type, json_array)
+    g_entry_str = append(g_entry_str, "")
+    g_entry_int = append(g_entry_int, child.id)
 }
 
 // --- Array pushers ---
 
 fn (d: Doc) PushString(val: string) {
-    push(g_entry_doc, d.id)
-    push(g_entry_key, "")
-    push(g_entry_type, json_string)
-    push(g_entry_str, val)
-    push(g_entry_int, 0)
+    g_entry_doc = append(g_entry_doc, d.id)
+    g_entry_key = append(g_entry_key, "")
+    g_entry_type = append(g_entry_type, json_string)
+    g_entry_str = append(g_entry_str, val)
+    g_entry_int = append(g_entry_int, 0)
 }
 
 fn (d: Doc) PushInt(val: int) {
-    push(g_entry_doc, d.id)
-    push(g_entry_key, "")
-    push(g_entry_type, json_int)
-    push(g_entry_str, "")
-    push(g_entry_int, val)
+    g_entry_doc = append(g_entry_doc, d.id)
+    g_entry_key = append(g_entry_key, "")
+    g_entry_type = append(g_entry_type, json_int)
+    g_entry_str = append(g_entry_str, "")
+    g_entry_int = append(g_entry_int, val)
 }
 
 fn (d: Doc) PushBool(val: int) {
-    push(g_entry_doc, d.id)
-    push(g_entry_key, "")
-    push(g_entry_type, json_bool)
-    push(g_entry_str, "")
-    push(g_entry_int, val)
+    g_entry_doc = append(g_entry_doc, d.id)
+    g_entry_key = append(g_entry_key, "")
+    g_entry_type = append(g_entry_type, json_bool)
+    g_entry_str = append(g_entry_str, "")
+    g_entry_int = append(g_entry_int, val)
 }
 
 fn (d: Doc) PushNull() {
-    push(g_entry_doc, d.id)
-    push(g_entry_key, "")
-    push(g_entry_type, json_null)
-    push(g_entry_str, "")
-    push(g_entry_int, 0)
+    g_entry_doc = append(g_entry_doc, d.id)
+    g_entry_key = append(g_entry_key, "")
+    g_entry_type = append(g_entry_type, json_null)
+    g_entry_str = append(g_entry_str, "")
+    g_entry_int = append(g_entry_int, 0)
 }
 
 fn (d: Doc) PushObject(child: Doc) {
-    push(g_entry_doc, d.id)
-    push(g_entry_key, "")
-    push(g_entry_type, json_object)
-    push(g_entry_str, "")
-    push(g_entry_int, child.id)
+    g_entry_doc = append(g_entry_doc, d.id)
+    g_entry_key = append(g_entry_key, "")
+    g_entry_type = append(g_entry_type, json_object)
+    g_entry_str = append(g_entry_str, "")
+    g_entry_int = append(g_entry_int, child.id)
 }
 
 fn (d: Doc) PushArray(child: Doc) {
-    push(g_entry_doc, d.id)
-    push(g_entry_key, "")
-    push(g_entry_type, json_array)
-    push(g_entry_str, "")
-    push(g_entry_int, child.id)
+    g_entry_doc = append(g_entry_doc, d.id)
+    g_entry_key = append(g_entry_key, "")
+    g_entry_type = append(g_entry_type, json_array)
+    g_entry_str = append(g_entry_str, "")
+    g_entry_int = append(g_entry_int, child.id)
 }
 
 // --- Object getters ---
@@ -491,11 +491,11 @@ fn parseValue(input: string, pos: int) -> Doc {
         val := parseStringVal(input, p)
         doc := New()
         // Store as single-value doc: push a string entry with empty key
-        push(g_entry_doc, doc.id)
-        push(g_entry_key, "")
-        push(g_entry_type, json_string)
-        push(g_entry_str, val)
-        push(g_entry_int, 0)
+        g_entry_doc = append(g_entry_doc, doc.id)
+        g_entry_key = append(g_entry_key, "")
+        g_entry_type = append(g_entry_type, json_string)
+        g_entry_str = append(g_entry_str, val)
+        g_entry_int = append(g_entry_int, 0)
         return doc
     }
 
@@ -503,11 +503,11 @@ fn parseValue(input: string, pos: int) -> Doc {
     if ch >= 48 && ch <= 57 || ch == 45 {
         val := parseNumber(input, p)
         doc := New()
-        push(g_entry_doc, doc.id)
-        push(g_entry_key, "")
-        push(g_entry_type, json_int)
-        push(g_entry_str, "")
-        push(g_entry_int, val)
+        g_entry_doc = append(g_entry_doc, doc.id)
+        g_entry_key = append(g_entry_key, "")
+        g_entry_type = append(g_entry_type, json_int)
+        g_entry_str = append(g_entry_str, "")
+        g_entry_int = append(g_entry_int, val)
         return doc
     }
 
@@ -515,11 +515,11 @@ fn parseValue(input: string, pos: int) -> Doc {
     if ch == 116 {
         g_parse_pos = p + 4
         doc := New()
-        push(g_entry_doc, doc.id)
-        push(g_entry_key, "")
-        push(g_entry_type, json_bool)
-        push(g_entry_str, "")
-        push(g_entry_int, 1)
+        g_entry_doc = append(g_entry_doc, doc.id)
+        g_entry_key = append(g_entry_key, "")
+        g_entry_type = append(g_entry_type, json_bool)
+        g_entry_str = append(g_entry_str, "")
+        g_entry_int = append(g_entry_int, 1)
         return doc
     }
 
@@ -527,11 +527,11 @@ fn parseValue(input: string, pos: int) -> Doc {
     if ch == 102 {
         g_parse_pos = p + 5
         doc := New()
-        push(g_entry_doc, doc.id)
-        push(g_entry_key, "")
-        push(g_entry_type, json_bool)
-        push(g_entry_str, "")
-        push(g_entry_int, 0)
+        g_entry_doc = append(g_entry_doc, doc.id)
+        g_entry_key = append(g_entry_key, "")
+        g_entry_type = append(g_entry_type, json_bool)
+        g_entry_str = append(g_entry_str, "")
+        g_entry_int = append(g_entry_int, 0)
         return doc
     }
 
@@ -539,11 +539,11 @@ fn parseValue(input: string, pos: int) -> Doc {
     if ch == 110 {
         g_parse_pos = p + 4
         doc := New()
-        push(g_entry_doc, doc.id)
-        push(g_entry_key, "")
-        push(g_entry_type, json_null)
-        push(g_entry_str, "")
-        push(g_entry_int, 0)
+        g_entry_doc = append(g_entry_doc, doc.id)
+        g_entry_key = append(g_entry_key, "")
+        g_entry_type = append(g_entry_type, json_null)
+        g_entry_str = append(g_entry_str, "")
+        g_entry_int = append(g_entry_int, 0)
         return doc
     }
 

@@ -86,7 +86,7 @@ fn add_unique(arr: []int, val: int) {
         if arr[i] == val { return }
         i = i + 1
     }
-    push(arr, val)
+    arr = append(arr, val)
 }
 
 fn tmp_name(ti: int, sub: int) -> string {
@@ -348,8 +348,8 @@ fn emit_llvm_ir(instrs: []IRInstr, output_path: string) -> int {
     for si < len(instrs) {
         if instrs[si].op == OP_LOADCONST {
             if instrs[si].str_val != "" {
-                push(string_table, instrs[si].str_val)
-                push(string_dests, instrs[si].dest)
+                string_table = append(string_table, instrs[si].str_val)
+                string_dests = append(string_dests, instrs[si].dest)
             }
         }
         si = si + 1
@@ -384,7 +384,7 @@ fn emit_llvm_ir(instrs: []IRInstr, output_path: string) -> int {
                 gj = gj + 1
             }
             if found == 0 {
-                push(global_names, gname)
+                global_names = append(global_names, gname)
             }
         }
         gi = gi + 1
@@ -1143,7 +1143,7 @@ fn emit_llvm_function(fd: int, instrs: []IRInstr, start: int, end_pos: int, func
 
         if terminated == 0 && instr.op == OP_ARG {
             // Collect argument for next call
-            push(call_args, instr.arg1)
+            call_args = append(call_args, instr.arg1)
         }
 
         if terminated == 0 && instr.op == OP_CALL {
@@ -1450,7 +1450,7 @@ fn print_hex(val: int) {
     digits := []int{}
     hex_i := 0
     for hex_i < 8 {
-        push(digits, v - ((v / 16) * 16))
+        digits = append(digits, v - ((v / 16) * 16))
         v = v / 16
         hex_i = hex_i + 1
     }

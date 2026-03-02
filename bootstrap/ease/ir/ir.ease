@@ -25,8 +25,8 @@ fn symtab_new() -> SymbolTable {
 }
 
 fn symtab_add(st: SymbolTable, name: string, vreg: int) {
-    push(st.names, name)
-    push(st.vregs, vreg)
+    st.names = append(st.names, name)
+    st.vregs = append(st.vregs, vreg)
 }
 
 fn symtab_lookup(st: SymbolTable, name: string) -> int {
@@ -139,12 +139,12 @@ g_struct_reg_field_starts := []int{}
 g_struct_reg_field_names := []string{}
 
 fn RegisterStruct(name: string, field_names: []string) {
-    push(g_struct_reg_names, name)
-    push(g_struct_reg_field_counts, len(field_names))
-    push(g_struct_reg_field_starts, len(g_struct_reg_field_names))
+    g_struct_reg_names = append(g_struct_reg_names, name)
+    g_struct_reg_field_counts = append(g_struct_reg_field_counts, len(field_names))
+    g_struct_reg_field_starts = append(g_struct_reg_field_starts, len(g_struct_reg_field_names))
     i := 0
     for i < len(field_names) {
-        push(g_struct_reg_field_names, field_names[i])
+        g_struct_reg_field_names = append(g_struct_reg_field_names, field_names[i])
         i = i + 1
     }
 }
@@ -227,7 +227,7 @@ fn get_struct_field_names(name: string) -> []string {
             result := []string{}
             fi := 0
             for fi < count {
-                push(result, g_struct_reg_field_names[start + fi])
+                result = append(result, g_struct_reg_field_names[start + fi])
                 fi = fi + 1
             }
             return result
@@ -248,14 +248,14 @@ g_enum_variant_field_names := []string{}
 g_enum_variant_field_types := []int{}
 
 fn RegisterEnum(name: string, variants: []string, field_counts: []int, field_names: []string, field_types: []int) {
-    push(g_enum_names, name)
-    push(g_enum_variant_counts, len(variants))
-    push(g_enum_variant_starts, len(g_enum_variant_names))
+    g_enum_names = append(g_enum_names, name)
+    g_enum_variant_counts = append(g_enum_variant_counts, len(variants))
+    g_enum_variant_starts = append(g_enum_variant_starts, len(g_enum_variant_names))
     vi := 0
     for vi < len(variants) {
-        push(g_enum_variant_names, variants[vi])
-        push(g_enum_variant_field_counts, field_counts[vi])
-        push(g_enum_variant_field_starts, len(g_enum_variant_field_names))
+        g_enum_variant_names = append(g_enum_variant_names, variants[vi])
+        g_enum_variant_field_counts = append(g_enum_variant_field_counts, field_counts[vi])
+        g_enum_variant_field_starts = append(g_enum_variant_field_starts, len(g_enum_variant_field_names))
         // Copy field names for this variant
         fi := 0
         for fi < field_counts[vi] {
@@ -266,8 +266,8 @@ fn RegisterEnum(name: string, variants: []string, field_counts: []int, field_nam
                 offset = offset + field_counts[oi]
                 oi = oi + 1
             }
-            push(g_enum_variant_field_names, field_names[offset + fi])
-            push(g_enum_variant_field_types, field_types[offset + fi])
+            g_enum_variant_field_names = append(g_enum_variant_field_names, field_names[offset + fi])
+            g_enum_variant_field_types = append(g_enum_variant_field_types, field_types[offset + fi])
             fi = fi + 1
         }
         vi = vi + 1
@@ -427,15 +427,15 @@ g_iface_method_ret_types := []int{}
 g_iface_method_ret_is_array := []int{}
 
 fn RegisterInterface(name: string, method_names: []string, param_counts: []int, ret_types: []int, ret_is_arrays: []int) {
-    push(g_iface_names, name)
-    push(g_iface_method_counts, len(method_names))
-    push(g_iface_method_starts, len(g_iface_method_names))
+    g_iface_names = append(g_iface_names, name)
+    g_iface_method_counts = append(g_iface_method_counts, len(method_names))
+    g_iface_method_starts = append(g_iface_method_starts, len(g_iface_method_names))
     i := 0
     for i < len(method_names) {
-        push(g_iface_method_names, method_names[i])
-        push(g_iface_method_param_counts, param_counts[i])
-        push(g_iface_method_ret_types, ret_types[i])
-        push(g_iface_method_ret_is_array, ret_is_arrays[i])
+        g_iface_method_names = append(g_iface_method_names, method_names[i])
+        g_iface_method_param_counts = append(g_iface_method_param_counts, param_counts[i])
+        g_iface_method_ret_types = append(g_iface_method_ret_types, ret_types[i])
+        g_iface_method_ret_is_array = append(g_iface_method_ret_is_array, ret_is_arrays[i])
         i = i + 1
     }
 }
@@ -542,16 +542,16 @@ g_extern_param_types := []int{}    // flat array of param types
 g_extern_ret_types := []int{}      // return type constant
 
 fn RegisterExtern(ease_name: string, c_name: string, param_count: int, param_types: []int, ret_type: int) {
-    push(g_extern_names, ease_name)
-    push(g_extern_c_names, c_name)
-    push(g_extern_param_counts, param_count)
-    push(g_extern_param_starts, len(g_extern_param_types))
+    g_extern_names = append(g_extern_names, ease_name)
+    g_extern_c_names = append(g_extern_c_names, c_name)
+    g_extern_param_counts = append(g_extern_param_counts, param_count)
+    g_extern_param_starts = append(g_extern_param_starts, len(g_extern_param_types))
     i := 0
     for i < param_count {
-        push(g_extern_param_types, param_types[i])
+        g_extern_param_types = append(g_extern_param_types, param_types[i])
         i = i + 1
     }
-    push(g_extern_ret_types, ret_type)
+    g_extern_ret_types = append(g_extern_ret_types, ret_type)
 }
 
 fn extern_count() -> int {

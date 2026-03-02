@@ -77,7 +77,7 @@ fn parse_colonequal_stmt(src: string, pos: int, nodes: []AstNode) -> ParseResult
         extra: -1,
         type_tag: TYPE_UNKNOWN
     }
-    push(nodes, stmt)
+    nodes = append(nodes, stmt)
     return ParseResult { node_idx: len(nodes) - 1, new_pos: p }
 }
 
@@ -146,7 +146,7 @@ fn parse_if_stmt(src: string, pos: int, nodes: []AstNode) -> ParseResult {
         extra: else_node,
         type_tag: TYPE_UNKNOWN
     }
-    push(nodes, stmt)
+    nodes = append(nodes, stmt)
     return ParseResult { node_idx: len(nodes) - 1, new_pos: p }
 }
 
@@ -225,7 +225,7 @@ fn parse_for_stmt(src: string, pos: int, nodes: []AstNode) -> ParseResult {
         extra: -1,
         type_tag: TYPE_UNKNOWN
     }
-    push(nodes, stmt)
+    nodes = append(nodes, stmt)
     return ParseResult { node_idx: len(nodes) - 1, new_pos: p }
 }
 
@@ -258,7 +258,7 @@ fn parse_return_stmt(src: string, pos: int, nodes: []AstNode) -> ParseResult {
             p = lex_skip(src, p)
             next_result := parse_expr_with_pos(src, p, nodes)
             if next_result.node_idx < 0 { break }
-            push(extra_exprs, next_result.node_idx)
+            extra_exprs = append(extra_exprs, next_result.node_idx)
             p = next_result.new_pos
             p = lex_skip(src, p)
         }
@@ -266,10 +266,10 @@ fn parse_return_stmt(src: string, pos: int, nodes: []AstNode) -> ParseResult {
         if len(extra_exprs) > 0 {
             extra_count = len(extra_exprs)
             all_exprs := []int{}
-            push(all_exprs, expr_node)
+            all_exprs = append(all_exprs, expr_node)
             ei := 0
             for ei < len(extra_exprs) {
-                push(all_exprs, extra_exprs[ei])
+                all_exprs = append(all_exprs, extra_exprs[ei])
                 ei = ei + 1
             }
             // Store expression indices using upcoming node index
@@ -288,7 +288,7 @@ fn parse_return_stmt(src: string, pos: int, nodes: []AstNode) -> ParseResult {
         extra: -1,
         type_tag: TYPE_UNKNOWN
     }
-    push(nodes, stmt)
+    nodes = append(nodes, stmt)
     return ParseResult { node_idx: len(nodes) - 1, new_pos: p }
 }
 
@@ -331,7 +331,7 @@ fn parse_assign_stmt(src: string, pos: int, nodes: []AstNode) -> ParseResult {
         extra: -1,
         type_tag: TYPE_UNKNOWN
     }
-    push(nodes, stmt)
+    nodes = append(nodes, stmt)
     return ParseResult { node_idx: len(nodes) - 1, new_pos: p }
 }
 
@@ -368,7 +368,7 @@ fn parse_stmt(src: string, pos: int, nodes: []AstNode) -> ParseResult {
             extra: -1,
             type_tag: TYPE_UNKNOWN
         }
-        push(nodes, stmt)
+        nodes = append(nodes, stmt)
         return ParseResult { node_idx: len(nodes) - 1, new_pos: p }
     }
 
@@ -386,12 +386,12 @@ fn parse_stmt(src: string, pos: int, nodes: []AstNode) -> ParseResult {
         if next_kind == TK_COMMA {
             // Multi-variable declaration: a, b, c := expr
             ml_names := []string{}
-            push(ml_names, first_name)
+            ml_names = append(ml_names, first_name)
             for lex_kind(src, p) == TK_COMMA {
                 p = lex_end(src, p, TK_COMMA)
                 p = lex_skip(src, p)
                 if lex_kind(src, p) != TK_IDENT { break }
-                push(ml_names, lex_string_value(src, p, TK_IDENT))
+                ml_names = append(ml_names, lex_string_value(src, p, TK_IDENT))
                 p = lex_end(src, p, TK_IDENT)
                 p = lex_skip(src, p)
             }
@@ -417,7 +417,7 @@ fn parse_stmt(src: string, pos: int, nodes: []AstNode) -> ParseResult {
                         extra: -1,
                         type_tag: TYPE_UNKNOWN
                     }
-                    push(nodes, ml_stmt)
+                    nodes = append(nodes, ml_stmt)
                     return ParseResult { node_idx: len(nodes) - 1, new_pos: ml_rhs.new_pos }
                 }
             }
@@ -456,7 +456,7 @@ fn parse_stmt(src: string, pos: int, nodes: []AstNode) -> ParseResult {
                             extra: -1,
                             type_tag: TYPE_UNKNOWN
                         }
-                        push(nodes, fa_node)
+                        nodes = append(nodes, fa_node)
                         return ParseResult { node_idx: len(nodes) - 1, new_pos: rhs_result.new_pos }
                     }
                 }
@@ -470,7 +470,7 @@ fn parse_stmt(src: string, pos: int, nodes: []AstNode) -> ParseResult {
                     extra: -1,
                     type_tag: TYPE_UNKNOWN
                 }
-                push(nodes, stmt)
+                nodes = append(nodes, stmt)
                 return ParseResult { node_idx: len(nodes) - 1, new_pos: p }
             }
             p = saved_pos
@@ -497,7 +497,7 @@ fn parse_stmt(src: string, pos: int, nodes: []AstNode) -> ParseResult {
                             extra: -1,
                             type_tag: TYPE_UNKNOWN
                         }
-                        push(nodes, ia_node)
+                        nodes = append(nodes, ia_node)
                         return ParseResult { node_idx: len(nodes) - 1, new_pos: rhs_result.new_pos }
                     }
                 }
@@ -511,7 +511,7 @@ fn parse_stmt(src: string, pos: int, nodes: []AstNode) -> ParseResult {
                     extra: -1,
                     type_tag: TYPE_UNKNOWN
                 }
-                push(nodes, stmt)
+                nodes = append(nodes, stmt)
                 return ParseResult { node_idx: len(nodes) - 1, new_pos: p }
             }
             p = saved_pos
@@ -532,7 +532,7 @@ fn parse_stmt(src: string, pos: int, nodes: []AstNode) -> ParseResult {
             extra: -1,
             type_tag: TYPE_UNKNOWN
         }
-        push(nodes, stmt)
+        nodes = append(nodes, stmt)
         return ParseResult { node_idx: len(nodes) - 1, new_pos: expr_result.new_pos }
     }
 
@@ -644,10 +644,10 @@ fn parse_param(src: string, pos: int, nodes: []AstNode) -> ParseResult {
         extra: -1,
         type_tag: param_type_tag
     }
-    push(nodes, param)
+    nodes = append(nodes, param)
     if param_type_tag == TYPE_STRUCT || param_type_tag == TYPE_MAP {
-        push(g_type_name_node_idx, len(nodes) - 1)
-        push(g_type_name_str, type_name)
+        g_type_name_node_idx = append(g_type_name_node_idx, len(nodes) - 1)
+        g_type_name_str = append(g_type_name_str, type_name)
     }
     return ParseResult { node_idx: len(nodes) - 1, new_pos: p }
 }
@@ -776,7 +776,7 @@ fn parse_block(src: string, pos: int, nodes: []AstNode) -> ParseResult {
         extra: -1,
         type_tag: TYPE_UNKNOWN
     }
-    push(nodes, block)
+    nodes = append(nodes, block)
     return ParseResult { node_idx: len(nodes) - 1, new_pos: p }
 }
 
@@ -824,7 +824,7 @@ fn parse_import_decl(src: string, pos: int, nodes: []AstNode) -> ParseResult {
             extra: -1,
             type_tag: TYPE_UNKNOWN
         }
-        push(nodes, import_node)
+        nodes = append(nodes, import_node)
         last_import_idx = len(nodes) - 1
     }
 
@@ -893,7 +893,7 @@ fn parse_const_decl(src: string, pos: int, nodes: []AstNode) -> ParseResult {
         extra: -1,
         type_tag: type_tag
     }
-    push(nodes, const_node)
+    nodes = append(nodes, const_node)
     return ParseResult { node_idx: len(nodes) - 1, new_pos: p }
 }
 
@@ -946,11 +946,11 @@ fn parse_func_decl(src: string, pos: int, nodes: []AstNode) -> ParseResult {
             extra: -1,
             type_tag: TYPE_STRUCT
         }
-        push(nodes, recv_param)
+        nodes = append(nodes, recv_param)
         recv_param_idx := len(nodes) - 1
         first_param_idx = recv_param_idx
-        push(g_type_name_node_idx, recv_param_idx)
-        push(g_type_name_str, recv_type)
+        g_type_name_node_idx = append(g_type_name_node_idx, recv_param_idx)
+        g_type_name_str = append(g_type_name_str, recv_type)
 
         name_kind = lex_kind(src, p)
     }
@@ -999,7 +999,7 @@ fn parse_func_decl(src: string, pos: int, nodes: []AstNode) -> ParseResult {
                     p = lex_end(src, p, TK_COMMA)
                     p = lex_skip(src, p)
                 }
-                push(tuple_types, lex_string_value(src, p, TK_IDENT))
+                tuple_types = append(tuple_types, lex_string_value(src, p, TK_IDENT))
                 p = lex_end(src, p, TK_IDENT)
                 p = lex_skip(src, p)
             }
@@ -1102,20 +1102,20 @@ fn parse_func_decl(src: string, pos: int, nodes: []AstNode) -> ParseResult {
         extra: -1,
         type_tag: ret_type_tag
     }
-    push(nodes, func)
+    nodes = append(nodes, func)
     func_node_idx := len(nodes) - 1
 
     // Store struct/map return type name in side table
     if ret_type_tag == TYPE_STRUCT || ret_type_tag == TYPE_MAP {
-        push(g_type_name_node_idx, func_node_idx)
-        push(g_type_name_str, ret_type)
+        g_type_name_node_idx = append(g_type_name_node_idx, func_node_idx)
+        g_type_name_str = append(g_type_name_str, ret_type)
     }
 
     // Store method declaration info
     if recv_type != "" {
-        push(g_method_decl_node_idx, func_node_idx)
-        push(g_method_decl_struct, recv_type)
-        push(g_method_decl_name, original_method_name)
+        g_method_decl_node_idx = append(g_method_decl_node_idx, func_node_idx)
+        g_method_decl_struct = append(g_method_decl_struct, recv_type)
+        g_method_decl_name = append(g_method_decl_name, original_method_name)
     }
 
     return ParseResult { node_idx: func_node_idx, new_pos: body_result.new_pos }
@@ -1223,10 +1223,10 @@ fn parse_field(src: string, pos: int, nodes: []AstNode) -> ParseResult {
         extra: -1,
         type_tag: field_type_tag
     }
-    push(nodes, field)
+    nodes = append(nodes, field)
     if field_type_tag == TYPE_STRUCT || field_type_tag == TYPE_MAP {
-        push(g_type_name_node_idx, len(nodes) - 1)
-        push(g_type_name_str, type_name)
+        g_type_name_node_idx = append(g_type_name_node_idx, len(nodes) - 1)
+        g_type_name_str = append(g_type_name_str, type_name)
     }
     return ParseResult { node_idx: len(nodes) - 1, new_pos: p }
 }
@@ -1298,7 +1298,7 @@ fn parse_struct_decl(src: string, pos: int, nodes: []AstNode) -> ParseResult {
         extra: -1,
         type_tag: TYPE_UNKNOWN
     }
-    push(nodes, struct_decl)
+    nodes = append(nodes, struct_decl)
     return ParseResult { node_idx: len(nodes) - 1, new_pos: p }
 }
 
@@ -1387,7 +1387,7 @@ fn parse_enum_decl(src: string, pos: int, nodes: []AstNode) -> ParseResult {
             extra: -1,
             type_tag: TYPE_UNKNOWN
         }
-        push(nodes, variant)
+        nodes = append(nodes, variant)
         variant_idx := len(nodes) - 1
 
         if first_variant < 0 {
@@ -1419,7 +1419,7 @@ fn parse_enum_decl(src: string, pos: int, nodes: []AstNode) -> ParseResult {
         extra: -1,
         type_tag: TYPE_UNKNOWN
     }
-    push(nodes, enum_decl)
+    nodes = append(nodes, enum_decl)
     return ParseResult { node_idx: len(nodes) - 1, new_pos: p }
 }
 
@@ -1553,7 +1553,7 @@ fn parse_interface_decl(src: string, pos: int, nodes: []AstNode) -> ParseResult 
             extra: ret_is_array,
             type_tag: ret_type_tag
         }
-        push(nodes, imethod)
+        nodes = append(nodes, imethod)
         imethod_idx := len(nodes) - 1
 
         if first_method < 0 {
@@ -1585,7 +1585,7 @@ fn parse_interface_decl(src: string, pos: int, nodes: []AstNode) -> ParseResult 
         extra: -1,
         type_tag: TYPE_UNKNOWN
     }
-    push(nodes, iface_decl)
+    nodes = append(nodes, iface_decl)
     return ParseResult { node_idx: len(nodes) - 1, new_pos: p }
 }
 
@@ -1664,7 +1664,7 @@ fn parse_match_stmt(src: string, pos: int, nodes: []AstNode) -> ParseResult {
                     break
                 }
                 bname := lex_string_value(src, p, TK_IDENT)
-                push(binding_names, bname)
+                binding_names = append(binding_names, bname)
                 p = lex_end(src, p, TK_IDENT)
                 p = lex_skip(src, p)
 
@@ -1706,7 +1706,7 @@ fn parse_match_stmt(src: string, pos: int, nodes: []AstNode) -> ParseResult {
             extra: -1,
             type_tag: TYPE_UNKNOWN
         }
-        push(nodes, arm)
+        nodes = append(nodes, arm)
         arm_idx := len(nodes) - 1
 
         if first_arm < 0 {
@@ -1741,7 +1741,7 @@ fn parse_match_stmt(src: string, pos: int, nodes: []AstNode) -> ParseResult {
         extra: -1,
         type_tag: TYPE_UNKNOWN
     }
-    push(nodes, match_node)
+    nodes = append(nodes, match_node)
     return ParseResult { node_idx: len(nodes) - 1, new_pos: p }
 }
 
@@ -1755,7 +1755,7 @@ fn parse_closure_params(src: string, pos: int, nodes: []AstNode) -> ParseResult 
         tag: DECL_PARAM, int_val: 0, str_val: "__env",
         left: -1, right: -1, extra: -1, type_tag: TYPE_INT
     }
-    push(nodes, env_param)
+    nodes = append(nodes, env_param)
     first_param_idx := len(nodes) - 1
 
     // Handle || (TK_OR) as empty param list, or |params| (TK_PIPE delimited)
@@ -1802,13 +1802,13 @@ fn parse_closure_body(src: string, pos: int, nodes: []AstNode) -> ParseResult {
         tag: STMT_RETURN, int_val: 0, str_val: "",
         left: expr_result.node_idx, right: -1, extra: -1, type_tag: TYPE_UNKNOWN
     }
-    push(nodes, ret_stmt)
+    nodes = append(nodes, ret_stmt)
     ret_idx := len(nodes) - 1
     blk := AstNode {
         tag: STMT_BLOCK, int_val: 1, str_val: "",
         left: ret_idx, right: ret_idx, extra: -1, type_tag: TYPE_UNKNOWN
     }
-    push(nodes, blk)
+    nodes = append(nodes, blk)
     return ParseResult { node_idx: len(nodes) - 1, new_pos: expr_result.new_pos }
 }
 
@@ -1826,7 +1826,7 @@ fn parse_closure_expr(src: string, pos: int, nodes: []AstNode) -> ParseResult {
 
     // Generate unique closure name
     cl_id := len(g_closure_counter)
-    push(g_closure_counter, 0)
+    g_closure_counter = append(g_closure_counter, 0)
     cl_name := "__closure_" + strconv.Itoa(cl_id)
 
     // Parse parameters
@@ -1867,16 +1867,16 @@ fn parse_closure_expr(src: string, pos: int, nodes: []AstNode) -> ParseResult {
         tag: DECL_FUNC, int_val: 0, str_val: cl_name,
         left: first_param_idx, right: body_idx, extra: -1, type_tag: ret_type_tag
     }
-    push(nodes, func_node)
-    push(g_closure_func_indices, len(nodes) - 1)
-    push(g_closure_func_names, cl_name)
+    nodes = append(nodes, func_node)
+    g_closure_func_indices = append(g_closure_func_indices, len(nodes) - 1)
+    g_closure_func_names = append(g_closure_func_names, cl_name)
 
     // Create EXPR_CLOSURE node
     cl_node := AstNode {
         tag: EXPR_CLOSURE, int_val: is_move, str_val: cl_name,
         left: first_param_idx, right: body_idx, extra: -1, type_tag: ret_type_tag
     }
-    push(nodes, cl_node)
+    nodes = append(nodes, cl_node)
     return ParseResult { node_idx: len(nodes) - 1, new_pos: p }
 }
 
@@ -1893,7 +1893,7 @@ fn parse_string_literal(src: string, pos: int, nodes: []AstNode) -> ParseResult 
         tag: EXPR_STRING, int_val: 0, str_val: val,
         left: -1, right: -1, extra: -1, type_tag: TYPE_UNKNOWN
     }
-    push(nodes, node)
+    nodes = append(nodes, node)
     return ParseResult { node_idx: len(nodes) - 1, new_pos: end_pos }
 }
 
@@ -1937,8 +1937,8 @@ fn parse_interp_string(raw: string, nodes: []AstNode) -> int {
                         tag: EXPR_STRING, int_val: 0, str_val: literal,
                         left: -1, right: -1, extra: -1, type_tag: TYPE_UNKNOWN
                     }
-                    push(nodes, str_node)
-                    push(parts, len(nodes) - 1)
+                    nodes = append(nodes, str_node)
+                    parts = append(parts, len(nodes) - 1)
                     literal = ""
                 }
                 ri = ri + 2
@@ -1968,7 +1968,7 @@ fn parse_interp_string(raw: string, nodes: []AstNode) -> int {
                         tag: EXPR_FIELD, int_val: 0, str_val: field_name,
                         left: obj_idx, right: -1, extra: -1, type_tag: TYPE_UNKNOWN
                     }
-                    push(nodes, field_node)
+                    nodes = append(nodes, field_node)
                     inner_idx = len(nodes) - 1
                 } else {
                     inner_idx = new_ident_node(ident, nodes)
@@ -1977,8 +1977,8 @@ fn parse_interp_string(raw: string, nodes: []AstNode) -> int {
                     tag: EXPR_TO_STRING, int_val: 0, str_val: "",
                     left: inner_idx, right: -1, extra: -1, type_tag: TYPE_STRING
                 }
-                push(nodes, to_str_node)
-                push(parts, len(nodes) - 1)
+                nodes = append(nodes, to_str_node)
+                parts = append(parts, len(nodes) - 1)
             } else {
                 literal = literal + str_substring(raw, ri, ri + 1)
                 ri = ri + 1
@@ -1991,8 +1991,8 @@ fn parse_interp_string(raw: string, nodes: []AstNode) -> int {
             tag: EXPR_STRING, int_val: 0, str_val: literal,
             left: -1, right: -1, extra: -1, type_tag: TYPE_UNKNOWN
         }
-        push(nodes, str_node)
-        push(parts, len(nodes) - 1)
+        nodes = append(nodes, str_node)
+        parts = append(parts, len(nodes) - 1)
     }
 
     if len(parts) == 0 {
@@ -2000,7 +2000,7 @@ fn parse_interp_string(raw: string, nodes: []AstNode) -> int {
             tag: EXPR_STRING, int_val: 0, str_val: "",
             left: -1, right: -1, extra: -1, type_tag: TYPE_UNKNOWN
         }
-        push(nodes, str_node)
+        nodes = append(nodes, str_node)
         return len(nodes) - 1
     }
     if len(parts) == 1 {
@@ -2058,7 +2058,7 @@ fn parse_atom(src: string, pos: int, nodes: []AstNode) -> ParseResult {
             extra: -1,
             type_tag: TYPE_FLOAT
         }
-        push(nodes, node)
+        nodes = append(nodes, node)
         p = lex_end(src, p, kind)
         return ParseResult { node_idx: len(nodes) - 1, new_pos: p }
     }
@@ -2123,7 +2123,7 @@ fn parse_atom(src: string, pos: int, nodes: []AstNode) -> ParseResult {
                         if val_result.node_idx < 0 {
                             break
                         }
-                        push(field_value_indices, val_result.node_idx)
+                        field_value_indices = append(field_value_indices, val_result.node_idx)
                         p = val_result.new_pos
                         p = lex_skip(src, p)
 
@@ -2153,7 +2153,7 @@ fn parse_atom(src: string, pos: int, nodes: []AstNode) -> ParseResult {
                     extra: -1,
                     type_tag: TYPE_UNKNOWN
                 }
-                push(nodes, ev_node)
+                nodes = append(nodes, ev_node)
                 ev_idx := len(nodes) - 1
 
                 // Store field values using existing struct fields side table
@@ -2192,7 +2192,7 @@ fn parse_atom(src: string, pos: int, nodes: []AstNode) -> ParseResult {
             extra: -1,
             type_tag: TYPE_MAP
         }
-        push(nodes, map_node)
+        nodes = append(nodes, map_node)
         return ParseResult { node_idx: len(nodes) - 1, new_pos: p }
     }
     if kind == TK_LBRACKET {
@@ -2272,7 +2272,7 @@ fn parse_atom(src: string, pos: int, nodes: []AstNode) -> ParseResult {
             extra: -1,
             type_tag: TYPE_UNKNOWN
         }
-        push(nodes, array_node)
+        nodes = append(nodes, array_node)
         return ParseResult { node_idx: len(nodes) - 1, new_pos: p }
     }
 
@@ -2631,7 +2631,7 @@ fn parse_primary_expr(src: string, pos: int, nodes: []AstNode) -> ParseResult {
                     if first_arg < 0 {
                         first_arg = arg_result.node_idx
                     }
-                    push(arg_indices, arg_result.node_idx)
+                    arg_indices = append(arg_indices, arg_result.node_idx)
 
                     p = arg_result.new_pos
                     p = lex_skip(src, p)
@@ -2672,7 +2672,7 @@ fn parse_primary_expr(src: string, pos: int, nodes: []AstNode) -> ParseResult {
                 extra: count_line_at(src, call_pos),
                 type_tag: TYPE_UNKNOWN
             }
-            push(nodes, call_node)
+            nodes = append(nodes, call_node)
             current_node = len(nodes) - 1
 
             // Store argument indices for this call node
@@ -2757,7 +2757,7 @@ fn parse_primary_expr(src: string, pos: int, nodes: []AstNode) -> ParseResult {
                     if first_field_idx < 0 {
                         first_field_idx = value_result.node_idx
                     }
-                    push(field_value_indices, value_result.node_idx)
+                    field_value_indices = append(field_value_indices, value_result.node_idx)
 
                     p = value_result.new_pos
                     p = lex_skip(src, p)
@@ -2787,7 +2787,7 @@ fn parse_primary_expr(src: string, pos: int, nodes: []AstNode) -> ParseResult {
                     extra: -1,
                     type_tag: TYPE_UNKNOWN
                 }
-                push(nodes, struct_lit_node)
+                nodes = append(nodes, struct_lit_node)
                 current_node = len(nodes) - 1
 
                 // Store field value indices for this struct literal
@@ -2825,7 +2825,7 @@ fn parse_primary_expr(src: string, pos: int, nodes: []AstNode) -> ParseResult {
                         extra: -1,
                         type_tag: TYPE_UNKNOWN
                     }
-                    push(nodes, index_node)
+                    nodes = append(nodes, index_node)
                     current_node = len(nodes) - 1
                     // Continue to check for more postfix operators
                 } else {
@@ -2854,7 +2854,7 @@ fn parse_primary_expr(src: string, pos: int, nodes: []AstNode) -> ParseResult {
                             extra: -1,
                             type_tag: TYPE_UNKNOWN
                         }
-                        push(nodes, field_node)
+                        nodes = append(nodes, field_node)
                         current_node = len(nodes) - 1
                         // Continue to check for more postfix operators
                     } else if next_kind == TK_QUESTION {
@@ -2869,7 +2869,7 @@ fn parse_primary_expr(src: string, pos: int, nodes: []AstNode) -> ParseResult {
                             extra: -1,
                             type_tag: TYPE_UNKNOWN
                         }
-                        push(nodes, try_node)
+                        nodes = append(nodes, try_node)
                         current_node = len(nodes) - 1
                     } else {
                         // No more postfix operators, break the loop
@@ -2960,7 +2960,7 @@ fn parse_extern_fn_decl(src: string, pos: int, nodes: []AstNode) -> ParseResult 
         type_name := lex_string_value(src, p, TK_IDENT)
         p = lex_end(src, p, TK_IDENT)
         p = lex_skip(src, p)
-        push(param_types, extern_type_from_name(type_name))
+        param_types = append(param_types, extern_type_from_name(type_name))
     }
 
     // Skip ')'
@@ -2979,15 +2979,15 @@ fn parse_extern_fn_decl(src: string, pos: int, nodes: []AstNode) -> ParseResult 
     }
 
     // Store in side tables
-    push(g_extern_decl_names, func_name)
-    push(g_extern_decl_param_counts, len(param_types))
-    push(g_extern_decl_param_starts, len(g_extern_decl_param_types))
+    g_extern_decl_names = append(g_extern_decl_names, func_name)
+    g_extern_decl_param_counts = append(g_extern_decl_param_counts, len(param_types))
+    g_extern_decl_param_starts = append(g_extern_decl_param_starts, len(g_extern_decl_param_types))
     ei := 0
     for ei < len(param_types) {
-        push(g_extern_decl_param_types, param_types[ei])
+        g_extern_decl_param_types = append(g_extern_decl_param_types, param_types[ei])
         ei = ei + 1
     }
-    push(g_extern_decl_ret_types, ret_type)
+    g_extern_decl_ret_types = append(g_extern_decl_ret_types, ret_type)
 
     // Create a DECL_FUNC node with right = -1 (no body)
     func_node := AstNode {
@@ -2999,6 +2999,6 @@ fn parse_extern_fn_decl(src: string, pos: int, nodes: []AstNode) -> ParseResult 
         extra: -1,
         type_tag: TYPE_UNKNOWN
     }
-    push(nodes, func_node)
+    nodes = append(nodes, func_node)
     return ParseResult { node_idx: len(nodes) - 1, new_pos: p }
 }

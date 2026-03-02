@@ -33,7 +33,7 @@ The Ease compiler is written in Ease and compiles itself with byte-identical con
 - [x] LLVM IR code generation
 - [x] Control flow (if/else, for loops, range for loops)
 - [x] Function calls with multiple arguments
-- [x] Array indexing, literals, push/len
+- [x] Array indexing, literals, append/len
 - [x] Top-level struct declarations and globals
 - [x] File I/O (reading source from disk)
 - [x] Function return type registry

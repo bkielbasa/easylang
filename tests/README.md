@@ -33,7 +33,7 @@ clang -O1 runtime/ease_runtime.c tmp/output.ll -o tmp/test_bin
 - Array literals: `[]int{1, 2, 3}`
 - Array indexing: `arr[i]`
 - Array length: `len(arr)`
-- Array mutation: `push(arr, value)`
+- Array mutation: `append(arr, value)`
 
 ### 04_strings.ease
 - String module operations

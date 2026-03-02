@@ -99,7 +99,7 @@ Tests live in `tests/` as `*_test.ease` files with `fn TestXxx(t: T)` functions:
 |------|-------|-----------------|
 | `math_test.ease` | 4 | `+`, `-`, `*`, `/`, conditionals |
 | `functions_test.ease` | 2 | Parameters, return values, recursion |
-| `arrays_test.ease` | 3 | Literal, index, push, len |
+| `arrays_test.ease` | 3 | Literal, index, append, len |
 | `strings_test.ease` | 6 | Concat, Contains, StartsWith, EndsWith, IndexOf, strconv |
 | `structs_test.ease` | 3 | Struct literals, field access, pass to functions |
 | `loops_test.ease` | 3 | Range `for i in start..end`, condition loops, modulo |
