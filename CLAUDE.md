@@ -4,6 +4,8 @@ A compiled language focusing on developer experience, self-hosting, fast executi
 
 Every interesting finding regarding building compiler put into `findings` folder as set of notes.
 
+Prioritize developer experience in every aspect of the language design. The language HAVE TO BE EASY AND INTUITIVE!
+
 ## Working Guidelines
 
 ### File Operations
@@ -37,60 +39,6 @@ See [docs/language.md](docs/language.md) for full language design (syntax, types
  - avoid using global variables
  - after a successful implementation make a refactoring round to make the code simpler and easier to understand
 
-## Project Structure
-
-```
-ease/
-├── Makefile              # Build system (seed-based, no external dependencies)
-├── grammar.ebnf          # Language specification (EBNF)
-├── CLAUDE.md             # This file
-├── docs/                 # Detailed documentation
-│   ├── language.md       # Language design: syntax, types, features
-│   ├── implementation-status.md  # Compiler status, future work
-│   ├── testing.md        # Test framework, test suite, benchmarks
-│   └── lsp.md            # LSP server methods, features, VS Code setup
-├── bootstrap/            # The Ease compiler (written in Ease)
-│   ├── compiler.ease     # Compiler main (~4,200 lines)
-│   ├── seed.ll           # Seed LLVM IR (bootstraps the compiler)
-│   └── ease/             # Compiler modules (Go-style directory packages)
-│       ├── token/token.ease       # Token type constants
-│       ├── lexer/lexer.ease       # Tokenizer
-│       ├── ast/ast.ease           # AST node types and constructors
-│       ├── parser/parser.ease     # Recursive descent parser
-│       ├── ir/ir.ease             # IR opcodes and symbol table
-│       ├── irgen/irgen.ease       # AST → IR translation
-│       ├── llvm/llvm.ease         # LLVM IR code generation
-│       ├── strconv/strconv.ease   # String conversion (Itoa, Atoi)
-│       ├── io/io.ease             # I/O (print via syscall)
-│       ├── strings/strings.ease   # String functions
-│       ├── os/os.ease             # OS functions (ReadFile via syscall)
-│       ├── testing/testing.ease   # Testing framework (Fatal)
-│       ├── time/time.ease         # Time package (Now, Unix, Add, Before, After)
-│       ├── result/result.ease     # Result/Option types (Option, Result, StringOption)
-│       ├── json/json.ease         # JSON document API (build, serialize, parse)
-│       ├── maps/maps.ease         # Hash map (map[string]int)
-│       └── lsp/lsp.ease           # LSP server (diagnostics)
-├── editors/              # Editor integrations
-│   └── vscode/           # VS Code extension (LSP client)
-├── tests/                # Go-style tests (125 passing)
-├── examples/             # Example programs
-│   └── testdemo/         # Go-style test demo (math.ease + math_test.ease)
-└── findings/             # Compiler engineering notes
-```
-
-## Building and Usage
-
-The compiler is fully self-hosting. No Go or C runtime needed — just `clang` (to assemble LLVM IR and link libc).
-
-```bash
-make                    # Build compiler from seed LLVM IR
-make test               # Run tests (125 passing)
-make test DIR=path      # Run tests in specific directory
-make bench              # Run tests + benchmarks
-make verify             # Verify self-hosting convergence (gen1 == gen2)
-make update-seed        # Update seed after modifying compiler source
-make clean              # Remove build artifacts
-```
 
 ### Compiling a program
 

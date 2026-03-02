@@ -72,6 +72,12 @@ fn make_type(type_tag: int, is_array: int) -> int {
 // Uses []string array workaround since string globals can't be reassigned
 g_current_func_name_arr := []string{}
 
+// Current source file — set by compiler before each function's IR generation
+g_irgen_current_file_arr := []string{}
+
+// Error counter for undefined function calls etc.
+g_irgen_error_count := 0
+
 // Struct name tracking: parallel arrays mapping vregs to struct type names
 g_vreg_struct_names := []string{}
 g_param_struct_names := []string{}
@@ -604,6 +610,23 @@ fn gen_ir_struct_lit(node: AstNode, ast_idx: int, nodes: []AstNode, instrs: []IR
 
 fn gen_ir_call_user(node: AstNode, ast_idx: int, nodes: []AstNode, instrs: []IRInstr, st_names: []string, st_vregs: []int) -> int {
     call_name := lookup_rename(node.str_val)
+    // Check if function is defined (sema registry or extern)
+    if sema.IsFunctionDefined(call_name) == 0 && is_extern(call_name) == 0 {
+        cur_file := "<unknown>"
+        if len(g_irgen_current_file_arr) > 0 {
+            cur_file = g_irgen_current_file_arr[len(g_irgen_current_file_arr) - 1]
+        }
+        cur_fn := "<unknown>"
+        if len(g_current_func_name_arr) > 0 {
+            cur_fn = g_current_func_name_arr[len(g_current_func_name_arr) - 1]
+        }
+        line_info := ""
+        if node.extra > 0 {
+            line_info = ":" + strconv.Itoa(node.extra)
+        }
+        print(cur_file + line_info + ": error: undefined function '" + call_name + "' (in " + cur_fn + ")\n")
+        g_irgen_error_count = g_irgen_error_count + 1
+    }
     args := gen_ir_eval_args(ast_idx, nodes, instrs, st_names, st_vregs)
     // Emit OP_ARG for each arg, wrapping if the param expects an interface
     i := 0

@@ -13,3 +13,23 @@ fn Fatal(msg: string) {
     print("    " + msg + "\n")
     test_fail()
 }
+
+fn (t: T) Fatal(msg: string) {
+    print("    " + msg + "\n")
+    test_fail()
+}
+
+g_test_soft_failed := 0
+
+fn (t: T) IsTrue(val: int) {
+    if val == 0 {
+        print("    assertion failed: expected true\n")
+        g_test_soft_failed = 1
+    }
+}
+
+fn CheckSoftFail() -> int {
+    r := g_test_soft_failed
+    g_test_soft_failed = 0
+    return r
+}

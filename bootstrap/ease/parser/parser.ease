@@ -16,6 +16,17 @@ g_closure_func_indices := []int{}
 g_closure_func_names := []string{}
 g_closure_counter := []int{}
 
+fn count_line_at(src: string, offset: int) -> int {
+    line := 1
+    i := 0
+    for i < offset {
+        if i >= len(src) { break }
+        if str_char_at(src, i) == 10 { line = line + 1 }
+        i = i + 1
+    }
+    return line
+}
+
 fn lookup_type_name(node_idx: int) -> string {
     i := 0
     for i < len(g_type_name_node_idx) {
@@ -2600,6 +2611,7 @@ fn parse_primary_expr(src: string, pos: int, nodes: []AstNode) -> ParseResult {
 
         if next_kind == TK_LPAREN {
             // It's a function call
+            call_pos := p
             func_name_node := current_node
             p = lex_end(src, p, next_kind)  // Skip '('
             p = lex_skip(src, p)
@@ -2657,7 +2669,7 @@ fn parse_primary_expr(src: string, pos: int, nodes: []AstNode) -> ParseResult {
                 str_val: func_name,
                 left: func_name_node,
                 right: first_arg,
-                extra: -1,
+                extra: count_line_at(src, call_pos),
                 type_tag: TYPE_UNKNOWN
             }
             push(nodes, call_node)
