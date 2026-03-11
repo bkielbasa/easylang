@@ -36,6 +36,92 @@ fn lookup_type_name(node_idx: int) -> string {
     return ""
 }
 
+// Skip type arguments in type position: Box[int], Result[int, string]
+// Returns new position after ] or original pos if no [
+fn skip_type_args(src: string, pos: int) -> int {
+    p := lex_skip(src, pos)
+    if lex_kind(src, p) != TK_LBRACKET { return pos }
+    p = lex_end(src, p, TK_LBRACKET)
+    p = lex_skip(src, p)
+    depth := 1
+    for depth > 0 {
+        if lex_kind(src, p) == TK_EOF { break }
+        if lex_kind(src, p) == TK_LBRACKET {
+            depth = depth + 1
+        }
+        if lex_kind(src, p) == TK_RBRACKET {
+            depth = depth - 1
+            if depth == 0 {
+                p = lex_end(src, p, TK_RBRACKET)
+                break
+            }
+        }
+        p = lex_end(src, p, lex_kind(src, p))
+        p = lex_skip(src, p)
+    }
+    return p
+}
+
+// Parse generic type parameters: [T], [T, U], [T: Constraint]
+// Stores params in sema via RegisterTypeParams
+// Returns count of type params parsed in node_idx (0 if none)
+fn parse_type_params(src: string, pos: int, decl_name: string) -> ParseResult {
+    p := pos
+    p = lex_skip(src, p)
+
+    if lex_kind(src, p) != TK_LBRACKET {
+        return ParseResult { node_idx: 0, new_pos: pos }
+    }
+    p = lex_end(src, p, TK_LBRACKET)
+    p = lex_skip(src, p)
+
+    param_names := []string{}
+    constraints := []string{}
+
+    for {
+        if lex_kind(src, p) == TK_RBRACKET || lex_kind(src, p) == TK_EOF {
+            break
+        }
+
+        // Parse type param name (e.g., T, U)
+        if lex_kind(src, p) != TK_IDENT { break }
+        pname := lex_string_value(src, p, TK_IDENT)
+        p = lex_end(src, p, TK_IDENT)
+        p = lex_skip(src, p)
+
+        // Optional constraint: T: InterfaceName
+        constraint := ""
+        if lex_kind(src, p) == TK_COLON {
+            p = lex_end(src, p, TK_COLON)
+            p = lex_skip(src, p)
+            if lex_kind(src, p) == TK_IDENT {
+                constraint = lex_string_value(src, p, TK_IDENT)
+                p = lex_end(src, p, TK_IDENT)
+                p = lex_skip(src, p)
+            }
+        }
+
+        param_names = append(param_names, pname)
+        constraints = append(constraints, constraint)
+
+        // Optional comma
+        if lex_kind(src, p) == TK_COMMA {
+            p = lex_end(src, p, TK_COMMA)
+            p = lex_skip(src, p)
+        }
+    }
+
+    // Expect ']'
+    if lex_kind(src, p) == TK_RBRACKET {
+        p = lex_end(src, p, TK_RBRACKET)
+    }
+
+    if len(param_names) > 0 {
+        sema.RegisterTypeParams(decl_name, param_names, constraints)
+    }
+
+    return ParseResult { node_idx: len(param_names), new_pos: p }
+}
 
 // Parse variable declaration: name := expr
 fn parse_colonequal_stmt(src: string, pos: int, nodes: []AstNode) -> ParseResult {
@@ -606,6 +692,8 @@ fn parse_param(src: string, pos: int, nodes: []AstNode) -> ParseResult {
         // Simple type
         type_name = lex_string_value(src, p, type_kind)
         p = lex_end(src, p, type_kind)
+        // Skip generic type arguments: Box[int], Result[int, string]
+        p = skip_type_args(src, p)
         // Handle module-qualified types: module.Type -> use Type
         p_check := lex_skip(src, p)
         if lex_kind(src, p_check) == TK_DOT {
@@ -614,6 +702,8 @@ fn parse_param(src: string, pos: int, nodes: []AstNode) -> ParseResult {
             if lex_kind(src, p_check) == TK_IDENT {
                 type_name = lex_string_value(src, p_check, TK_IDENT)
                 p = lex_end(src, p_check, TK_IDENT)
+                // Skip type args after module-qualified type
+                p = skip_type_args(src, p)
             }
         }
     } else {
@@ -932,6 +1022,8 @@ fn parse_func_decl(src: string, pos: int, nodes: []AstNode) -> ParseResult {
         }
         recv_type = lex_string_value(src, p, TK_IDENT)
         p = lex_end(src, p, TK_IDENT)
+        // Skip type parameters in receiver type: fn (b: Box[T]) Method()
+        p = skip_type_args(src, p)
         p = lex_skip(src, p)
         p = lex_end(src, p, TK_RPAREN)
         p = lex_skip(src, p)
@@ -961,6 +1053,10 @@ fn parse_func_decl(src: string, pos: int, nodes: []AstNode) -> ParseResult {
     }
     func_name := lex_string_value(src, p, name_kind)
     p = lex_end(src, p, name_kind)
+
+    // Parse optional type parameters: fn Name[T](params) -> type { body }
+    tp_result := parse_type_params(src, p, func_name)
+    p = tp_result.new_pos
 
     // Mangle method name: Type_Method
     original_method_name := ""
@@ -1057,6 +1153,8 @@ fn parse_func_decl(src: string, pos: int, nodes: []AstNode) -> ParseResult {
             // Simple type
             ret_type = lex_string_value(src, p, ret_type_kind)
             p = lex_end(src, p, ret_type_kind)
+            // Skip generic type arguments in return type
+            p = skip_type_args(src, p)
         } else {
             return ParseResult { node_idx: -1, new_pos: p }
         }
@@ -1185,6 +1283,8 @@ fn parse_field(src: string, pos: int, nodes: []AstNode) -> ParseResult {
     } else if type_kind == TK_IDENT {
         type_name = lex_string_value(src, p, type_kind)
         p = lex_end(src, p, type_kind)
+        // Skip generic type arguments
+        p = skip_type_args(src, p)
     } else {
         return ParseResult { node_idx: -1, new_pos: p }
     }
@@ -1251,6 +1351,11 @@ fn parse_struct_decl(src: string, pos: int, nodes: []AstNode) -> ParseResult {
     }
     struct_name := lex_string_value(src, p, name_kind)
     p = lex_end(src, p, name_kind)
+    p = lex_skip(src, p)
+
+    // Parse optional type parameters: struct Name[T, U] { ... }
+    tp_result := parse_type_params(src, p, struct_name)
+    p = tp_result.new_pos
     p = lex_skip(src, p)
 
     // Expect '{'
@@ -1322,6 +1427,11 @@ fn parse_enum_decl(src: string, pos: int, nodes: []AstNode) -> ParseResult {
     }
     enum_name := lex_string_value(src, p, name_kind)
     p = lex_end(src, p, name_kind)
+    p = lex_skip(src, p)
+
+    // Parse optional type parameters: enum Name[T, E] { ... }
+    tp_result := parse_type_params(src, p, enum_name)
+    p = tp_result.new_pos
     p = lex_skip(src, p)
 
     // Expect '{'
@@ -1443,6 +1553,11 @@ fn parse_interface_decl(src: string, pos: int, nodes: []AstNode) -> ParseResult 
     }
     iface_name := lex_string_value(src, p, name_kind)
     p = lex_end(src, p, name_kind)
+    p = lex_skip(src, p)
+
+    // Parse optional type parameters: interface Name[T] { ... }
+    tp_result := parse_type_params(src, p, iface_name)
+    p = tp_result.new_pos
     p = lex_skip(src, p)
 
     // Expect '{'
@@ -2090,6 +2205,8 @@ fn parse_atom(src: string, pos: int, nodes: []AstNode) -> ParseResult {
             if lex_kind(src, p) == TK_IDENT {
                 variant_name := lex_string_value(src, p, TK_IDENT)
                 p = lex_end(src, p, TK_IDENT)
+                // Skip optional type arguments: Option::Some[int]{ value: 42 }
+                p = skip_type_args(src, p)
                 p = lex_skip(src, p)
                 qualified := name + "." + variant_name
 
@@ -2795,6 +2912,29 @@ fn parse_primary_expr(src: string, pos: int, nodes: []AstNode) -> ParseResult {
                 // Continue to check for more postfix operators
             } else {
                 if next_kind == TK_LBRACKET {
+                    // Check if this is generic type args (Name[Type]{ or Name[Type]()
+                    // vs array indexing (arr[idx])
+                    is_generic_args := 0
+                    if nodes[current_node].tag == EXPR_IDENT {
+                        gen_name := nodes[current_node].str_val
+                        if len(gen_name) > 0 {
+                            // Look ahead past [...] to see { or (
+                            gen_p := skip_type_args(src, p)
+                            gen_p = lex_skip(src, gen_p)
+                            gen_after := lex_kind(src, gen_p)
+                            gen_fc := str_char_at(gen_name, 0)
+                            if gen_after == TK_LPAREN {
+                                // name[Type](args) — generic function call
+                                p = gen_p
+                                is_generic_args = 1
+                            } else if gen_after == TK_LBRACE && gen_fc >= 65 && gen_fc <= 90 {
+                                // Name[Type]{ fields } — generic struct literal
+                                p = gen_p
+                                is_generic_args = 1
+                            }
+                        }
+                    }
+                    if is_generic_args == 0 {
                     // Array indexing
                     array_node := current_node
                     p = lex_end(src, p, next_kind)  // Skip '['
@@ -2828,6 +2968,7 @@ fn parse_primary_expr(src: string, pos: int, nodes: []AstNode) -> ParseResult {
                     nodes = append(nodes, index_node)
                     current_node = len(nodes) - 1
                     // Continue to check for more postfix operators
+                    }
                 } else {
                     if next_kind == TK_DOT {
                         // Field access

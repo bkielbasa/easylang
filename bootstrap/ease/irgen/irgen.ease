@@ -808,6 +808,10 @@ fn gen_ir_expr(node: AstNode, ast_idx: int, nodes: []AstNode, instrs: []IRInstr,
                 cstr := ConstStrValue(ci)
                 instrs = append(instrs, IRInstr { op: OP_LOADCONST, dest: vreg, arg1: 0, arg2: 0, arg3: 0, str_val: cstr })
                 set_vreg_type(vreg, TYPE_STRING)
+            } else if ctype == TYPE_FLOAT {
+                cstr := ConstStrValue(ci)
+                instrs = append(instrs, IRInstr { op: OP_LOADFLOAT, dest: vreg, arg1: 0, arg2: 0, arg3: 0, str_val: cstr })
+                set_vreg_type(vreg, TYPE_FLOAT)
             } else {
                 cval := ConstIntValue(ci)
                 instrs = append(instrs, IRInstr { op: OP_LOADCONST, dest: vreg, arg1: cval, arg2: 0, arg3: 0, str_val: "" })

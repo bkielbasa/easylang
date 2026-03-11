@@ -100,3 +100,27 @@ fn (p: Point) Sum() -> int {
 fn (p: Point) Describe() -> string {
     return "(" + strconv.Itoa(p.x) + ", " + strconv.Itoa(p.y) + ")"
 }
+
+// Generic types for testing generics (type params are erased at compile time)
+struct GBox[T] {
+    value: T,
+}
+
+struct Pair[A, B] {
+    first: A,
+    second: B,
+}
+
+enum GenOption[T] { GSome { value: T }, GNone }
+
+fn identity[T](x: T) -> T {
+    return x
+}
+
+fn make_box[T](v: T) -> GBox {
+    return GBox { value: v }
+}
+
+fn make_pair[A, B](a: A, b: B) -> Pair {
+    return Pair { first: a, second: b }
+}

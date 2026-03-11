@@ -8,6 +8,8 @@ const MAX_SIZE = 1024
 const APP_NAME = "myapp"
 const DEBUG = false
 const NEGATIVE = -1
+const PI = 3.14
+const GRAVITY = 9.81
 
 fn TestConstInt(t: testing.T) {
     if MAX_SIZE != 1024 { t.Fatal("MAX_SIZE should be 1024") }
@@ -43,4 +45,15 @@ fn TestConstInComparison(t: testing.T) {
 fn TestConstArithmetic(t: testing.T) {
     result := MAX_SIZE + NEGATIVE
     if result != 1023 { t.Fatal("MAX_SIZE + NEGATIVE should be 1023") }
+}
+
+fn TestConstFloat(t: testing.T) {
+    if PI != 3.14 { t.Fatal("PI should be 3.14") }
+    if GRAVITY != 9.81 { t.Fatal("GRAVITY should be 9.81") }
+}
+
+fn TestConstFloatArithmetic(t: testing.T) {
+    circumference := 2.0 * PI * 10.0
+    if circumference < 62.0 { t.Fatal("circumference should be >= 62.0") }
+    if circumference > 63.0 { t.Fatal("circumference should be <= 63.0") }
 }

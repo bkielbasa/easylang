@@ -482,6 +482,9 @@ fn register_const(nodes: []AstNode, const_idx: int) {
             g_const_int_values = append(g_const_int_values, 0)
         }
         g_const_str_values = append(g_const_str_values, "")
+    } else if init.tag == EXPR_FLOAT {
+        g_const_int_values = append(g_const_int_values, 0)
+        g_const_str_values = append(g_const_str_values, init.str_val)
     } else {
         g_const_int_values = append(g_const_int_values, 0)
         g_const_str_values = append(g_const_str_values, "")
@@ -826,4 +829,79 @@ fn ClosureCaptureName(func_name: string, idx: int) -> string {
         i = i + 1
     }
     return ""
+}
+
+// ============================================================
+// Generic type parameter registry
+// ============================================================
+
+g_type_param_decl_names := []string{}
+g_type_param_starts := []int{}
+g_type_param_counts := []int{}
+
+g_type_param_names := []string{}
+g_type_param_constraints := []string{}
+
+fn RegisterTypeParams(decl_name: string, param_names: []string, constraints: []string) {
+    g_type_param_decl_names = append(g_type_param_decl_names, decl_name)
+    g_type_param_starts = append(g_type_param_starts, len(g_type_param_names))
+    g_type_param_counts = append(g_type_param_counts, len(param_names))
+    i := 0
+    for i < len(param_names) {
+        g_type_param_names = append(g_type_param_names, param_names[i])
+        g_type_param_constraints = append(g_type_param_constraints, constraints[i])
+        i = i + 1
+    }
+}
+
+fn TypeParamCount(decl_name: string) -> int {
+    i := 0
+    for i < len(g_type_param_decl_names) {
+        if g_type_param_decl_names[i] == decl_name {
+            return g_type_param_counts[i]
+        }
+        i = i + 1
+    }
+    return 0
+}
+
+fn TypeParamName(decl_name: string, idx: int) -> string {
+    i := 0
+    for i < len(g_type_param_decl_names) {
+        if g_type_param_decl_names[i] == decl_name {
+            start := g_type_param_starts[i]
+            return g_type_param_names[start + idx]
+        }
+        i = i + 1
+    }
+    return ""
+}
+
+fn TypeParamConstraint(decl_name: string, idx: int) -> string {
+    i := 0
+    for i < len(g_type_param_decl_names) {
+        if g_type_param_decl_names[i] == decl_name {
+            start := g_type_param_starts[i]
+            return g_type_param_constraints[start + idx]
+        }
+        i = i + 1
+    }
+    return ""
+}
+
+fn IsTypeParam(decl_name: string, name: string) -> int {
+    i := 0
+    for i < len(g_type_param_decl_names) {
+        if g_type_param_decl_names[i] == decl_name {
+            start := g_type_param_starts[i]
+            count := g_type_param_counts[i]
+            j := 0
+            for j < count {
+                if g_type_param_names[start + j] == name { return 1 }
+                j = j + 1
+            }
+        }
+        i = i + 1
+    }
+    return 0
 }

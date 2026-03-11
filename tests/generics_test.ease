@@ -1,0 +1,82 @@
+package main
+
+import (
+    "testing"
+)
+
+fn TestGenericStructLiteral(t: testing.T) {
+    b := GBox[int] { value: 42 }
+    if b.value != 42 { t.Fatal("GBox[int] value should be 42") }
+}
+
+fn TestGenericStructStringValue(t: testing.T) {
+    b := GBox[string] { value: "hello" }
+    if b.value != "hello" { t.Fatal("GBox[string] value should be hello") }
+}
+
+fn TestGenericPair(t: testing.T) {
+    p := Pair[int, string] { first: 10, second: "ten" }
+    if p.first != 10 { t.Fatal("Pair first should be 10") }
+    if p.second != "ten" { t.Fatal("Pair second should be ten") }
+}
+
+fn TestGenericPairIntInt(t: testing.T) {
+    p := Pair[int, int] { first: 3, second: 7 }
+    if p.first + p.second != 10 { t.Fatal("Pair sum should be 10") }
+}
+
+fn TestGenericFunction(t: testing.T) {
+    result := identity[int](99)
+    if result != 99 { t.Fatal("identity(99) should be 99") }
+}
+
+fn TestGenericFunctionString(t: testing.T) {
+    result := identity[string]("world")
+    if result != "world" { t.Fatal("identity(world) should be world") }
+}
+
+fn TestGenericMakeBox(t: testing.T) {
+    b := make_box[int](55)
+    if b.value != 55 { t.Fatal("make_box(55) value should be 55") }
+}
+
+fn TestGenericMakePair(t: testing.T) {
+    p := make_pair[string, int]("age", 30)
+    if p.first != "age" { t.Fatal("make_pair first should be age") }
+    if p.second != 30 { t.Fatal("make_pair second should be 30") }
+}
+
+fn TestGenericEnumSome(t: testing.T) {
+    opt := GenOption::GSome[int] { value: 42 }
+    result := match opt {
+        GenOption::GSome { value } => value,
+        GenOption::GNone => 0,
+    }
+    if result != 42 { t.Fatal("GenOption GSome should unwrap to 42") }
+}
+
+fn TestGenericEnumNone(t: testing.T) {
+    opt := GenOption::GNone[int]
+    result := match opt {
+        GenOption::GSome { value } => value,
+        GenOption::GNone => -1,
+    }
+    if result != -1 { t.Fatal("GenOption GNone should give -1") }
+}
+
+fn TestGenericNoTypeArgs(t: testing.T) {
+    // Type args are optional — type erasure means they're not needed
+    b := GBox { value: 100 }
+    if b.value != 100 { t.Fatal("GBox without type args should work") }
+}
+
+fn TestGenericPairNoTypeArgs(t: testing.T) {
+    p := Pair { first: 1, second: 2 }
+    if p.first + p.second != 3 { t.Fatal("Pair without type args should work") }
+}
+
+fn TestGenericConstrainedStruct(t: testing.T) {
+    // Struct with constrained type parameter
+    b := GBox[int] { value: 77 }
+    if b.value != 77 { t.Fatal("Constrained Box should work") }
+}

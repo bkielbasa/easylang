@@ -4,6 +4,10 @@ enum Option { Some { value: int }, None }
 enum Result { Ok { value: int }, Err { message: string } }
 enum StringOption { Some { value: string }, None }
 
+// Generic versions (type parameters erased at compile time)
+enum GenericOption[T] { Some { value: T }, None }
+enum GenericResult[T, E] { Ok { value: T }, Err { error: E } }
+
 fn Unwrap(opt: int) -> int {
     result := match opt {
         Option::Some { value } => value,

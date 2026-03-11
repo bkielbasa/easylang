@@ -227,6 +227,50 @@ fn (b: Box) String() -> string {
 }
 ```
 
+## Generics (implemented)
+
+Go-style bracket syntax with type erasure. All Ease values are i64 at runtime (ints, pointers, booleans), so generic type parameters are purely compile-time annotations that get erased during compilation. No monomorphization or boxing needed.
+
+```ease
+// Generic struct
+struct Box[T] {
+    value: T,
+}
+
+struct Pair[A, B] {
+    first: A,
+    second: B,
+}
+
+// Generic enum
+enum Option[T] { Some { value: T }, None }
+
+// Generic function
+fn identity[T](x: T) -> T {
+    return x
+}
+
+// Usage with explicit type args
+b := Box[int] { value: 42 }
+p := Pair[string, int] { first: "age", second: 30 }
+result := identity[int](99)
+
+// Type args are optional (erased at compile time)
+b2 := Box { value: 42 }
+```
+
+### Constraints (syntax supported, enforcement planned)
+```ease
+// Type parameter with interface constraint
+struct Sortable[T: Comparable] {
+    items: []T,
+}
+```
+
+### Scope
+- Structs, enums, functions, methods, interfaces all support type parameters
+- Type parameters are declared with `[T]`, `[T, U]`, or `[T: Constraint]`
+
 ## Closures and Lambdas
 
 Closures are anonymous functions that can capture variables from their enclosing scope.
