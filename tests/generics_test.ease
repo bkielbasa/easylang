@@ -76,7 +76,21 @@ fn TestGenericPairNoTypeArgs(t: testing.T) {
 }
 
 fn TestGenericConstrainedStruct(t: testing.T) {
-    // Struct with constrained type parameter
+    // Struct with constrained type parameter (no constraint = no check)
     b := GBox[int] { value: 77 }
     if b.value != 77 { t.Fatal("Constrained Box should work") }
+}
+
+fn TestGenericConstraintSatisfied(t: testing.T) {
+    // Point has Describe() -> string, satisfies Describable
+    p := make_point(3, 4)
+    cb := ConstrainedBox[Point] { item: p }
+    if cb.item.x != 3 { t.Fatal("ConstrainedBox item.x should be 3") }
+}
+
+fn TestGenericConstraintFuncSatisfied(t: testing.T) {
+    // wrap_describable[T: Describable] should accept Point
+    p := make_point(5, 6)
+    cb := wrap_describable[Point](p)
+    if cb.item.y != 6 { t.Fatal("wrap_describable item.y should be 6") }
 }

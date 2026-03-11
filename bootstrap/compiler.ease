@@ -1102,6 +1102,12 @@ fn run_test_mode(test_path: string, run_bench: int) -> int {
     build_registries(nodes, func_names, func_indices)
     register_closures(nodes, func_names, func_indices)
 
+    // Validate generic type constraints
+    tc_errors := sema.ValidateTypeConstraints()
+    if tc_errors > 0 {
+        return 1
+    }
+
     // IR Generation — compile all user functions
     instrs := []IRInstr{}
     generate_all_ir(func_names, func_indices, nodes, global_var_names, instrs)
@@ -1474,6 +1480,12 @@ fn main() -> int {
     sema.AddRename("print", "io.Print")
     build_registries(nodes, func_names, func_indices)
     register_closures(nodes, func_names, func_indices)
+
+    // Validate generic type constraints
+    constraint_errors := sema.ValidateTypeConstraints()
+    if constraint_errors > 0 {
+        return 1
+    }
 
     // Phase 3: IR Generation
     instrs := []IRInstr{}

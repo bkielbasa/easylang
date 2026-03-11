@@ -905,3 +905,40 @@ fn IsTypeParam(decl_name: string, name: string) -> int {
     }
     return 0
 }
+
+// ============================================================
+// Generic type argument instantiation tracking
+// ============================================================
+
+g_type_inst_decl_names := []string{}
+g_type_inst_param_idx := []int{}
+g_type_inst_concrete := []string{}
+g_type_inst_lines := []int{}
+
+fn RecordTypeInstantiation(decl_name: string, param_idx: int, concrete: string, line: int) {
+    g_type_inst_decl_names = append(g_type_inst_decl_names, decl_name)
+    g_type_inst_param_idx = append(g_type_inst_param_idx, param_idx)
+    g_type_inst_concrete = append(g_type_inst_concrete, concrete)
+    g_type_inst_lines = append(g_type_inst_lines, line)
+}
+
+fn ValidateTypeConstraints() -> int {
+    errors := 0
+    i := 0
+    for i < len(g_type_inst_decl_names) {
+        decl_name := g_type_inst_decl_names[i]
+        param_idx := g_type_inst_param_idx[i]
+        concrete := g_type_inst_concrete[i]
+        constraint := TypeParamConstraint(decl_name, param_idx)
+        if len(constraint) > 0 {
+            if is_interface(constraint) == 1 {
+                if struct_satisfies_interface(concrete, constraint) == 0 {
+                    print("error: type '" + concrete + "' does not satisfy interface '" + constraint + "' (required by " + decl_name + ")\n")
+                    errors = errors + 1
+                }
+            }
+        }
+        i = i + 1
+    }
+    return errors
+}

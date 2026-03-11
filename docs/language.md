@@ -259,12 +259,22 @@ result := identity[int](99)
 b2 := Box { value: 42 }
 ```
 
-### Constraints (syntax supported, enforcement planned)
+### Constraints (implemented)
 ```ease
 // Type parameter with interface constraint
-struct Sortable[T: Comparable] {
-    items: []T,
+interface Stringer {
+    String() -> string,
 }
+
+struct Holder[T: Stringer] {
+    item: T,
+}
+
+// OK: HasString implements Stringer
+h := Holder[HasString] { item: HasString { name: "hi" } }
+
+// ERROR: NoMethods does not satisfy interface 'Stringer'
+// bad := Holder[NoMethods] { item: NoMethods { x: 1 } }
 ```
 
 ### Scope

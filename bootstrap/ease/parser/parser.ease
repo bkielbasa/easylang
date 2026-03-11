@@ -62,6 +62,40 @@ fn skip_type_args(src: string, pos: int) -> int {
     return p
 }
 
+// Record type arguments for constraint checking: Name[ConcreteType, ...]
+// Extracts the first identifier at each type arg position and records it in sema
+fn record_type_args(src: string, pos: int, decl_name: string, line: int) {
+    p := lex_skip(src, pos)
+    if lex_kind(src, p) != TK_LBRACKET { return }
+    p = lex_end(src, p, TK_LBRACKET)
+    p = lex_skip(src, p)
+    param_idx := 0
+    recorded := 0
+    depth := 0
+    for lex_kind(src, p) != TK_EOF {
+        k := lex_kind(src, p)
+        if k == TK_RBRACKET {
+            if depth == 0 { break }
+            depth = depth - 1
+        }
+        if k == TK_LBRACKET { depth = depth + 1 }
+        if k == TK_COMMA && depth == 0 {
+            param_idx = param_idx + 1
+            recorded = 0
+            p = lex_end(src, p, k)
+            p = lex_skip(src, p)
+        } else {
+            if k == TK_IDENT && depth == 0 && recorded == 0 {
+                type_name := lex_string_value(src, p, TK_IDENT)
+                sema.RecordTypeInstantiation(decl_name, param_idx, type_name, line)
+                recorded = 1
+            }
+            p = lex_end(src, p, k)
+            p = lex_skip(src, p)
+        }
+    }
+}
+
 // Parse generic type parameters: [T], [T, U], [T: Constraint]
 // Stores params in sema via RegisterTypeParams
 // Returns count of type params parsed in node_idx (0 if none)
@@ -2206,6 +2240,7 @@ fn parse_atom(src: string, pos: int, nodes: []AstNode) -> ParseResult {
                 variant_name := lex_string_value(src, p, TK_IDENT)
                 p = lex_end(src, p, TK_IDENT)
                 // Skip optional type arguments: Option::Some[int]{ value: 42 }
+                record_type_args(src, p, name, count_line_at(src, p))
                 p = skip_type_args(src, p)
                 p = lex_skip(src, p)
                 qualified := name + "." + variant_name
@@ -2925,10 +2960,14 @@ fn parse_primary_expr(src: string, pos: int, nodes: []AstNode) -> ParseResult {
                             gen_fc := str_char_at(gen_name, 0)
                             if gen_after == TK_LPAREN {
                                 // name[Type](args) — generic function call
+                                gen_line := count_line_at(src, p)
+                                record_type_args(src, p, gen_name, gen_line)
                                 p = gen_p
                                 is_generic_args = 1
                             } else if gen_after == TK_LBRACE && gen_fc >= 65 && gen_fc <= 90 {
                                 // Name[Type]{ fields } — generic struct literal
+                                gen_line := count_line_at(src, p)
+                                record_type_args(src, p, gen_name, gen_line)
                                 p = gen_p
                                 is_generic_args = 1
                             }

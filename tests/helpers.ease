@@ -124,3 +124,16 @@ fn make_box[T](v: T) -> GBox {
 fn make_pair[A, B](a: A, b: B) -> Pair {
     return Pair { first: a, second: b }
 }
+
+// Constrained generic types for testing constraint enforcement
+interface Describable {
+    Describe() -> string,
+}
+
+struct ConstrainedBox[T: Describable] {
+    item: T,
+}
+
+fn wrap_describable[T: Describable](x: T) -> ConstrainedBox {
+    return ConstrainedBox { item: x }
+}
