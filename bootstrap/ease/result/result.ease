@@ -4,9 +4,116 @@ enum Option { Some { value: int }, None }
 enum Result { Ok { value: int }, Err { message: string } }
 enum StringOption { Some { value: string }, None }
 
-// Generic versions (type parameters erased at compile time)
+// Generic versions — use these for new code
+// Type parameters are erased at compile time; one type works for int, string, struct, etc.
 enum GenericOption[T] { Some { value: T }, None }
 enum GenericResult[T, E] { Ok { value: T }, Err { error: E } }
+
+// GenericOption methods
+fn (o: GenericOption) IsSome() -> int {
+    result := match o {
+        GenericOption::Some { value } => 1,
+        GenericOption::None => 0,
+    }
+    return result
+}
+
+fn (o: GenericOption) IsNone() -> int {
+    result := match o {
+        GenericOption::Some { value } => 0,
+        GenericOption::None => 1,
+    }
+    return result
+}
+
+fn (o: GenericOption) Unwrap() -> int {
+    result := match o {
+        GenericOption::Some { value } => value,
+        GenericOption::None => 0,
+    }
+    return result
+}
+
+fn (o: GenericOption) UnwrapOr(def: int) -> int {
+    result := match o {
+        GenericOption::Some { value } => value,
+        GenericOption::None => def,
+    }
+    return result
+}
+
+fn (o: GenericOption) UnwrapString() -> string {
+    result := match o {
+        GenericOption::Some { value } => value,
+        GenericOption::None => "",
+    }
+    return result
+}
+
+fn (o: GenericOption) UnwrapStringOr(def: string) -> string {
+    result := match o {
+        GenericOption::Some { value } => value,
+        GenericOption::None => def,
+    }
+    return result
+}
+
+// GenericResult methods
+fn (r: GenericResult) IsOk() -> int {
+    result := match r {
+        GenericResult::Ok { value } => 1,
+        GenericResult::Err { error } => 0,
+    }
+    return result
+}
+
+fn (r: GenericResult) IsErr() -> int {
+    result := match r {
+        GenericResult::Ok { value } => 0,
+        GenericResult::Err { error } => 1,
+    }
+    return result
+}
+
+fn (r: GenericResult) UnwrapOk() -> int {
+    result := match r {
+        GenericResult::Ok { value } => value,
+        GenericResult::Err { error } => 0,
+    }
+    return result
+}
+
+fn (r: GenericResult) UnwrapOkOr(def: int) -> int {
+    result := match r {
+        GenericResult::Ok { value } => value,
+        GenericResult::Err { error } => def,
+    }
+    return result
+}
+
+fn (r: GenericResult) UnwrapOkString() -> string {
+    result := match r {
+        GenericResult::Ok { value } => value,
+        GenericResult::Err { error } => "",
+    }
+    return result
+}
+
+fn (r: GenericResult) UnwrapErr() -> int {
+    result := match r {
+        GenericResult::Ok { value } => 0,
+        GenericResult::Err { error } => error,
+    }
+    return result
+}
+
+fn (r: GenericResult) UnwrapErrString() -> string {
+    result := match r {
+        GenericResult::Ok { value } => "",
+        GenericResult::Err { error } => error,
+    }
+    return result
+}
 
 fn Unwrap(opt: int) -> int {
     result := match opt {

@@ -21,7 +21,7 @@ The Ease compiler is written in Ease and compiles itself with byte-identical con
 - **Vreg-based type system** — tracks types via `g_vreg_types`/`g_param_types` arrays, replaces `is_string_expr` heuristic
 - String `==`/`!=`/`+` auto-dispatch via vreg type lookups (no heuristic needed)
 - Dynamic struct field registry for user-defined structs
-- Go-style test suite (159 tests passing, 2 benchmarks)
+- Go-style test suite (167 tests passing, 2 benchmarks)
 - **Generics** — Go-style bracket syntax `[T]` with type erasure; works on structs, enums, functions, methods, interfaces; type parameters are compile-time annotations erased during parsing
 - **`extern fn` FFI** — declare C functions directly in stdlib modules (e.g., `extern fn system(cmd: ptr) -> i32`), auto-generates LLVM IR wrappers with type conversion
 - **Bare imports** — `import "testing"` resolves to `bootstrap/ease/testing` (no `./` prefix needed for stdlib)

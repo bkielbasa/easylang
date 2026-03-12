@@ -97,3 +97,62 @@ fn TestTryOptionNone(t: testing.T) {
     opt := try_option_none_helper()
     if result.IsNone(opt) != 1 { t.Fatal("expected None") }
 }
+
+// GenericOption[T] method tests
+
+fn TestGenericOptionSomeInt(t: testing.T) {
+    opt := GenericOption::Some[int] { value: 42 }
+    if opt.IsSome() != 1 { t.Fatal("expected IsSome == 1") }
+    if opt.IsNone() != 0 { t.Fatal("expected IsNone == 0") }
+    if opt.Unwrap() != 42 { t.Fatal("expected Unwrap == 42") }
+    if opt.UnwrapOr(0) != 42 { t.Fatal("expected UnwrapOr == 42") }
+}
+
+fn TestGenericOptionNoneInt(t: testing.T) {
+    opt := GenericOption::None[int]
+    if opt.IsNone() != 1 { t.Fatal("expected IsNone == 1") }
+    if opt.IsSome() != 0 { t.Fatal("expected IsSome == 0") }
+    if opt.UnwrapOr(99) != 99 { t.Fatal("expected UnwrapOr == 99") }
+}
+
+fn TestGenericOptionSomeString(t: testing.T) {
+    opt := GenericOption::Some[string] { value: "hello" }
+    if opt.IsSome() != 1 { t.Fatal("expected IsSome == 1") }
+    s := opt.UnwrapString()
+    if s != "hello" { t.Fatal("expected UnwrapString == hello") }
+}
+
+fn TestGenericOptionNoneString(t: testing.T) {
+    opt := GenericOption::None[string]
+    s := opt.UnwrapStringOr("default")
+    if s != "default" { t.Fatal("expected UnwrapStringOr == default") }
+}
+
+// GenericResult[T, E] method tests
+
+fn TestGenericResultOk(t: testing.T) {
+    res := GenericResult::Ok[int, string] { value: 100 }
+    if res.IsOk() != 1 { t.Fatal("expected IsOk == 1") }
+    if res.IsErr() != 0 { t.Fatal("expected IsErr == 0") }
+    if res.UnwrapOk() != 100 { t.Fatal("expected UnwrapOk == 100") }
+}
+
+fn TestGenericResultErr(t: testing.T) {
+    res := GenericResult::Err[int, string] { error: "something failed" }
+    if res.IsErr() != 1 { t.Fatal("expected IsErr == 1") }
+    if res.IsOk() != 0 { t.Fatal("expected IsOk == 0") }
+    msg := res.UnwrapErrString()
+    if msg != "something failed" { t.Fatal("expected error message") }
+}
+
+fn TestGenericResultOkOr(t: testing.T) {
+    res := GenericResult::Err[int, string] { error: "fail" }
+    val := res.UnwrapOkOr(-1)
+    if val != -1 { t.Fatal("expected UnwrapOkOr == -1") }
+}
+
+fn TestGenericResultOkString(t: testing.T) {
+    res := GenericResult::Ok[string, int] { value: "success" }
+    s := res.UnwrapOkString()
+    if s != "success" { t.Fatal("expected UnwrapOkString == success") }
+}
