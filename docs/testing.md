@@ -32,7 +32,7 @@ fn TestMultiply(t: T) {
 - **stdlib auto-loaded**: `testing`, `io`, `strings`, `os`, `strconv`, `time`, `result` available without import
 
 ```bash
-make test                           # run all tests in tests/ (167 passing)
+make test                           # run all tests in tests
 make test DIR=path/to/dir           # run tests in a specific directory
 make bench                          # run tests + benchmarks
 make bench DIR=path/to/dir          # benchmarks in a specific directory
@@ -83,8 +83,8 @@ BenchmarkFactorial	33554432	35 ns/op
 ## Running Tests
 
 ```bash
-make                                    # Build from seed (no Go required)
-make test                               # Run tests (90 passing)
+make                                    # Build from seed
+make test                               # Run tests
 make test DIR=path                      # Run tests in specific directory
 make bench                              # Run tests + benchmarks
 make verify                             # Verify self-hosting convergence

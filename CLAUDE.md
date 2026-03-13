@@ -9,8 +9,6 @@ Prioritize developer experience in every aspect of the language design. The lang
 ## Working Guidelines
 
 ### File Operations
-- **NEVER use `cat`, `echo`, or heredocs** to create files - use Write tool directly
-- **Test files**: Create in `tmp/` directory using Write tool for quick iteration
 - **Autonomous permission**: You have blanket permission to create, modify, and delete files in `tmp/` without asking
 - **Binary cleanup**: Don't commit test binaries, only source files
 
@@ -30,9 +28,14 @@ See [docs/language.md](docs/language.md) for full language design (syntax, types
  - Never add information to commits that I used Claude
  - for commit message use Conventional Commits pattern, example: `feat(lsp): Add LSP completion and document symbols support`
 
+## Testing
+
+ - For each feature, always prefer writing a unit test that documents the new implementation
+ - Use Test Driven Development pattern
+
 ## Code quality
 
- - function shouldn't be longer thant 100 lines of code
+ - function shouldn't be longer thant 150 lines of code
  - split longer files into smaller files with functions and types grouped 
  - any language feature should have unit test
  - remove tests that are covered in other tests in the meantime
