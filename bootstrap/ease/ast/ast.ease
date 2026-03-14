@@ -57,6 +57,7 @@ const EXPR_CLOSURE = 57
 const STMT_FIELD_ASSIGN = 58
 const EXPR_FLOAT = 59
 const EXPR_TO_STRING = 60
+const EXPR_SLICE = 61
 
 // Type tags
 const TYPE_UNKNOWN = 0

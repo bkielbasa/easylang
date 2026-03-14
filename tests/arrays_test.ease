@@ -84,3 +84,72 @@ fn TestArrayFillLoop(t: testing.T) {
     }
 }
 
+fn TestSliceBasic(t: testing.T) {
+    arr := []int{10, 20, 30, 40, 50}
+    s := arr[1:3]
+    if len(s) != 2 { t.Fatal("expected len 2, got " + strconv.Itoa(len(s))) }
+    if s[0] != 20 { t.Fatal("expected s[0]=20") }
+    if s[1] != 30 { t.Fatal("expected s[1]=30") }
+}
+
+fn TestSliceFromStart(t: testing.T) {
+    arr := []int{10, 20, 30, 40, 50}
+    s := arr[:2]
+    if len(s) != 2 { t.Fatal("expected len 2") }
+    if s[0] != 10 { t.Fatal("expected s[0]=10") }
+    if s[1] != 20 { t.Fatal("expected s[1]=20") }
+}
+
+fn TestSliceToEnd(t: testing.T) {
+    arr := []int{10, 20, 30, 40, 50}
+    s := arr[3:]
+    if len(s) != 2 { t.Fatal("expected len 2") }
+    if s[0] != 40 { t.Fatal("expected s[0]=40") }
+    if s[1] != 50 { t.Fatal("expected s[1]=50") }
+}
+
+fn TestSliceFull(t: testing.T) {
+    arr := []int{10, 20, 30}
+    s := arr[:]
+    if len(s) != 3 { t.Fatal("expected len 3") }
+    if s[0] != 10 { t.Fatal("expected s[0]=10") }
+}
+
+fn TestSliceSharedMemory(t: testing.T) {
+    arr := []int{10, 20, 30, 40, 50}
+    s := arr[1:4]
+    s[0] = 99
+    if arr[1] != 99 { t.Fatal("expected arr[1]=99 after slice mutation") }
+}
+
+fn TestSliceLen(t: testing.T) {
+    arr := []int{10, 20, 30, 40, 50}
+    s := arr[1:4]
+    if len(s) != 3 { t.Fatal("expected len 3, got " + strconv.Itoa(len(s))) }
+}
+
+fn TestSliceAppend(t: testing.T) {
+    arr := []int{10, 20, 30}
+    s := arr[0:2]
+    s = append(s, 99)
+    if len(s) != 3 { t.Fatal("expected len 3") }
+    if s[2] != 99 { t.Fatal("expected s[2]=99") }
+}
+
+fn TestSliceOfStrings(t: testing.T) {
+    arr := []string{"a", "b", "c", "d"}
+    s := arr[1:3]
+    if len(s) != 2 { t.Fatal("expected len 2") }
+    if s[0] != "b" { t.Fatal("expected s[0]=b") }
+    if s[1] != "c" { t.Fatal("expected s[1]=c") }
+}
+
+fn TestSliceOfSlice(t: testing.T) {
+    arr := []int{10, 20, 30, 40, 50}
+    s1 := arr[1:4]
+    s2 := s1[0:2]
+    if len(s2) != 2 { t.Fatal("expected len 2") }
+    if s2[0] != 20 { t.Fatal("expected s2[0]=20") }
+    if s2[1] != 30 { t.Fatal("expected s2[1]=30") }
+}
+

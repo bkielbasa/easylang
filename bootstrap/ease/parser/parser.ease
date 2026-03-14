@@ -2974,39 +2974,102 @@ fn parse_primary_expr(src: string, pos: int, nodes: []AstNode) -> ParseResult {
                         }
                     }
                     if is_generic_args == 0 {
-                    // Array indexing
+                    // Array indexing or slice
                     array_node := current_node
                     p = lex_end(src, p, next_kind)  // Skip '['
                     p = lex_skip(src, p)
 
-                    // Parse index expression
-                    index_result := parse_expr_with_pos(src, p, nodes)
-                    if index_result.node_idx < 0 {
-                        return ParseResult { node_idx: -1, new_pos: p }
-                    }
-                    p = index_result.new_pos
-                    p = lex_skip(src, p)
+                    // Check for [:end] or [:] — colon before any expression
+                    if lex_kind(src, p) == TK_COLON {
+                        // Slice with default start
+                        p = lex_end(src, p, TK_COLON)
+                        p = lex_skip(src, p)
+                        end_node := -1
+                        if lex_kind(src, p) != TK_RBRACKET {
+                            // [:end]
+                            end_result := parse_expr_with_pos(src, p, nodes)
+                            if end_result.node_idx < 0 {
+                                return ParseResult { node_idx: -1, new_pos: p }
+                            }
+                            end_node = end_result.node_idx
+                            p = end_result.new_pos
+                            p = lex_skip(src, p)
+                        }
+                        // Expect ']'
+                        if lex_kind(src, p) != TK_RBRACKET {
+                            return ParseResult { node_idx: -1, new_pos: p }
+                        }
+                        p = lex_end(src, p, TK_RBRACKET)
+                        slice_node := AstNode {
+                            tag: EXPR_SLICE,
+                            int_val: 0,
+                            str_val: "",
+                            left: array_node,
+                            right: -1,
+                            extra: end_node,
+                            type_tag: TYPE_UNKNOWN
+                        }
+                        nodes = append(nodes, slice_node)
+                        current_node = len(nodes) - 1
+                    } else {
+                        // Parse first expression (could be index or slice start)
+                        index_result := parse_expr_with_pos(src, p, nodes)
+                        if index_result.node_idx < 0 {
+                            return ParseResult { node_idx: -1, new_pos: p }
+                        }
+                        p = index_result.new_pos
+                        p = lex_skip(src, p)
 
-                    // Expect ']'
-                    if lex_kind(src, p) != TK_RBRACKET {
-                        return ParseResult { node_idx: -1, new_pos: p }
+                        if lex_kind(src, p) == TK_COLON {
+                            // Slice: arr[start:end] or arr[start:]
+                            p = lex_end(src, p, TK_COLON)
+                            p = lex_skip(src, p)
+                            end_node := -1
+                            if lex_kind(src, p) != TK_RBRACKET {
+                                // arr[start:end]
+                                end_result := parse_expr_with_pos(src, p, nodes)
+                                if end_result.node_idx < 0 {
+                                    return ParseResult { node_idx: -1, new_pos: p }
+                                }
+                                end_node = end_result.node_idx
+                                p = end_result.new_pos
+                                p = lex_skip(src, p)
+                            }
+                            // Expect ']'
+                            if lex_kind(src, p) != TK_RBRACKET {
+                                return ParseResult { node_idx: -1, new_pos: p }
+                            }
+                            p = lex_end(src, p, TK_RBRACKET)
+                            slice_node := AstNode {
+                                tag: EXPR_SLICE,
+                                int_val: 0,
+                                str_val: "",
+                                left: array_node,
+                                right: index_result.node_idx,
+                                extra: end_node,
+                                type_tag: TYPE_UNKNOWN
+                            }
+                            nodes = append(nodes, slice_node)
+                            current_node = len(nodes) - 1
+                        } else {
+                            // Regular index access: arr[idx]
+                            if lex_kind(src, p) != TK_RBRACKET {
+                                return ParseResult { node_idx: -1, new_pos: p }
+                            }
+                            p = lex_end(src, p, TK_RBRACKET)
+                            index_node := AstNode {
+                                tag: EXPR_INDEX,
+                                int_val: 0,
+                                str_val: "",
+                                left: array_node,
+                                right: index_result.node_idx,
+                                extra: -1,
+                                type_tag: TYPE_UNKNOWN
+                            }
+                            nodes = append(nodes, index_node)
+                            current_node = len(nodes) - 1
+                        }
                     }
-                    p = lex_end(src, p, TK_RBRACKET)
-
-                    // Create array index node
-                    // left = array expression, right = index expression
-                    index_node := AstNode {
-                        tag: EXPR_INDEX,
-                        int_val: 0,
-                        str_val: "",
-                        left: array_node,
-                        right: index_result.node_idx,
-                        extra: -1,
-                        type_tag: TYPE_UNKNOWN
-                    }
-                    nodes = append(nodes, index_node)
-                    current_node = len(nodes) - 1
-                    // Continue to check for more postfix operators
                     }
                 } else {
                     if next_kind == TK_DOT {
