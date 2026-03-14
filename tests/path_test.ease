@@ -1,0 +1,123 @@
+package main
+
+import (
+    "testing"
+    "path"
+)
+
+fn TestPathJoinBasic(t: testing.T) {
+    result := path.Join("foo", "bar")
+    if result != "foo/bar" { t.Fatal("Join(foo, bar) should be foo/bar") }
+}
+
+fn TestJoinTrailingSlash(t: testing.T) {
+    result := path.Join("foo/", "bar")
+    if result != "foo/bar" { t.Fatal("Join(foo/, bar) should be foo/bar") }
+}
+
+fn TestJoinEmptyFirst(t: testing.T) {
+    result := path.Join("", "bar")
+    if result != "bar" { t.Fatal("Join('', bar) should be bar") }
+}
+
+fn TestJoinEmptySecond(t: testing.T) {
+    result := path.Join("foo", "")
+    if result != "foo" { t.Fatal("Join(foo, '') should be foo") }
+}
+
+fn TestBaseSimple(t: testing.T) {
+    result := path.Base("/foo/bar.txt")
+    if result != "bar.txt" { t.Fatal("Base(/foo/bar.txt) should be bar.txt") }
+}
+
+fn TestBaseNoSlash(t: testing.T) {
+    result := path.Base("file.txt")
+    if result != "file.txt" { t.Fatal("Base(file.txt) should be file.txt") }
+}
+
+fn TestBaseTrailingSlash(t: testing.T) {
+    result := path.Base("/foo/bar/")
+    if result != "bar" { t.Fatal("Base(/foo/bar/) should be bar") }
+}
+
+fn TestBaseRoot(t: testing.T) {
+    result := path.Base("/")
+    if result != "/" { t.Fatal("Base(/) should be /") }
+}
+
+fn TestBaseEmpty(t: testing.T) {
+    result := path.Base("")
+    if result != "." { t.Fatal("Base('') should be .") }
+}
+
+fn TestDirSimple(t: testing.T) {
+    result := path.Dir("/foo/bar.txt")
+    if result != "/foo" { t.Fatal("Dir(/foo/bar.txt) should be /foo") }
+}
+
+fn TestDirNoSlash(t: testing.T) {
+    result := path.Dir("file.txt")
+    if result != "." { t.Fatal("Dir(file.txt) should be .") }
+}
+
+fn TestDirRoot(t: testing.T) {
+    result := path.Dir("/file.txt")
+    if result != "/" { t.Fatal("Dir(/file.txt) should be /") }
+}
+
+fn TestDirEmpty(t: testing.T) {
+    result := path.Dir("")
+    if result != "." { t.Fatal("Dir('') should be .") }
+}
+
+fn TestExtSimple(t: testing.T) {
+    result := path.Ext("/foo/bar.txt")
+    if result != ".txt" { t.Fatal("Ext(/foo/bar.txt) should be .txt") }
+}
+
+fn TestExtNone(t: testing.T) {
+    result := path.Ext("/foo/bar")
+    if result != "" { t.Fatal("Ext(/foo/bar) should be empty") }
+}
+
+fn TestExtDouble(t: testing.T) {
+    result := path.Ext("archive.tar.gz")
+    if result != ".gz" { t.Fatal("Ext(archive.tar.gz) should be .gz") }
+}
+
+fn TestIsAbsTrue(t: testing.T) {
+    if path.IsAbs("/foo") != 1 { t.Fatal("IsAbs(/foo) should be 1") }
+}
+
+fn TestIsAbsFalse(t: testing.T) {
+    if path.IsAbs("foo") != 0 { t.Fatal("IsAbs(foo) should be 0") }
+}
+
+fn TestIsAbsEmpty(t: testing.T) {
+    if path.IsAbs("") != 0 { t.Fatal("IsAbs('') should be 0") }
+}
+
+fn TestCleanDoubleSlash(t: testing.T) {
+    result := path.Clean("foo//bar")
+    if result != "foo/bar" { t.Fatal("Clean(foo//bar) should be foo/bar") }
+}
+
+fn TestCleanDot(t: testing.T) {
+    result := path.Clean("foo/./bar")
+    if result != "foo/bar" { t.Fatal("Clean(foo/./bar) should be foo/bar") }
+}
+
+fn TestCleanDotDot(t: testing.T) {
+    result := path.Clean("foo/baz/../bar")
+    if result != "foo/bar" { t.Fatal("Clean(foo/baz/../bar) should be foo/bar") }
+}
+
+fn TestCleanAbsDotDot(t: testing.T) {
+    result := path.Clean("/foo/../bar")
+    if result != "/bar" { t.Fatal("Clean(/foo/../bar) should be /bar") }
+}
+
+fn TestCleanEmpty(t: testing.T) {
+    result := path.Clean("")
+    if result != "." { t.Fatal("Clean('') should be .") }
+}
