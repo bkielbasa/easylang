@@ -102,6 +102,18 @@ for condition { }          // condition-based (like while)
 for x in collection { }    // range iteration
 ```
 
+## Slices (Go-style, implemented)
+```ease
+arr[start:end]     // elements from start to end-1
+arr[start:]        // elements from start to len(arr)-1
+arr[:end]          // elements from 0 to end-1
+arr[:]             // full slice (same data, new fat pointer)
+```
+- Slices share underlying memory with the original array (Go semantics)
+- Mutations through a slice affect the original array
+- `len()` and `append()` work on slices
+- Slices of slices work naturally: `arr[1:4][0:2]`
+
 ## Enums with Pattern Matching (implemented)
 ```
 enum Color { Red, Green, Blue }

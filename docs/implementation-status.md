@@ -12,7 +12,7 @@ The Ease compiler is written in Ease and compiles itself with byte-identical con
 - Module/import system (local files, directory packages, stdlib imports)
 - Directory package imports with Go-style visibility (uppercase = public)
 - Package declarations (`package main`, `package token`, etc.)
-- Standard library (strings, strconv, io, os, testing, time, result, json, lsp — all pure Ease implementations)
+- Standard library (strings, strconv, io, os, testing, time, result, json, path, lsp — all pure Ease implementations)
 - Go-style testing framework (`fn TestXxx(t: T)` in `*_test.ease`, `testing.T` struct, `testing.Fatal(msg)`, setjmp/longjmp recovery)
 - Go-style benchmark framework (`fn BenchmarkXxx(b: B)` with auto-calibration and ns/op reporting)
 - Compile-time constants (`const NAME = value`, inlined at use sites)
@@ -21,7 +21,8 @@ The Ease compiler is written in Ease and compiles itself with byte-identical con
 - **Vreg-based type system** — tracks types via `g_vreg_types`/`g_param_types` arrays, replaces `is_string_expr` heuristic
 - String `==`/`!=`/`+` auto-dispatch via vreg type lookups (no heuristic needed)
 - Dynamic struct field registry for user-defined structs
-- Go-style test suite (167 tests passing, 2 benchmarks)
+- **Slice syntax** — Go-style `arr[start:end]`, `arr[start:]`, `arr[:end]`, `arr[:]` with shared memory semantics
+- Go-style test suite (219 tests passing, 2 benchmarks)
 - **Generics** — Go-style bracket syntax `[T]` with type erasure; works on structs, enums, functions, methods, interfaces; type parameters are compile-time annotations erased during parsing
 - **`extern fn` FFI** — declare C functions directly in stdlib modules (e.g., `extern fn system(cmd: ptr) -> i32`), auto-generates LLVM IR wrappers with type conversion
 - **Bare imports** — `import "testing"` resolves to `bootstrap/ease/testing` (no `./` prefix needed for stdlib)
@@ -53,7 +54,7 @@ The Ease compiler is written in Ease and compiles itself with byte-identical con
 
 ### Standard Library Expansion
 - [ ] os - process, environment, command execution (partial: Argc, Argv, ReadFile done)
-- [ ] path - file path manipulation
+- [x] path - file path manipulation (Join, Base, Dir, Ext, IsAbs, Clean)
 - [ ] net - networking support
 - [x] json - JSON document API (build, serialize, parse)
 - [ ] http - HTTP client and server
