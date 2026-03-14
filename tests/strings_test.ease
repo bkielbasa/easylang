@@ -105,3 +105,123 @@ fn TestStringBuilderReset(t: testing.T) {
     }
 }
 
+// Split tests
+
+fn TestSplitBasic(t: testing.T) {
+    parts := strings.Split("a,b,c", ",")
+    if len(parts) != 3 { t.Fatal("expected 3 parts, got " + strconv.Itoa(len(parts))) }
+    if parts[0] != "a" { t.Fatal("expected a, got " + parts[0]) }
+    if parts[1] != "b" { t.Fatal("expected b, got " + parts[1]) }
+    if parts[2] != "c" { t.Fatal("expected c, got " + parts[2]) }
+}
+
+fn TestSplitNoSep(t: testing.T) {
+    parts := strings.Split("hello", ",")
+    if len(parts) != 1 { t.Fatal("expected 1 part") }
+    if parts[0] != "hello" { t.Fatal("expected hello") }
+}
+
+fn TestSplitEmpty(t: testing.T) {
+    parts := strings.Split("", ",")
+    if len(parts) != 1 { t.Fatal("expected 1 part") }
+    if parts[0] != "" { t.Fatal("expected empty string") }
+}
+
+fn TestSplitMultiChar(t: testing.T) {
+    parts := strings.Split("a::b::c", "::")
+    if len(parts) != 3 { t.Fatal("expected 3 parts") }
+    if parts[0] != "a" { t.Fatal("expected a") }
+    if parts[1] != "b" { t.Fatal("expected b") }
+    if parts[2] != "c" { t.Fatal("expected c") }
+}
+
+// Join tests
+
+fn TestJoinBasic(t: testing.T) {
+    parts := []string{"a", "b", "c"}
+    result := strings.Join(parts, ",")
+    if result != "a,b,c" { t.Fatal("expected a,b,c, got " + result) }
+}
+
+fn TestJoinEmpty(t: testing.T) {
+    parts := []string{}
+    result := strings.Join(parts, ",")
+    if result != "" { t.Fatal("expected empty, got " + result) }
+}
+
+fn TestJoinSingle(t: testing.T) {
+    parts := []string{"hello"}
+    result := strings.Join(parts, ",")
+    if result != "hello" { t.Fatal("expected hello, got " + result) }
+}
+
+// TrimSpace tests
+
+fn TestTrimSpaceBasic(t: testing.T) {
+    result := strings.TrimSpace("  hello  ")
+    if result != "hello" { t.Fatal("expected hello, got " + result) }
+}
+
+fn TestTrimSpaceTabs(t: testing.T) {
+    result := strings.TrimSpace("\thello\n")
+    if result != "hello" { t.Fatal("expected hello, got " + result) }
+}
+
+fn TestTrimSpaceNone(t: testing.T) {
+    result := strings.TrimSpace("hello")
+    if result != "hello" { t.Fatal("expected hello, got " + result) }
+}
+
+// Replace tests
+
+fn TestReplaceAll(t: testing.T) {
+    result := strings.ReplaceAll("hello world hello", "hello", "hi")
+    if result != "hi world hi" { t.Fatal("expected hi world hi, got " + result) }
+}
+
+fn TestReplaceNoMatch(t: testing.T) {
+    result := strings.ReplaceAll("hello", "xyz", "abc")
+    if result != "hello" { t.Fatal("expected hello, got " + result) }
+}
+
+// ToUpper / ToLower tests
+
+fn TestToUpper(t: testing.T) {
+    result := strings.ToUpper("hello")
+    if result != "HELLO" { t.Fatal("expected HELLO, got " + result) }
+}
+
+fn TestToLower(t: testing.T) {
+    result := strings.ToLower("HELLO")
+    if result != "hello" { t.Fatal("expected hello, got " + result) }
+}
+
+fn TestToUpperMixed(t: testing.T) {
+    result := strings.ToUpper("Hello World 123!")
+    if result != "HELLO WORLD 123!" { t.Fatal("expected HELLO WORLD 123!, got " + result) }
+}
+
+// Count tests
+
+fn TestCountBasic(t: testing.T) {
+    result := strings.Count("hello", "l")
+    if result != 2 { t.Fatal("expected 2, got " + strconv.Itoa(result)) }
+}
+
+fn TestCountNoMatch(t: testing.T) {
+    result := strings.Count("hello", "x")
+    if result != 0 { t.Fatal("expected 0") }
+}
+
+// Repeat tests
+
+fn TestRepeatBasic(t: testing.T) {
+    result := strings.Repeat("ab", 3)
+    if result != "ababab" { t.Fatal("expected ababab, got " + result) }
+}
+
+fn TestRepeatZero(t: testing.T) {
+    result := strings.Repeat("ab", 0)
+    if result != "" { t.Fatal("expected empty, got " + result) }
+}
+

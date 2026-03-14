@@ -175,6 +175,142 @@ fn Index(s: string, sub: string) -> int {
     return -1
 }
 
+fn Split(s: string, sep: string) -> []string {
+    parts := []string{}
+    slen := len(s)
+    seplen := len(sep)
+    if seplen == 0 {
+        parts = append(parts, s)
+        return parts
+    }
+    start := 0
+    for start <= slen {
+        idx := Index(str_substring(s, start, slen), sep)
+        if idx == -1 {
+            parts = append(parts, str_substring(s, start, slen))
+            break
+        }
+        parts = append(parts, str_substring(s, start, start + idx))
+        start = start + idx + seplen
+        if start > slen {
+            parts = append(parts, "")
+        }
+    }
+    return parts
+}
+
+fn Join(parts: []string, sep: string) -> string {
+    n := len(parts)
+    if n == 0 { return "" }
+    result := parts[0]
+    i := 1
+    for i < n {
+        result = result + sep + parts[i]
+        i = i + 1
+    }
+    return result
+}
+
+fn is_whitespace(c: int) -> int {
+    if c == 32 { return 1 }
+    if c == 9 { return 1 }
+    if c == 10 { return 1 }
+    if c == 13 { return 1 }
+    return 0
+}
+
+fn TrimSpace(s: string) -> string {
+    slen := len(s)
+    if slen == 0 { return "" }
+    start := 0
+    for start < slen {
+        if is_whitespace(str_char_at(s, start)) == 0 { break }
+        start = start + 1
+    }
+    end := slen
+    for end > start {
+        if is_whitespace(str_char_at(s, end - 1)) == 0 { break }
+        end = end - 1
+    }
+    return str_substring(s, start, end)
+}
+
+fn ReplaceAll(s: string, old: string, new: string) -> string {
+    oldlen := len(old)
+    if oldlen == 0 { return s }
+    result := ""
+    slen := len(s)
+    i := 0
+    for i <= slen {
+        idx := Index(str_substring(s, i, slen), old)
+        if idx == -1 {
+            result = result + str_substring(s, i, slen)
+            break
+        }
+        result = result + str_substring(s, i, i + idx) + new
+        i = i + idx + oldlen
+    }
+    return result
+}
+
+fn ToUpper(s: string) -> string {
+    slen := len(s)
+    buf := heap_alloc(slen + 1)
+    i := 0
+    for i < slen {
+        c := str_char_at(s, i)
+        if c >= 97 && c <= 122 {
+            c = c - 32
+        }
+        poke(buf + i, c)
+        i = i + 1
+    }
+    poke(buf + slen, 0)
+    return buf
+}
+
+fn ToLower(s: string) -> string {
+    slen := len(s)
+    buf := heap_alloc(slen + 1)
+    i := 0
+    for i < slen {
+        c := str_char_at(s, i)
+        if c >= 65 && c <= 90 {
+            c = c + 32
+        }
+        poke(buf + i, c)
+        i = i + 1
+    }
+    poke(buf + slen, 0)
+    return buf
+}
+
+fn Count(s: string, sub: string) -> int {
+    sublen := len(sub)
+    if sublen == 0 { return 0 }
+    slen := len(s)
+    count := 0
+    i := 0
+    for i <= slen - sublen {
+        idx := Index(str_substring(s, i, slen), sub)
+        if idx == -1 { break }
+        count = count + 1
+        i = i + idx + sublen
+    }
+    return count
+}
+
+fn Repeat(s: string, n: int) -> string {
+    if n <= 0 { return "" }
+    result := ""
+    i := 0
+    for i < n {
+        result = result + s
+        i = i + 1
+    }
+    return result
+}
+
 // Builder - mutable string builder using global-array pattern
 g_builder_count := 0
 g_builder_doc := []int{}
