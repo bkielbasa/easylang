@@ -334,6 +334,68 @@ fn collect_vregs(instrs: []IRInstr, start: int, end_pos: int, param_count: int) 
     return vregs
 }
 
+fn emit_reflect_metadata(fd: int) {
+    emitted := []string{}
+    si := 0
+    for si < len(g_struct_reg_names) {
+        sname := g_struct_reg_names[si]
+        count := g_struct_reg_field_counts[si]
+        start := g_struct_reg_field_starts[si]
+
+        // Skip duplicate struct names
+        dup := 0
+        ei := 0
+        for ei < len(emitted) {
+            if emitted[ei] == sname {
+                dup = 1
+                break
+            }
+            ei = ei + 1
+        }
+        if dup == 0 {
+            emitted = append(emitted, sname)
+
+            // Emit field name string constants as null-terminated C strings
+            fi := 0
+            for fi < count {
+                fname := g_struct_reg_field_names[start + fi]
+                write_str(fd, "@reflect." + sname + ".fname." + strconv.Itoa(fi) + " = private unnamed_addr constant [" + strconv.Itoa(len(fname) + 1) + " x i8] c\"" + fname + "\\00\"\n")
+                fi = fi + 1
+            }
+
+            // Emit field count
+            write_str(fd, "@reflect." + sname + ".count = private constant i64 " + strconv.Itoa(count) + "\n")
+
+            // Emit field names pointer array
+            if count > 0 {
+                write_str(fd, "@reflect." + sname + ".names = private constant [" + strconv.Itoa(count) + " x ptr] [")
+                fi = 0
+                for fi < count {
+                    if fi > 0 { write_str(fd, ", ") }
+                    write_str(fd, "ptr @reflect." + sname + ".fname." + strconv.Itoa(fi))
+                    fi = fi + 1
+                }
+                write_str(fd, "]\n")
+            }
+
+            // Emit field types array
+            if count > 0 {
+                write_str(fd, "@reflect." + sname + ".types = private constant [" + strconv.Itoa(count) + " x i64] [")
+                fi = 0
+                for fi < count {
+                    if fi > 0 { write_str(fd, ", ") }
+                    ftype := g_struct_reg_field_types[start + fi]
+                    write_str(fd, "i64 " + strconv.Itoa(ftype))
+                    fi = fi + 1
+                }
+                write_str(fd, "]\n")
+            }
+        }
+
+        si = si + 1
+    }
+}
+
 fn emit_llvm_ir(instrs: []IRInstr, output_path: string) -> int {
     fd := syscall.open(output_path, 1537, 420)
     if fd < 0 {
@@ -366,6 +428,8 @@ fn emit_llvm_ir(instrs: []IRInstr, output_path: string) -> int {
     if len(string_table) > 0 {
         write_str(fd, "\n")
     }
+
+    emit_reflect_metadata(fd)
 
     // Pass 1b: Collect global variables from OP_LOAD_GLOBAL instructions
     global_names := []string{}
