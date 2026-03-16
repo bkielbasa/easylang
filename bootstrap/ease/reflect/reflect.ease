@@ -1,0 +1,14 @@
+package reflect
+
+// Type tag constants (mirror ast.ease TYPE_* constants)
+const INT = 1
+const BOOL = 2
+const STRING = 3
+const STRUCT = 7
+const FLOAT = 12
+
+fn NumField(v: int) -> int { return 0 }
+fn FieldName(v: int, i: int) -> string { return "" }
+fn FieldType(v: int, i: int) -> int { return 0 }
+fn FieldValue(v: int, i: int) -> int { return 0 }
+fn SetFieldValue(v: int, i: int, val: int) { }

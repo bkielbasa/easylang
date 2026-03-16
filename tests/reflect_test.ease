@@ -1,0 +1,60 @@
+package main
+
+import (
+    "testing"
+    "reflect"
+)
+
+struct ReflectUser {
+    name: string,
+    age: int,
+    active: int,
+}
+
+fn TestReflectNumField(t: testing.T) {
+    u := ReflectUser { name: "alice", age: 30, active: 1 }
+    n := reflect.NumField(u)
+    if n != 3 { t.Fatal("expected 3 fields, got " + strconv.Itoa(n)) }
+}
+
+fn TestReflectFieldName(t: testing.T) {
+    u := ReflectUser { name: "alice", age: 30, active: 1 }
+    n0 := reflect.FieldName(u, 0)
+    if n0 != "name" { t.Fatal("expected field 0 = name, got " + n0) }
+    n1 := reflect.FieldName(u, 1)
+    if n1 != "age" { t.Fatal("expected field 1 = age, got " + n1) }
+    n2 := reflect.FieldName(u, 2)
+    if n2 != "active" { t.Fatal("expected field 2 = active, got " + n2) }
+}
+
+fn TestReflectFieldType(t: testing.T) {
+    u := ReflectUser { name: "alice", age: 30, active: 1 }
+    t0 := reflect.FieldType(u, 0)
+    // TYPE_STRING = 3
+    if t0 != 3 { t.Fatal("expected STRING(3) for field 0, got " + strconv.Itoa(t0)) }
+    t1 := reflect.FieldType(u, 1)
+    // TYPE_INT = 1
+    if t1 != 1 { t.Fatal("expected INT(1) for field 1, got " + strconv.Itoa(t1)) }
+}
+
+fn TestReflectFieldValue(t: testing.T) {
+    u := ReflectUser { name: "alice", age: 30, active: 1 }
+    age_val := reflect.FieldValue(u, 1)
+    if age_val != 30 { t.Fatal("expected age = 30, got " + strconv.Itoa(age_val)) }
+    active_val := reflect.FieldValue(u, 2)
+    if active_val != 1 { t.Fatal("expected active = 1") }
+}
+
+fn TestReflectSetFieldValue(t: testing.T) {
+    u := ReflectUser { name: "alice", age: 30, active: 1 }
+    reflect.SetFieldValue(u, 1, 99)
+    if u.age != 99 { t.Fatal("expected age = 99 after SetFieldValue") }
+}
+
+fn TestReflectFieldValueString(t: testing.T) {
+    u := ReflectUser { name: "alice", age: 30, active: 1 }
+    name_val := reflect.FieldValue(u, 0)
+    u2 := ReflectUser { name: "", age: 0, active: 0 }
+    reflect.SetFieldValue(u2, 0, name_val)
+    if u2.name != "alice" { t.Fatal("expected name = alice after copy via reflect") }
+}

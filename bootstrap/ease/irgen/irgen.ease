@@ -1691,6 +1691,51 @@ fn gen_ir_from_ast_with_symtab(ast_idx: int, nodes: []AstNode, instrs: []IRInstr
             set_vreg_type(dest, TYPE_INT)
             return dest
         }
+        if func_name == "reflect.NumField" {
+            arg_vregs := gen_ir_eval_args(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
+            sname := get_vreg_struct_name(arg_vregs[0])
+            result_vreg := len(instrs)
+            instrs = append(instrs, IRInstr { op: OP_REFLECT_NUM_FIELD, dest: result_vreg, arg1: arg_vregs[0], arg2: 0, arg3: 0, str_val: sname })
+            set_vreg_type(result_vreg, TYPE_INT)
+            return result_vreg
+        }
+
+        if func_name == "reflect.FieldName" {
+            arg_vregs := gen_ir_eval_args(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
+            sname := get_vreg_struct_name(arg_vregs[0])
+            result_vreg := len(instrs)
+            instrs = append(instrs, IRInstr { op: OP_REFLECT_FIELD_NAME, dest: result_vreg, arg1: arg_vregs[0], arg2: arg_vregs[1], arg3: 0, str_val: sname })
+            set_vreg_type(result_vreg, TYPE_STRING)
+            return result_vreg
+        }
+
+        if func_name == "reflect.FieldType" {
+            arg_vregs := gen_ir_eval_args(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
+            sname := get_vreg_struct_name(arg_vregs[0])
+            result_vreg := len(instrs)
+            instrs = append(instrs, IRInstr { op: OP_REFLECT_FIELD_TYPE, dest: result_vreg, arg1: arg_vregs[0], arg2: arg_vregs[1], arg3: 0, str_val: sname })
+            set_vreg_type(result_vreg, TYPE_INT)
+            return result_vreg
+        }
+
+        if func_name == "reflect.FieldValue" {
+            arg_vregs := gen_ir_eval_args(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
+            sname := get_vreg_struct_name(arg_vregs[0])
+            result_vreg := len(instrs)
+            instrs = append(instrs, IRInstr { op: OP_REFLECT_FIELD_VALUE, dest: result_vreg, arg1: arg_vregs[0], arg2: arg_vregs[1], arg3: 0, str_val: sname })
+            set_vreg_type(result_vreg, TYPE_INT)
+            return result_vreg
+        }
+
+        if func_name == "reflect.SetFieldValue" {
+            arg_vregs := gen_ir_eval_args(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
+            sname := get_vreg_struct_name(arg_vregs[0])
+            result_vreg := len(instrs)
+            instrs = append(instrs, IRInstr { op: OP_REFLECT_SET_FIELD_VALUE, dest: result_vreg, arg1: arg_vregs[0], arg2: arg_vregs[1], arg3: arg_vregs[2], str_val: sname })
+            set_vreg_type(result_vreg, TYPE_INT)
+            return result_vreg
+        }
+
         // Check for method call: "varname.MethodName"
         dot_pos := find_dot(func_name)
         if dot_pos > 0 {
