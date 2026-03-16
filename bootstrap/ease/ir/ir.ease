@@ -127,6 +127,11 @@ const OP_INT_TO_FLOAT = 84
 const OP_FLOAT_TO_INT = 85
 const OP_BOOL_TO_STR = 86
 const OP_ARRAY_SLICE = 87
+const OP_REFLECT_NUM_FIELD = 88
+const OP_REFLECT_FIELD_NAME = 89
+const OP_REFLECT_FIELD_TYPE = 90
+const OP_REFLECT_FIELD_VALUE = 91
+const OP_REFLECT_SET_FIELD_VALUE = 92
 
 // Struct definitions and offsets (hardcoded for known structs)
 // AstNode: tag(8), int_val(8), str_val(8), left(8), right(8), extra(8), type_tag(8) = 56 bytes

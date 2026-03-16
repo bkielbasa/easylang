@@ -303,7 +303,7 @@ fn collect_vregs(instrs: []IRInstr, start: int, end_pos: int, param_count: int) 
         instr := instrs[i]
         op := instr.op
         // dest is vreg for result-producing operations
-        if op == OP_LOADCONST || op == OP_ADD || op == OP_SUB || op == OP_MUL || op == OP_DIV || op == OP_CMP_LT || op == OP_CMP_GT || op == OP_CMP_LE || op == OP_CMP_GE || op == OP_CMP_EQ || op == OP_CMP_NE || op == OP_AND || op == OP_OR || op == OP_NOT || op == OP_XOR || op == OP_BITAND || op == OP_BITOR || op == OP_ALLOCA || op == OP_LOAD || op == OP_INDEXADDR || op == OP_ARRAY_LEN || op == OP_STR_LEN || op == OP_STR_CHAR_AT || op == OP_PEEK || op == OP_HEAP_ALLOC || op == OP_CALL || op == OP_ARGC || op == OP_ARGV || op == OP_INT_TO_STR || op == OP_STR_EQ || op == OP_STR_NE || op == OP_STR_CONCAT || op == OP_LOAD_GLOBAL || op == OP_SYSCALL_OPEN || op == OP_SYSCALL_WRITE || op == OP_SYSCALL_CLOSE || op == OP_SYSCALL_READ || op == OP_IS_DIR || op == OP_LIST_DIR || op == OP_SETJMP || op == OP_TIME_NANOS || op == OP_TIME_WALLCLOCK || op == OP_IFACE_WRAP || op == OP_IFACE_CALL || op == OP_MAP_NEW || op == OP_MAP_GET || op == OP_MAP_SET || op == OP_MAP_DELETE || op == OP_MAP_LEN || op == OP_MAP_HAS || op == OP_CLOSURE_NEW || op == OP_CLOSURE_CALL || op == OP_LOADFLOAT || op == OP_FADD || op == OP_FSUB || op == OP_FMUL || op == OP_FDIV || op == OP_FMOD || op == OP_FCMP_LT || op == OP_FCMP_GT || op == OP_FCMP_LE || op == OP_FCMP_GE || op == OP_FCMP_EQ || op == OP_FCMP_NE || op == OP_FLOAT_TO_STR || op == OP_INT_TO_FLOAT || op == OP_FLOAT_TO_INT || op == OP_BOOL_TO_STR || op == OP_ARRAY_SLICE {
+        if op == OP_LOADCONST || op == OP_ADD || op == OP_SUB || op == OP_MUL || op == OP_DIV || op == OP_CMP_LT || op == OP_CMP_GT || op == OP_CMP_LE || op == OP_CMP_GE || op == OP_CMP_EQ || op == OP_CMP_NE || op == OP_AND || op == OP_OR || op == OP_NOT || op == OP_XOR || op == OP_BITAND || op == OP_BITOR || op == OP_ALLOCA || op == OP_LOAD || op == OP_INDEXADDR || op == OP_ARRAY_LEN || op == OP_STR_LEN || op == OP_STR_CHAR_AT || op == OP_PEEK || op == OP_HEAP_ALLOC || op == OP_CALL || op == OP_ARGC || op == OP_ARGV || op == OP_INT_TO_STR || op == OP_STR_EQ || op == OP_STR_NE || op == OP_STR_CONCAT || op == OP_LOAD_GLOBAL || op == OP_SYSCALL_OPEN || op == OP_SYSCALL_WRITE || op == OP_SYSCALL_CLOSE || op == OP_SYSCALL_READ || op == OP_IS_DIR || op == OP_LIST_DIR || op == OP_SETJMP || op == OP_TIME_NANOS || op == OP_TIME_WALLCLOCK || op == OP_IFACE_WRAP || op == OP_IFACE_CALL || op == OP_MAP_NEW || op == OP_MAP_GET || op == OP_MAP_SET || op == OP_MAP_DELETE || op == OP_MAP_LEN || op == OP_MAP_HAS || op == OP_CLOSURE_NEW || op == OP_CLOSURE_CALL || op == OP_LOADFLOAT || op == OP_FADD || op == OP_FSUB || op == OP_FMUL || op == OP_FDIV || op == OP_FMOD || op == OP_FCMP_LT || op == OP_FCMP_GT || op == OP_FCMP_LE || op == OP_FCMP_GE || op == OP_FCMP_EQ || op == OP_FCMP_NE || op == OP_FLOAT_TO_STR || op == OP_INT_TO_FLOAT || op == OP_FLOAT_TO_INT || op == OP_BOOL_TO_STR || op == OP_ARRAY_SLICE || op == OP_REFLECT_NUM_FIELD || op == OP_REFLECT_FIELD_NAME || op == OP_REFLECT_FIELD_TYPE || op == OP_REFLECT_FIELD_VALUE {
             if instr.dest >= 0 { add_unique(vregs, instr.dest) }
         }
         // RET dest is vreg
@@ -320,7 +320,7 @@ fn collect_vregs(instrs: []IRInstr, start: int, end_pos: int, param_count: int) 
             if instr.arg1 >= 0 { add_unique(vregs, instr.arg1) }
         }
         // arg2 is vreg for binary ops, STORE, ARRAY_PUSH, POKE, STR_EQ/NE, STR_CHAR_AT, etc
-        if op == OP_ADD || op == OP_SUB || op == OP_MUL || op == OP_DIV || op == OP_CMP_LT || op == OP_CMP_GT || op == OP_CMP_LE || op == OP_CMP_GE || op == OP_CMP_EQ || op == OP_CMP_NE || op == OP_AND || op == OP_OR || op == OP_XOR || op == OP_BITAND || op == OP_BITOR || op == OP_STORE || op == OP_ARRAY_PUSH || op == OP_POKE || op == OP_STR_EQ || op == OP_STR_NE || op == OP_STR_CONCAT || op == OP_STR_CHAR_AT || op == OP_MEMCOPY || op == OP_SYSCALL_OPEN || op == OP_SYSCALL_WRITE || op == OP_SYSCALL_CLOSE || op == OP_SYSCALL_READ || op == OP_STORE_INDEX || op == OP_MAP_GET || op == OP_MAP_SET || op == OP_MAP_DELETE || op == OP_MAP_HAS || op == OP_FADD || op == OP_FSUB || op == OP_FMUL || op == OP_FDIV || op == OP_FMOD || op == OP_FCMP_LT || op == OP_FCMP_GT || op == OP_FCMP_LE || op == OP_FCMP_GE || op == OP_FCMP_EQ || op == OP_FCMP_NE || op == OP_ARRAY_SLICE {
+        if op == OP_ADD || op == OP_SUB || op == OP_MUL || op == OP_DIV || op == OP_CMP_LT || op == OP_CMP_GT || op == OP_CMP_LE || op == OP_CMP_GE || op == OP_CMP_EQ || op == OP_CMP_NE || op == OP_AND || op == OP_OR || op == OP_XOR || op == OP_BITAND || op == OP_BITOR || op == OP_STORE || op == OP_ARRAY_PUSH || op == OP_POKE || op == OP_STR_EQ || op == OP_STR_NE || op == OP_STR_CONCAT || op == OP_STR_CHAR_AT || op == OP_MEMCOPY || op == OP_SYSCALL_OPEN || op == OP_SYSCALL_WRITE || op == OP_SYSCALL_CLOSE || op == OP_SYSCALL_READ || op == OP_STORE_INDEX || op == OP_MAP_GET || op == OP_MAP_SET || op == OP_MAP_DELETE || op == OP_MAP_HAS || op == OP_FADD || op == OP_FSUB || op == OP_FMUL || op == OP_FDIV || op == OP_FMOD || op == OP_FCMP_LT || op == OP_FCMP_GT || op == OP_FCMP_LE || op == OP_FCMP_GE || op == OP_FCMP_EQ || op == OP_FCMP_NE || op == OP_ARRAY_SLICE || op == OP_REFLECT_FIELD_NAME || op == OP_REFLECT_FIELD_TYPE || op == OP_REFLECT_FIELD_VALUE || op == OP_REFLECT_SET_FIELD_VALUE {
             if instr.arg2 >= 0 { add_unique(vregs, instr.arg2) }
         }
         // MEMCOPY arg3 is vreg (size)
@@ -329,6 +329,7 @@ fn collect_vregs(instrs: []IRInstr, start: int, end_pos: int, param_count: int) 
         if (op == OP_SYSCALL_OPEN || op == OP_SYSCALL_READ) && instr.arg3 >= 0 { add_unique(vregs, instr.arg3) }
         // STORE_INDEX arg3 is vreg (value), MAP_SET arg3 is vreg (value), ARRAY_SLICE arg3 is vreg (end)
         if (op == OP_STORE_INDEX || op == OP_MAP_SET || op == OP_ARRAY_SLICE) && instr.arg3 >= 0 { add_unique(vregs, instr.arg3) }
+        if op == OP_REFLECT_SET_FIELD_VALUE && instr.arg3 >= 0 { add_unique(vregs, instr.arg3) }
         i = i + 1
     }
     return vregs
@@ -933,6 +934,62 @@ fn emit_llvm_function(fd: int, instrs: []IRInstr, start: int, end_pos: int, func
             result := "%sl.r." + tis
             write_str(fd, "  " + result + " = ptrtoint ptr " + new_fp + " to i64\n")
             emit_store_vreg(fd, instr.dest, result)
+        }
+
+        if terminated == 0 && instr.op == OP_REFLECT_NUM_FIELD {
+            sname := instr.str_val
+            val := tmp_name(ti, 1)
+            write_str(fd, "  " + val + " = load i64, ptr @reflect." + sname + ".count\n")
+            emit_store_vreg(fd, instr.dest, val)
+        }
+
+        if terminated == 0 && instr.op == OP_REFLECT_FIELD_NAME {
+            sname := instr.str_val
+            idx := emit_load_vreg(fd, instr.arg2, ti, 0)
+            gep := tmp_name(ti, 1)
+            write_str(fd, "  " + gep + " = getelementptr [0 x ptr], ptr @reflect." + sname + ".names, i64 0, i64 " + idx + "\n")
+            cstr := tmp_name(ti, 2)
+            write_str(fd, "  " + cstr + " = load ptr, ptr " + gep + "\n")
+            str_val := tmp_name(ti, 3)
+            write_str(fd, "  " + str_val + " = ptrtoint ptr " + cstr + " to i64\n")
+            emit_store_vreg(fd, instr.dest, str_val)
+        }
+
+        if terminated == 0 && instr.op == OP_REFLECT_FIELD_TYPE {
+            sname := instr.str_val
+            idx := emit_load_vreg(fd, instr.arg2, ti, 0)
+            gep := tmp_name(ti, 1)
+            write_str(fd, "  " + gep + " = getelementptr [0 x i64], ptr @reflect." + sname + ".types, i64 0, i64 " + idx + "\n")
+            val := tmp_name(ti, 2)
+            write_str(fd, "  " + val + " = load i64, ptr " + gep + "\n")
+            emit_store_vreg(fd, instr.dest, val)
+        }
+
+        if terminated == 0 && instr.op == OP_REFLECT_FIELD_VALUE {
+            base := emit_load_vreg(fd, instr.arg1, ti, 0)
+            idx := emit_load_vreg(fd, instr.arg2, ti, 1)
+            offset := tmp_name(ti, 2)
+            write_str(fd, "  " + offset + " = mul i64 " + idx + ", 8\n")
+            addr := tmp_name(ti, 3)
+            write_str(fd, "  " + addr + " = add i64 " + base + ", " + offset + "\n")
+            ptr := tmp_name(ti, 4)
+            write_str(fd, "  " + ptr + " = inttoptr i64 " + addr + " to ptr\n")
+            val := tmp_name(ti, 5)
+            write_str(fd, "  " + val + " = load i64, ptr " + ptr + "\n")
+            emit_store_vreg(fd, instr.dest, val)
+        }
+
+        if terminated == 0 && instr.op == OP_REFLECT_SET_FIELD_VALUE {
+            base := emit_load_vreg(fd, instr.arg1, ti, 0)
+            idx := emit_load_vreg(fd, instr.arg2, ti, 1)
+            val := emit_load_vreg(fd, instr.arg3, ti, 2)
+            offset := tmp_name(ti, 3)
+            write_str(fd, "  " + offset + " = mul i64 " + idx + ", 8\n")
+            addr := tmp_name(ti, 4)
+            write_str(fd, "  " + addr + " = add i64 " + base + ", " + offset + "\n")
+            ptr := tmp_name(ti, 5)
+            write_str(fd, "  " + ptr + " = inttoptr i64 " + addr + " to ptr\n")
+            write_str(fd, "  store i64 " + val + ", ptr " + ptr + "\n")
         }
 
         if terminated == 0 && instr.op == OP_STR_LEN {
