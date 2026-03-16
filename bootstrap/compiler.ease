@@ -817,12 +817,14 @@ fn register_type_decls(nodes: []AstNode) {
         if nodes[sfi].tag == DECL_STRUCT {
             struct_name := nodes[sfi].str_val
             field_names_list := []string{}
+            field_types_list := []int{}
             fi := nodes[sfi].left
             if fi >= 0 {
                 field_idx := 0
                 for fi < nodes_len {
                     if nodes[fi].tag != DECL_FIELD { break }
                     field_names_list = append(field_names_list, nodes[fi].str_val)
+                    field_types_list = append(field_types_list, nodes[fi].type_tag)
                     if nodes[fi].type_tag != TYPE_UNKNOWN {
                         register_field_type(nodes[fi].str_val, nodes[fi].type_tag, nodes[fi].int_val)
                     }
@@ -834,7 +836,7 @@ fn register_type_decls(nodes: []AstNode) {
                     fi = fi + 1
                 }
             }
-            RegisterStruct(struct_name, field_names_list)
+            RegisterStruct(struct_name, field_names_list, field_types_list)
         }
         sfi = sfi + 1
     }

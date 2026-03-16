@@ -138,14 +138,16 @@ g_struct_reg_names := []string{}
 g_struct_reg_field_counts := []int{}
 g_struct_reg_field_starts := []int{}
 g_struct_reg_field_names := []string{}
+g_struct_reg_field_types := []int{}
 
-fn RegisterStruct(name: string, field_names: []string) {
+fn RegisterStruct(name: string, field_names: []string, field_types: []int) {
     g_struct_reg_names = append(g_struct_reg_names, name)
     g_struct_reg_field_counts = append(g_struct_reg_field_counts, len(field_names))
     g_struct_reg_field_starts = append(g_struct_reg_field_starts, len(g_struct_reg_field_names))
     i := 0
     for i < len(field_names) {
         g_struct_reg_field_names = append(g_struct_reg_field_names, field_names[i])
+        g_struct_reg_field_types = append(g_struct_reg_field_types, field_types[i])
         i = i + 1
     }
 }
