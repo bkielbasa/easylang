@@ -8,6 +8,11 @@ const json_bool = 3
 const json_object = 4
 const json_array = 5
 
+struct Value {
+    type_tag: int,
+    data: int,
+}
+
 struct Doc {
     id: int,
 }
@@ -43,6 +48,197 @@ fn NewArray() -> Doc {
     g_doc_count = g_doc_count + 1
     g_doc_is_array = append(g_doc_is_array, 1)
     return Doc { id: doc_id }
+}
+
+// --- Value constructors ---
+
+fn Str(s: string) -> Value {
+    return Value { type_tag: json_string, data: s }
+}
+
+fn Num(n: int) -> Value {
+    return Value { type_tag: json_int, data: n }
+}
+
+fn Bool(b: int) -> Value {
+    return Value { type_tag: json_bool, data: b }
+}
+
+fn Null() -> Value {
+    return Value { type_tag: json_null, data: 0 }
+}
+
+fn Object() -> Value {
+    doc_id := g_doc_count
+    g_doc_count = g_doc_count + 1
+    g_doc_is_array = append(g_doc_is_array, 0)
+    return Value { type_tag: json_object, data: doc_id }
+}
+
+fn Array() -> Value {
+    doc_id := g_doc_count
+    g_doc_count = g_doc_count + 1
+    g_doc_is_array = append(g_doc_is_array, 1)
+    return Value { type_tag: json_array, data: doc_id }
+}
+
+// --- Value getters ---
+
+fn (v: Value) String() -> string {
+    if v.type_tag != json_string { return "" }
+    return v.data
+}
+
+fn (v: Value) Int() -> int {
+    if v.type_tag != json_int { return 0 }
+    return v.data
+}
+
+fn (v: Value) Bool() -> int {
+    if v.type_tag != json_bool { return 0 }
+    return v.data
+}
+
+fn (v: Value) Type() -> int {
+    return v.type_tag
+}
+
+fn (v: Value) IsNull() -> int {
+    if v.type_tag == json_null { return 1 }
+    return 0
+}
+
+// --- Value object/array methods ---
+
+fn (v: Value) Set(key: string, val: Value) {
+    if v.type_tag != json_object { return }
+    doc_id := v.data
+    // Update existing key if present
+    i := 0
+    for i < len(g_entry_doc) {
+        if g_entry_doc[i] == doc_id && g_entry_key[i] == key {
+            g_entry_type[i] = val.type_tag
+            if val.type_tag == json_string {
+                g_entry_str[i] = val.data
+            } else {
+                g_entry_int[i] = val.data
+            }
+            return
+        }
+        i = i + 1
+    }
+    g_entry_doc = append(g_entry_doc, doc_id)
+    g_entry_key = append(g_entry_key, key)
+    g_entry_type = append(g_entry_type, val.type_tag)
+    if val.type_tag == json_string {
+        g_entry_str = append(g_entry_str, val.data)
+        g_entry_int = append(g_entry_int, 0)
+    } else {
+        g_entry_str = append(g_entry_str, "")
+        g_entry_int = append(g_entry_int, val.data)
+    }
+}
+
+fn (v: Value) Get(key: string) -> Value {
+    if v.type_tag != json_object { return Value { type_tag: json_null, data: 0 } }
+    doc_id := v.data
+    i := 0
+    for i < len(g_entry_doc) {
+        if g_entry_doc[i] == doc_id && g_entry_key[i] == key {
+            etype := g_entry_type[i]
+            if etype == json_string {
+                return Value { type_tag: json_string, data: g_entry_str[i] }
+            }
+            return Value { type_tag: etype, data: g_entry_int[i] }
+        }
+        i = i + 1
+    }
+    return Value { type_tag: json_null, data: 0 }
+}
+
+fn (v: Value) Has(key: string) -> int {
+    if v.type_tag != json_object { return 0 }
+    doc_id := v.data
+    i := 0
+    for i < len(g_entry_doc) {
+        if g_entry_doc[i] == doc_id && g_entry_key[i] == key { return 1 }
+        i = i + 1
+    }
+    return 0
+}
+
+fn (v: Value) At(index: int) -> Value {
+    if v.type_tag != json_array { return Value { type_tag: json_null, data: 0 } }
+    doc_id := v.data
+    count := 0
+    i := 0
+    for i < len(g_entry_doc) {
+        if g_entry_doc[i] == doc_id {
+            if count == index {
+                etype := g_entry_type[i]
+                if etype == json_string {
+                    return Value { type_tag: json_string, data: g_entry_str[i] }
+                }
+                return Value { type_tag: etype, data: g_entry_int[i] }
+            }
+            count = count + 1
+        }
+        i = i + 1
+    }
+    return Value { type_tag: json_null, data: 0 }
+}
+
+fn (v: Value) Len() -> int {
+    if v.type_tag != json_object && v.type_tag != json_array { return 0 }
+    doc_id := v.data
+    count := 0
+    i := 0
+    for i < len(g_entry_doc) {
+        if g_entry_doc[i] == doc_id { count = count + 1 }
+        i = i + 1
+    }
+    return count
+}
+
+fn (v: Value) Push(val: Value) {
+    if v.type_tag != json_array { return }
+    doc_id := v.data
+    g_entry_doc = append(g_entry_doc, doc_id)
+    g_entry_key = append(g_entry_key, "")
+    g_entry_type = append(g_entry_type, val.type_tag)
+    if val.type_tag == json_string {
+        g_entry_str = append(g_entry_str, val.data)
+        g_entry_int = append(g_entry_int, 0)
+    } else {
+        g_entry_str = append(g_entry_str, "")
+        g_entry_int = append(g_entry_int, val.data)
+    }
+}
+
+// --- Value marshal ---
+
+fn (v: Value) Marshal() -> string {
+    if v.type_tag == json_object || v.type_tag == json_array {
+        d := Doc { id: v.data }
+        return d.Marshal()
+    }
+    if v.type_tag == json_string { return "\"" + EscapeString(v.data) + "\"" }
+    if v.type_tag == json_int { return strconv.Itoa(v.data) }
+    if v.type_tag == json_bool {
+        if v.data != 0 { return "true" }
+        return "false"
+    }
+    return "null"
+}
+
+// --- ParseValue ---
+
+fn ParseValue(input: string) -> Value {
+    doc := Parse(input)
+    if g_doc_is_array[doc.id] == 1 {
+        return Value { type_tag: json_array, data: doc.id }
+    }
+    return Value { type_tag: json_object, data: doc.id }
 }
 
 // --- Object setters ---

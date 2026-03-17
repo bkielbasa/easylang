@@ -180,3 +180,116 @@ fn TestJsonWriteTo(t: testing.T) {
         t.Fatal("expected " + expected + ", got " + result)
     }
 }
+
+fn TestJsonValueStr(t: testing.T) {
+    v := json.Str("hello")
+    if v.Type() != 1 { t.Fatal("expected TYPE_STRING") }
+    if v.String() != "hello" { t.Fatal("expected hello") }
+}
+
+fn TestJsonValueNum(t: testing.T) {
+    v := json.Num(42)
+    if v.Type() != 2 { t.Fatal("expected TYPE_NUM") }
+    if v.Int() != 42 { t.Fatal("expected 42") }
+}
+
+fn TestJsonValueBool(t: testing.T) {
+    v := json.Bool(1)
+    if v.Type() != 3 { t.Fatal("expected TYPE_BOOL") }
+    if v.Bool() != 1 { t.Fatal("expected 1") }
+}
+
+fn TestJsonValueNull(t: testing.T) {
+    v := json.Null()
+    if v.Type() != 0 { t.Fatal("expected TYPE_NULL") }
+    if v.IsNull() != 1 { t.Fatal("expected IsNull() == 1") }
+}
+
+fn TestJsonValueObject(t: testing.T) {
+    doc := json.Object()
+    nameStr := json.Str("alice")
+    doc.Set("name", nameStr)
+    ageNum := json.Num(30)
+    doc.Set("age", ageNum)
+    nameVal := doc.Get("name")
+    if nameVal.String() != "alice" { t.Fatal("expected alice") }
+    ageVal := doc.Get("age")
+    if ageVal.Int() != 30 { t.Fatal("expected 30") }
+    if doc.Has("name") != 1 { t.Fatal("expected Has(name) == 1") }
+    if doc.Has("missing") != 0 { t.Fatal("expected Has(missing) == 0") }
+}
+
+fn TestJsonValueSetUpdate(t: testing.T) {
+    doc := json.Object()
+    oldVal := json.Str("old")
+    doc.Set("key", oldVal)
+    newVal := json.Str("new")
+    doc.Set("key", newVal)
+    keyVal := doc.Get("key")
+    if keyVal.String() != "new" { t.Fatal("expected updated value") }
+    if doc.Len() != 1 { t.Fatal("expected len 1 after update") }
+}
+
+fn TestJsonValueArray(t: testing.T) {
+    arr := json.Array()
+    va := json.Str("a")
+    arr.Push(va)
+    vn := json.Num(1)
+    arr.Push(vn)
+    if arr.Len() != 2 { t.Fatal("expected len 2") }
+    at0 := arr.At(0)
+    if at0.String() != "a" { t.Fatal("expected a") }
+    at1 := arr.At(1)
+    if at1.Int() != 1 { t.Fatal("expected 1") }
+}
+
+fn TestJsonValueNested(t: testing.T) {
+    doc := json.Object()
+    vname := json.Str("ease")
+    doc.Set("name", vname)
+    inner := json.Object()
+    vlang := json.Str("lang")
+    inner.Set("type", vlang)
+    doc.Set("meta", inner)
+    m := doc.Get("meta")
+    mtype := m.Get("type")
+    if mtype.String() != "lang" { t.Fatal("expected lang") }
+}
+
+fn TestJsonValueMarshal(t: testing.T) {
+    doc := json.Object()
+    vkey := json.Str("value")
+    doc.Set("key", vkey)
+    vnum := json.Num(42)
+    doc.Set("num", vnum)
+    output := doc.Marshal()
+    expected := "{\"key\":\"value\",\"num\":42}"
+    if output != expected { t.Fatal("expected " + expected + ", got " + output) }
+}
+
+fn TestJsonValueArrayMarshal(t: testing.T) {
+    arr := json.Array()
+    vs := json.Str("hello")
+    arr.Push(vs)
+    vn := json.Num(1)
+    arr.Push(vn)
+    vb := json.Bool(1)
+    arr.Push(vb)
+    output := arr.Marshal()
+    expected := "[\"hello\",1,true]"
+    if output != expected { t.Fatal("expected " + expected + ", got " + output) }
+}
+
+fn TestJsonGetNonexistent(t: testing.T) {
+    doc := json.Object()
+    v := doc.Get("missing")
+    if v.IsNull() != 1 { t.Fatal("expected null for missing key") }
+}
+
+fn TestJsonAtOutOfBounds(t: testing.T) {
+    arr := json.Array()
+    vn := json.Num(1)
+    arr.Push(vn)
+    v := arr.At(5)
+    if v.IsNull() != 1 { t.Fatal("expected null for out of bounds") }
+}
