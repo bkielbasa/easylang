@@ -922,6 +922,17 @@ fn RecordTypeInstantiation(decl_name: string, param_idx: int, concrete: string, 
     g_type_inst_lines = append(g_type_inst_lines, line)
 }
 
+fn LookupTypeInstantiation(decl_name: string, param_idx: int) -> string {
+    i := len(g_type_inst_decl_names) - 1
+    for i >= 0 {
+        if g_type_inst_decl_names[i] == decl_name && g_type_inst_param_idx[i] == param_idx {
+            return g_type_inst_concrete[i]
+        }
+        i = i - 1
+    }
+    return ""
+}
+
 fn ValidateTypeConstraints() -> int {
     errors := 0
     i := 0

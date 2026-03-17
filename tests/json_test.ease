@@ -331,3 +331,29 @@ fn TestJsonRoundTrip(t: testing.T) {
     verVal := parsed.Get("version")
     if verVal.Int() != 1 { t.Fatal("round trip version failed") }
 }
+
+struct MarshalUser {
+    name: string,
+    age: int,
+}
+
+fn TestJsonMarshalStruct(t: testing.T) {
+    u := MarshalUser { name: "alice", age: 30 }
+    s := json.Marshal(u)
+    expected := "{\"name\":\"alice\",\"age\":30}"
+    if s != expected { t.Fatal("expected " + expected + ", got " + s) }
+}
+
+fn TestJsonUnmarshalStruct(t: testing.T) {
+    s := "{\"name\":\"bob\",\"age\":25}"
+    u := json.Unmarshal[MarshalUser](s)
+    if u.name != "bob" { t.Fatal("expected name = bob, got " + u.name) }
+    if u.age != 25 { t.Fatal("expected age = 25") }
+}
+
+fn TestJsonUnmarshalMissingFields(t: testing.T) {
+    s := "{\"name\":\"carol\"}"
+    u := json.Unmarshal[MarshalUser](s)
+    if u.name != "carol" { t.Fatal("expected name = carol") }
+    if u.age != 0 { t.Fatal("expected age = 0 for missing field") }
+}

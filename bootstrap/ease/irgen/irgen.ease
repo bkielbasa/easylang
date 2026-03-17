@@ -1736,6 +1736,25 @@ fn gen_ir_from_ast_with_symtab(ast_idx: int, nodes: []AstNode, instrs: []IRInstr
             return result_vreg
         }
 
+        if func_name == "json.Marshal" {
+            arg_vregs := gen_ir_eval_args(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
+            sname := get_vreg_struct_name(arg_vregs[0])
+            result_vreg := len(instrs)
+            instrs = append(instrs, IRInstr { op: OP_JSON_MARSHAL, dest: result_vreg, arg1: arg_vregs[0], arg2: 0, arg3: 0, str_val: sname })
+            set_vreg_type(result_vreg, TYPE_STRING)
+            return result_vreg
+        }
+
+        if func_name == "json.Unmarshal" {
+            arg_vregs := gen_ir_eval_args(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
+            sname := sema.LookupTypeInstantiation("Unmarshal", 0)
+            result_vreg := len(instrs)
+            instrs = append(instrs, IRInstr { op: OP_JSON_UNMARSHAL, dest: result_vreg, arg1: arg_vregs[0], arg2: 0, arg3: 0, str_val: sname })
+            set_vreg_type(result_vreg, TYPE_STRUCT)
+            set_vreg_struct_name(result_vreg, sname)
+            return result_vreg
+        }
+
         // Check for method call: "varname.MethodName"
         dot_pos := find_dot(func_name)
         if dot_pos > 0 {

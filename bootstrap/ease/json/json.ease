@@ -880,3 +880,35 @@ fn Parse(input: string) -> Doc {
     g_parse_pos = 0
     return parseValue(input, 0)
 }
+
+// --- Struct Marshal/Unmarshal helpers (called by compiler-generated code) ---
+
+fn QuoteKey(key: string) -> string {
+    return "\"" + EscapeString(key) + "\":"
+}
+
+fn QuoteString(s: string) -> string {
+    return "\"" + EscapeString(s) + "\""
+}
+
+fn FormatBool(val: int) -> string {
+    if val != 0 { return "true" }
+    return "false"
+}
+
+fn GetField(doc_id: int, key: string, type_tag: int) -> int {
+    d := Doc { id: doc_id }
+    if type_tag == 1 { return d.GetString(key) }
+    if type_tag == 2 { return d.GetInt(key) }
+    if type_tag == 3 { return d.GetBool(key) }
+    return 0
+}
+
+fn ConcatStr(a: string, b: string) -> string {
+    return a + b
+}
+
+fn ParseDocId(input: string) -> int {
+    doc := Parse(input)
+    return doc.id
+}

@@ -2950,7 +2950,7 @@ fn parse_primary_expr(src: string, pos: int, nodes: []AstNode) -> ParseResult {
                     // Check if this is generic type args (Name[Type]{ or Name[Type]()
                     // vs array indexing (arr[idx])
                     is_generic_args := 0
-                    if nodes[current_node].tag == EXPR_IDENT {
+                    if nodes[current_node].tag == EXPR_IDENT || nodes[current_node].tag == EXPR_FIELD {
                         gen_name := nodes[current_node].str_val
                         if len(gen_name) > 0 {
                             // Look ahead past [...] to see { or (

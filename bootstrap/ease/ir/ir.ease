@@ -132,6 +132,8 @@ const OP_REFLECT_FIELD_NAME = 89
 const OP_REFLECT_FIELD_TYPE = 90
 const OP_REFLECT_FIELD_VALUE = 91
 const OP_REFLECT_SET_FIELD_VALUE = 92
+const OP_JSON_MARSHAL = 93
+const OP_JSON_UNMARSHAL = 94
 
 // Struct definitions and offsets (hardcoded for known structs)
 // AstNode: tag(8), int_val(8), str_val(8), left(8), right(8), extra(8), type_tag(8) = 56 bytes
