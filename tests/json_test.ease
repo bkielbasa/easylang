@@ -293,3 +293,41 @@ fn TestJsonAtOutOfBounds(t: testing.T) {
     v := arr.At(5)
     if v.IsNull() != 1 { t.Fatal("expected null for out of bounds") }
 }
+
+fn TestJsonParseValue(t: testing.T) {
+    doc := json.ParseValue("{\"name\":\"alice\",\"age\":30}")
+    nameVal := doc.Get("name")
+    if nameVal.String() != "alice" { t.Fatal("expected alice") }
+    ageVal := doc.Get("age")
+    if ageVal.Int() != 30 { t.Fatal("expected 30") }
+}
+
+fn TestJsonParseValueArray(t: testing.T) {
+    arr := json.ParseValue("[1,2,3]")
+    if arr.Len() != 3 { t.Fatal("expected len 3") }
+    v0 := arr.At(0)
+    if v0.Int() != 1 { t.Fatal("expected 1") }
+    v2 := arr.At(2)
+    if v2.Int() != 3 { t.Fatal("expected 3") }
+}
+
+fn TestJsonParseValueNested(t: testing.T) {
+    doc := json.ParseValue("{\"inner\":{\"key\":\"val\"}}")
+    inner := doc.Get("inner")
+    keyVal := inner.Get("key")
+    if keyVal.String() != "val" { t.Fatal("expected val") }
+}
+
+fn TestJsonRoundTrip(t: testing.T) {
+    doc := json.Object()
+    v1 := json.Str("ease")
+    doc.Set("name", v1)
+    v2 := json.Num(1)
+    doc.Set("version", v2)
+    s := doc.Marshal()
+    parsed := json.ParseValue(s)
+    nameVal := parsed.Get("name")
+    if nameVal.String() != "ease" { t.Fatal("round trip name failed") }
+    verVal := parsed.Get("version")
+    if verVal.Int() != 1 { t.Fatal("round trip version failed") }
+}
