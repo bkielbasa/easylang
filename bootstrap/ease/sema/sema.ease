@@ -451,11 +451,14 @@ g_const_names := []string{}
 g_const_int_values := []int{}
 g_const_str_values := []string{}
 g_const_types := []int{}
+g_const_modules := []string{}
+g_current_const_module := ""
 
 fn register_const(nodes: []AstNode, const_idx: int) {
     cnode := nodes[const_idx]
     g_const_names = append(g_const_names, cnode.str_val)
     g_const_types = append(g_const_types, cnode.type_tag)
+    g_const_modules = append(g_const_modules, g_current_const_module)
     // Evaluate the literal value from the initializer
     init_idx := cnode.left
     if init_idx < 0 {
@@ -518,6 +521,25 @@ fn ConstStrValue(i: int) -> string {
         return g_const_str_values[i]
     }
     return ""
+}
+
+fn RegisterQualifiedConst(qualified_name: string, idx: int) {
+    g_const_names = append(g_const_names, qualified_name)
+    g_const_types = append(g_const_types, g_const_types[idx])
+    g_const_int_values = append(g_const_int_values, g_const_int_values[idx])
+    g_const_str_values = append(g_const_str_values, g_const_str_values[idx])
+    g_const_modules = append(g_const_modules, g_const_modules[idx])
+}
+
+fn ConstModule(i: int) -> string {
+    if i < len(g_const_modules) {
+        return g_const_modules[i]
+    }
+    return ""
+}
+
+fn SetCurrentConstModule(mod: string) {
+    g_current_const_module = mod
 }
 
 // ============================================================
