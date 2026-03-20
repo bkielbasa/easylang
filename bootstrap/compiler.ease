@@ -26,6 +26,7 @@ g_vreg_type_patches_idx := []int{}
 g_vreg_type_patches_val := []int{}
 g_current_file_list := []string{}
 g_func_source_files := []string{}
+g_func_modules := []string{}
 g_break_label := -1
 g_next_label := 100000
 
@@ -682,6 +683,8 @@ fn load_dir_package(resolved: string, mod_name: string, nodes: []AstNode, func_n
     sema.AddImport(resolved, mod_name)
     mod_fn_names := []string{}
     mod_fn_indices := []int{}
+    sema.SetCurrentConstModule(mod_name)
+    const_before := sema.ConstCount()
     entries := os.ListDir(resolved)
     epos := 0
     estart := 0
@@ -701,6 +704,16 @@ fn load_dir_package(resolved: string, mod_name: string, nodes: []AstNode, func_n
         }
         epos = epos + 1
     }
+    // Register qualified constant names for cross-package access
+    const_after := sema.ConstCount()
+    qci := const_before
+    for qci < const_after {
+        cname := sema.ConstName(qci)
+        if is_exported(cname) == 1 {
+            sema.RegisterQualifiedConst(mod_name + "." + cname, qci)
+        }
+        qci = qci + 1
+    }
     // Register extern functions from parser side tables
     register_extern_decls(mod_name)
     // Register functions with visibility enforcement
@@ -710,6 +723,7 @@ fn load_dir_package(resolved: string, mod_name: string, nodes: []AstNode, func_n
         func_names = append(func_names, qualified)
         func_indices = append(func_indices, mod_fn_indices[mfi])
         g_func_source_files = append(g_func_source_files, resolved)
+        g_func_modules = append(g_func_modules, mod_name)
         if is_exported(mod_fn_names[mfi]) == 1 {
             sema.AddRename(mod_fn_names[mfi], qualified)
         }
@@ -731,8 +745,20 @@ fn load_single_module(resolved: string, mod_name: string, nodes: []AstNode, func
     sema.AddImport(resolved, mod_name)
     mod_fn_names := []string{}
     mod_fn_indices := []int{}
+    sema.SetCurrentConstModule(mod_name)
+    const_before := sema.ConstCount()
     mod_source := os.ReadFile(resolved)
     parse_source_file(mod_source, nodes, mod_fn_names, mod_fn_indices, gvar_names, 0)
+    // Register qualified constant names for cross-package access
+    const_after := sema.ConstCount()
+    qci := const_before
+    for qci < const_after {
+        cname := sema.ConstName(qci)
+        if is_exported(cname) == 1 {
+            sema.RegisterQualifiedConst(mod_name + "." + cname, qci)
+        }
+        qci = qci + 1
+    }
     // Register extern functions from parser side tables
     register_extern_decls(mod_name)
     mfi := 0
@@ -741,6 +767,7 @@ fn load_single_module(resolved: string, mod_name: string, nodes: []AstNode, func
         func_names = append(func_names, qualified)
         func_indices = append(func_indices, mod_fn_indices[mfi])
         g_func_source_files = append(g_func_source_files, resolved)
+        g_func_modules = append(g_func_modules, mod_name)
         sema.AddRename(mod_fn_names[mfi], qualified)
         mfi = mfi + 1
     }
@@ -1049,6 +1076,7 @@ fn run_test_mode(test_path: string, run_bench: int) -> int {
     global_var_names := []string{}
 
     // Parse source files (skip main — test runner replaces it)
+    sema.SetCurrentConstModule("")
     sf_i := 0
     for sf_i < len(source_files) {
         before_sf := len(func_names)
@@ -1057,6 +1085,7 @@ fn run_test_mode(test_path: string, run_bench: int) -> int {
         sfi := before_sf
         for sfi < len(func_names) {
             g_func_source_files = append(g_func_source_files, source_files[sf_i])
+            g_func_modules = append(g_func_modules, "")
             sfi = sfi + 1
         }
         sf_i = sf_i + 1
@@ -1065,6 +1094,7 @@ fn run_test_mode(test_path: string, run_bench: int) -> int {
     // Parse test files (also skip any main)
     test_func_names := []string{}
     bench_func_names := []string{}
+    sema.SetCurrentConstModule("")
     tf_i := 0
     for tf_i < len(test_files) {
         tsrc := os.ReadFile(test_files[tf_i])
@@ -1075,6 +1105,7 @@ fn run_test_mode(test_path: string, run_bench: int) -> int {
         tfi2 := before_count
         for tfi2 < len(func_names) {
             g_func_source_files = append(g_func_source_files, test_files[tf_i])
+            g_func_modules = append(g_func_modules, "")
             tfi2 = tfi2 + 1
         }
         // Identify test and benchmark functions from newly parsed ones
@@ -1468,10 +1499,12 @@ fn main() -> int {
     func_names := []string{}
     func_indices := []int{}
     global_var_names := []string{}
+    sema.SetCurrentConstModule("")
     parse_source_file(source, nodes, func_names, func_indices, global_var_names, 0)
     mfi2 := 0
     for mfi2 < len(func_names) {
         g_func_source_files = append(g_func_source_files, filename)
+        g_func_modules = append(g_func_modules, "")
         mfi2 = mfi2 + 1
     }
 
@@ -1479,6 +1512,7 @@ fn main() -> int {
     process_imports(filename, nodes, func_names, func_indices, global_var_names)
     stdlib_mods := []string{"./ease/io", "./ease/strings", "./ease/os", "./ease/strconv", "./ease/time", "./ease/result", "./ease/json", "./ease/fmt", "./ease/maps"}
     load_stdlib(filename, stdlib_mods, nodes, func_names, func_indices, global_var_names)
+    sema.SetCurrentConstModule("")
     sema.AddRename("print", "io.Print")
     build_registries(nodes, func_names, func_indices)
     register_closures(nodes, func_names, func_indices)
