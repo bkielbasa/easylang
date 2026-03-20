@@ -2,6 +2,8 @@ package main
 
 import (
     "testing"
+    "reflect"
+    "json"
 )
 
 const MAX_SIZE = 1024
@@ -57,3 +59,60 @@ fn TestConstFloatArithmetic(t: testing.T) {
     if circumference < 62.0 { t.Fatal("circumference should be >= 62.0") }
     if circumference > 63.0 { t.Fatal("circumference should be <= 63.0") }
 }
+
+struct ConstTestPoint {
+    x: int,
+    y: int,
+}
+
+const CONST_VAL_A = 42
+const CONST_VAL_B = 99
+
+fn TestConstInStructLiteral(t: testing.T) {
+    p := ConstTestPoint { x: CONST_VAL_A, y: CONST_VAL_B }
+    if p.x != 42 { t.Fatal("struct literal const field x should be 42") }
+    if p.y != 99 { t.Fatal("struct literal const field y should be 99") }
+}
+
+struct ConstTaggedValue {
+    type_tag: int,
+    data: int,
+}
+
+const TYPE_A = 1
+const TYPE_B = 2
+const TYPE_C = 3
+
+fn TestConstSmallValuesInStructLit(t: testing.T) {
+    v := ConstTaggedValue { type_tag: TYPE_A, data: 100 }
+    if v.type_tag != 1 { t.Fatal("type_tag should be 1, got something else") }
+    if v.data != 100 { t.Fatal("data should be 100") }
+}
+
+fn TestConstSmallValuesInStructLit2(t: testing.T) {
+    v := ConstTaggedValue { type_tag: TYPE_C, data: TYPE_B }
+    if v.type_tag != 3 { t.Fatal("type_tag should be 3") }
+    if v.data != 2 { t.Fatal("data should be 2") }
+}
+
+fn TestCrossPackageConst(t: testing.T) {
+    x := reflect.INT
+    if x != 1 { t.Fatal("reflect.INT should be 1") }
+}
+
+fn TestCrossPackageConstInStructLit(t: testing.T) {
+    v := ConstTaggedValue { type_tag: reflect.STRING, data: 42 }
+    if v.type_tag != 3 { t.Fatal("reflect.STRING should be 3") }
+}
+
+fn TestConstShadowingPrevention(t: testing.T) {
+    // Both reflect and json define constants with small int values.
+    // If scoping works, local TYPE_A/TYPE_B/TYPE_C should NOT be shadowed.
+    if TYPE_A != 1 { t.Fatal("local TYPE_A should be 1") }
+    if TYPE_B != 2 { t.Fatal("local TYPE_B should be 2") }
+    if TYPE_C != 3 { t.Fatal("local TYPE_C should be 3") }
+    // Cross-package access still works
+    if reflect.INT != 1 { t.Fatal("reflect.INT should be 1") }
+    if json.JSON_STRING != 1 { t.Fatal("json.JSON_STRING should be 1") }
+}
+

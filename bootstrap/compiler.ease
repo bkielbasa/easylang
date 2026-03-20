@@ -1014,10 +1014,25 @@ fn generate_all_ir(func_names: []string, func_indices: []int, nodes: []AstNode, 
             symtab_vregs = append(symtab_vregs, -1000 - gvi)
             gvi = gvi + 1
         }
+        // Determine current function's module for constant scoping
+        current_func_module := ""
+        if gen_i < len(g_func_modules) {
+            current_func_module = g_func_modules[gen_i]
+        }
         ci := 0
         for ci < sema.ConstCount() {
-            symtab_names = append(symtab_names, sema.ConstName(ci))
-            symtab_vregs = append(symtab_vregs, -2000 - ci)
+            cname := sema.ConstName(ci)
+            cmod := sema.ConstModule(ci)
+            if cmod == "" || cmod == current_func_module {
+                // Local constant or same-module constant -> visible with bare name
+                symtab_names = append(symtab_names, cname)
+                symtab_vregs = append(symtab_vregs, -2000 - ci)
+            } else if strings.IndexOf(cname, ".") >= 0 {
+                // Qualified constant (e.g. "reflect.INT") -> always visible
+                symtab_names = append(symtab_names, cname)
+                symtab_vregs = append(symtab_vregs, -2000 - ci)
+            }
+            // else: bare name from different module -> NOT visible (scoped out)
             ci = ci + 1
         }
         g_current_func_name_arr = append(g_current_func_name_arr, func_names[gen_i])
