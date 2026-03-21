@@ -357,3 +357,25 @@ fn TestJsonUnmarshalMissingFields(t: testing.T) {
     if u.name != "carol" { t.Fatal("expected name = carol") }
     if u.age != 0 { t.Fatal("expected age = 0 for missing field") }
 }
+
+fn TestInlineStructReturnAsMethodArg(t: testing.T) {
+    doc := json.Object()
+    doc.Set("name", json.Str("alice"))
+    doc.Set("age", json.Num(30))
+    nameVal := doc.Get("name")
+    if nameVal.String() != "alice" { t.Fatal("expected alice") }
+    ageVal := doc.Get("age")
+    if ageVal.Int() != 30 { t.Fatal("expected 30") }
+}
+
+fn TestJsonCrossPackageTypeConsts(t: testing.T) {
+    s := json.Str("hello")
+    if s.Type() != json.JSON_STRING { t.Fatal("expected JSON_STRING") }
+    n := json.Num(42)
+    if n.Type() != json.JSON_NUM { t.Fatal("expected JSON_NUM") }
+    o := json.Object()
+    if o.Type() != json.JSON_OBJECT { t.Fatal("expected JSON_OBJECT") }
+}
+
+
+

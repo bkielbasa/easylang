@@ -8,6 +8,15 @@ const json_bool = 3
 const json_object = 4
 const json_array = 5
 
+// Public type constants for Value.Type() checks
+// Access as json.JSON_NULL, json.JSON_STRING, etc.
+const JSON_NULL = 0
+const JSON_STRING = 1
+const JSON_NUM = 2
+const JSON_BOOL = 3
+const JSON_OBJECT = 4
+const JSON_ARRAY = 5
+
 struct Value {
     type_tag: int,
     data: int,
