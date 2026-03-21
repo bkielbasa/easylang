@@ -21,15 +21,20 @@ g_const_modules := []string{}  // "" for local, "token" for imported, etc.
 ```
 
 Changes:
-- `register_const()` → accept a `module_name: string` parameter. Store it in `g_const_modules`.
-- `RegisterQualifiedConst()` → also store the module name.
+- Add `g_const_modules` global array, appended in parallel with existing arrays.
+- `register_const()` — does NOT change signature. Instead, use a global `g_current_const_module` that the caller sets before invoking `parse_source_file`. `register_const` reads `g_current_const_module` and appends it to `g_const_modules`.
+- `RegisterQualifiedConst()` — store the same module name as the source constant.
 - Add `ConstModule(i: int) -> string` accessor.
+- Add `SetCurrentConstModule(mod: string)` setter.
 - `ConstCount()`, `ConstName()`, `ConstType()`, `ConstIntValue()`, `ConstStrValue()` — unchanged.
 
-**compiler.ease** — pass module name when registering constants:
+**compiler.ease** — set module name before parsing each source file:
 
-- In `parse_source_file` call sites: pass `""` for the main file's constants, pass `mod_name` for imported module constants.
-- In `load_dir_package` and `load_single_module`: the `register_const` calls happen inside `parse_source_file`. Either pass the module name through, or set a global "current module" that `register_const` reads.
+- Before calling `parse_source_file` for the main file: `sema.SetCurrentConstModule("")`
+- Before calling `parse_source_file` for an imported module: `sema.SetCurrentConstModule(mod_name)`
+- In `load_dir_package`: set module before each file parse in the directory loop.
+- In `load_single_module`: set module before the single file parse.
+- The qualified const registration (already done in `load_dir_package` and `load_single_module`) continues as-is — `RegisterQualifiedConst` copies the module name from the source entry.
 
 ### Layer 2: Filtered Symtab Construction
 
@@ -65,31 +70,67 @@ for ci < sema.ConstCount() {
 }
 ```
 
-The `current_function_module` is derived from `g_func_source_files[gen_i]` — extract the module name from the source file path.
+**Module derivation** — `current_function_module` is extracted from `g_func_source_files[gen_i]`:
+
+| Source file path | Module name | Rule |
+|------------------|-------------|------|
+| `bootstrap/compiler.ease` | `""` (empty) | Main file — no directory package |
+| `bootstrap/ease/token/token.ease` | `"token"` | Directory package — last directory component before filename |
+| `bootstrap/ease/irgen/irgen.ease` | `"irgen"` | Directory package — same rule |
+| `bootstrap/ease/sema/sema.ease` | `"sema"` | Directory package — same rule |
+| `tests/const_test.ease` | `""` (empty) | Test file — treated as main package |
+| `bootstrap/ease/json/json.ease` | `"json"` | Stdlib package |
+
+Extraction logic: if path contains `ease/X/Y.ease`, module = `X`. Otherwise module = `""`.
+
+This covers all three compilation modes:
+- **Self-compile**: compiler.ease is main (`""`), sub-packages are `token`, `ast`, `ir`, `sema`, `irgen`, `llvm`, `lsp`
+- **User compile**: user's main file is `""`, imported packages get their directory name
+- **Test mode**: test file is `""`, imported packages get their directory name
 
 ### Layer 3: Compiler Source Update
 
-All cross-module bare constant references in the compiler source must be qualified:
+All cross-module bare constant references in the compiler source must be qualified. ~1,391 references total.
 
-| Package | Constants | Prefix | Example |
-|---------|-----------|--------|---------|
-| token | `TK_*` (~70) | `token.` | `TK_IDENT` → `token.TK_IDENT` |
-| ast | `TYPE_*`, `EXPR_*`, `DECL_*`, `STMT_*` (~40) | `ast.` | `TYPE_STRING` → `ast.TYPE_STRING` |
-| ir | `OP_*` (~95) | `ir.` | `OP_ADD` → `ir.OP_ADD` |
+| Package | Constants | Prefix | Approx. refs | Example |
+|---------|-----------|--------|-------------|---------|
+| token | `TK_*` (~70 consts) | `token.` | ~548 | `TK_IDENT` → `token.TK_IDENT` |
+| ast | `TYPE_*`, `EXPR_*`, `DECL_*`, `STMT_*` (~40 consts) | `ast.` | ~430 | `TYPE_STRING` → `ast.TYPE_STRING` |
+| ir | `OP_*` (~95 consts) | `ir.` | ~413 | `OP_ADD` → `ir.OP_ADD` |
 
-Files that need updating:
-- `bootstrap/ease/parser/parser.ease` — uses token.TK_*, ast.EXPR_*, ast.DECL_*, ast.STMT_*, ast.TYPE_*
-- `bootstrap/ease/irgen/irgen.ease` — uses token.TK_*, ast.EXPR_*, ast.TYPE_*, ir.OP_*
-- `bootstrap/ease/llvm/llvm.ease` — uses ir.OP_*
-- `bootstrap/ease/sema/sema.ease` — uses ast.TYPE_*
-- `bootstrap/compiler.ease` — uses token.TK_*, ast.EXPR_*, ast.DECL_*, ast.TYPE_*
-- `bootstrap/ease/lsp/lsp.ease` — uses token.TK_*, ast.EXPR_*, ast.DECL_*
+**Files and their cross-module references:**
 
-Constants within their own package remain bare (e.g., `TK_IDENT` used inside `token.ease` stays as `TK_IDENT`).
+| File | Module | Uses from other modules |
+|------|--------|------------------------|
+| `bootstrap/ease/parser/parser.ease` | `parser` | `token.TK_*`, `ast.EXPR_*`, `ast.DECL_*`, `ast.STMT_*`, `ast.TYPE_*` |
+| `bootstrap/ease/irgen/irgen.ease` | `irgen` | `token.TK_*`, `ast.EXPR_*`, `ast.TYPE_*`, `ir.OP_*` |
+| `bootstrap/ease/llvm/llvm.ease` | `llvm` | `ir.OP_*` |
+| `bootstrap/ease/sema/sema.ease` | `sema` | `ast.TYPE_*` |
+| `bootstrap/compiler.ease` | `""` (main) | `token.TK_*`, `ast.EXPR_*`, `ast.DECL_*`, `ast.TYPE_*` |
+| `bootstrap/ease/lsp/lsp.ease` | `lsp` | `token.TK_*`, `ast.EXPR_*`, `ast.DECL_*` |
+
+Constants within their own package remain bare (e.g., `TK_IDENT` used inside `token/token.ease` stays as `TK_IDENT`).
+
+**How sub-packages access cross-module constants without import statements:**
+
+The compiler's sub-packages (parser, irgen, llvm, sema, lsp) don't have their own `import` statements — all imports are handled by `compiler.ease`. This works because:
+1. All module constants are registered globally in sema's registry during compilation
+2. `RegisterQualifiedConst` creates qualified entries (e.g., `"ast.TYPE_STRING"`) that are globally visible
+3. The symtab filter (Layer 2) adds ALL qualified constants (names containing `.`) to every function's symtab
+4. So `irgen.ease` can reference `ast.TYPE_STRING` without importing `ast` — the qualified constant is already in the global registry from when `compiler.ease` loaded the `ast` package
+
+**Rewrite strategy:**
+
+For each file, use find-and-replace with word boundaries. The constants have unique prefixes (`TK_`, `TYPE_`, `EXPR_`, `DECL_`, `STMT_`, `OP_`) that don't collide with variable names. The rewrite is mechanical:
+1. For each file, determine its module (from directory name)
+2. For each constant prefix used in that file, check if the prefix belongs to a different module
+3. If cross-module, prefix all occurrences with the owning module name + `.`
+4. Skip occurrences that are already qualified (contain a `.` before the constant name)
+5. Skip occurrences inside the defining module (bare names stay bare in their own package)
 
 ### Layer 4: Cross-Package Constant Resolution (already done)
 
-`gen_ir_field` in irgen.ease already handles qualified constant access for `EXPR_FIELD` nodes (e.g., `reflect.INT`). No changes needed.
+`gen_ir_field` in irgen.ease already handles qualified constant access for `EXPR_FIELD` nodes (e.g., `reflect.INT`). The parser sees `ast.TYPE_STRING` and produces an `EXPR_FIELD` with left=`EXPR_IDENT("ast")`, field=`"TYPE_STRING"`. `gen_ir_field` looks up `"ast.TYPE_STRING"` in the symtab and finds the qualified constant entry. No changes needed.
 
 ## Bootstrap Strategy
 
@@ -123,11 +164,21 @@ Update seed.ll to gen2.ll after convergence.
 - Compile-time error for accessing private cross-package constants (silently invisible for now)
 - Refactoring the constant registry to use a different data structure
 
+## LSP Considerations
+
+The LSP server (`lsp.ease`) uses `TK_*`, `EXPR_*`, and `DECL_*` constants from other modules. After the rewrite, these become `token.TK_*`, `ast.EXPR_*`, `ast.DECL_*`. The LSP module is loaded the same way as other sub-packages — its constants will be scoped to `"lsp"` and it accesses cross-module constants via qualified names. No special LSP handling needed.
+
 ## Testing
 
-- `TestCrossPackageConst` — existing: `reflect.INT` resolves to 1
-- `TestCrossPackageConstInStructLit` — existing: `reflect.STRING` in struct literal
-- **New**: `TestConstShadowingPrevention` — two modules with same-named constants don't conflict
-- **New**: `TestPrivateConstNotAccessible` — lowercase constants from imported modules aren't visible
-- All 251 existing tests must pass
-- Bootstrap convergence: gen2 == gen3
+**Existing tests (must continue passing):**
+- `TestCrossPackageConst` — `reflect.INT` resolves to 1
+- `TestCrossPackageConstInStructLit` — `reflect.STRING` in struct literal
+- `TestJsonCrossPackageTypeConsts` — `json.JSON_STRING`, `json.JSON_NUM`, `json.JSON_OBJECT`
+- All 251 existing tests
+
+**New tests:**
+- `TestConstShadowingPrevention` — create two test modules with same-named exported constant, verify each resolves to its own value via qualified access
+- `TestPrivateConstNotAccessible` — lowercase constant from imported module should not be visible (compile error or zero value)
+
+**Bootstrap verification:**
+- gen2.ll == gen3.ll (convergence)
