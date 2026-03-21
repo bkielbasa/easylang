@@ -15,14 +15,14 @@ The Ease compiler is written in Ease and compiles itself with byte-identical con
 - Standard library (strings, strconv, io, os, testing, time, result, json, reflect, path, lsp — all pure Ease implementations)
 - Go-style testing framework (`fn TestXxx(t: T)` in `*_test.ease`, `testing.T` struct, `testing.Fatal(msg)`, setjmp/longjmp recovery)
 - Go-style benchmark framework (`fn BenchmarkXxx(b: B)` with auto-calibration and ns/op reporting)
-- Compile-time constants (`const NAME = value`, inlined at use sites)
+- Compile-time constants with Go-style module scoping (bare name within package, `pkg.CONST` cross-package)
 - Global variables (mutable and immutable)
 - File I/O and command-line arguments
 - **Vreg-based type system** — tracks types via `g_vreg_types`/`g_param_types` arrays, replaces `is_string_expr` heuristic
 - String `==`/`!=`/`+` auto-dispatch via vreg type lookups (no heuristic needed)
 - Dynamic struct field registry for user-defined structs
 - **Slice syntax** — Go-style `arr[start:end]`, `arr[start:]`, `arr[:end]`, `arr[:]` with shared memory semantics
-- Go-style test suite (244 tests passing, 2 benchmarks)
+- Go-style test suite (253 tests passing, 2 benchmarks)
 - **Generics** — Go-style bracket syntax `[T]` with type erasure; works on structs, enums, functions, methods, interfaces; type parameters are compile-time annotations erased during parsing
 - **`extern fn` FFI** — declare C functions directly in stdlib modules (e.g., `extern fn system(cmd: ptr) -> i32`), auto-generates LLVM IR wrappers with type conversion
 - **Bare imports** — `import "testing"` resolves to `bootstrap/ease/testing` (no `./` prefix needed for stdlib)
@@ -67,7 +67,7 @@ The Ease compiler is written in Ease and compiles itself with byte-identical con
 
 ### Language Features
 - [x] **Go-style `:=` declarations** — Replaced `let`/`let mut` with `:=`. All variables are mutable.
-- [ ] **`const` keyword** — Compile-time constants (e.g. `const MAX_SIZE = 1024`)
+- [x] **`const` keyword** — Compile-time constants with Go-style module scoping (bare name within package, `pkg.CONST` cross-package)
 - [x] Enums with pattern matching (heap-allocated tagged unions, `match` expressions)
 - [x] Result and Option types (stdlib enums: `Option`, `Result`, `StringOption` with helpers)
 - [x] Method receivers (`fn (r: T) Method()`) with value and pointer receiver syntax

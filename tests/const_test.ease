@@ -116,3 +116,13 @@ fn TestConstShadowingPrevention(t: testing.T) {
     if json.JSON_STRING != 1 { t.Fatal("json.JSON_STRING should be 1") }
 }
 
+fn TestLocalConstNotShadowedByImport(t: testing.T) {
+    // json has private const json_string = 1 (lowercase = private)
+    // It should NOT be visible here. Our local TYPE_A = 1 must resolve correctly.
+    v := TYPE_A
+    if v != 1 { t.Fatal("TYPE_A should be 1, not shadowed by imports") }
+    // Verify multiple cross-package const types work
+    if reflect.STRING != 3 { t.Fatal("reflect.STRING should be 3") }
+    if json.JSON_ARRAY != 5 { t.Fatal("json.JSON_ARRAY should be 5") }
+}
+
