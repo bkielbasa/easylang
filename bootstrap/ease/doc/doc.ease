@@ -87,11 +87,11 @@ fn ExtractPkgName(files: []string) -> string {
         if len(src) > 0 {
             pp := 0
             pp = lex_skip(src, pp)
-            if lex_kind(src, pp) == TK_PACKAGE {
-                pp = lex_end(src, pp, TK_PACKAGE)
+            if lex_kind(src, pp) == token.TK_PACKAGE {
+                pp = lex_end(src, pp, token.TK_PACKAGE)
                 pp = lex_skip(src, pp)
-                if lex_kind(src, pp) == TK_IDENT {
-                    return lex_string_value(src, pp, TK_IDENT)
+                if lex_kind(src, pp) == token.TK_IDENT {
+                    return lex_string_value(src, pp, token.TK_IDENT)
                 }
             }
         }
@@ -108,7 +108,7 @@ fn ExtractPkgDoc(files: []string) -> string {
         if len(src) > 0 {
             pp := 0
             pp = lex_skip(src, pp)
-            if lex_kind(src, pp) == TK_PACKAGE {
+            if lex_kind(src, pp) == token.TK_PACKAGE {
                 return extract_doc_comment(src, pp)
             }
         }

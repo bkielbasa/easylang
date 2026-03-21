@@ -119,14 +119,14 @@ fn get_lsp_root_path() -> string {
 
 fn lsp_type_str(type_tag: int, is_array: int, node_idx: int) -> string {
     if is_array == 1 {
-        if type_tag == TYPE_INT { return "[]int" }
-        if type_tag == TYPE_STRING { return "[]string" }
-        if type_tag == TYPE_BOOL { return "[]bool" }
+        if type_tag == ast.TYPE_INT { return "[]int" }
+        if type_tag == ast.TYPE_STRING { return "[]string" }
+        if type_tag == ast.TYPE_BOOL { return "[]bool" }
     }
-    if type_tag == TYPE_INT { return "int" }
-    if type_tag == TYPE_STRING { return "string" }
-    if type_tag == TYPE_BOOL { return "bool" }
-    if type_tag == TYPE_STRUCT {
+    if type_tag == ast.TYPE_INT { return "int" }
+    if type_tag == ast.TYPE_STRING { return "string" }
+    if type_tag == ast.TYPE_BOOL { return "bool" }
+    if type_tag == ast.TYPE_STRUCT {
         sname := lookup_type_name(node_idx)
         if len(sname) > 0 { return sname }
     }
@@ -180,13 +180,13 @@ fn lsp_collect_file_symbols(source: string, file_uri: string) {
     for {
         ipos = lex_skip(source, ipos)
         ikind := lex_kind(source, ipos)
-        if ikind == TK_EOF { break }
+        if ikind == token.TK_EOF { break }
 
-        if ikind == TK_PACKAGE {
+        if ikind == token.TK_PACKAGE {
             ipos = lex_end(source, ipos, ikind)
             ipos = lex_skip(source, ipos)
             ipos = lex_end(source, ipos, lex_kind(source, ipos))
-        } else if ikind == TK_IMPORT {
+        } else if ikind == token.TK_IMPORT {
             iimp := parse_import_decl(source, ipos, imp_nodes)
             if iimp.node_idx >= 0 {
                 ipos = iimp.new_pos
@@ -194,7 +194,7 @@ fn lsp_collect_file_symbols(source: string, file_uri: string) {
             } else {
                 break
             }
-        } else if ikind == TK_STRUCT {
+        } else if ikind == token.TK_STRUCT {
             istruct := parse_struct_decl(source, ipos, imp_nodes)
             if istruct.node_idx >= 0 {
                 sname := imp_nodes[istruct.node_idx].str_val
@@ -207,7 +207,7 @@ fn lsp_collect_file_symbols(source: string, file_uri: string) {
                 g_lsp_sym_file_srcs = append(g_lsp_sym_file_srcs, source)
             }
             ipos = istruct.new_pos
-        } else if ikind == TK_ENUM {
+        } else if ikind == token.TK_ENUM {
             ienum := parse_enum_decl(source, ipos, imp_nodes)
             if ienum.node_idx >= 0 {
                 ename := imp_nodes[ienum.node_idx].str_val
@@ -220,10 +220,10 @@ fn lsp_collect_file_symbols(source: string, file_uri: string) {
                 g_lsp_sym_file_srcs = append(g_lsp_sym_file_srcs, source)
             }
             ipos = ienum.new_pos
-        } else if ikind == TK_INTERFACE {
+        } else if ikind == token.TK_INTERFACE {
             iiface := parse_interface_decl(source, ipos, imp_nodes)
             ipos = iiface.new_pos
-        } else if ikind == TK_FN {
+        } else if ikind == token.TK_FN {
             ifunc := parse_func_decl(source, ipos, imp_nodes)
             if ifunc.node_idx < 0 { break }
             fname := imp_nodes[ifunc.node_idx].str_val
@@ -236,7 +236,7 @@ fn lsp_collect_file_symbols(source: string, file_uri: string) {
             g_lsp_sym_file_srcs = append(g_lsp_sym_file_srcs, source)
             ipos = ifunc.new_pos
             ipos = lex_skip(source, ipos)
-        } else if ikind == TK_CONST {
+        } else if ikind == token.TK_CONST {
             iconst := parse_const_decl(source, ipos, imp_nodes)
             if iconst.node_idx >= 0 {
                 cname := imp_nodes[iconst.node_idx].str_val
@@ -249,16 +249,16 @@ fn lsp_collect_file_symbols(source: string, file_uri: string) {
                 g_lsp_sym_file_srcs = append(g_lsp_sym_file_srcs, source)
             }
             ipos = iconst.new_pos
-        } else if ikind == TK_EXTERN {
+        } else if ikind == token.TK_EXTERN {
             iextern := parse_extern_fn_decl(source, ipos, imp_nodes)
             if iextern.node_idx < 0 { break }
             ipos = iextern.new_pos
             ipos = lex_skip(source, ipos)
-        } else if ikind == TK_IDENT {
+        } else if ikind == token.TK_IDENT {
             // Skip global variable declarations
             ice_end := lex_end(source, ipos, ikind)
             ice_next := lex_skip(source, ice_end)
-            if lex_kind(source, ice_next) == TK_COLONEQUAL {
+            if lex_kind(source, ice_next) == token.TK_COLONEQUAL {
                 ice := parse_colonequal_stmt(source, ipos, imp_nodes)
                 if ice.node_idx >= 0 {
                     // Skip global vars from imports (they are internal)
@@ -279,7 +279,7 @@ fn lsp_load_imports(diag_nodes: []AstNode) {
     di := 0
     node_count := len(diag_nodes)
     for di < node_count {
-        if diag_nodes[di].tag == DECL_IMPORT {
+        if diag_nodes[di].tag == ast.DECL_IMPORT {
             import_path := diag_nodes[di].str_val
             resolved := ""
             if len(import_path) >= 2 && str_char_at(import_path, 0) == 46 && str_char_at(import_path, 1) == 47 {
@@ -359,7 +359,7 @@ fn parse_for_diagnostics(source: string) {
     for {
         lpos = lex_skip(source, lpos)
         lkind := lex_kind(source, lpos)
-        if lkind == TK_EOF {
+        if lkind == token.TK_EOF {
             if lpos < len(source) {
                 report_error(source, lpos, "unexpected character")
                 lpos = lpos + 1
@@ -378,13 +378,13 @@ fn parse_for_diagnostics(source: string) {
     for {
         dpos = lex_skip(source, dpos)
         dkind := lex_kind(source, dpos)
-        if dkind == TK_EOF { break }
+        if dkind == token.TK_EOF { break }
 
-        if dkind == TK_PACKAGE {
+        if dkind == token.TK_PACKAGE {
             dpos = lex_end(source, dpos, dkind)
             dpos = lex_skip(source, dpos)
             dpos = lex_end(source, dpos, lex_kind(source, dpos))
-        } else if dkind == TK_IMPORT {
+        } else if dkind == token.TK_IMPORT {
             dimp := parse_import_decl(source, dpos, diag_nodes)
             if dimp.node_idx >= 0 {
                 dpos = dimp.new_pos
@@ -392,7 +392,7 @@ fn parse_for_diagnostics(source: string) {
             } else {
                 break
             }
-        } else if dkind == TK_STRUCT {
+        } else if dkind == token.TK_STRUCT {
             dstruct := parse_struct_decl(source, dpos, diag_nodes)
             if dstruct.node_idx >= 0 {
                 g_lsp_sym_names = append(g_lsp_sym_names, diag_nodes[dstruct.node_idx].str_val)
@@ -402,7 +402,7 @@ fn parse_for_diagnostics(source: string) {
                 sfi := diag_nodes[dstruct.node_idx].left
                 sfirst := 1
                 for sfi >= 0 && sfi < len(diag_nodes) {
-                    if diag_nodes[sfi].tag != DECL_FIELD { break }
+                    if diag_nodes[sfi].tag != ast.DECL_FIELD { break }
                     if sfirst == 0 { ssig = ssig + ", " }
                     ssig = ssig + diag_nodes[sfi].str_val + ": " + lsp_type_str(diag_nodes[sfi].type_tag, diag_nodes[sfi].int_val, sfi)
                     sfirst = 0
@@ -416,7 +416,7 @@ fn parse_for_diagnostics(source: string) {
                 g_lsp_sym_file_srcs = append(g_lsp_sym_file_srcs, "")
             }
             dpos = dstruct.new_pos
-        } else if dkind == TK_ENUM {
+        } else if dkind == token.TK_ENUM {
             denum := parse_enum_decl(source, dpos, diag_nodes)
             if denum.node_idx >= 0 {
                 g_lsp_sym_names = append(g_lsp_sym_names, diag_nodes[denum.node_idx].str_val)
@@ -426,7 +426,7 @@ fn parse_for_diagnostics(source: string) {
                 evi := diag_nodes[denum.node_idx].left
                 efirst := 1
                 for evi >= 0 && evi < denum.node_idx {
-                    if diag_nodes[evi].tag == DECL_VARIANT {
+                    if diag_nodes[evi].tag == ast.DECL_VARIANT {
                         if efirst == 0 { esig = esig + ", " }
                         esig = esig + diag_nodes[evi].str_val
                         // Check for variant fields
@@ -435,7 +435,7 @@ fn parse_for_diagnostics(source: string) {
                             esig = esig + " { "
                             evffirst := 1
                             for evfi >= 0 && evfi < evi {
-                                if diag_nodes[evfi].tag != DECL_FIELD { break }
+                                if diag_nodes[evfi].tag != ast.DECL_FIELD { break }
                                 if evffirst == 0 { esig = esig + ", " }
                                 esig = esig + diag_nodes[evfi].str_val + ": " + lsp_type_str(diag_nodes[evfi].type_tag, diag_nodes[evfi].int_val, evfi)
                                 evffirst = 0
@@ -455,13 +455,13 @@ fn parse_for_diagnostics(source: string) {
                 g_lsp_sym_file_srcs = append(g_lsp_sym_file_srcs, "")
             }
             dpos = denum.new_pos
-        } else if dkind == TK_INTERFACE {
+        } else if dkind == token.TK_INTERFACE {
             diface := parse_interface_decl(source, dpos, diag_nodes)
             dpos = diface.new_pos
-        } else if dkind == TK_IDENT {
+        } else if dkind == token.TK_IDENT {
             dce_end := lex_end(source, dpos, dkind)
             dce_next := lex_skip(source, dce_end)
-            if lex_kind(source, dce_next) == TK_COLONEQUAL {
+            if lex_kind(source, dce_next) == token.TK_COLONEQUAL {
                 dce := parse_colonequal_stmt(source, dpos, diag_nodes)
                 if dce.node_idx >= 0 {
                     g_lsp_sym_names = append(g_lsp_sym_names, diag_nodes[dce.node_idx].str_val)
@@ -476,12 +476,12 @@ fn parse_for_diagnostics(source: string) {
             } else {
                 break
             }
-        } else if dkind == TK_EXTERN {
+        } else if dkind == token.TK_EXTERN {
             dextern := parse_extern_fn_decl(source, dpos, diag_nodes)
             if dextern.node_idx < 0 { break }
             dpos = dextern.new_pos
             dpos = lex_skip(source, dpos)
-        } else if dkind == TK_FN {
+        } else if dkind == token.TK_FN {
             dfunc := parse_func_decl(source, dpos, diag_nodes)
             if dfunc.node_idx < 0 {
                 report_error(source, dpos, "failed to parse function")
@@ -494,7 +494,7 @@ fn parse_for_diagnostics(source: string) {
             fpi := diag_nodes[dfunc.node_idx].left
             fpfirst := 1
             for fpi >= 0 && fpi < len(diag_nodes) {
-                if diag_nodes[fpi].tag != DECL_PARAM { break }
+                if diag_nodes[fpi].tag != ast.DECL_PARAM { break }
                 if fpfirst == 0 { fsig = fsig + ", " }
                 fsig = fsig + diag_nodes[fpi].str_val + ": " + lsp_type_str(diag_nodes[fpi].type_tag, diag_nodes[fpi].int_val, fpi)
                 fpfirst = 0
@@ -512,7 +512,7 @@ fn parse_for_diagnostics(source: string) {
             g_lsp_sym_file_srcs = append(g_lsp_sym_file_srcs, "")
             dpos = dfunc.new_pos
             dpos = lex_skip(source, dpos)
-        } else if dkind == TK_CONST {
+        } else if dkind == token.TK_CONST {
             dconst := parse_const_decl(source, dpos, diag_nodes)
             if dconst.node_idx >= 0 {
                 cname := diag_nodes[dconst.node_idx].str_val
@@ -523,17 +523,17 @@ fn parse_for_diagnostics(source: string) {
                 cinit := diag_nodes[dconst.node_idx].left
                 if cinit >= 0 {
                     cinode := diag_nodes[cinit]
-                    if cinode.tag == EXPR_INT {
+                    if cinode.tag == ast.EXPR_INT {
                         csig = csig + strconv.Itoa(cinode.int_val)
-                    } else if cinode.tag == EXPR_STRING {
+                    } else if cinode.tag == ast.EXPR_STRING {
                         csig = csig + "\"" + cinode.str_val + "\""
-                    } else if cinode.tag == EXPR_BOOL {
+                    } else if cinode.tag == ast.EXPR_BOOL {
                         if cinode.int_val == 1 {
                             csig = csig + "true"
                         } else {
                             csig = csig + "false"
                         }
-                    } else if cinode.tag == EXPR_UNARY {
+                    } else if cinode.tag == ast.EXPR_UNARY {
                         if cinode.left >= 0 {
                             csig = csig + "-" + strconv.Itoa(diag_nodes[cinode.left].int_val)
                         } else {
@@ -572,13 +572,13 @@ fn parse_source_file(source: string, nodes: []AstNode, func_names: []string, fun
     for {
         parse_pos = lex_skip(source, parse_pos)
         kind := lex_kind(source, parse_pos)
-        if kind == TK_EOF { break }
+        if kind == token.TK_EOF { break }
 
-        if kind == TK_PACKAGE {
+        if kind == token.TK_PACKAGE {
             parse_pos = lex_end(source, parse_pos, kind)
             parse_pos = lex_skip(source, parse_pos)
             parse_pos = lex_end(source, parse_pos, lex_kind(source, parse_pos))
-        } else if kind == TK_IMPORT {
+        } else if kind == token.TK_IMPORT {
             import_result := parse_import_decl(source, parse_pos, nodes)
             if import_result.node_idx >= 0 {
                 parse_pos = import_result.new_pos
@@ -586,25 +586,25 @@ fn parse_source_file(source: string, nodes: []AstNode, func_names: []string, fun
             } else {
                 break
             }
-        } else if kind == TK_STRUCT {
+        } else if kind == token.TK_STRUCT {
             struct_result := parse_struct_decl(source, parse_pos, nodes)
             parse_pos = struct_result.new_pos
-        } else if kind == TK_ENUM {
+        } else if kind == token.TK_ENUM {
             enum_result := parse_enum_decl(source, parse_pos, nodes)
             parse_pos = enum_result.new_pos
-        } else if kind == TK_INTERFACE {
+        } else if kind == token.TK_INTERFACE {
             iface_result := parse_interface_decl(source, parse_pos, nodes)
             parse_pos = iface_result.new_pos
-        } else if kind == TK_CONST {
+        } else if kind == token.TK_CONST {
             const_result := parse_const_decl(source, parse_pos, nodes)
             if const_result.node_idx >= 0 {
                 register_const(nodes, const_result.node_idx)
             }
             parse_pos = const_result.new_pos
-        } else if kind == TK_IDENT {
+        } else if kind == token.TK_IDENT {
             ce_end := lex_end(source, parse_pos, kind)
             ce_next_pos := lex_skip(source, ce_end)
-            if lex_kind(source, ce_next_pos) == TK_COLONEQUAL {
+            if lex_kind(source, ce_next_pos) == token.TK_COLONEQUAL {
                 ce_result := parse_colonequal_stmt(source, parse_pos, nodes)
                 if ce_result.node_idx >= 0 {
                     ce_node := nodes[ce_result.node_idx]
@@ -612,10 +612,10 @@ fn parse_source_file(source: string, nodes: []AstNode, func_names: []string, fun
                     g_global_var_types = append(g_global_var_types, infer_init_type(nodes, ce_node.right))
                     if ce_node.right >= 0 {
                         ce_init := nodes[ce_node.right]
-                        if ce_init.tag == EXPR_INT {
+                        if ce_init.tag == ast.EXPR_INT {
                             g_scalar_globals = append(g_scalar_globals, ce_node.str_val)
                         }
-                        if ce_init.tag == EXPR_UNARY {
+                        if ce_init.tag == ast.EXPR_UNARY {
                             g_scalar_globals = append(g_scalar_globals, ce_node.str_val)
                         }
                     }
@@ -624,14 +624,14 @@ fn parse_source_file(source: string, nodes: []AstNode, func_names: []string, fun
             } else {
                 break
             }
-        } else if kind == TK_EXTERN {
+        } else if kind == token.TK_EXTERN {
             extern_result := parse_extern_fn_decl(source, parse_pos, nodes)
             if extern_result.node_idx < 0 {
                 break
             }
             parse_pos = extern_result.new_pos
             parse_pos = lex_skip(source, parse_pos)
-        } else if kind == TK_FN {
+        } else if kind == token.TK_FN {
             parse_result := parse_func_decl(source, parse_pos, nodes)
             if parse_result.node_idx < 0 {
                 break
@@ -773,12 +773,12 @@ fn load_single_module(resolved: string, mod_name: string, nodes: []AstNode, func
     }
 }
 
-// Process imports: scan DECL_IMPORT nodes and load referenced modules
+// Process imports: scan ast.DECL_IMPORT nodes and load referenced modules
 fn process_imports(source_file: string, nodes: []AstNode, func_names: []string, func_indices: []int, gvar_names: []string) {
     imp_i := 0
     node_count := len(nodes)
     for imp_i < node_count {
-        if nodes[imp_i].tag == DECL_IMPORT {
+        if nodes[imp_i].tag == ast.DECL_IMPORT {
             import_path := nodes[imp_i].str_val
             if len(import_path) >= 2 && str_char_at(import_path, 0) == 46 && str_char_at(import_path, 1) == 47 {
                 // Relative import: ./path
@@ -841,7 +841,7 @@ fn register_type_decls(nodes: []AstNode) {
     // Structs
     sfi := 0
     for sfi < nodes_len {
-        if nodes[sfi].tag == DECL_STRUCT {
+        if nodes[sfi].tag == ast.DECL_STRUCT {
             struct_name := nodes[sfi].str_val
             field_names_list := []string{}
             field_types_list := []int{}
@@ -849,13 +849,13 @@ fn register_type_decls(nodes: []AstNode) {
             if fi >= 0 {
                 field_idx := 0
                 for fi < nodes_len {
-                    if nodes[fi].tag != DECL_FIELD { break }
+                    if nodes[fi].tag != ast.DECL_FIELD { break }
                     field_names_list = append(field_names_list, nodes[fi].str_val)
                     field_types_list = append(field_types_list, nodes[fi].type_tag)
-                    if nodes[fi].type_tag != TYPE_UNKNOWN {
+                    if nodes[fi].type_tag != ast.TYPE_UNKNOWN {
                         register_field_type(nodes[fi].str_val, nodes[fi].type_tag, nodes[fi].int_val)
                     }
-                    if nodes[fi].type_tag == TYPE_STRUCT || nodes[fi].type_tag == TYPE_MAP {
+                    if nodes[fi].type_tag == ast.TYPE_STRUCT || nodes[fi].type_tag == ast.TYPE_MAP {
                         register_field_struct_name(nodes[fi].str_val, lookup_type_name(fi))
                     }
                     RegisterFieldOffset(nodes[fi].str_val, field_idx * 8)
@@ -870,7 +870,7 @@ fn register_type_decls(nodes: []AstNode) {
     // Enums
     efi := 0
     for efi < nodes_len {
-        if nodes[efi].tag == DECL_ENUM {
+        if nodes[efi].tag == ast.DECL_ENUM {
             ename := nodes[efi].str_val
             evariants := []string{}
             efield_counts := []int{}
@@ -881,13 +881,13 @@ fn register_type_decls(nodes: []AstNode) {
             evci := 0
             for evci < evc {
                 if evi >= nodes_len { break }
-                if nodes[evi].tag != DECL_VARIANT { break }
+                if nodes[evi].tag != ast.DECL_VARIANT { break }
                 evariants = append(evariants, nodes[evi].str_val)
                 vfi := nodes[evi].left
                 vfc := 0
                 if vfi >= 0 {
                     for vfi < nodes_len {
-                        if nodes[vfi].tag != DECL_FIELD { break }
+                        if nodes[vfi].tag != ast.DECL_FIELD { break }
                         efield_names = append(efield_names, nodes[vfi].str_val)
                         efield_types = append(efield_types, nodes[vfi].type_tag)
                         vfc = vfc + 1
@@ -905,7 +905,7 @@ fn register_type_decls(nodes: []AstNode) {
     // Interfaces
     ifi := 0
     for ifi < nodes_len {
-        if nodes[ifi].tag == DECL_INTERFACE {
+        if nodes[ifi].tag == ast.DECL_INTERFACE {
             iname := nodes[ifi].str_val
             imethods := []string{}
             iparam_counts := []int{}
@@ -916,7 +916,7 @@ fn register_type_decls(nodes: []AstNode) {
             imci := 0
             for imci < imc {
                 if imi >= nodes_len { break }
-                if nodes[imi].tag != DECL_IMETHOD { break }
+                if nodes[imi].tag != ast.DECL_IMETHOD { break }
                 imethods = append(imethods, nodes[imi].str_val)
                 iparam_counts = append(iparam_counts, nodes[imi].int_val)
                 iret_types = append(iret_types, nodes[imi].type_tag)
@@ -933,9 +933,9 @@ fn register_type_decls(nodes: []AstNode) {
 // Build type, method, and function return type registries
 fn build_registries(nodes: []AstNode, func_names: []string, func_indices: []int) {
     register_type_decls(nodes)
-    register_func_return_type("os.Argv", TYPE_STRING, 0, "")
-    register_func_return_type("os.IsDir", TYPE_INT, 0, "")
-    register_func_return_type("os.ListDir", TYPE_STRING, 0, "")
+    register_func_return_type("os.Argv", ast.TYPE_STRING, 0, "")
+    register_func_return_type("os.IsDir", ast.TYPE_INT, 0, "")
+    register_func_return_type("os.ListDir", ast.TYPE_STRING, 0, "")
     // Method registry from parser side table
     mri := 0
     for mri < len(g_method_decl_node_idx) {
@@ -963,7 +963,7 @@ fn build_registries(nodes: []AstNode, func_names: []string, func_indices: []int)
             fpt_pi := fpt_node.left
             fpt_pidx := 0
             for fpt_pi < nodes_len {
-                if nodes[fpt_pi].tag != DECL_PARAM { break }
+                if nodes[fpt_pi].tag != ast.DECL_PARAM { break }
                 fpt_tname := lookup_type_name(fpt_pi)
                 if fpt_tname != "" {
                     sema.RegisterFuncParam(fpt_name, fpt_pidx, fpt_tname)
@@ -999,7 +999,7 @@ fn generate_all_ir(func_names: []string, func_indices: []int, nodes: []AstNode, 
         param_count := count_func_params(nodes, func_idx)
         func_label := 5000 + gen_i
         instrs = append(instrs, IRInstr {
-            op: OP_LABEL,
+            op: ir.OP_LABEL,
             dest: func_label,
             arg1: param_count,
             arg2: 0,
@@ -1171,17 +1171,17 @@ fn run_test_mode(test_path: string, run_bench: int) -> int {
 
     // Emit function label for main
     main_label := 5000 + fn_count
-    instrs = append(instrs, IRInstr { op: OP_LABEL, dest: main_label, arg1: 0, arg2: 0, arg3: 0, str_val: "main" })
+    instrs = append(instrs, IRInstr { op: ir.OP_LABEL, dest: main_label, arg1: 0, arg2: 0, arg3: 0, str_val: "main" })
 
     // Initialize failed counter: failed = 0
     failed_vreg := len(instrs)
-    instrs = append(instrs, IRInstr { op: OP_LOADCONST, dest: failed_vreg, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
+    instrs = append(instrs, IRInstr { op: ir.OP_LOADCONST, dest: failed_vreg, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
 
     zero_vreg := len(instrs)
-    instrs = append(instrs, IRInstr { op: OP_LOADCONST, dest: zero_vreg, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
+    instrs = append(instrs, IRInstr { op: ir.OP_LOADCONST, dest: zero_vreg, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
 
     one_vreg := len(instrs)
-    instrs = append(instrs, IRInstr { op: OP_LOADCONST, dest: one_vreg, arg1: 1, arg2: 0, arg3: 0, str_val: "" })
+    instrs = append(instrs, IRInstr { op: ir.OP_LOADCONST, dest: one_vreg, arg1: 1, arg2: 0, arg3: 0, str_val: "" })
 
     // For each test function, generate:
     //   io.Print("=== RUN   TestXxx\n")
@@ -1195,18 +1195,18 @@ fn run_test_mode(test_path: string, run_bench: int) -> int {
 
         // Print "=== RUN   TestXxx\n" via io.Print
         run_msg_vreg := len(instrs)
-        instrs = append(instrs, IRInstr { op: OP_LOADCONST, dest: run_msg_vreg, arg1: 0, arg2: 0, arg3: 0, str_val: "=== RUN   " + tname + "\n" })
-        instrs = append(instrs, IRInstr { op: OP_ARG, dest: 0, arg1: run_msg_vreg, arg2: -1, arg3: 0, str_val: "" })
+        instrs = append(instrs, IRInstr { op: ir.OP_LOADCONST, dest: run_msg_vreg, arg1: 0, arg2: 0, arg3: 0, str_val: "=== RUN   " + tname + "\n" })
+        instrs = append(instrs, IRInstr { op: ir.OP_ARG, dest: 0, arg1: run_msg_vreg, arg2: -1, arg3: 0, str_val: "" })
         run_call := len(instrs)
-        instrs = append(instrs, IRInstr { op: OP_CALL, dest: run_call, arg1: 0, arg2: 1, arg3: 0, str_val: "io.Print" })
+        instrs = append(instrs, IRInstr { op: ir.OP_CALL, dest: run_call, arg1: 0, arg2: 1, arg3: 0, str_val: "io.Print" })
 
         // setjmp
         sjmp_vreg := len(instrs)
-        instrs = append(instrs, IRInstr { op: OP_SETJMP, dest: sjmp_vreg, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
+        instrs = append(instrs, IRInstr { op: ir.OP_SETJMP, dest: sjmp_vreg, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
 
         // Compare: sjmp_vreg == 0 ?
         cmp_vreg := len(instrs)
-        instrs = append(instrs, IRInstr { op: OP_CMP_EQ, dest: cmp_vreg, arg1: sjmp_vreg, arg2: zero_vreg, arg3: 0, str_val: "" })
+        instrs = append(instrs, IRInstr { op: ir.OP_CMP_EQ, dest: cmp_vreg, arg1: sjmp_vreg, arg2: zero_vreg, arg3: 0, str_val: "" })
 
         // Branch: if cmp_vreg == 0 (i.e., setjmp returned non-zero = failure), go to fail label
         fail_label := g_next_label
@@ -1214,57 +1214,57 @@ fn run_test_mode(test_path: string, run_bench: int) -> int {
         next_label := g_next_label
         g_next_label = g_next_label + 1
 
-        instrs = append(instrs, IRInstr { op: OP_BRANCH, dest: cmp_vreg, arg1: fail_label, arg2: 0, arg3: 0, str_val: "" })
+        instrs = append(instrs, IRInstr { op: ir.OP_BRANCH, dest: cmp_vreg, arg1: fail_label, arg2: 0, arg3: 0, str_val: "" })
 
         // Pass path: create T struct and call TestXxx(t)
         t_alloc := len(instrs)
-        instrs = append(instrs, IRInstr { op: OP_ALLOCA, dest: t_alloc, arg1: 8, arg2: 0, arg3: 0, str_val: "" })
+        instrs = append(instrs, IRInstr { op: ir.OP_ALLOCA, dest: t_alloc, arg1: 8, arg2: 0, arg3: 0, str_val: "" })
         name_const := len(instrs)
-        instrs = append(instrs, IRInstr { op: OP_LOADCONST, dest: name_const, arg1: 0, arg2: 0, arg3: 0, str_val: tname })
+        instrs = append(instrs, IRInstr { op: ir.OP_LOADCONST, dest: name_const, arg1: 0, arg2: 0, arg3: 0, str_val: tname })
         name_addr := len(instrs)
-        instrs = append(instrs, IRInstr { op: OP_INDEXADDR, dest: name_addr, arg1: t_alloc, arg2: 0, arg3: 0, str_val: "" })
-        instrs = append(instrs, IRInstr { op: OP_STORE, dest: -1, arg1: name_addr, arg2: name_const, arg3: 0, str_val: "" })
-        instrs = append(instrs, IRInstr { op: OP_ARG, dest: 0, arg1: t_alloc, arg2: -1, arg3: 0, str_val: "" })
+        instrs = append(instrs, IRInstr { op: ir.OP_INDEXADDR, dest: name_addr, arg1: t_alloc, arg2: 0, arg3: 0, str_val: "" })
+        instrs = append(instrs, IRInstr { op: ir.OP_STORE, dest: -1, arg1: name_addr, arg2: name_const, arg3: 0, str_val: "" })
+        instrs = append(instrs, IRInstr { op: ir.OP_ARG, dest: 0, arg1: t_alloc, arg2: -1, arg3: 0, str_val: "" })
         call_vreg := len(instrs)
-        instrs = append(instrs, IRInstr { op: OP_CALL, dest: call_vreg, arg1: 0, arg2: 1, arg3: 0, str_val: tname })
+        instrs = append(instrs, IRInstr { op: ir.OP_CALL, dest: call_vreg, arg1: 0, arg2: 1, arg3: 0, str_val: tname })
 
         // Check soft fail (IsTrue assertions that failed but didn't stop execution)
         sf_vreg := len(instrs)
-        instrs = append(instrs, IRInstr { op: OP_CALL, dest: sf_vreg, arg1: 0, arg2: 0, arg3: 0, str_val: "testing.CheckSoftFail" })
+        instrs = append(instrs, IRInstr { op: ir.OP_CALL, dest: sf_vreg, arg1: 0, arg2: 0, arg3: 0, str_val: "testing.CheckSoftFail" })
         sf_cmp := len(instrs)
-        instrs = append(instrs, IRInstr { op: OP_CMP_EQ, dest: sf_cmp, arg1: sf_vreg, arg2: zero_vreg, arg3: 0, str_val: "" })
-        instrs = append(instrs, IRInstr { op: OP_BRANCH, dest: sf_cmp, arg1: fail_label, arg2: 0, arg3: 0, str_val: "" })
+        instrs = append(instrs, IRInstr { op: ir.OP_CMP_EQ, dest: sf_cmp, arg1: sf_vreg, arg2: zero_vreg, arg3: 0, str_val: "" })
+        instrs = append(instrs, IRInstr { op: ir.OP_BRANCH, dest: sf_cmp, arg1: fail_label, arg2: 0, arg3: 0, str_val: "" })
 
         // Print "--- PASS: TestXxx\n" via io.Print
         pass_msg_vreg := len(instrs)
-        instrs = append(instrs, IRInstr { op: OP_LOADCONST, dest: pass_msg_vreg, arg1: 0, arg2: 0, arg3: 0, str_val: "--- PASS: " + tname + "\n" })
-        instrs = append(instrs, IRInstr { op: OP_ARG, dest: 0, arg1: pass_msg_vreg, arg2: -1, arg3: 0, str_val: "" })
+        instrs = append(instrs, IRInstr { op: ir.OP_LOADCONST, dest: pass_msg_vreg, arg1: 0, arg2: 0, arg3: 0, str_val: "--- PASS: " + tname + "\n" })
+        instrs = append(instrs, IRInstr { op: ir.OP_ARG, dest: 0, arg1: pass_msg_vreg, arg2: -1, arg3: 0, str_val: "" })
         pass_call := len(instrs)
-        instrs = append(instrs, IRInstr { op: OP_CALL, dest: pass_call, arg1: 0, arg2: 1, arg3: 0, str_val: "io.Print" })
+        instrs = append(instrs, IRInstr { op: ir.OP_CALL, dest: pass_call, arg1: 0, arg2: 1, arg3: 0, str_val: "io.Print" })
 
         // Jump to next
-        instrs = append(instrs, IRInstr { op: OP_JUMP, dest: next_label, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
+        instrs = append(instrs, IRInstr { op: ir.OP_JUMP, dest: next_label, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
 
         // Fail path
-        instrs = append(instrs, IRInstr { op: OP_LABEL, dest: fail_label, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
+        instrs = append(instrs, IRInstr { op: ir.OP_LABEL, dest: fail_label, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
 
         // Print "--- FAIL: TestXxx\n" via io.Print
         fail_msg_vreg := len(instrs)
-        instrs = append(instrs, IRInstr { op: OP_LOADCONST, dest: fail_msg_vreg, arg1: 0, arg2: 0, arg3: 0, str_val: "--- FAIL: " + tname + "\n" })
-        instrs = append(instrs, IRInstr { op: OP_ARG, dest: 0, arg1: fail_msg_vreg, arg2: -1, arg3: 0, str_val: "" })
+        instrs = append(instrs, IRInstr { op: ir.OP_LOADCONST, dest: fail_msg_vreg, arg1: 0, arg2: 0, arg3: 0, str_val: "--- FAIL: " + tname + "\n" })
+        instrs = append(instrs, IRInstr { op: ir.OP_ARG, dest: 0, arg1: fail_msg_vreg, arg2: -1, arg3: 0, str_val: "" })
         fail_call := len(instrs)
-        instrs = append(instrs, IRInstr { op: OP_CALL, dest: fail_call, arg1: 0, arg2: 1, arg3: 0, str_val: "io.Print" })
+        instrs = append(instrs, IRInstr { op: ir.OP_CALL, dest: fail_call, arg1: 0, arg2: 1, arg3: 0, str_val: "io.Print" })
 
         // Increment failed counter: failed = failed + 1
         new_failed := len(instrs)
-        instrs = append(instrs, IRInstr { op: OP_ADD, dest: new_failed, arg1: failed_vreg, arg2: one_vreg, arg3: 0, str_val: "" })
-        instrs = append(instrs, IRInstr { op: OP_COPY, dest: failed_vreg, arg1: new_failed, arg2: 0, arg3: 0, str_val: "" })
+        instrs = append(instrs, IRInstr { op: ir.OP_ADD, dest: new_failed, arg1: failed_vreg, arg2: one_vreg, arg3: 0, str_val: "" })
+        instrs = append(instrs, IRInstr { op: ir.OP_COPY, dest: failed_vreg, arg1: new_failed, arg2: 0, arg3: 0, str_val: "" })
 
         // Jump to next
-        instrs = append(instrs, IRInstr { op: OP_JUMP, dest: next_label, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
+        instrs = append(instrs, IRInstr { op: ir.OP_JUMP, dest: next_label, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
 
         // Next label
-        instrs = append(instrs, IRInstr { op: OP_LABEL, dest: next_label, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
+        instrs = append(instrs, IRInstr { op: ir.OP_LABEL, dest: next_label, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
 
         ti = ti + 1
     }
@@ -1273,16 +1273,16 @@ fn run_test_mode(test_path: string, run_bench: int) -> int {
     if len(bench_func_names) > 0 {
         // Skip benchmarks if any test failed: CMP_EQ(failed, 0) → skip if != 0
         bench_skip_cmp := len(instrs)
-        instrs = append(instrs, IRInstr { op: OP_CMP_EQ, dest: bench_skip_cmp, arg1: failed_vreg, arg2: zero_vreg, arg3: 0, str_val: "" })
+        instrs = append(instrs, IRInstr { op: ir.OP_CMP_EQ, dest: bench_skip_cmp, arg1: failed_vreg, arg2: zero_vreg, arg3: 0, str_val: "" })
         bench_skip_label := g_next_label
         g_next_label = g_next_label + 1
-        instrs = append(instrs, IRInstr { op: OP_BRANCH, dest: bench_skip_cmp, arg1: bench_skip_label, arg2: 0, arg3: 0, str_val: "" })
+        instrs = append(instrs, IRInstr { op: ir.OP_BRANCH, dest: bench_skip_cmp, arg1: bench_skip_label, arg2: 0, arg3: 0, str_val: "" })
 
         // Constants for benchmark calibration
         billion_vreg := len(instrs)
-        instrs = append(instrs, IRInstr { op: OP_LOADCONST, dest: billion_vreg, arg1: 1000000000, arg2: 0, arg3: 0, str_val: "" })
+        instrs = append(instrs, IRInstr { op: ir.OP_LOADCONST, dest: billion_vreg, arg1: 1000000000, arg2: 0, arg3: 0, str_val: "" })
         two_vreg := len(instrs)
-        instrs = append(instrs, IRInstr { op: OP_LOADCONST, dest: two_vreg, arg1: 2, arg2: 0, arg3: 0, str_val: "" })
+        instrs = append(instrs, IRInstr { op: ir.OP_LOADCONST, dest: two_vreg, arg1: 2, arg2: 0, arg3: 0, str_val: "" })
 
         bi := 0
         for bi < len(bench_func_names) {
@@ -1290,59 +1290,59 @@ fn run_test_mode(test_path: string, run_bench: int) -> int {
 
             // Print "BenchmarkXxx\t"
             bname_vreg := len(instrs)
-            instrs = append(instrs, IRInstr { op: OP_LOADCONST, dest: bname_vreg, arg1: 0, arg2: 0, arg3: 0, str_val: bname + "\t" })
-            instrs = append(instrs, IRInstr { op: OP_ARG, dest: 0, arg1: bname_vreg, arg2: -1, arg3: 0, str_val: "" })
+            instrs = append(instrs, IRInstr { op: ir.OP_LOADCONST, dest: bname_vreg, arg1: 0, arg2: 0, arg3: 0, str_val: bname + "\t" })
+            instrs = append(instrs, IRInstr { op: ir.OP_ARG, dest: 0, arg1: bname_vreg, arg2: -1, arg3: 0, str_val: "" })
             bname_call := len(instrs)
-            instrs = append(instrs, IRInstr { op: OP_CALL, dest: bname_call, arg1: 0, arg2: 1, arg3: 0, str_val: "io.Print" })
+            instrs = append(instrs, IRInstr { op: ir.OP_CALL, dest: bname_call, arg1: 0, arg2: 1, arg3: 0, str_val: "io.Print" })
 
             // n = 1
             n_vreg := len(instrs)
-            instrs = append(instrs, IRInstr { op: OP_LOADCONST, dest: n_vreg, arg1: 1, arg2: 0, arg3: 0, str_val: "" })
+            instrs = append(instrs, IRInstr { op: ir.OP_LOADCONST, dest: n_vreg, arg1: 1, arg2: 0, arg3: 0, str_val: "" })
 
             // elapsed = 0
             elapsed_vreg := len(instrs)
-            instrs = append(instrs, IRInstr { op: OP_LOADCONST, dest: elapsed_vreg, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
+            instrs = append(instrs, IRInstr { op: ir.OP_LOADCONST, dest: elapsed_vreg, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
 
             // loop_start:
             loop_start_label := g_next_label
             g_next_label = g_next_label + 1
-            instrs = append(instrs, IRInstr { op: OP_LABEL, dest: loop_start_label, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
+            instrs = append(instrs, IRInstr { op: ir.OP_LABEL, dest: loop_start_label, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
 
             // Allocate B struct (16 bytes): name at offset 0, n at offset 8
             b_alloc := len(instrs)
-            instrs = append(instrs, IRInstr { op: OP_ALLOCA, dest: b_alloc, arg1: 16, arg2: 0, arg3: 0, str_val: "" })
+            instrs = append(instrs, IRInstr { op: ir.OP_ALLOCA, dest: b_alloc, arg1: 16, arg2: 0, arg3: 0, str_val: "" })
             // Set B.name
             b_name_const := len(instrs)
-            instrs = append(instrs, IRInstr { op: OP_LOADCONST, dest: b_name_const, arg1: 0, arg2: 0, arg3: 0, str_val: bname })
+            instrs = append(instrs, IRInstr { op: ir.OP_LOADCONST, dest: b_name_const, arg1: 0, arg2: 0, arg3: 0, str_val: bname })
             b_name_addr := len(instrs)
-            instrs = append(instrs, IRInstr { op: OP_INDEXADDR, dest: b_name_addr, arg1: b_alloc, arg2: 0, arg3: 0, str_val: "" })
-            instrs = append(instrs, IRInstr { op: OP_STORE, dest: -1, arg1: b_name_addr, arg2: b_name_const, arg3: 0, str_val: "" })
+            instrs = append(instrs, IRInstr { op: ir.OP_INDEXADDR, dest: b_name_addr, arg1: b_alloc, arg2: 0, arg3: 0, str_val: "" })
+            instrs = append(instrs, IRInstr { op: ir.OP_STORE, dest: -1, arg1: b_name_addr, arg2: b_name_const, arg3: 0, str_val: "" })
             // Set B.n = n_vreg
             b_n_addr := len(instrs)
-            instrs = append(instrs, IRInstr { op: OP_INDEXADDR, dest: b_n_addr, arg1: b_alloc, arg2: 8, arg3: 0, str_val: "" })
-            instrs = append(instrs, IRInstr { op: OP_STORE, dest: -1, arg1: b_n_addr, arg2: n_vreg, arg3: 0, str_val: "" })
+            instrs = append(instrs, IRInstr { op: ir.OP_INDEXADDR, dest: b_n_addr, arg1: b_alloc, arg2: 8, arg3: 0, str_val: "" })
+            instrs = append(instrs, IRInstr { op: ir.OP_STORE, dest: -1, arg1: b_n_addr, arg2: n_vreg, arg3: 0, str_val: "" })
 
             // start = TIME_NANOS()
             start_vreg := len(instrs)
-            instrs = append(instrs, IRInstr { op: OP_TIME_NANOS, dest: start_vreg, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
+            instrs = append(instrs, IRInstr { op: ir.OP_TIME_NANOS, dest: start_vreg, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
 
             // Call BenchmarkXxx(b)
-            instrs = append(instrs, IRInstr { op: OP_ARG, dest: 0, arg1: b_alloc, arg2: -1, arg3: 0, str_val: "" })
+            instrs = append(instrs, IRInstr { op: ir.OP_ARG, dest: 0, arg1: b_alloc, arg2: -1, arg3: 0, str_val: "" })
             bench_call := len(instrs)
-            instrs = append(instrs, IRInstr { op: OP_CALL, dest: bench_call, arg1: 0, arg2: 1, arg3: 0, str_val: bname })
+            instrs = append(instrs, IRInstr { op: ir.OP_CALL, dest: bench_call, arg1: 0, arg2: 1, arg3: 0, str_val: bname })
 
             // end = TIME_NANOS()
             end_vreg := len(instrs)
-            instrs = append(instrs, IRInstr { op: OP_TIME_NANOS, dest: end_vreg, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
+            instrs = append(instrs, IRInstr { op: ir.OP_TIME_NANOS, dest: end_vreg, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
 
             // elapsed = end - start
             new_elapsed := len(instrs)
-            instrs = append(instrs, IRInstr { op: OP_SUB, dest: new_elapsed, arg1: end_vreg, arg2: start_vreg, arg3: 0, str_val: "" })
-            instrs = append(instrs, IRInstr { op: OP_COPY, dest: elapsed_vreg, arg1: new_elapsed, arg2: 0, arg3: 0, str_val: "" })
+            instrs = append(instrs, IRInstr { op: ir.OP_SUB, dest: new_elapsed, arg1: end_vreg, arg2: start_vreg, arg3: 0, str_val: "" })
+            instrs = append(instrs, IRInstr { op: ir.OP_COPY, dest: elapsed_vreg, arg1: new_elapsed, arg2: 0, arg3: 0, str_val: "" })
 
             // ge_cmp = CMP_GE(elapsed, 1_000_000_000)
             ge_cmp := len(instrs)
-            instrs = append(instrs, IRInstr { op: OP_CMP_GE, dest: ge_cmp, arg1: elapsed_vreg, arg2: billion_vreg, arg3: 0, str_val: "" })
+            instrs = append(instrs, IRInstr { op: ir.OP_CMP_GE, dest: ge_cmp, arg1: elapsed_vreg, arg2: billion_vreg, arg3: 0, str_val: "" })
 
             // If elapsed < 1s (ge_cmp == 0), jump to double_label
             double_label := g_next_label
@@ -1350,81 +1350,81 @@ fn run_test_mode(test_path: string, run_bench: int) -> int {
             done_label := g_next_label
             g_next_label = g_next_label + 1
 
-            instrs = append(instrs, IRInstr { op: OP_BRANCH, dest: ge_cmp, arg1: double_label, arg2: 0, arg3: 0, str_val: "" })
+            instrs = append(instrs, IRInstr { op: ir.OP_BRANCH, dest: ge_cmp, arg1: double_label, arg2: 0, arg3: 0, str_val: "" })
 
             // Falls through: elapsed >= 1s, jump to done
-            instrs = append(instrs, IRInstr { op: OP_JUMP, dest: done_label, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
+            instrs = append(instrs, IRInstr { op: ir.OP_JUMP, dest: done_label, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
 
             // double_label: n = n * 2, goto loop_start
-            instrs = append(instrs, IRInstr { op: OP_LABEL, dest: double_label, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
+            instrs = append(instrs, IRInstr { op: ir.OP_LABEL, dest: double_label, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
             new_n := len(instrs)
-            instrs = append(instrs, IRInstr { op: OP_MUL, dest: new_n, arg1: n_vreg, arg2: two_vreg, arg3: 0, str_val: "" })
-            instrs = append(instrs, IRInstr { op: OP_COPY, dest: n_vreg, arg1: new_n, arg2: 0, arg3: 0, str_val: "" })
-            instrs = append(instrs, IRInstr { op: OP_JUMP, dest: loop_start_label, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
+            instrs = append(instrs, IRInstr { op: ir.OP_MUL, dest: new_n, arg1: n_vreg, arg2: two_vreg, arg3: 0, str_val: "" })
+            instrs = append(instrs, IRInstr { op: ir.OP_COPY, dest: n_vreg, arg1: new_n, arg2: 0, arg3: 0, str_val: "" })
+            instrs = append(instrs, IRInstr { op: ir.OP_JUMP, dest: loop_start_label, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
 
             // done_label: compute and print results
-            instrs = append(instrs, IRInstr { op: OP_LABEL, dest: done_label, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
+            instrs = append(instrs, IRInstr { op: ir.OP_LABEL, dest: done_label, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
 
             // ns_per_op = elapsed / n
             ns_per_op := len(instrs)
-            instrs = append(instrs, IRInstr { op: OP_DIV, dest: ns_per_op, arg1: elapsed_vreg, arg2: n_vreg, arg3: 0, str_val: "" })
+            instrs = append(instrs, IRInstr { op: ir.OP_DIV, dest: ns_per_op, arg1: elapsed_vreg, arg2: n_vreg, arg3: 0, str_val: "" })
 
             // Print: n_str + "\t" + ns_per_op_str + " ns/op\n"
             n_str := len(instrs)
-            instrs = append(instrs, IRInstr { op: OP_INT_TO_STR, dest: n_str, arg1: n_vreg, arg2: 0, arg3: 0, str_val: "" })
+            instrs = append(instrs, IRInstr { op: ir.OP_INT_TO_STR, dest: n_str, arg1: n_vreg, arg2: 0, arg3: 0, str_val: "" })
             tab_vreg := len(instrs)
-            instrs = append(instrs, IRInstr { op: OP_LOADCONST, dest: tab_vreg, arg1: 0, arg2: 0, arg3: 0, str_val: "\t" })
+            instrs = append(instrs, IRInstr { op: ir.OP_LOADCONST, dest: tab_vreg, arg1: 0, arg2: 0, arg3: 0, str_val: "\t" })
             nsop_str := len(instrs)
-            instrs = append(instrs, IRInstr { op: OP_INT_TO_STR, dest: nsop_str, arg1: ns_per_op, arg2: 0, arg3: 0, str_val: "" })
+            instrs = append(instrs, IRInstr { op: ir.OP_INT_TO_STR, dest: nsop_str, arg1: ns_per_op, arg2: 0, arg3: 0, str_val: "" })
             suffix_vreg := len(instrs)
-            instrs = append(instrs, IRInstr { op: OP_LOADCONST, dest: suffix_vreg, arg1: 0, arg2: 0, arg3: 0, str_val: " ns/op\n" })
+            instrs = append(instrs, IRInstr { op: ir.OP_LOADCONST, dest: suffix_vreg, arg1: 0, arg2: 0, arg3: 0, str_val: " ns/op\n" })
 
             // Concatenate: n_str + "\t" + nsop_str + " ns/op\n"
             cat1 := len(instrs)
-            instrs = append(instrs, IRInstr { op: OP_STR_CONCAT, dest: cat1, arg1: n_str, arg2: tab_vreg, arg3: 0, str_val: "" })
+            instrs = append(instrs, IRInstr { op: ir.OP_STR_CONCAT, dest: cat1, arg1: n_str, arg2: tab_vreg, arg3: 0, str_val: "" })
             cat2 := len(instrs)
-            instrs = append(instrs, IRInstr { op: OP_STR_CONCAT, dest: cat2, arg1: cat1, arg2: nsop_str, arg3: 0, str_val: "" })
+            instrs = append(instrs, IRInstr { op: ir.OP_STR_CONCAT, dest: cat2, arg1: cat1, arg2: nsop_str, arg3: 0, str_val: "" })
             cat3 := len(instrs)
-            instrs = append(instrs, IRInstr { op: OP_STR_CONCAT, dest: cat3, arg1: cat2, arg2: suffix_vreg, arg3: 0, str_val: "" })
+            instrs = append(instrs, IRInstr { op: ir.OP_STR_CONCAT, dest: cat3, arg1: cat2, arg2: suffix_vreg, arg3: 0, str_val: "" })
 
             // Print result line
-            instrs = append(instrs, IRInstr { op: OP_ARG, dest: 0, arg1: cat3, arg2: -1, arg3: 0, str_val: "" })
+            instrs = append(instrs, IRInstr { op: ir.OP_ARG, dest: 0, arg1: cat3, arg2: -1, arg3: 0, str_val: "" })
             bench_print_call := len(instrs)
-            instrs = append(instrs, IRInstr { op: OP_CALL, dest: bench_print_call, arg1: 0, arg2: 1, arg3: 0, str_val: "io.Print" })
+            instrs = append(instrs, IRInstr { op: ir.OP_CALL, dest: bench_print_call, arg1: 0, arg2: 1, arg3: 0, str_val: "io.Print" })
 
             bi = bi + 1
         }
 
         // bench_skip_label — falls through to summary
-        instrs = append(instrs, IRInstr { op: OP_LABEL, dest: bench_skip_label, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
+        instrs = append(instrs, IRInstr { op: ir.OP_LABEL, dest: bench_skip_label, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
     }
 
     // Print summary via io.Print
     // if failed > 0: print "FAIL\n" and return 1; else print "ok\n" and return 0
     summary_cmp := len(instrs)
-    instrs = append(instrs, IRInstr { op: OP_CMP_GT, dest: summary_cmp, arg1: failed_vreg, arg2: zero_vreg, arg3: 0, str_val: "" })
+    instrs = append(instrs, IRInstr { op: ir.OP_CMP_GT, dest: summary_cmp, arg1: failed_vreg, arg2: zero_vreg, arg3: 0, str_val: "" })
 
     summary_fail_label := g_next_label
     g_next_label = g_next_label + 1
 
-    instrs = append(instrs, IRInstr { op: OP_BRANCH, dest: summary_cmp, arg1: summary_fail_label, arg2: 0, arg3: 0, str_val: "" })
+    instrs = append(instrs, IRInstr { op: ir.OP_BRANCH, dest: summary_cmp, arg1: summary_fail_label, arg2: 0, arg3: 0, str_val: "" })
 
     // failed > 0 path: print FAIL, return 1
     fail_str_vreg := len(instrs)
-    instrs = append(instrs, IRInstr { op: OP_LOADCONST, dest: fail_str_vreg, arg1: 0, arg2: 0, arg3: 0, str_val: "FAIL\n" })
-    instrs = append(instrs, IRInstr { op: OP_ARG, dest: 0, arg1: fail_str_vreg, arg2: -1, arg3: 0, str_val: "" })
+    instrs = append(instrs, IRInstr { op: ir.OP_LOADCONST, dest: fail_str_vreg, arg1: 0, arg2: 0, arg3: 0, str_val: "FAIL\n" })
+    instrs = append(instrs, IRInstr { op: ir.OP_ARG, dest: 0, arg1: fail_str_vreg, arg2: -1, arg3: 0, str_val: "" })
     fail_sum_call := len(instrs)
-    instrs = append(instrs, IRInstr { op: OP_CALL, dest: fail_sum_call, arg1: 0, arg2: 1, arg3: 0, str_val: "io.Print" })
-    instrs = append(instrs, IRInstr { op: OP_RET, dest: one_vreg, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
+    instrs = append(instrs, IRInstr { op: ir.OP_CALL, dest: fail_sum_call, arg1: 0, arg2: 1, arg3: 0, str_val: "io.Print" })
+    instrs = append(instrs, IRInstr { op: ir.OP_RET, dest: one_vreg, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
 
     // failed == 0 path: print ok, return 0
-    instrs = append(instrs, IRInstr { op: OP_LABEL, dest: summary_fail_label, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
+    instrs = append(instrs, IRInstr { op: ir.OP_LABEL, dest: summary_fail_label, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
     ok_str_vreg := len(instrs)
-    instrs = append(instrs, IRInstr { op: OP_LOADCONST, dest: ok_str_vreg, arg1: 0, arg2: 0, arg3: 0, str_val: "ok\n" })
-    instrs = append(instrs, IRInstr { op: OP_ARG, dest: 0, arg1: ok_str_vreg, arg2: -1, arg3: 0, str_val: "" })
+    instrs = append(instrs, IRInstr { op: ir.OP_LOADCONST, dest: ok_str_vreg, arg1: 0, arg2: 0, arg3: 0, str_val: "ok\n" })
+    instrs = append(instrs, IRInstr { op: ir.OP_ARG, dest: 0, arg1: ok_str_vreg, arg2: -1, arg3: 0, str_val: "" })
     ok_sum_call := len(instrs)
-    instrs = append(instrs, IRInstr { op: OP_CALL, dest: ok_sum_call, arg1: 0, arg2: 1, arg3: 0, str_val: "io.Print" })
-    instrs = append(instrs, IRInstr { op: OP_RET, dest: zero_vreg, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
+    instrs = append(instrs, IRInstr { op: ir.OP_CALL, dest: ok_sum_call, arg1: 0, arg2: 1, arg3: 0, str_val: "io.Print" })
+    instrs = append(instrs, IRInstr { op: ir.OP_RET, dest: zero_vreg, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
 
     // LLVM IR Generation
     output_ll := "./tmp/output.ll"
@@ -1497,7 +1497,7 @@ fn main() -> int {
     for {
         pos = lex_skip(source, pos)
         kind := lex_kind(source, pos)
-        if kind == TK_EOF {
+        if kind == token.TK_EOF {
             if pos < len(source) {
                 report_error(source, pos, "unexpected character")
                 pos = pos + 1

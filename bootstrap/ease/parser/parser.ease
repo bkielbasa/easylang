@@ -40,19 +40,19 @@ fn lookup_type_name(node_idx: int) -> string {
 // Returns new position after ] or original pos if no [
 fn skip_type_args(src: string, pos: int) -> int {
     p := lex_skip(src, pos)
-    if lex_kind(src, p) != TK_LBRACKET { return pos }
-    p = lex_end(src, p, TK_LBRACKET)
+    if lex_kind(src, p) != token.TK_LBRACKET { return pos }
+    p = lex_end(src, p, token.TK_LBRACKET)
     p = lex_skip(src, p)
     depth := 1
     for depth > 0 {
-        if lex_kind(src, p) == TK_EOF { break }
-        if lex_kind(src, p) == TK_LBRACKET {
+        if lex_kind(src, p) == token.TK_EOF { break }
+        if lex_kind(src, p) == token.TK_LBRACKET {
             depth = depth + 1
         }
-        if lex_kind(src, p) == TK_RBRACKET {
+        if lex_kind(src, p) == token.TK_RBRACKET {
             depth = depth - 1
             if depth == 0 {
-                p = lex_end(src, p, TK_RBRACKET)
+                p = lex_end(src, p, token.TK_RBRACKET)
                 break
             }
         }
@@ -66,27 +66,27 @@ fn skip_type_args(src: string, pos: int) -> int {
 // Extracts the first identifier at each type arg position and records it in sema
 fn record_type_args(src: string, pos: int, decl_name: string, line: int) {
     p := lex_skip(src, pos)
-    if lex_kind(src, p) != TK_LBRACKET { return }
-    p = lex_end(src, p, TK_LBRACKET)
+    if lex_kind(src, p) != token.TK_LBRACKET { return }
+    p = lex_end(src, p, token.TK_LBRACKET)
     p = lex_skip(src, p)
     param_idx := 0
     recorded := 0
     depth := 0
-    for lex_kind(src, p) != TK_EOF {
+    for lex_kind(src, p) != token.TK_EOF {
         k := lex_kind(src, p)
-        if k == TK_RBRACKET {
+        if k == token.TK_RBRACKET {
             if depth == 0 { break }
             depth = depth - 1
         }
-        if k == TK_LBRACKET { depth = depth + 1 }
-        if k == TK_COMMA && depth == 0 {
+        if k == token.TK_LBRACKET { depth = depth + 1 }
+        if k == token.TK_COMMA && depth == 0 {
             param_idx = param_idx + 1
             recorded = 0
             p = lex_end(src, p, k)
             p = lex_skip(src, p)
         } else {
-            if k == TK_IDENT && depth == 0 && recorded == 0 {
-                type_name := lex_string_value(src, p, TK_IDENT)
+            if k == token.TK_IDENT && depth == 0 && recorded == 0 {
+                type_name := lex_string_value(src, p, token.TK_IDENT)
                 sema.RecordTypeInstantiation(decl_name, param_idx, type_name, line)
                 recorded = 1
             }
@@ -103,34 +103,34 @@ fn parse_type_params(src: string, pos: int, decl_name: string) -> ParseResult {
     p := pos
     p = lex_skip(src, p)
 
-    if lex_kind(src, p) != TK_LBRACKET {
+    if lex_kind(src, p) != token.TK_LBRACKET {
         return ParseResult { node_idx: 0, new_pos: pos }
     }
-    p = lex_end(src, p, TK_LBRACKET)
+    p = lex_end(src, p, token.TK_LBRACKET)
     p = lex_skip(src, p)
 
     param_names := []string{}
     constraints := []string{}
 
     for {
-        if lex_kind(src, p) == TK_RBRACKET || lex_kind(src, p) == TK_EOF {
+        if lex_kind(src, p) == token.TK_RBRACKET || lex_kind(src, p) == token.TK_EOF {
             break
         }
 
         // Parse type param name (e.g., T, U)
-        if lex_kind(src, p) != TK_IDENT { break }
-        pname := lex_string_value(src, p, TK_IDENT)
-        p = lex_end(src, p, TK_IDENT)
+        if lex_kind(src, p) != token.TK_IDENT { break }
+        pname := lex_string_value(src, p, token.TK_IDENT)
+        p = lex_end(src, p, token.TK_IDENT)
         p = lex_skip(src, p)
 
         // Optional constraint: T: InterfaceName
         constraint := ""
-        if lex_kind(src, p) == TK_COLON {
-            p = lex_end(src, p, TK_COLON)
+        if lex_kind(src, p) == token.TK_COLON {
+            p = lex_end(src, p, token.TK_COLON)
             p = lex_skip(src, p)
-            if lex_kind(src, p) == TK_IDENT {
-                constraint = lex_string_value(src, p, TK_IDENT)
-                p = lex_end(src, p, TK_IDENT)
+            if lex_kind(src, p) == token.TK_IDENT {
+                constraint = lex_string_value(src, p, token.TK_IDENT)
+                p = lex_end(src, p, token.TK_IDENT)
                 p = lex_skip(src, p)
             }
         }
@@ -139,15 +139,15 @@ fn parse_type_params(src: string, pos: int, decl_name: string) -> ParseResult {
         constraints = append(constraints, constraint)
 
         // Optional comma
-        if lex_kind(src, p) == TK_COMMA {
-            p = lex_end(src, p, TK_COMMA)
+        if lex_kind(src, p) == token.TK_COMMA {
+            p = lex_end(src, p, token.TK_COMMA)
             p = lex_skip(src, p)
         }
     }
 
     // Expect ']'
-    if lex_kind(src, p) == TK_RBRACKET {
-        p = lex_end(src, p, TK_RBRACKET)
+    if lex_kind(src, p) == token.TK_RBRACKET {
+        p = lex_end(src, p, token.TK_RBRACKET)
     }
 
     if len(param_names) > 0 {
@@ -163,7 +163,7 @@ fn parse_colonequal_stmt(src: string, pos: int, nodes: []AstNode) -> ParseResult
 
     // Parse identifier
     name_kind := lex_kind(src, p)
-    if name_kind != TK_IDENT {
+    if name_kind != token.TK_IDENT {
         return ParseResult { node_idx: -1, new_pos: p }
     }
     name := lex_string_value(src, p, name_kind)
@@ -173,7 +173,7 @@ fn parse_colonequal_stmt(src: string, pos: int, nodes: []AstNode) -> ParseResult
 
     // Expect ':='
     ce_kind := lex_kind(src, p)
-    if ce_kind != TK_COLONEQUAL {
+    if ce_kind != token.TK_COLONEQUAL {
         return ParseResult { node_idx: -1, new_pos: p }
     }
     p = lex_end(src, p, ce_kind)
@@ -187,15 +187,15 @@ fn parse_colonequal_stmt(src: string, pos: int, nodes: []AstNode) -> ParseResult
     expr_node := expr_result.node_idx
     p = expr_result.new_pos
 
-    // Create let statement node (reuse STMT_LET, int_val=1 for mutable)
+    // Create let statement node (reuse ast.STMT_LET, int_val=1 for mutable)
     stmt := AstNode {
-        tag: STMT_LET,
+        tag: ast.STMT_LET,
         int_val: 1,
         str_val: name,
         left: name_node,
         right: expr_node,
         extra: -1,
-        type_tag: TYPE_UNKNOWN
+        type_tag: ast.TYPE_UNKNOWN
     }
     nodes = append(nodes, stmt)
     return ParseResult { node_idx: len(nodes) - 1, new_pos: p }
@@ -206,7 +206,7 @@ fn parse_if_stmt(src: string, pos: int, nodes: []AstNode) -> ParseResult {
     // pos should be at 'if' token
     p := pos
     kind := lex_kind(src, p)
-    if kind != TK_IF {
+    if kind != token.TK_IF {
         return ParseResult { node_idx: -1, new_pos: p }
     }
     p = lex_end(src, p, kind)
@@ -233,12 +233,12 @@ fn parse_if_stmt(src: string, pos: int, nodes: []AstNode) -> ParseResult {
     // Check for else
     else_node := -1
     next_kind := lex_kind(src, p)
-    if next_kind == TK_ELSE {
+    if next_kind == token.TK_ELSE {
         p = lex_end(src, p, next_kind)
         p = lex_skip(src, p)
         // Check for else if
         else_kind := lex_kind(src, p)
-        if else_kind == TK_IF {
+        if else_kind == token.TK_IF {
             // else if -> parse as nested if statement
             else_if_result := parse_if_stmt(src, p, nodes)
             if else_if_result.node_idx >= 0 {
@@ -258,13 +258,13 @@ fn parse_if_stmt(src: string, pos: int, nodes: []AstNode) -> ParseResult {
     // Create if statement node
     // left = condition, right = then block, extra = else block
     stmt := AstNode {
-        tag: STMT_IF,
+        tag: ast.STMT_IF,
         int_val: 0,
         str_val: "",
         left: cond_node,
         right: then_node,
         extra: else_node,
-        type_tag: TYPE_UNKNOWN
+        type_tag: ast.TYPE_UNKNOWN
     }
     nodes = append(nodes, stmt)
     return ParseResult { node_idx: len(nodes) - 1, new_pos: p }
@@ -274,7 +274,7 @@ fn parse_for_stmt(src: string, pos: int, nodes: []AstNode) -> ParseResult {
     // pos should be at 'for' token
     p := pos
     kind := lex_kind(src, p)
-    if kind != TK_FOR {
+    if kind != token.TK_FOR {
         return ParseResult { node_idx: -1, new_pos: p }
     }
     p = lex_end(src, p, kind)
@@ -285,17 +285,17 @@ fn parse_for_stmt(src: string, pos: int, nodes: []AstNode) -> ParseResult {
     cond_node := -1
     loop_var := ""
 
-    if next_kind == TK_IDENT {
+    if next_kind == token.TK_IDENT {
         // Might be: for i in range or for condition
         saved_pos := p
         var_name := lex_string_value(src, p, next_kind)
         p = lex_end(src, p, next_kind)
         p = lex_skip(src, p)
 
-        if lex_kind(src, p) == TK_IN {
+        if lex_kind(src, p) == token.TK_IN {
             // It's a range-based for loop: for i in range
             loop_var = var_name
-            p = lex_end(src, p, TK_IN)
+            p = lex_end(src, p, token.TK_IN)
             p = lex_skip(src, p)
 
             // Parse range expression
@@ -315,7 +315,7 @@ fn parse_for_stmt(src: string, pos: int, nodes: []AstNode) -> ParseResult {
                 p = lex_skip(src, p)
             }
         }
-    } else if next_kind != TK_LBRACE {
+    } else if next_kind != token.TK_LBRACE {
         // Parse condition expression (not identifier, not lbrace)
         cond_result := parse_expr_with_pos(src, p, nodes)
         if cond_result.node_idx >= 0 {
@@ -337,13 +337,13 @@ fn parse_for_stmt(src: string, pos: int, nodes: []AstNode) -> ParseResult {
     // left = condition/range (-1 for infinite loop), right = body block
     // str_val = loop variable name (for range-based loops)
     stmt := AstNode {
-        tag: STMT_FOR,
+        tag: ast.STMT_FOR,
         int_val: 0,
         str_val: loop_var,
         left: cond_node,
         right: body_node,
         extra: -1,
-        type_tag: TYPE_UNKNOWN
+        type_tag: ast.TYPE_UNKNOWN
     }
     nodes = append(nodes, stmt)
     return ParseResult { node_idx: len(nodes) - 1, new_pos: p }
@@ -353,7 +353,7 @@ fn parse_return_stmt(src: string, pos: int, nodes: []AstNode) -> ParseResult {
     // pos should be at 'return' token
     p := pos
     kind := lex_kind(src, p)
-    if kind != TK_RETURN {
+    if kind != token.TK_RETURN {
         return ParseResult { node_idx: -1, new_pos: p }
     }
     p = lex_end(src, p, kind)
@@ -365,7 +365,7 @@ fn parse_return_stmt(src: string, pos: int, nodes: []AstNode) -> ParseResult {
     extra_count := 0
 
     // If not EOF, semicolon, or close brace, parse expression
-    if next_kind != TK_EOF && next_kind != TK_SEMI && next_kind != TK_RBRACE {
+    if next_kind != token.TK_EOF && next_kind != token.TK_SEMI && next_kind != token.TK_RBRACE {
         expr_result := parse_expr_with_pos(src, p, nodes)
         expr_node = expr_result.node_idx
         p = expr_result.new_pos
@@ -373,8 +373,8 @@ fn parse_return_stmt(src: string, pos: int, nodes: []AstNode) -> ParseResult {
 
         // Check for multi-value return: return expr1, expr2, ...
         extra_exprs := []int{}
-        for lex_kind(src, p) == TK_COMMA {
-            p = lex_end(src, p, TK_COMMA)
+        for lex_kind(src, p) == token.TK_COMMA {
+            p = lex_end(src, p, token.TK_COMMA)
             p = lex_skip(src, p)
             next_result := parse_expr_with_pos(src, p, nodes)
             if next_result.node_idx < 0 { break }
@@ -400,13 +400,13 @@ fn parse_return_stmt(src: string, pos: int, nodes: []AstNode) -> ParseResult {
     // Create return statement node
     // int_val = extra_count (0 for single return, >0 for multi-return)
     stmt := AstNode {
-        tag: STMT_RETURN,
+        tag: ast.STMT_RETURN,
         int_val: extra_count,
         str_val: "",
         left: expr_node,
         right: -1,
         extra: -1,
-        type_tag: TYPE_UNKNOWN
+        type_tag: ast.TYPE_UNKNOWN
     }
     nodes = append(nodes, stmt)
     return ParseResult { node_idx: len(nodes) - 1, new_pos: p }
@@ -417,7 +417,7 @@ fn parse_assign_stmt(src: string, pos: int, nodes: []AstNode) -> ParseResult {
     // pos should be at identifier
     p := pos
     name_kind := lex_kind(src, p)
-    if name_kind != TK_IDENT {
+    if name_kind != token.TK_IDENT {
         return ParseResult { node_idx: -1, new_pos: p }
     }
     name := lex_string_value(src, p, name_kind)
@@ -427,7 +427,7 @@ fn parse_assign_stmt(src: string, pos: int, nodes: []AstNode) -> ParseResult {
 
     // Expect '='
     eq_kind := lex_kind(src, p)
-    if eq_kind != TK_ASSIGN {
+    if eq_kind != token.TK_ASSIGN {
         return ParseResult { node_idx: -1, new_pos: p }
     }
     p = lex_end(src, p, eq_kind)
@@ -443,13 +443,13 @@ fn parse_assign_stmt(src: string, pos: int, nodes: []AstNode) -> ParseResult {
 
     // Create assignment node
     stmt := AstNode {
-        tag: STMT_ASSIGN,
+        tag: ast.STMT_ASSIGN,
         int_val: 0,
         str_val: name,
         left: name_node,
         right: expr_node,
         extra: -1,
-        type_tag: TYPE_UNKNOWN
+        type_tag: ast.TYPE_UNKNOWN
     }
     nodes = append(nodes, stmt)
     return ParseResult { node_idx: len(nodes) - 1, new_pos: p }
@@ -461,64 +461,64 @@ fn parse_stmt(src: string, pos: int, nodes: []AstNode) -> ParseResult {
     p = lex_skip(src, p)
     kind := lex_kind(src, p)
 
-    if kind == TK_IF {
+    if kind == token.TK_IF {
         return parse_if_stmt(src, p, nodes)
     }
 
-    if kind == TK_FOR {
+    if kind == token.TK_FOR {
         return parse_for_stmt(src, p, nodes)
     }
 
-    if kind == TK_RETURN {
+    if kind == token.TK_RETURN {
         return parse_return_stmt(src, p, nodes)
     }
 
-    if kind == TK_MATCH {
+    if kind == token.TK_MATCH {
         return parse_match_stmt(src, p, nodes)
     }
 
-    if kind == TK_BREAK {
+    if kind == token.TK_BREAK {
         p = lex_end(src, p, kind)
         stmt := AstNode {
-            tag: STMT_BREAK,
+            tag: ast.STMT_BREAK,
             int_val: 0,
             str_val: "",
             left: -1,
             right: -1,
             extra: -1,
-            type_tag: TYPE_UNKNOWN
+            type_tag: ast.TYPE_UNKNOWN
         }
         nodes = append(nodes, stmt)
         return ParseResult { node_idx: len(nodes) - 1, new_pos: p }
     }
 
-    if kind == TK_LBRACE {
+    if kind == token.TK_LBRACE {
         return parse_block(src, p, nodes)
     }
 
     // Check if it's an assignment (ident followed by =) or declaration (ident followed by :=)
-    if kind == TK_IDENT {
+    if kind == token.TK_IDENT {
         saved_pos := p
         first_name := lex_string_value(src, p, kind)
         p = lex_end(src, p, kind)
         p = lex_skip(src, p)
         next_kind := lex_kind(src, p)
-        if next_kind == TK_COMMA {
+        if next_kind == token.TK_COMMA {
             // Multi-variable declaration: a, b, c := expr
             ml_names := []string{}
             ml_names = append(ml_names, first_name)
-            for lex_kind(src, p) == TK_COMMA {
-                p = lex_end(src, p, TK_COMMA)
+            for lex_kind(src, p) == token.TK_COMMA {
+                p = lex_end(src, p, token.TK_COMMA)
                 p = lex_skip(src, p)
-                if lex_kind(src, p) != TK_IDENT { break }
-                ml_names = append(ml_names, lex_string_value(src, p, TK_IDENT))
-                p = lex_end(src, p, TK_IDENT)
+                if lex_kind(src, p) != token.TK_IDENT { break }
+                ml_names = append(ml_names, lex_string_value(src, p, token.TK_IDENT))
+                p = lex_end(src, p, token.TK_IDENT)
                 p = lex_skip(src, p)
             }
-            if lex_kind(src, p) == TK_COLONEQUAL {
-                p = lex_end(src, p, TK_COLONEQUAL)
+            if lex_kind(src, p) == token.TK_COLONEQUAL {
+                p = lex_end(src, p, token.TK_COLONEQUAL)
                 p = lex_skip(src, p)
-                // Create EXPR_IDENT nodes for each name (consecutive in AST)
+                // Create ast.EXPR_IDENT nodes for each name (consecutive in AST)
                 ml_first_ident := len(nodes)
                 ml_ni := 0
                 for ml_ni < len(ml_names) {
@@ -529,13 +529,13 @@ fn parse_stmt(src: string, pos: int, nodes: []AstNode) -> ParseResult {
                 ml_rhs := parse_expr_with_pos(src, p, nodes)
                 if ml_rhs.node_idx >= 0 {
                     ml_stmt := AstNode {
-                        tag: STMT_MULTI_LET,
+                        tag: ast.STMT_MULTI_LET,
                         int_val: len(ml_names),
                         str_val: "",
                         left: ml_first_ident,
                         right: ml_rhs.node_idx,
                         extra: -1,
-                        type_tag: TYPE_UNKNOWN
+                        type_tag: ast.TYPE_UNKNOWN
                     }
                     nodes = append(nodes, ml_stmt)
                     return ParseResult { node_idx: len(nodes) - 1, new_pos: ml_rhs.new_pos }
@@ -546,35 +546,35 @@ fn parse_stmt(src: string, pos: int, nodes: []AstNode) -> ParseResult {
             p = lex_skip(src, p)
             next_kind = lex_kind(src, p)
         }
-        if next_kind == TK_COLONEQUAL {
+        if next_kind == token.TK_COLONEQUAL {
             return parse_colonequal_stmt(src, saved_pos, nodes)
         }
-        if next_kind == TK_ASSIGN {
+        if next_kind == token.TK_ASSIGN {
             return parse_assign_stmt(src, saved_pos, nodes)
         }
-        if next_kind == TK_DOT {
+        if next_kind == token.TK_DOT {
             // Might be field assignment: p.x = val, or method call: p.Method()
             p = saved_pos
             lhs_result := parse_expr_with_pos(src, p, nodes)
             if lhs_result.node_idx >= 0 {
                 p = lhs_result.new_pos
                 p = lex_skip(src, p)
-                if lex_kind(src, p) == TK_ASSIGN {
+                if lex_kind(src, p) == token.TK_ASSIGN {
                     // Field assignment: p.field = value
-                    p = lex_end(src, p, TK_ASSIGN)
+                    p = lex_end(src, p, token.TK_ASSIGN)
                     p = lex_skip(src, p)
                     rhs_result := parse_expr_with_pos(src, p, nodes)
                     if rhs_result.node_idx >= 0 {
-                        // Extract base and field name from the LHS EXPR_FIELD node
+                        // Extract base and field name from the LHS ast.EXPR_FIELD node
                         lhs_node := nodes[lhs_result.node_idx]
                         fa_node := AstNode {
-                            tag: STMT_FIELD_ASSIGN,
+                            tag: ast.STMT_FIELD_ASSIGN,
                             int_val: 0,
                             str_val: lhs_node.str_val,
                             left: lhs_node.left,
                             right: rhs_result.node_idx,
                             extra: -1,
-                            type_tag: TYPE_UNKNOWN
+                            type_tag: ast.TYPE_UNKNOWN
                         }
                         nodes = append(nodes, fa_node)
                         return ParseResult { node_idx: len(nodes) - 1, new_pos: rhs_result.new_pos }
@@ -582,40 +582,40 @@ fn parse_stmt(src: string, pos: int, nodes: []AstNode) -> ParseResult {
                 }
                 // Not an assignment — wrap as expression statement
                 stmt := AstNode {
-                    tag: STMT_EXPR,
+                    tag: ast.STMT_EXPR,
                     int_val: 0,
                     str_val: "",
                     left: lhs_result.node_idx,
                     right: -1,
                     extra: -1,
-                    type_tag: TYPE_UNKNOWN
+                    type_tag: ast.TYPE_UNKNOWN
                 }
                 nodes = append(nodes, stmt)
                 return ParseResult { node_idx: len(nodes) - 1, new_pos: p }
             }
             p = saved_pos
         }
-        if next_kind == TK_LBRACKET {
+        if next_kind == token.TK_LBRACKET {
             // Might be arr[i] = val (index assignment) or arr[i] (expression statement)
             p = saved_pos
             idx_result := parse_expr_with_pos(src, p, nodes)
             if idx_result.node_idx >= 0 {
                 p = idx_result.new_pos
                 p = lex_skip(src, p)
-                if lex_kind(src, p) == TK_ASSIGN {
+                if lex_kind(src, p) == token.TK_ASSIGN {
                     // Index assignment: arr[i] = val
-                    p = lex_end(src, p, TK_ASSIGN)
+                    p = lex_end(src, p, token.TK_ASSIGN)
                     p = lex_skip(src, p)
                     rhs_result := parse_expr_with_pos(src, p, nodes)
                     if rhs_result.node_idx >= 0 {
                         ia_node := AstNode {
-                            tag: STMT_INDEX_ASSIGN,
+                            tag: ast.STMT_INDEX_ASSIGN,
                             int_val: 0,
                             str_val: "",
                             left: idx_result.node_idx,
                             right: rhs_result.node_idx,
                             extra: -1,
-                            type_tag: TYPE_UNKNOWN
+                            type_tag: ast.TYPE_UNKNOWN
                         }
                         nodes = append(nodes, ia_node)
                         return ParseResult { node_idx: len(nodes) - 1, new_pos: rhs_result.new_pos }
@@ -623,13 +623,13 @@ fn parse_stmt(src: string, pos: int, nodes: []AstNode) -> ParseResult {
                 }
                 // Not an assignment — wrap as expression statement
                 stmt := AstNode {
-                    tag: STMT_EXPR,
+                    tag: ast.STMT_EXPR,
                     int_val: 0,
                     str_val: "",
                     left: idx_result.node_idx,
                     right: -1,
                     extra: -1,
-                    type_tag: TYPE_UNKNOWN
+                    type_tag: ast.TYPE_UNKNOWN
                 }
                 nodes = append(nodes, stmt)
                 return ParseResult { node_idx: len(nodes) - 1, new_pos: p }
@@ -644,13 +644,13 @@ fn parse_stmt(src: string, pos: int, nodes: []AstNode) -> ParseResult {
     expr_result := parse_expr_with_pos(src, p, nodes)
     if expr_result.node_idx >= 0 {
         stmt := AstNode {
-            tag: STMT_EXPR,
+            tag: ast.STMT_EXPR,
             int_val: 0,
             str_val: "",
             left: expr_result.node_idx,
             right: -1,
             extra: -1,
-            type_tag: TYPE_UNKNOWN
+            type_tag: ast.TYPE_UNKNOWN
         }
         nodes = append(nodes, stmt)
         return ParseResult { node_idx: len(nodes) - 1, new_pos: expr_result.new_pos }
@@ -666,7 +666,7 @@ fn parse_param(src: string, pos: int, nodes: []AstNode) -> ParseResult {
 
     // Parse parameter name
     name_kind := lex_kind(src, p)
-    if name_kind != TK_IDENT {
+    if name_kind != token.TK_IDENT {
         return ParseResult { node_idx: -1, new_pos: p }
     }
     param_name := lex_string_value(src, p, name_kind)
@@ -675,7 +675,7 @@ fn parse_param(src: string, pos: int, nodes: []AstNode) -> ParseResult {
 
     // Expect ':'
     colon_kind := lex_kind(src, p)
-    if colon_kind != TK_COLON {
+    if colon_kind != token.TK_COLON {
         return ParseResult { node_idx: -1, new_pos: p }
     }
     p = lex_end(src, p, colon_kind)
@@ -685,44 +685,44 @@ fn parse_param(src: string, pos: int, nodes: []AstNode) -> ParseResult {
     type_name := ""
     type_kind := lex_kind(src, p)
 
-    if type_kind == TK_MAP {
+    if type_kind == token.TK_MAP {
         // Map type: map[KeyType]ValType
         p = lex_end(src, p, type_kind)
         p = lex_skip(src, p)
         map_key_type := ""
         map_val_type := ""
-        if lex_kind(src, p) == TK_LBRACKET { p = lex_end(src, p, TK_LBRACKET) p = lex_skip(src, p) }
-        if lex_kind(src, p) == TK_IDENT { map_key_type = lex_string_value(src, p, TK_IDENT) p = lex_end(src, p, TK_IDENT) p = lex_skip(src, p) }
-        if lex_kind(src, p) == TK_RBRACKET { p = lex_end(src, p, TK_RBRACKET) p = lex_skip(src, p) }
-        if lex_kind(src, p) == TK_IDENT { map_val_type = lex_string_value(src, p, TK_IDENT) p = lex_end(src, p, TK_IDENT) }
+        if lex_kind(src, p) == token.TK_LBRACKET { p = lex_end(src, p, token.TK_LBRACKET) p = lex_skip(src, p) }
+        if lex_kind(src, p) == token.TK_IDENT { map_key_type = lex_string_value(src, p, token.TK_IDENT) p = lex_end(src, p, token.TK_IDENT) p = lex_skip(src, p) }
+        if lex_kind(src, p) == token.TK_RBRACKET { p = lex_end(src, p, token.TK_RBRACKET) p = lex_skip(src, p) }
+        if lex_kind(src, p) == token.TK_IDENT { map_val_type = lex_string_value(src, p, token.TK_IDENT) p = lex_end(src, p, token.TK_IDENT) }
         type_name = "map[" + map_key_type + "]" + map_val_type
-    } else if type_kind == TK_STAR {
+    } else if type_kind == token.TK_STAR {
         // Pointer type: *TypeName
         p = lex_end(src, p, type_kind)
         p = lex_skip(src, p)
-        if lex_kind(src, p) == TK_IDENT {
-            type_name = lex_string_value(src, p, TK_IDENT)
-            p = lex_end(src, p, TK_IDENT)
+        if lex_kind(src, p) == token.TK_IDENT {
+            type_name = lex_string_value(src, p, token.TK_IDENT)
+            p = lex_end(src, p, token.TK_IDENT)
         }
-    } else if type_kind == TK_LBRACKET {
+    } else if type_kind == token.TK_LBRACKET {
         // Array type: []ElementType
         type_name = "[]"
         p = lex_end(src, p, type_kind)  // Skip '['
         p = lex_skip(src, p)
 
         // Expect ']'
-        if lex_kind(src, p) == TK_RBRACKET {
-            p = lex_end(src, p, TK_RBRACKET)
+        if lex_kind(src, p) == token.TK_RBRACKET {
+            p = lex_end(src, p, token.TK_RBRACKET)
             p = lex_skip(src, p)
         }
 
         // Parse element type
-        if lex_kind(src, p) == TK_IDENT {
-            elem_type := lex_string_value(src, p, TK_IDENT)
+        if lex_kind(src, p) == token.TK_IDENT {
+            elem_type := lex_string_value(src, p, token.TK_IDENT)
             type_name = type_name + elem_type
-            p = lex_end(src, p, TK_IDENT)
+            p = lex_end(src, p, token.TK_IDENT)
         }
-    } else if type_kind == TK_IDENT {
+    } else if type_kind == token.TK_IDENT {
         // Simple type
         type_name = lex_string_value(src, p, type_kind)
         p = lex_end(src, p, type_kind)
@@ -730,12 +730,12 @@ fn parse_param(src: string, pos: int, nodes: []AstNode) -> ParseResult {
         p = skip_type_args(src, p)
         // Handle module-qualified types: module.Type -> use Type
         p_check := lex_skip(src, p)
-        if lex_kind(src, p_check) == TK_DOT {
-            p_check = lex_end(src, p_check, TK_DOT)
+        if lex_kind(src, p_check) == token.TK_DOT {
+            p_check = lex_end(src, p_check, token.TK_DOT)
             p_check = lex_skip(src, p_check)
-            if lex_kind(src, p_check) == TK_IDENT {
-                type_name = lex_string_value(src, p_check, TK_IDENT)
-                p = lex_end(src, p_check, TK_IDENT)
+            if lex_kind(src, p_check) == token.TK_IDENT {
+                type_name = lex_string_value(src, p_check, token.TK_IDENT)
+                p = lex_end(src, p_check, token.TK_IDENT)
                 // Skip type args after module-qualified type
                 p = skip_type_args(src, p)
             }
@@ -746,21 +746,21 @@ fn parse_param(src: string, pos: int, nodes: []AstNode) -> ParseResult {
 
     // Create parameter node
     // int_val: 1 = array type, 0 = scalar type
-    param_type_tag := TYPE_UNKNOWN
+    param_type_tag := ast.TYPE_UNKNOWN
     param_is_array := 0
-    if type_name == "string" { param_type_tag = TYPE_STRING }
-    if type_name == "int" { param_type_tag = TYPE_INT }
-    if type_name == "bool" { param_type_tag = TYPE_BOOL }
-    if type_name == "float" { param_type_tag = TYPE_FLOAT }
-    if type_name == "[]string" { param_type_tag = TYPE_STRING param_is_array = 1 }
-    if type_name == "[]int" { param_type_tag = TYPE_INT param_is_array = 1 }
-    if type_name == "[]float" { param_type_tag = TYPE_FLOAT param_is_array = 1 }
-    if strings.HasPrefix(type_name, "map[") { param_type_tag = TYPE_MAP }
-    if param_type_tag == TYPE_UNKNOWN && type_name != "" {
-        param_type_tag = TYPE_STRUCT
+    if type_name == "string" { param_type_tag = ast.TYPE_STRING }
+    if type_name == "int" { param_type_tag = ast.TYPE_INT }
+    if type_name == "bool" { param_type_tag = ast.TYPE_BOOL }
+    if type_name == "float" { param_type_tag = ast.TYPE_FLOAT }
+    if type_name == "[]string" { param_type_tag = ast.TYPE_STRING param_is_array = 1 }
+    if type_name == "[]int" { param_type_tag = ast.TYPE_INT param_is_array = 1 }
+    if type_name == "[]float" { param_type_tag = ast.TYPE_FLOAT param_is_array = 1 }
+    if strings.HasPrefix(type_name, "map[") { param_type_tag = ast.TYPE_MAP }
+    if param_type_tag == ast.TYPE_UNKNOWN && type_name != "" {
+        param_type_tag = ast.TYPE_STRUCT
     }
     param := AstNode {
-        tag: DECL_PARAM,
+        tag: ast.DECL_PARAM,
         int_val: param_is_array,
         str_val: param_name,
         left: -1,
@@ -769,7 +769,7 @@ fn parse_param(src: string, pos: int, nodes: []AstNode) -> ParseResult {
         type_tag: param_type_tag
     }
     nodes = append(nodes, param)
-    if param_type_tag == TYPE_STRUCT || param_type_tag == TYPE_MAP {
+    if param_type_tag == ast.TYPE_STRUCT || param_type_tag == ast.TYPE_MAP {
         g_type_name_node_idx = append(g_type_name_node_idx, len(nodes) - 1)
         g_type_name_str = append(g_type_name_str, type_name)
     }
@@ -783,7 +783,7 @@ fn parse_param_list(src: string, pos: int, nodes: []AstNode) -> ParseResult {
 
     // Expect '('
     lparen := lex_kind(src, p)
-    if lparen != TK_LPAREN {
+    if lparen != token.TK_LPAREN {
         return ParseResult { node_idx: -1, new_pos: p }
     }
     p = lex_end(src, p, lparen)
@@ -791,7 +791,7 @@ fn parse_param_list(src: string, pos: int, nodes: []AstNode) -> ParseResult {
 
     // Check for empty parameter list
     next := lex_kind(src, p)
-    if next == TK_RPAREN {
+    if next == token.TK_RPAREN {
         p = lex_end(src, p, next)
         return ParseResult { node_idx: -1, new_pos: p }  // No parameters
     }
@@ -809,7 +809,7 @@ fn parse_param_list(src: string, pos: int, nodes: []AstNode) -> ParseResult {
     last_param := first_param
     for {
         comma := lex_kind(src, p)
-        if comma != TK_COMMA {
+        if comma != token.TK_COMMA {
             break
         }
         p = lex_end(src, p, comma)
@@ -827,7 +827,7 @@ fn parse_param_list(src: string, pos: int, nodes: []AstNode) -> ParseResult {
 
     // Expect ')'
     rparen := lex_kind(src, p)
-    if rparen != TK_RPAREN {
+    if rparen != token.TK_RPAREN {
         return ParseResult { node_idx: -1, new_pos: p }
     }
     p = lex_end(src, p, rparen)
@@ -842,7 +842,7 @@ fn parse_block(src: string, pos: int, nodes: []AstNode) -> ParseResult {
 
     // Expect '{'
     lbrace := lex_kind(src, p)
-    if lbrace != TK_LBRACE {
+    if lbrace != token.TK_LBRACE {
         return ParseResult { node_idx: -1, new_pos: p }
     }
     p = lex_end(src, p, lbrace)
@@ -854,7 +854,7 @@ fn parse_block(src: string, pos: int, nodes: []AstNode) -> ParseResult {
     stmt_count := 0
     for {
         next := lex_kind(src, p)
-        if next == TK_RBRACE || next == TK_EOF {
+        if next == token.TK_RBRACE || next == token.TK_EOF {
             break
         }
 
@@ -874,7 +874,7 @@ fn parse_block(src: string, pos: int, nodes: []AstNode) -> ParseResult {
 
         // Skip optional semicolon
         semi := lex_kind(src, p)
-        if semi == TK_SEMI {
+        if semi == token.TK_SEMI {
             p = lex_end(src, p, semi)
             p = lex_skip(src, p)
         }
@@ -882,7 +882,7 @@ fn parse_block(src: string, pos: int, nodes: []AstNode) -> ParseResult {
 
     // Expect '}'
     rbrace := lex_kind(src, p)
-    if rbrace != TK_RBRACE {
+    if rbrace != token.TK_RBRACE {
         report_error(src, p, "expected '}' but found " + token.TokenName(rbrace))
         return ParseResult { node_idx: -1, new_pos: p }
     }
@@ -892,13 +892,13 @@ fn parse_block(src: string, pos: int, nodes: []AstNode) -> ParseResult {
     // left = first statement index
     // right = last statement index (for multi-statement support)
     block := AstNode {
-        tag: STMT_BLOCK,
+        tag: ast.STMT_BLOCK,
         int_val: 0,
         str_val: "",
         left: first_stmt,
         right: last_stmt_idx,
         extra: -1,
-        type_tag: TYPE_UNKNOWN
+        type_tag: ast.TYPE_UNKNOWN
     }
     nodes = append(nodes, block)
     return ParseResult { node_idx: len(nodes) - 1, new_pos: p }
@@ -911,28 +911,28 @@ fn parse_import_decl(src: string, pos: int, nodes: []AstNode) -> ParseResult {
 
     // Expect 'import'
     import_kind := lex_kind(src, p)
-    if import_kind != TK_IMPORT {
+    if import_kind != token.TK_IMPORT {
         return ParseResult { node_idx: -1, new_pos: p }
     }
     p = lex_end(src, p, import_kind)
     p = lex_skip(src, p)
 
     // Expect '('
-    if lex_kind(src, p) != TK_LPAREN {
+    if lex_kind(src, p) != token.TK_LPAREN {
         return ParseResult { node_idx: -1, new_pos: p }
     }
-    p = lex_end(src, p, TK_LPAREN)
+    p = lex_end(src, p, token.TK_LPAREN)
     p = lex_skip(src, p)
 
     // Parse one or more import paths (string literals)
-    // Create one DECL_IMPORT node per path
+    // Create one ast.DECL_IMPORT node per path
     last_import_idx := -1
     for {
         path_kind := lex_kind(src, p)
-        if path_kind == TK_RPAREN {
+        if path_kind == token.TK_RPAREN {
             break
         }
-        if path_kind != TK_STRING {
+        if path_kind != token.TK_STRING {
             return ParseResult { node_idx: -1, new_pos: p }
         }
         import_path := lex_string_value(src, p, path_kind)
@@ -940,23 +940,23 @@ fn parse_import_decl(src: string, pos: int, nodes: []AstNode) -> ParseResult {
         p = lex_skip(src, p)
 
         import_node := AstNode {
-            tag: DECL_IMPORT,
+            tag: ast.DECL_IMPORT,
             int_val: 0,
             str_val: import_path,
             left: -1,
             right: -1,
             extra: -1,
-            type_tag: TYPE_UNKNOWN
+            type_tag: ast.TYPE_UNKNOWN
         }
         nodes = append(nodes, import_node)
         last_import_idx = len(nodes) - 1
     }
 
     // Expect ')'
-    if lex_kind(src, p) != TK_RPAREN {
+    if lex_kind(src, p) != token.TK_RPAREN {
         return ParseResult { node_idx: -1, new_pos: p }
     }
-    p = lex_end(src, p, TK_RPAREN)
+    p = lex_end(src, p, token.TK_RPAREN)
 
     return ParseResult { node_idx: last_import_idx, new_pos: p }
 }
@@ -968,7 +968,7 @@ fn parse_const_decl(src: string, pos: int, nodes: []AstNode) -> ParseResult {
 
     // Expect 'const'
     const_kind := lex_kind(src, p)
-    if const_kind != TK_CONST {
+    if const_kind != token.TK_CONST {
         return ParseResult { node_idx: -1, new_pos: p }
     }
     p = lex_end(src, p, const_kind)
@@ -976,7 +976,7 @@ fn parse_const_decl(src: string, pos: int, nodes: []AstNode) -> ParseResult {
 
     // Parse name
     name_kind := lex_kind(src, p)
-    if name_kind != TK_IDENT {
+    if name_kind != token.TK_IDENT {
         return ParseResult { node_idx: -1, new_pos: p }
     }
     const_name := lex_string_value(src, p, name_kind)
@@ -985,7 +985,7 @@ fn parse_const_decl(src: string, pos: int, nodes: []AstNode) -> ParseResult {
 
     // Expect '='
     eq_kind := lex_kind(src, p)
-    if eq_kind != TK_ASSIGN {
+    if eq_kind != token.TK_ASSIGN {
         return ParseResult { node_idx: -1, new_pos: p }
     }
     p = lex_end(src, p, eq_kind)
@@ -1000,16 +1000,16 @@ fn parse_const_decl(src: string, pos: int, nodes: []AstNode) -> ParseResult {
 
     // Infer type from initializer
     init_node := nodes[init_result.node_idx]
-    type_tag := TYPE_UNKNOWN
-    if init_node.tag == EXPR_INT { type_tag = TYPE_INT }
-    if init_node.tag == EXPR_STRING { type_tag = TYPE_STRING }
-    if init_node.tag == EXPR_BOOL { type_tag = TYPE_BOOL }
-    if init_node.tag == EXPR_FLOAT { type_tag = TYPE_FLOAT }
-    if init_node.tag == EXPR_UNARY { type_tag = TYPE_INT }
+    type_tag := ast.TYPE_UNKNOWN
+    if init_node.tag == ast.EXPR_INT { type_tag = ast.TYPE_INT }
+    if init_node.tag == ast.EXPR_STRING { type_tag = ast.TYPE_STRING }
+    if init_node.tag == ast.EXPR_BOOL { type_tag = ast.TYPE_BOOL }
+    if init_node.tag == ast.EXPR_FLOAT { type_tag = ast.TYPE_FLOAT }
+    if init_node.tag == ast.EXPR_UNARY { type_tag = ast.TYPE_INT }
 
-    // Create DECL_CONST node
+    // Create ast.DECL_CONST node
     const_node := AstNode {
-        tag: DECL_CONST,
+        tag: ast.DECL_CONST,
         int_val: 0,
         str_val: const_name,
         left: init_result.node_idx,
@@ -1029,7 +1029,7 @@ fn parse_func_decl(src: string, pos: int, nodes: []AstNode) -> ParseResult {
 
     // Expect 'fn'
     fn_kind := lex_kind(src, p)
-    if fn_kind != TK_FN {
+    if fn_kind != token.TK_FN {
         return ParseResult { node_idx: -1, new_pos: p }
     }
     p = lex_end(src, p, fn_kind)
@@ -1041,36 +1041,36 @@ fn parse_func_decl(src: string, pos: int, nodes: []AstNode) -> ParseResult {
     first_param_idx := -1
 
     name_kind := lex_kind(src, p)
-    if name_kind == TK_LPAREN {
+    if name_kind == token.TK_LPAREN {
         // Method receiver
-        p = lex_end(src, p, TK_LPAREN)
+        p = lex_end(src, p, token.TK_LPAREN)
         p = lex_skip(src, p)
-        recv_name = lex_string_value(src, p, TK_IDENT)
-        p = lex_end(src, p, TK_IDENT)
+        recv_name = lex_string_value(src, p, token.TK_IDENT)
+        p = lex_end(src, p, token.TK_IDENT)
         p = lex_skip(src, p)
-        p = lex_end(src, p, TK_COLON)
+        p = lex_end(src, p, token.TK_COLON)
         p = lex_skip(src, p)
-        if lex_kind(src, p) == TK_STAR {
-            p = lex_end(src, p, TK_STAR)
+        if lex_kind(src, p) == token.TK_STAR {
+            p = lex_end(src, p, token.TK_STAR)
             p = lex_skip(src, p)
         }
-        recv_type = lex_string_value(src, p, TK_IDENT)
-        p = lex_end(src, p, TK_IDENT)
+        recv_type = lex_string_value(src, p, token.TK_IDENT)
+        p = lex_end(src, p, token.TK_IDENT)
         // Skip type parameters in receiver type: fn (b: Box[T]) Method()
         p = skip_type_args(src, p)
         p = lex_skip(src, p)
-        p = lex_end(src, p, TK_RPAREN)
+        p = lex_end(src, p, token.TK_RPAREN)
         p = lex_skip(src, p)
 
-        // Create receiver DECL_PARAM node
+        // Create receiver ast.DECL_PARAM node
         recv_param := AstNode {
-            tag: DECL_PARAM,
+            tag: ast.DECL_PARAM,
             int_val: 0,
             str_val: recv_name,
             left: -1,
             right: -1,
             extra: -1,
-            type_tag: TYPE_STRUCT
+            type_tag: ast.TYPE_STRUCT
         }
         nodes = append(nodes, recv_param)
         recv_param_idx := len(nodes) - 1
@@ -1082,7 +1082,7 @@ fn parse_func_decl(src: string, pos: int, nodes: []AstNode) -> ParseResult {
     }
 
     // Parse function name
-    if name_kind != TK_IDENT {
+    if name_kind != token.TK_IDENT {
         return ParseResult { node_idx: -1, new_pos: p }
     }
     func_name := lex_string_value(src, p, name_kind)
@@ -1112,28 +1112,28 @@ fn parse_func_decl(src: string, pos: int, nodes: []AstNode) -> ParseResult {
     // Check for '->' (return type is optional)
     ret_type := ""
     arrow := lex_kind(src, p)
-    if arrow == TK_ARROW {
+    if arrow == token.TK_ARROW {
         p = lex_end(src, p, arrow)
         p = lex_skip(src, p)
 
         // Parse return type (simple, array, map, tuple, or pointer type)
         ret_type_kind := lex_kind(src, p)
 
-        if ret_type_kind == TK_LPAREN {
+        if ret_type_kind == token.TK_LPAREN {
             // Tuple return type: -> (Type1, Type2, ...)
-            p = lex_end(src, p, TK_LPAREN)
+            p = lex_end(src, p, token.TK_LPAREN)
             p = lex_skip(src, p)
             tuple_types := []string{}
-            for lex_kind(src, p) != TK_RPAREN {
-                if lex_kind(src, p) == TK_COMMA {
-                    p = lex_end(src, p, TK_COMMA)
+            for lex_kind(src, p) != token.TK_RPAREN {
+                if lex_kind(src, p) == token.TK_COMMA {
+                    p = lex_end(src, p, token.TK_COMMA)
                     p = lex_skip(src, p)
                 }
-                tuple_types = append(tuple_types, lex_string_value(src, p, TK_IDENT))
-                p = lex_end(src, p, TK_IDENT)
+                tuple_types = append(tuple_types, lex_string_value(src, p, token.TK_IDENT))
+                p = lex_end(src, p, token.TK_IDENT)
                 p = lex_skip(src, p)
             }
-            p = lex_end(src, p, TK_RPAREN)
+            p = lex_end(src, p, token.TK_RPAREN)
             // Build: "__tuple2:int,string"
             ret_type = "__tuple" + strconv.Itoa(len(tuple_types))
             tti := 0
@@ -1146,44 +1146,44 @@ fn parse_func_decl(src: string, pos: int, nodes: []AstNode) -> ParseResult {
                 ret_type = ret_type + tuple_types[tti]
                 tti = tti + 1
             }
-        } else if ret_type_kind == TK_MAP {
+        } else if ret_type_kind == token.TK_MAP {
             // Map return type: map[KeyType]ValType
             p = lex_end(src, p, ret_type_kind)
             p = lex_skip(src, p)
             map_key_type := ""
             map_val_type := ""
-            if lex_kind(src, p) == TK_LBRACKET { p = lex_end(src, p, TK_LBRACKET) p = lex_skip(src, p) }
-            if lex_kind(src, p) == TK_IDENT { map_key_type = lex_string_value(src, p, TK_IDENT) p = lex_end(src, p, TK_IDENT) p = lex_skip(src, p) }
-            if lex_kind(src, p) == TK_RBRACKET { p = lex_end(src, p, TK_RBRACKET) p = lex_skip(src, p) }
-            if lex_kind(src, p) == TK_IDENT { map_val_type = lex_string_value(src, p, TK_IDENT) p = lex_end(src, p, TK_IDENT) }
+            if lex_kind(src, p) == token.TK_LBRACKET { p = lex_end(src, p, token.TK_LBRACKET) p = lex_skip(src, p) }
+            if lex_kind(src, p) == token.TK_IDENT { map_key_type = lex_string_value(src, p, token.TK_IDENT) p = lex_end(src, p, token.TK_IDENT) p = lex_skip(src, p) }
+            if lex_kind(src, p) == token.TK_RBRACKET { p = lex_end(src, p, token.TK_RBRACKET) p = lex_skip(src, p) }
+            if lex_kind(src, p) == token.TK_IDENT { map_val_type = lex_string_value(src, p, token.TK_IDENT) p = lex_end(src, p, token.TK_IDENT) }
             ret_type = "map[" + map_key_type + "]" + map_val_type
-        } else if ret_type_kind == TK_STAR {
+        } else if ret_type_kind == token.TK_STAR {
             // Pointer return type: *TypeName
             p = lex_end(src, p, ret_type_kind)
             p = lex_skip(src, p)
-            if lex_kind(src, p) == TK_IDENT {
-                ret_type = lex_string_value(src, p, TK_IDENT)
-                p = lex_end(src, p, TK_IDENT)
+            if lex_kind(src, p) == token.TK_IDENT {
+                ret_type = lex_string_value(src, p, token.TK_IDENT)
+                p = lex_end(src, p, token.TK_IDENT)
             }
-        } else if ret_type_kind == TK_LBRACKET {
+        } else if ret_type_kind == token.TK_LBRACKET {
             // Array type: []ElementType
             ret_type = "[]"
             p = lex_end(src, p, ret_type_kind)  // Skip '['
             p = lex_skip(src, p)
 
             // Expect ']'
-            if lex_kind(src, p) == TK_RBRACKET {
-                p = lex_end(src, p, TK_RBRACKET)
+            if lex_kind(src, p) == token.TK_RBRACKET {
+                p = lex_end(src, p, token.TK_RBRACKET)
                 p = lex_skip(src, p)
             }
 
             // Parse element type
-            if lex_kind(src, p) == TK_IDENT {
-                elem_type := lex_string_value(src, p, TK_IDENT)
+            if lex_kind(src, p) == token.TK_IDENT {
+                elem_type := lex_string_value(src, p, token.TK_IDENT)
                 ret_type = ret_type + elem_type
-                p = lex_end(src, p, TK_IDENT)
+                p = lex_end(src, p, token.TK_IDENT)
             }
-        } else if ret_type_kind == TK_IDENT {
+        } else if ret_type_kind == token.TK_IDENT {
             // Simple type
             ret_type = lex_string_value(src, p, ret_type_kind)
             p = lex_end(src, p, ret_type_kind)
@@ -1205,28 +1205,28 @@ fn parse_func_decl(src: string, pos: int, nodes: []AstNode) -> ParseResult {
     // left = parameters (first param node, receiver if method)
     // right = body (block node)
     // type_tag = return type, int_val = is_array_return flag
-    ret_type_tag := TYPE_UNKNOWN
+    ret_type_tag := ast.TYPE_UNKNOWN
     ret_is_array := 0
-    if ret_type == "int" { ret_type_tag = TYPE_INT }
-    if ret_type == "string" { ret_type_tag = TYPE_STRING }
-    if ret_type == "bool" { ret_type_tag = TYPE_BOOL }
-    if ret_type == "float" { ret_type_tag = TYPE_FLOAT }
-    if ret_type == "[]int" { ret_type_tag = TYPE_INT
+    if ret_type == "int" { ret_type_tag = ast.TYPE_INT }
+    if ret_type == "string" { ret_type_tag = ast.TYPE_STRING }
+    if ret_type == "bool" { ret_type_tag = ast.TYPE_BOOL }
+    if ret_type == "float" { ret_type_tag = ast.TYPE_FLOAT }
+    if ret_type == "[]int" { ret_type_tag = ast.TYPE_INT
         ret_is_array = 1
     }
-    if ret_type == "[]string" { ret_type_tag = TYPE_STRING
+    if ret_type == "[]string" { ret_type_tag = ast.TYPE_STRING
         ret_is_array = 1
     }
-    if ret_type == "[]float" { ret_type_tag = TYPE_FLOAT
+    if ret_type == "[]float" { ret_type_tag = ast.TYPE_FLOAT
         ret_is_array = 1
     }
-    if strings.HasPrefix(ret_type, "map[") { ret_type_tag = TYPE_MAP }
-    if ret_type_tag == TYPE_UNKNOWN && ret_type != "" {
-        ret_type_tag = TYPE_STRUCT
+    if strings.HasPrefix(ret_type, "map[") { ret_type_tag = ast.TYPE_MAP }
+    if ret_type_tag == ast.TYPE_UNKNOWN && ret_type != "" {
+        ret_type_tag = ast.TYPE_STRUCT
     }
 
     func := AstNode {
-        tag: DECL_FUNC,
+        tag: ast.DECL_FUNC,
         int_val: ret_is_array,
         str_val: func_name,
         left: first_param_idx,
@@ -1238,7 +1238,7 @@ fn parse_func_decl(src: string, pos: int, nodes: []AstNode) -> ParseResult {
     func_node_idx := len(nodes) - 1
 
     // Store struct/map return type name in side table
-    if ret_type_tag == TYPE_STRUCT || ret_type_tag == TYPE_MAP {
+    if ret_type_tag == ast.TYPE_STRUCT || ret_type_tag == ast.TYPE_MAP {
         g_type_name_node_idx = append(g_type_name_node_idx, func_node_idx)
         g_type_name_str = append(g_type_name_str, ret_type)
     }
@@ -1260,7 +1260,7 @@ fn parse_field(src: string, pos: int, nodes: []AstNode) -> ParseResult {
 
     // Parse field name
     name_kind := lex_kind(src, p)
-    if name_kind != TK_IDENT {
+    if name_kind != token.TK_IDENT {
         return ParseResult { node_idx: -1, new_pos: p }
     }
     field_name := lex_string_value(src, p, name_kind)
@@ -1269,7 +1269,7 @@ fn parse_field(src: string, pos: int, nodes: []AstNode) -> ParseResult {
 
     // Expect ':'
     colon := lex_kind(src, p)
-    if colon != TK_COLON {
+    if colon != token.TK_COLON {
         return ParseResult { node_idx: -1, new_pos: p }
     }
     p = lex_end(src, p, colon)
@@ -1279,42 +1279,42 @@ fn parse_field(src: string, pos: int, nodes: []AstNode) -> ParseResult {
     type_kind := lex_kind(src, p)
     type_name := ""
 
-    if type_kind == TK_MAP {
+    if type_kind == token.TK_MAP {
         // Map type: map[KeyType]ValType
         p = lex_end(src, p, type_kind)
         p = lex_skip(src, p)
         map_key_type := ""
         map_val_type := ""
-        if lex_kind(src, p) == TK_LBRACKET { p = lex_end(src, p, TK_LBRACKET) p = lex_skip(src, p) }
-        if lex_kind(src, p) == TK_IDENT { map_key_type = lex_string_value(src, p, TK_IDENT) p = lex_end(src, p, TK_IDENT) p = lex_skip(src, p) }
-        if lex_kind(src, p) == TK_RBRACKET { p = lex_end(src, p, TK_RBRACKET) p = lex_skip(src, p) }
-        if lex_kind(src, p) == TK_IDENT { map_val_type = lex_string_value(src, p, TK_IDENT) p = lex_end(src, p, TK_IDENT) }
+        if lex_kind(src, p) == token.TK_LBRACKET { p = lex_end(src, p, token.TK_LBRACKET) p = lex_skip(src, p) }
+        if lex_kind(src, p) == token.TK_IDENT { map_key_type = lex_string_value(src, p, token.TK_IDENT) p = lex_end(src, p, token.TK_IDENT) p = lex_skip(src, p) }
+        if lex_kind(src, p) == token.TK_RBRACKET { p = lex_end(src, p, token.TK_RBRACKET) p = lex_skip(src, p) }
+        if lex_kind(src, p) == token.TK_IDENT { map_val_type = lex_string_value(src, p, token.TK_IDENT) p = lex_end(src, p, token.TK_IDENT) }
         type_name = "map[" + map_key_type + "]" + map_val_type
-    } else if type_kind == TK_STAR {
+    } else if type_kind == token.TK_STAR {
         // Pointer type: *TypeName
         p = lex_end(src, p, type_kind)
         p = lex_skip(src, p)
-        if lex_kind(src, p) == TK_IDENT {
-            type_name = lex_string_value(src, p, TK_IDENT)
-            p = lex_end(src, p, TK_IDENT)
+        if lex_kind(src, p) == token.TK_IDENT {
+            type_name = lex_string_value(src, p, token.TK_IDENT)
+            p = lex_end(src, p, token.TK_IDENT)
         }
-    } else if type_kind == TK_LBRACKET {
+    } else if type_kind == token.TK_LBRACKET {
         // Array type: []ElementType
         type_name = "[]"
-        p = lex_end(src, p, TK_LBRACKET)
+        p = lex_end(src, p, token.TK_LBRACKET)
         p = lex_skip(src, p)
 
-        if lex_kind(src, p) == TK_RBRACKET {
-            p = lex_end(src, p, TK_RBRACKET)
+        if lex_kind(src, p) == token.TK_RBRACKET {
+            p = lex_end(src, p, token.TK_RBRACKET)
             p = lex_skip(src, p)
         }
 
-        if lex_kind(src, p) == TK_IDENT {
-            elem_type := lex_string_value(src, p, TK_IDENT)
+        if lex_kind(src, p) == token.TK_IDENT {
+            elem_type := lex_string_value(src, p, token.TK_IDENT)
             type_name = type_name + elem_type
-            p = lex_end(src, p, TK_IDENT)
+            p = lex_end(src, p, token.TK_IDENT)
         }
-    } else if type_kind == TK_IDENT {
+    } else if type_kind == token.TK_IDENT {
         type_name = lex_string_value(src, p, type_kind)
         p = lex_end(src, p, type_kind)
         // Skip generic type arguments
@@ -1327,29 +1327,29 @@ fn parse_field(src: string, pos: int, nodes: []AstNode) -> ParseResult {
 
     // Skip optional comma
     comma := lex_kind(src, p)
-    if comma == TK_COMMA {
+    if comma == token.TK_COMMA {
         p = lex_end(src, p, comma)
     }
 
     // Resolve type_name to type_tag and is_array
-    field_type_tag := TYPE_UNKNOWN
+    field_type_tag := ast.TYPE_UNKNOWN
     field_is_array := 0
-    if type_name == "int" { field_type_tag = TYPE_INT }
-    if type_name == "bool" { field_type_tag = TYPE_BOOL }
-    if type_name == "string" { field_type_tag = TYPE_STRING }
-    if type_name == "float" { field_type_tag = TYPE_FLOAT }
-    if type_name == "[]int" { field_type_tag = TYPE_INT field_is_array = 1 }
-    if type_name == "[]bool" { field_type_tag = TYPE_BOOL field_is_array = 1 }
-    if type_name == "[]string" { field_type_tag = TYPE_STRING field_is_array = 1 }
-    if type_name == "[]float" { field_type_tag = TYPE_FLOAT field_is_array = 1 }
-    if strings.HasPrefix(type_name, "map[") { field_type_tag = TYPE_MAP }
-    if field_type_tag == TYPE_UNKNOWN && type_name != "" {
-        field_type_tag = TYPE_STRUCT
+    if type_name == "int" { field_type_tag = ast.TYPE_INT }
+    if type_name == "bool" { field_type_tag = ast.TYPE_BOOL }
+    if type_name == "string" { field_type_tag = ast.TYPE_STRING }
+    if type_name == "float" { field_type_tag = ast.TYPE_FLOAT }
+    if type_name == "[]int" { field_type_tag = ast.TYPE_INT field_is_array = 1 }
+    if type_name == "[]bool" { field_type_tag = ast.TYPE_BOOL field_is_array = 1 }
+    if type_name == "[]string" { field_type_tag = ast.TYPE_STRING field_is_array = 1 }
+    if type_name == "[]float" { field_type_tag = ast.TYPE_FLOAT field_is_array = 1 }
+    if strings.HasPrefix(type_name, "map[") { field_type_tag = ast.TYPE_MAP }
+    if field_type_tag == ast.TYPE_UNKNOWN && type_name != "" {
+        field_type_tag = ast.TYPE_STRUCT
     }
 
     // Create field node
     field := AstNode {
-        tag: DECL_FIELD,
+        tag: ast.DECL_FIELD,
         int_val: field_is_array,
         str_val: field_name,
         left: -1,
@@ -1358,7 +1358,7 @@ fn parse_field(src: string, pos: int, nodes: []AstNode) -> ParseResult {
         type_tag: field_type_tag
     }
     nodes = append(nodes, field)
-    if field_type_tag == TYPE_STRUCT || field_type_tag == TYPE_MAP {
+    if field_type_tag == ast.TYPE_STRUCT || field_type_tag == ast.TYPE_MAP {
         g_type_name_node_idx = append(g_type_name_node_idx, len(nodes) - 1)
         g_type_name_str = append(g_type_name_str, type_name)
     }
@@ -1372,7 +1372,7 @@ fn parse_struct_decl(src: string, pos: int, nodes: []AstNode) -> ParseResult {
 
     // Expect 'struct'
     struct_kind := lex_kind(src, p)
-    if struct_kind != TK_STRUCT {
+    if struct_kind != token.TK_STRUCT {
         return ParseResult { node_idx: -1, new_pos: p }
     }
     p = lex_end(src, p, struct_kind)
@@ -1380,7 +1380,7 @@ fn parse_struct_decl(src: string, pos: int, nodes: []AstNode) -> ParseResult {
 
     // Parse struct name
     name_kind := lex_kind(src, p)
-    if name_kind != TK_IDENT {
+    if name_kind != token.TK_IDENT {
         return ParseResult { node_idx: -1, new_pos: p }
     }
     struct_name := lex_string_value(src, p, name_kind)
@@ -1394,7 +1394,7 @@ fn parse_struct_decl(src: string, pos: int, nodes: []AstNode) -> ParseResult {
 
     // Expect '{'
     lbrace := lex_kind(src, p)
-    if lbrace != TK_LBRACE {
+    if lbrace != token.TK_LBRACE {
         return ParseResult { node_idx: -1, new_pos: p }
     }
     p = lex_end(src, p, lbrace)
@@ -1404,7 +1404,7 @@ fn parse_struct_decl(src: string, pos: int, nodes: []AstNode) -> ParseResult {
     first_field := -1
     for {
         next := lex_kind(src, p)
-        if next == TK_RBRACE || next == TK_EOF {
+        if next == token.TK_RBRACE || next == token.TK_EOF {
             break
         }
 
@@ -1422,20 +1422,20 @@ fn parse_struct_decl(src: string, pos: int, nodes: []AstNode) -> ParseResult {
 
     // Expect '}'
     rbrace := lex_kind(src, p)
-    if rbrace != TK_RBRACE {
+    if rbrace != token.TK_RBRACE {
         return ParseResult { node_idx: -1, new_pos: p }
     }
     p = lex_end(src, p, rbrace)
 
     // Create struct declaration node
     struct_decl := AstNode {
-        tag: DECL_STRUCT,
+        tag: ast.DECL_STRUCT,
         int_val: 0,
         str_val: struct_name,
         left: first_field,
         right: -1,
         extra: -1,
-        type_tag: TYPE_UNKNOWN
+        type_tag: ast.TYPE_UNKNOWN
     }
     nodes = append(nodes, struct_decl)
     return ParseResult { node_idx: len(nodes) - 1, new_pos: p }
@@ -1448,7 +1448,7 @@ fn parse_enum_decl(src: string, pos: int, nodes: []AstNode) -> ParseResult {
 
     // Expect 'enum'
     enum_kind := lex_kind(src, p)
-    if enum_kind != TK_ENUM {
+    if enum_kind != token.TK_ENUM {
         return ParseResult { node_idx: -1, new_pos: p }
     }
     p = lex_end(src, p, enum_kind)
@@ -1456,7 +1456,7 @@ fn parse_enum_decl(src: string, pos: int, nodes: []AstNode) -> ParseResult {
 
     // Parse enum name
     name_kind := lex_kind(src, p)
-    if name_kind != TK_IDENT {
+    if name_kind != token.TK_IDENT {
         return ParseResult { node_idx: -1, new_pos: p }
     }
     enum_name := lex_string_value(src, p, name_kind)
@@ -1470,7 +1470,7 @@ fn parse_enum_decl(src: string, pos: int, nodes: []AstNode) -> ParseResult {
 
     // Expect '{'
     lbrace := lex_kind(src, p)
-    if lbrace != TK_LBRACE {
+    if lbrace != token.TK_LBRACE {
         return ParseResult { node_idx: -1, new_pos: p }
     }
     p = lex_end(src, p, lbrace)
@@ -1481,26 +1481,26 @@ fn parse_enum_decl(src: string, pos: int, nodes: []AstNode) -> ParseResult {
     variant_count := 0
     for {
         next := lex_kind(src, p)
-        if next == TK_RBRACE || next == TK_EOF {
+        if next == token.TK_RBRACE || next == token.TK_EOF {
             break
         }
 
         // Parse variant name
-        if lex_kind(src, p) != TK_IDENT {
+        if lex_kind(src, p) != token.TK_IDENT {
             break
         }
-        variant_name := lex_string_value(src, p, TK_IDENT)
-        p = lex_end(src, p, TK_IDENT)
+        variant_name := lex_string_value(src, p, token.TK_IDENT)
+        p = lex_end(src, p, token.TK_IDENT)
         p = lex_skip(src, p)
 
         // Check for fields: { field: type, ... }
         first_field := -1
-        if lex_kind(src, p) == TK_LBRACE {
-            p = lex_end(src, p, TK_LBRACE)
+        if lex_kind(src, p) == token.TK_LBRACE {
+            p = lex_end(src, p, token.TK_LBRACE)
             p = lex_skip(src, p)
 
             for {
-                if lex_kind(src, p) == TK_RBRACE || lex_kind(src, p) == TK_EOF {
+                if lex_kind(src, p) == token.TK_RBRACE || lex_kind(src, p) == token.TK_EOF {
                     break
                 }
                 field_result := parse_field(src, p, nodes)
@@ -1515,21 +1515,21 @@ fn parse_enum_decl(src: string, pos: int, nodes: []AstNode) -> ParseResult {
             }
 
             // Expect '}'
-            if lex_kind(src, p) == TK_RBRACE {
-                p = lex_end(src, p, TK_RBRACE)
+            if lex_kind(src, p) == token.TK_RBRACE {
+                p = lex_end(src, p, token.TK_RBRACE)
                 p = lex_skip(src, p)
             }
         }
 
-        // Create DECL_VARIANT node
+        // Create ast.DECL_VARIANT node
         variant := AstNode {
-            tag: DECL_VARIANT,
+            tag: ast.DECL_VARIANT,
             int_val: variant_count,
             str_val: variant_name,
             left: first_field,
             right: -1,
             extra: -1,
-            type_tag: TYPE_UNKNOWN
+            type_tag: ast.TYPE_UNKNOWN
         }
         nodes = append(nodes, variant)
         variant_idx := len(nodes) - 1
@@ -1540,28 +1540,28 @@ fn parse_enum_decl(src: string, pos: int, nodes: []AstNode) -> ParseResult {
         variant_count = variant_count + 1
 
         // Skip optional comma
-        if lex_kind(src, p) == TK_COMMA {
-            p = lex_end(src, p, TK_COMMA)
+        if lex_kind(src, p) == token.TK_COMMA {
+            p = lex_end(src, p, token.TK_COMMA)
             p = lex_skip(src, p)
         }
     }
 
     // Expect '}'
     rbrace := lex_kind(src, p)
-    if rbrace != TK_RBRACE {
+    if rbrace != token.TK_RBRACE {
         return ParseResult { node_idx: -1, new_pos: p }
     }
     p = lex_end(src, p, rbrace)
 
-    // Create DECL_ENUM node
+    // Create ast.DECL_ENUM node
     enum_decl := AstNode {
-        tag: DECL_ENUM,
+        tag: ast.DECL_ENUM,
         int_val: variant_count,
         str_val: enum_name,
         left: first_variant,
         right: -1,
         extra: -1,
-        type_tag: TYPE_UNKNOWN
+        type_tag: ast.TYPE_UNKNOWN
     }
     nodes = append(nodes, enum_decl)
     return ParseResult { node_idx: len(nodes) - 1, new_pos: p }
@@ -1574,7 +1574,7 @@ fn parse_interface_decl(src: string, pos: int, nodes: []AstNode) -> ParseResult 
 
     // Expect 'interface'
     iface_kind := lex_kind(src, p)
-    if iface_kind != TK_INTERFACE {
+    if iface_kind != token.TK_INTERFACE {
         return ParseResult { node_idx: -1, new_pos: p }
     }
     p = lex_end(src, p, iface_kind)
@@ -1582,7 +1582,7 @@ fn parse_interface_decl(src: string, pos: int, nodes: []AstNode) -> ParseResult 
 
     // Parse interface name
     name_kind := lex_kind(src, p)
-    if name_kind != TK_IDENT {
+    if name_kind != token.TK_IDENT {
         return ParseResult { node_idx: -1, new_pos: p }
     }
     iface_name := lex_string_value(src, p, name_kind)
@@ -1596,7 +1596,7 @@ fn parse_interface_decl(src: string, pos: int, nodes: []AstNode) -> ParseResult 
 
     // Expect '{'
     lbrace := lex_kind(src, p)
-    if lbrace != TK_LBRACE {
+    if lbrace != token.TK_LBRACE {
         return ParseResult { node_idx: -1, new_pos: p }
     }
     p = lex_end(src, p, lbrace)
@@ -1607,29 +1607,29 @@ fn parse_interface_decl(src: string, pos: int, nodes: []AstNode) -> ParseResult 
     method_count := 0
     for {
         next := lex_kind(src, p)
-        if next == TK_RBRACE || next == TK_EOF {
+        if next == token.TK_RBRACE || next == token.TK_EOF {
             break
         }
 
         // Parse method name
-        if lex_kind(src, p) != TK_IDENT {
+        if lex_kind(src, p) != token.TK_IDENT {
             break
         }
-        method_name := lex_string_value(src, p, TK_IDENT)
-        p = lex_end(src, p, TK_IDENT)
+        method_name := lex_string_value(src, p, token.TK_IDENT)
+        p = lex_end(src, p, token.TK_IDENT)
         p = lex_skip(src, p)
 
         // Expect '('
-        if lex_kind(src, p) != TK_LPAREN {
+        if lex_kind(src, p) != token.TK_LPAREN {
             break
         }
-        p = lex_end(src, p, TK_LPAREN)
+        p = lex_end(src, p, token.TK_LPAREN)
         p = lex_skip(src, p)
 
         // Parse parameters
         first_param := -1
         param_count := 0
-        if lex_kind(src, p) != TK_RPAREN {
+        if lex_kind(src, p) != token.TK_RPAREN {
             for {
                 param_result := parse_param(src, p, nodes)
                 if param_result.node_idx < 0 {
@@ -1641,8 +1641,8 @@ fn parse_interface_decl(src: string, pos: int, nodes: []AstNode) -> ParseResult 
                 param_count = param_count + 1
                 p = param_result.new_pos
                 p = lex_skip(src, p)
-                if lex_kind(src, p) == TK_COMMA {
-                    p = lex_end(src, p, TK_COMMA)
+                if lex_kind(src, p) == token.TK_COMMA {
+                    p = lex_end(src, p, token.TK_COMMA)
                     p = lex_skip(src, p)
                 } else {
                     break
@@ -1651,50 +1651,50 @@ fn parse_interface_decl(src: string, pos: int, nodes: []AstNode) -> ParseResult 
         }
 
         // Expect ')'
-        if lex_kind(src, p) == TK_RPAREN {
-            p = lex_end(src, p, TK_RPAREN)
+        if lex_kind(src, p) == token.TK_RPAREN {
+            p = lex_end(src, p, token.TK_RPAREN)
             p = lex_skip(src, p)
         }
 
         // Parse optional return type
-        ret_type_tag := TYPE_UNKNOWN
+        ret_type_tag := ast.TYPE_UNKNOWN
         ret_is_array := 0
-        if lex_kind(src, p) == TK_ARROW {
-            p = lex_end(src, p, TK_ARROW)
+        if lex_kind(src, p) == token.TK_ARROW {
+            p = lex_end(src, p, token.TK_ARROW)
             p = lex_skip(src, p)
             ret_kind := lex_kind(src, p)
-            if ret_kind == TK_LBRACKET {
+            if ret_kind == token.TK_LBRACKET {
                 p = lex_end(src, p, ret_kind)
                 p = lex_skip(src, p)
-                if lex_kind(src, p) == TK_RBRACKET {
-                    p = lex_end(src, p, TK_RBRACKET)
+                if lex_kind(src, p) == token.TK_RBRACKET {
+                    p = lex_end(src, p, token.TK_RBRACKET)
                     p = lex_skip(src, p)
                 }
-                if lex_kind(src, p) == TK_IDENT {
-                    ret_elem := lex_string_value(src, p, TK_IDENT)
-                    p = lex_end(src, p, TK_IDENT)
+                if lex_kind(src, p) == token.TK_IDENT {
+                    ret_elem := lex_string_value(src, p, token.TK_IDENT)
+                    p = lex_end(src, p, token.TK_IDENT)
                     p = lex_skip(src, p)
-                    if ret_elem == "int" { ret_type_tag = TYPE_INT }
-                    if ret_elem == "string" { ret_type_tag = TYPE_STRING }
-                    if ret_elem == "bool" { ret_type_tag = TYPE_BOOL }
-                    if ret_elem == "float" { ret_type_tag = TYPE_FLOAT }
+                    if ret_elem == "int" { ret_type_tag = ast.TYPE_INT }
+                    if ret_elem == "string" { ret_type_tag = ast.TYPE_STRING }
+                    if ret_elem == "bool" { ret_type_tag = ast.TYPE_BOOL }
+                    if ret_elem == "float" { ret_type_tag = ast.TYPE_FLOAT }
                     ret_is_array = 1
                 }
-            } else if ret_kind == TK_IDENT {
+            } else if ret_kind == token.TK_IDENT {
                 ret_name := lex_string_value(src, p, ret_kind)
                 p = lex_end(src, p, ret_kind)
                 p = lex_skip(src, p)
-                if ret_name == "int" { ret_type_tag = TYPE_INT }
-                if ret_name == "string" { ret_type_tag = TYPE_STRING }
-                if ret_name == "bool" { ret_type_tag = TYPE_BOOL }
-                if ret_name == "float" { ret_type_tag = TYPE_FLOAT }
-                if ret_type_tag == TYPE_UNKNOWN { ret_type_tag = TYPE_STRUCT }
+                if ret_name == "int" { ret_type_tag = ast.TYPE_INT }
+                if ret_name == "string" { ret_type_tag = ast.TYPE_STRING }
+                if ret_name == "bool" { ret_type_tag = ast.TYPE_BOOL }
+                if ret_name == "float" { ret_type_tag = ast.TYPE_FLOAT }
+                if ret_type_tag == ast.TYPE_UNKNOWN { ret_type_tag = ast.TYPE_STRUCT }
             }
         }
 
-        // Create DECL_IMETHOD node
+        // Create ast.DECL_IMETHOD node
         imethod := AstNode {
-            tag: DECL_IMETHOD,
+            tag: ast.DECL_IMETHOD,
             int_val: param_count,
             str_val: method_name,
             left: first_param,
@@ -1711,28 +1711,28 @@ fn parse_interface_decl(src: string, pos: int, nodes: []AstNode) -> ParseResult 
         method_count = method_count + 1
 
         // Skip optional comma
-        if lex_kind(src, p) == TK_COMMA {
-            p = lex_end(src, p, TK_COMMA)
+        if lex_kind(src, p) == token.TK_COMMA {
+            p = lex_end(src, p, token.TK_COMMA)
             p = lex_skip(src, p)
         }
     }
 
     // Expect '}'
     rbrace := lex_kind(src, p)
-    if rbrace != TK_RBRACE {
+    if rbrace != token.TK_RBRACE {
         return ParseResult { node_idx: -1, new_pos: p }
     }
     p = lex_end(src, p, rbrace)
 
-    // Create DECL_INTERFACE node
+    // Create ast.DECL_INTERFACE node
     iface_decl := AstNode {
-        tag: DECL_INTERFACE,
+        tag: ast.DECL_INTERFACE,
         int_val: method_count,
         str_val: iface_name,
         left: first_method,
         right: -1,
         extra: -1,
-        type_tag: TYPE_UNKNOWN
+        type_tag: ast.TYPE_UNKNOWN
     }
     nodes = append(nodes, iface_decl)
     return ParseResult { node_idx: len(nodes) - 1, new_pos: p }
@@ -1745,7 +1745,7 @@ fn parse_match_stmt(src: string, pos: int, nodes: []AstNode) -> ParseResult {
 
     // Expect 'match'
     match_kind := lex_kind(src, p)
-    if match_kind != TK_MATCH {
+    if match_kind != token.TK_MATCH {
         return ParseResult { node_idx: -1, new_pos: p }
     }
     p = lex_end(src, p, match_kind)
@@ -1760,81 +1760,81 @@ fn parse_match_stmt(src: string, pos: int, nodes: []AstNode) -> ParseResult {
     p = lex_skip(src, p)
 
     // Expect '{'
-    if lex_kind(src, p) != TK_LBRACE {
+    if lex_kind(src, p) != token.TK_LBRACE {
         return ParseResult { node_idx: -1, new_pos: p }
     }
-    p = lex_end(src, p, TK_LBRACE)
+    p = lex_end(src, p, token.TK_LBRACE)
     p = lex_skip(src, p)
 
     // Parse match arms
     first_arm := -1
     arm_count := 0
     for {
-        if lex_kind(src, p) == TK_RBRACE || lex_kind(src, p) == TK_EOF {
+        if lex_kind(src, p) == token.TK_RBRACE || lex_kind(src, p) == token.TK_EOF {
             break
         }
 
         // Parse pattern: EnumName::VariantName
-        if lex_kind(src, p) != TK_IDENT {
+        if lex_kind(src, p) != token.TK_IDENT {
             break
         }
-        pattern_enum := lex_string_value(src, p, TK_IDENT)
-        p = lex_end(src, p, TK_IDENT)
+        pattern_enum := lex_string_value(src, p, token.TK_IDENT)
+        p = lex_end(src, p, token.TK_IDENT)
         p = lex_skip(src, p)
 
         // Expect '::'
-        if lex_kind(src, p) != TK_COLONCOLON {
+        if lex_kind(src, p) != token.TK_COLONCOLON {
             break
         }
-        p = lex_end(src, p, TK_COLONCOLON)
+        p = lex_end(src, p, token.TK_COLONCOLON)
         p = lex_skip(src, p)
 
         // Parse variant name
-        if lex_kind(src, p) != TK_IDENT {
+        if lex_kind(src, p) != token.TK_IDENT {
             break
         }
-        pattern_variant := lex_string_value(src, p, TK_IDENT)
-        p = lex_end(src, p, TK_IDENT)
+        pattern_variant := lex_string_value(src, p, token.TK_IDENT)
+        p = lex_end(src, p, token.TK_IDENT)
         p = lex_skip(src, p)
 
         qualified := pattern_enum + "." + pattern_variant
 
         // Parse optional bindings: { name1, name2, ... }
         binding_names := []string{}
-        if lex_kind(src, p) == TK_LBRACE {
-            p = lex_end(src, p, TK_LBRACE)
+        if lex_kind(src, p) == token.TK_LBRACE {
+            p = lex_end(src, p, token.TK_LBRACE)
             p = lex_skip(src, p)
 
             for {
-                if lex_kind(src, p) == TK_RBRACE || lex_kind(src, p) == TK_EOF {
+                if lex_kind(src, p) == token.TK_RBRACE || lex_kind(src, p) == token.TK_EOF {
                     break
                 }
-                if lex_kind(src, p) != TK_IDENT {
+                if lex_kind(src, p) != token.TK_IDENT {
                     break
                 }
-                bname := lex_string_value(src, p, TK_IDENT)
+                bname := lex_string_value(src, p, token.TK_IDENT)
                 binding_names = append(binding_names, bname)
-                p = lex_end(src, p, TK_IDENT)
+                p = lex_end(src, p, token.TK_IDENT)
                 p = lex_skip(src, p)
 
-                if lex_kind(src, p) == TK_COMMA {
-                    p = lex_end(src, p, TK_COMMA)
+                if lex_kind(src, p) == token.TK_COMMA {
+                    p = lex_end(src, p, token.TK_COMMA)
                     p = lex_skip(src, p)
                 }
             }
 
             // Expect '}'
-            if lex_kind(src, p) == TK_RBRACE {
-                p = lex_end(src, p, TK_RBRACE)
+            if lex_kind(src, p) == token.TK_RBRACE {
+                p = lex_end(src, p, token.TK_RBRACE)
                 p = lex_skip(src, p)
             }
         }
 
         // Expect '=>'
-        if lex_kind(src, p) != TK_FATARROW {
+        if lex_kind(src, p) != token.TK_FATARROW {
             break
         }
-        p = lex_end(src, p, TK_FATARROW)
+        p = lex_end(src, p, token.TK_FATARROW)
         p = lex_skip(src, p)
 
         // Parse body expression
@@ -1845,15 +1845,15 @@ fn parse_match_stmt(src: string, pos: int, nodes: []AstNode) -> ParseResult {
         p = body_result.new_pos
         p = lex_skip(src, p)
 
-        // Create STMT_MATCH_ARM node
+        // Create ast.STMT_MATCH_ARM node
         arm := AstNode {
-            tag: STMT_MATCH_ARM,
+            tag: ast.STMT_MATCH_ARM,
             int_val: len(binding_names),
             str_val: qualified,
             left: body_result.node_idx,
             right: -1,
             extra: -1,
-            type_tag: TYPE_UNKNOWN
+            type_tag: ast.TYPE_UNKNOWN
         }
         nodes = append(nodes, arm)
         arm_idx := len(nodes) - 1
@@ -1868,27 +1868,27 @@ fn parse_match_stmt(src: string, pos: int, nodes: []AstNode) -> ParseResult {
         arm_count = arm_count + 1
 
         // Skip optional comma
-        if lex_kind(src, p) == TK_COMMA {
-            p = lex_end(src, p, TK_COMMA)
+        if lex_kind(src, p) == token.TK_COMMA {
+            p = lex_end(src, p, token.TK_COMMA)
             p = lex_skip(src, p)
         }
     }
 
     // Expect '}'
-    if lex_kind(src, p) != TK_RBRACE {
+    if lex_kind(src, p) != token.TK_RBRACE {
         return ParseResult { node_idx: -1, new_pos: p }
     }
-    p = lex_end(src, p, TK_RBRACE)
+    p = lex_end(src, p, token.TK_RBRACE)
 
-    // Create STMT_MATCH node
+    // Create ast.STMT_MATCH node
     match_node := AstNode {
-        tag: STMT_MATCH,
+        tag: ast.STMT_MATCH,
         int_val: arm_count,
         str_val: "",
         left: match_expr.node_idx,
         right: first_arm,
         extra: -1,
-        type_tag: TYPE_UNKNOWN
+        type_tag: ast.TYPE_UNKNOWN
     }
     nodes = append(nodes, match_node)
     return ParseResult { node_idx: len(nodes) - 1, new_pos: p }
@@ -1901,38 +1901,38 @@ fn parse_closure_params(src: string, pos: int, nodes: []AstNode) -> ParseResult 
 
     // Hidden __env parameter (always first)
     env_param := AstNode {
-        tag: DECL_PARAM, int_val: 0, str_val: "__env",
-        left: -1, right: -1, extra: -1, type_tag: TYPE_INT
+        tag: ast.DECL_PARAM, int_val: 0, str_val: "__env",
+        left: -1, right: -1, extra: -1, type_tag: ast.TYPE_INT
     }
     nodes = append(nodes, env_param)
     first_param_idx := len(nodes) - 1
 
-    // Handle || (TK_OR) as empty param list, or |params| (TK_PIPE delimited)
-    if lex_kind(src, p) == TK_OR {
-        p = lex_end(src, p, TK_OR)
+    // Handle || (token.TK_OR) as empty param list, or |params| (token.TK_PIPE delimited)
+    if lex_kind(src, p) == token.TK_OR {
+        p = lex_end(src, p, token.TK_OR)
         p = lex_skip(src, p)
         return ParseResult { node_idx: first_param_idx, new_pos: p }
     }
-    if lex_kind(src, p) == TK_PIPE {
-        p = lex_end(src, p, TK_PIPE)
+    if lex_kind(src, p) == token.TK_PIPE {
+        p = lex_end(src, p, token.TK_PIPE)
         p = lex_skip(src, p)
     } else {
         return ParseResult { node_idx: -1, new_pos: p }
     }
 
     for {
-        if lex_kind(src, p) == TK_PIPE || lex_kind(src, p) == TK_EOF { break }
+        if lex_kind(src, p) == token.TK_PIPE || lex_kind(src, p) == token.TK_EOF { break }
         param_result := parse_param(src, p, nodes)
         if param_result.node_idx < 0 { break }
         p = param_result.new_pos
         p = lex_skip(src, p)
-        if lex_kind(src, p) == TK_COMMA {
-            p = lex_end(src, p, TK_COMMA)
+        if lex_kind(src, p) == token.TK_COMMA {
+            p = lex_end(src, p, token.TK_COMMA)
             p = lex_skip(src, p)
         }
     }
-    if lex_kind(src, p) == TK_PIPE {
-        p = lex_end(src, p, TK_PIPE)
+    if lex_kind(src, p) == token.TK_PIPE {
+        p = lex_end(src, p, token.TK_PIPE)
         p = lex_skip(src, p)
     }
     return ParseResult { node_idx: first_param_idx, new_pos: p }
@@ -1941,21 +1941,21 @@ fn parse_closure_params(src: string, pos: int, nodes: []AstNode) -> ParseResult 
 // Parse closure body: block { ... } or single expression (wrapped in return+block)
 fn parse_closure_body(src: string, pos: int, nodes: []AstNode) -> ParseResult {
     p := pos
-    if lex_kind(src, p) == TK_LBRACE {
+    if lex_kind(src, p) == token.TK_LBRACE {
         return parse_block(src, p, nodes)
     }
-    // Single expression body — wrap in STMT_RETURN + STMT_BLOCK
+    // Single expression body — wrap in ast.STMT_RETURN + ast.STMT_BLOCK
     expr_result := parse_expr_with_pos(src, p, nodes)
     if expr_result.node_idx < 0 { return expr_result }
     ret_stmt := AstNode {
-        tag: STMT_RETURN, int_val: 0, str_val: "",
-        left: expr_result.node_idx, right: -1, extra: -1, type_tag: TYPE_UNKNOWN
+        tag: ast.STMT_RETURN, int_val: 0, str_val: "",
+        left: expr_result.node_idx, right: -1, extra: -1, type_tag: ast.TYPE_UNKNOWN
     }
     nodes = append(nodes, ret_stmt)
     ret_idx := len(nodes) - 1
     blk := AstNode {
-        tag: STMT_BLOCK, int_val: 1, str_val: "",
-        left: ret_idx, right: ret_idx, extra: -1, type_tag: TYPE_UNKNOWN
+        tag: ast.STMT_BLOCK, int_val: 1, str_val: "",
+        left: ret_idx, right: ret_idx, extra: -1, type_tag: ast.TYPE_UNKNOWN
     }
     nodes = append(nodes, blk)
     return ParseResult { node_idx: len(nodes) - 1, new_pos: expr_result.new_pos }
@@ -1967,9 +1967,9 @@ fn parse_closure_expr(src: string, pos: int, nodes: []AstNode) -> ParseResult {
 
     // Check for optional 'move' keyword
     is_move := 0
-    if lex_kind(src, p) == TK_IDENT && lex_string_value(src, p, TK_IDENT) == "move" {
+    if lex_kind(src, p) == token.TK_IDENT && lex_string_value(src, p, token.TK_IDENT) == "move" {
         is_move = 1
-        p = lex_end(src, p, TK_IDENT)
+        p = lex_end(src, p, token.TK_IDENT)
         p = lex_skip(src, p)
     }
 
@@ -1987,17 +1987,17 @@ fn parse_closure_expr(src: string, pos: int, nodes: []AstNode) -> ParseResult {
     p = params_result.new_pos
 
     // Optional return type: -> type
-    ret_type_tag := TYPE_UNKNOWN
-    if lex_kind(src, p) == TK_ARROW {
-        p = lex_end(src, p, TK_ARROW)
+    ret_type_tag := ast.TYPE_UNKNOWN
+    if lex_kind(src, p) == token.TK_ARROW {
+        p = lex_end(src, p, token.TK_ARROW)
         p = lex_skip(src, p)
         rk := lex_kind(src, p)
-        if rk == TK_IDENT {
+        if rk == token.TK_IDENT {
             rt := lex_string_value(src, p, rk)
-            if rt == "int" { ret_type_tag = TYPE_INT }
-            if rt == "string" { ret_type_tag = TYPE_STRING }
-            if rt == "bool" { ret_type_tag = TYPE_BOOL }
-            if rt == "float" { ret_type_tag = TYPE_FLOAT }
+            if rt == "int" { ret_type_tag = ast.TYPE_INT }
+            if rt == "string" { ret_type_tag = ast.TYPE_STRING }
+            if rt == "bool" { ret_type_tag = ast.TYPE_BOOL }
+            if rt == "float" { ret_type_tag = ast.TYPE_FLOAT }
             p = lex_end(src, p, rk)
             p = lex_skip(src, p)
         }
@@ -2011,18 +2011,18 @@ fn parse_closure_expr(src: string, pos: int, nodes: []AstNode) -> ParseResult {
         p = body_result.new_pos
     }
 
-    // Create DECL_FUNC node for closure body
+    // Create ast.DECL_FUNC node for closure body
     func_node := AstNode {
-        tag: DECL_FUNC, int_val: 0, str_val: cl_name,
+        tag: ast.DECL_FUNC, int_val: 0, str_val: cl_name,
         left: first_param_idx, right: body_idx, extra: -1, type_tag: ret_type_tag
     }
     nodes = append(nodes, func_node)
     g_closure_func_indices = append(g_closure_func_indices, len(nodes) - 1)
     g_closure_func_names = append(g_closure_func_names, cl_name)
 
-    // Create EXPR_CLOSURE node
+    // Create ast.EXPR_CLOSURE node
     cl_node := AstNode {
-        tag: EXPR_CLOSURE, int_val: is_move, str_val: cl_name,
+        tag: ast.EXPR_CLOSURE, int_val: is_move, str_val: cl_name,
         left: first_param_idx, right: body_idx, extra: -1, type_tag: ret_type_tag
     }
     nodes = append(nodes, cl_node)
@@ -2031,16 +2031,16 @@ fn parse_closure_expr(src: string, pos: int, nodes: []AstNode) -> ParseResult {
 
 fn parse_string_literal(src: string, pos: int, nodes: []AstNode) -> ParseResult {
     p := pos
-    end_pos := lex_end(src, p, TK_STRING)
+    end_pos := lex_end(src, p, token.TK_STRING)
     raw := str_substring(src, p + 1, end_pos - 1)
     if has_interpolation(raw) == 1 {
         result_idx := parse_interp_string(raw, nodes)
         return ParseResult { node_idx: result_idx, new_pos: end_pos }
     }
-    val := lex_string_value(src, p, TK_STRING)
+    val := lex_string_value(src, p, token.TK_STRING)
     node := AstNode {
-        tag: EXPR_STRING, int_val: 0, str_val: val,
-        left: -1, right: -1, extra: -1, type_tag: TYPE_UNKNOWN
+        tag: ast.EXPR_STRING, int_val: 0, str_val: val,
+        left: -1, right: -1, extra: -1, type_tag: ast.TYPE_UNKNOWN
     }
     nodes = append(nodes, node)
     return ParseResult { node_idx: len(nodes) - 1, new_pos: end_pos }
@@ -2083,8 +2083,8 @@ fn parse_interp_string(raw: string, nodes: []AstNode) -> int {
             if ch == 36 && ri + 1 < raw_len && str_char_at(raw, ri + 1) == 123 {
                 if len(literal) > 0 {
                     str_node := AstNode {
-                        tag: EXPR_STRING, int_val: 0, str_val: literal,
-                        left: -1, right: -1, extra: -1, type_tag: TYPE_UNKNOWN
+                        tag: ast.EXPR_STRING, int_val: 0, str_val: literal,
+                        left: -1, right: -1, extra: -1, type_tag: ast.TYPE_UNKNOWN
                     }
                     nodes = append(nodes, str_node)
                     parts = append(parts, len(nodes) - 1)
@@ -2114,8 +2114,8 @@ fn parse_interp_string(raw: string, nodes: []AstNode) -> int {
                     field_name := str_substring(ident, dot_pos + 1, len(ident))
                     obj_idx := new_ident_node(obj_name, nodes)
                     field_node := AstNode {
-                        tag: EXPR_FIELD, int_val: 0, str_val: field_name,
-                        left: obj_idx, right: -1, extra: -1, type_tag: TYPE_UNKNOWN
+                        tag: ast.EXPR_FIELD, int_val: 0, str_val: field_name,
+                        left: obj_idx, right: -1, extra: -1, type_tag: ast.TYPE_UNKNOWN
                     }
                     nodes = append(nodes, field_node)
                     inner_idx = len(nodes) - 1
@@ -2123,8 +2123,8 @@ fn parse_interp_string(raw: string, nodes: []AstNode) -> int {
                     inner_idx = new_ident_node(ident, nodes)
                 }
                 to_str_node := AstNode {
-                    tag: EXPR_TO_STRING, int_val: 0, str_val: "",
-                    left: inner_idx, right: -1, extra: -1, type_tag: TYPE_STRING
+                    tag: ast.EXPR_TO_STRING, int_val: 0, str_val: "",
+                    left: inner_idx, right: -1, extra: -1, type_tag: ast.TYPE_STRING
                 }
                 nodes = append(nodes, to_str_node)
                 parts = append(parts, len(nodes) - 1)
@@ -2137,8 +2137,8 @@ fn parse_interp_string(raw: string, nodes: []AstNode) -> int {
 
     if len(literal) > 0 {
         str_node := AstNode {
-            tag: EXPR_STRING, int_val: 0, str_val: literal,
-            left: -1, right: -1, extra: -1, type_tag: TYPE_UNKNOWN
+            tag: ast.EXPR_STRING, int_val: 0, str_val: literal,
+            left: -1, right: -1, extra: -1, type_tag: ast.TYPE_UNKNOWN
         }
         nodes = append(nodes, str_node)
         parts = append(parts, len(nodes) - 1)
@@ -2146,8 +2146,8 @@ fn parse_interp_string(raw: string, nodes: []AstNode) -> int {
 
     if len(parts) == 0 {
         str_node := AstNode {
-            tag: EXPR_STRING, int_val: 0, str_val: "",
-            left: -1, right: -1, extra: -1, type_tag: TYPE_UNKNOWN
+            tag: ast.EXPR_STRING, int_val: 0, str_val: "",
+            left: -1, right: -1, extra: -1, type_tag: ast.TYPE_UNKNOWN
         }
         nodes = append(nodes, str_node)
         return len(nodes) - 1
@@ -2159,7 +2159,7 @@ fn parse_interp_string(raw: string, nodes: []AstNode) -> int {
     result := parts[0]
     i := 1
     for i < len(parts) {
-        result = new_binary_node(TK_PLUS, result, parts[i], nodes)
+        result = new_binary_node(token.TK_PLUS, result, parts[i], nodes)
         i = i + 1
     }
     return result
@@ -2172,73 +2172,73 @@ fn parse_atom(src: string, pos: int, nodes: []AstNode) -> ParseResult {
     kind := lex_kind(src, p)
 
     // Closure: |params| body, || body, or move |params| body
-    if kind == TK_PIPE {
+    if kind == token.TK_PIPE {
         return parse_closure_expr(src, p, nodes)
     }
-    if kind == TK_OR {
+    if kind == token.TK_OR {
         // || is no-param closure: || -> type { body }
         return parse_closure_expr(src, p, nodes)
     }
-    if kind == TK_IDENT && lex_string_value(src, p, kind) == "move" {
+    if kind == token.TK_IDENT && lex_string_value(src, p, kind) == "move" {
         // Check if next non-whitespace token is '|' or '||' — then it's a closure
         saved := lex_end(src, p, kind)
         saved = lex_skip(src, saved)
-        if lex_kind(src, saved) == TK_PIPE || lex_kind(src, saved) == TK_OR {
+        if lex_kind(src, saved) == token.TK_PIPE || lex_kind(src, saved) == token.TK_OR {
             return parse_closure_expr(src, p, nodes)
         }
     }
-    if kind == TK_MATCH {
+    if kind == token.TK_MATCH {
         return parse_match_stmt(src, p, nodes)
     }
-    if kind == TK_INT {
+    if kind == token.TK_INT {
         val := lex_int_value(src, p)
         node := new_int_node(val, nodes)
         p = lex_end(src, p, kind)
         return ParseResult { node_idx: node, new_pos: p }
     }
-    if kind == TK_FLOAT {
+    if kind == token.TK_FLOAT {
         fval := lex_float_string_value(src, p)
         node := AstNode {
-            tag: EXPR_FLOAT,
+            tag: ast.EXPR_FLOAT,
             int_val: 0,
             str_val: fval,
             left: -1,
             right: -1,
             extra: -1,
-            type_tag: TYPE_FLOAT
+            type_tag: ast.TYPE_FLOAT
         }
         nodes = append(nodes, node)
         p = lex_end(src, p, kind)
         return ParseResult { node_idx: len(nodes) - 1, new_pos: p }
     }
-    if kind == TK_TRUE {
+    if kind == token.TK_TRUE {
         node := new_bool_node(1, nodes)
         p = lex_end(src, p, kind)
         return ParseResult { node_idx: node, new_pos: p }
     }
-    if kind == TK_FALSE {
+    if kind == token.TK_FALSE {
         node := new_bool_node(0, nodes)
         p = lex_end(src, p, kind)
         return ParseResult { node_idx: node, new_pos: p }
     }
-    if kind == TK_STRING {
+    if kind == token.TK_STRING {
         return parse_string_literal(src, p, nodes)
     }
-    if kind == TK_IDENT {
+    if kind == token.TK_IDENT {
         name := lex_string_value(src, p, kind)
         p = lex_end(src, p, kind)
         p_saved := p
         p_check := lex_skip(src, p)
 
         // Check for enum variant: Ident::Variant
-        if lex_kind(src, p_check) == TK_COLONCOLON {
+        if lex_kind(src, p_check) == token.TK_COLONCOLON {
             p = p_check
-            p = lex_end(src, p, TK_COLONCOLON)
+            p = lex_end(src, p, token.TK_COLONCOLON)
             p = lex_skip(src, p)
 
-            if lex_kind(src, p) == TK_IDENT {
-                variant_name := lex_string_value(src, p, TK_IDENT)
-                p = lex_end(src, p, TK_IDENT)
+            if lex_kind(src, p) == token.TK_IDENT {
+                variant_name := lex_string_value(src, p, token.TK_IDENT)
+                p = lex_end(src, p, token.TK_IDENT)
                 // Skip optional type arguments: Option::Some[int]{ value: 42 }
                 record_type_args(src, p, name, count_line_at(src, p))
                 p = skip_type_args(src, p)
@@ -2247,27 +2247,27 @@ fn parse_atom(src: string, pos: int, nodes: []AstNode) -> ParseResult {
 
                 // Check for field values: { field: value, ... }
                 field_value_indices := []int{}
-                if lex_kind(src, p) == TK_LBRACE {
-                    p = lex_end(src, p, TK_LBRACE)
+                if lex_kind(src, p) == token.TK_LBRACE {
+                    p = lex_end(src, p, token.TK_LBRACE)
                     p = lex_skip(src, p)
 
                     for {
-                        if lex_kind(src, p) == TK_RBRACE || lex_kind(src, p) == TK_EOF {
+                        if lex_kind(src, p) == token.TK_RBRACE || lex_kind(src, p) == token.TK_EOF {
                             break
                         }
 
                         // Parse field name
-                        if lex_kind(src, p) != TK_IDENT {
+                        if lex_kind(src, p) != token.TK_IDENT {
                             break
                         }
-                        p = lex_end(src, p, TK_IDENT)
+                        p = lex_end(src, p, token.TK_IDENT)
                         p = lex_skip(src, p)
 
                         // Expect ':'
-                        if lex_kind(src, p) != TK_COLON {
+                        if lex_kind(src, p) != token.TK_COLON {
                             break
                         }
-                        p = lex_end(src, p, TK_COLON)
+                        p = lex_end(src, p, token.TK_COLON)
                         p = lex_skip(src, p)
 
                         // Parse value expression
@@ -2279,31 +2279,31 @@ fn parse_atom(src: string, pos: int, nodes: []AstNode) -> ParseResult {
                         p = val_result.new_pos
                         p = lex_skip(src, p)
 
-                        if lex_kind(src, p) == TK_COMMA {
-                            p = lex_end(src, p, TK_COMMA)
+                        if lex_kind(src, p) == token.TK_COMMA {
+                            p = lex_end(src, p, token.TK_COMMA)
                             p = lex_skip(src, p)
                         }
                     }
 
                     // Expect '}'
-                    if lex_kind(src, p) == TK_RBRACE {
-                        p = lex_end(src, p, TK_RBRACE)
+                    if lex_kind(src, p) == token.TK_RBRACE {
+                        p = lex_end(src, p, token.TK_RBRACE)
                     }
                 }
 
-                // Create EXPR_ENUM_VARIANT node
+                // Create ast.EXPR_ENUM_VARIANT node
                 first_field := -1
                 if len(field_value_indices) > 0 {
                     first_field = field_value_indices[0]
                 }
                 ev_node := AstNode {
-                    tag: EXPR_ENUM_VARIANT,
+                    tag: ast.EXPR_ENUM_VARIANT,
                     int_val: len(field_value_indices),
                     str_val: qualified,
                     left: first_field,
                     right: -1,
                     extra: -1,
-                    type_tag: TYPE_UNKNOWN
+                    type_tag: ast.TYPE_UNKNOWN
                 }
                 nodes = append(nodes, ev_node)
                 ev_idx := len(nodes) - 1
@@ -2322,57 +2322,57 @@ fn parse_atom(src: string, pos: int, nodes: []AstNode) -> ParseResult {
         node := new_ident_node(name, nodes)
         return ParseResult { node_idx: node, new_pos: p }
     }
-    if kind == TK_MAP {
+    if kind == token.TK_MAP {
         // Map literal: map[KeyType]ValType{}
         p = lex_end(src, p, kind)
         p = lex_skip(src, p)
         map_key_type := ""
         map_val_type := ""
-        if lex_kind(src, p) == TK_LBRACKET { p = lex_end(src, p, TK_LBRACKET) p = lex_skip(src, p) }
-        if lex_kind(src, p) == TK_IDENT { map_key_type = lex_string_value(src, p, TK_IDENT) p = lex_end(src, p, TK_IDENT) p = lex_skip(src, p) }
-        if lex_kind(src, p) == TK_RBRACKET { p = lex_end(src, p, TK_RBRACKET) p = lex_skip(src, p) }
-        if lex_kind(src, p) == TK_IDENT { map_val_type = lex_string_value(src, p, TK_IDENT) p = lex_end(src, p, TK_IDENT) p = lex_skip(src, p) }
-        if lex_kind(src, p) == TK_LBRACE { p = lex_end(src, p, TK_LBRACE) p = lex_skip(src, p) }
-        if lex_kind(src, p) == TK_RBRACE { p = lex_end(src, p, TK_RBRACE) }
+        if lex_kind(src, p) == token.TK_LBRACKET { p = lex_end(src, p, token.TK_LBRACKET) p = lex_skip(src, p) }
+        if lex_kind(src, p) == token.TK_IDENT { map_key_type = lex_string_value(src, p, token.TK_IDENT) p = lex_end(src, p, token.TK_IDENT) p = lex_skip(src, p) }
+        if lex_kind(src, p) == token.TK_RBRACKET { p = lex_end(src, p, token.TK_RBRACKET) p = lex_skip(src, p) }
+        if lex_kind(src, p) == token.TK_IDENT { map_val_type = lex_string_value(src, p, token.TK_IDENT) p = lex_end(src, p, token.TK_IDENT) p = lex_skip(src, p) }
+        if lex_kind(src, p) == token.TK_LBRACE { p = lex_end(src, p, token.TK_LBRACE) p = lex_skip(src, p) }
+        if lex_kind(src, p) == token.TK_RBRACE { p = lex_end(src, p, token.TK_RBRACE) }
         map_type_str := "map[" + map_key_type + "]" + map_val_type
         map_node := AstNode {
-            tag: EXPR_MAP_LIT,
+            tag: ast.EXPR_MAP_LIT,
             int_val: 0,
             str_val: map_type_str,
             left: -1,
             right: -1,
             extra: -1,
-            type_tag: TYPE_MAP
+            type_tag: ast.TYPE_MAP
         }
         nodes = append(nodes, map_node)
         return ParseResult { node_idx: len(nodes) - 1, new_pos: p }
     }
-    if kind == TK_LBRACKET {
+    if kind == token.TK_LBRACKET {
         // Array literal: []Type{elem1, elem2, ...}
         // For bootstrap: simplified to []int{...}
         p = lex_end(src, p, kind)  // Skip '['
         p = lex_skip(src, p)
 
         // Expect ']'
-        if lex_kind(src, p) != TK_RBRACKET {
+        if lex_kind(src, p) != token.TK_RBRACKET {
             return ParseResult { node_idx: -1, new_pos: p }
         }
-        p = lex_end(src, p, TK_RBRACKET)
+        p = lex_end(src, p, token.TK_RBRACKET)
         p = lex_skip(src, p)
 
         // Parse element type name
         elem_type_name := "int"
-        if lex_kind(src, p) == TK_IDENT {
-            elem_type_name = lex_string_value(src, p, TK_IDENT)
-            p = lex_end(src, p, TK_IDENT)
+        if lex_kind(src, p) == token.TK_IDENT {
+            elem_type_name = lex_string_value(src, p, token.TK_IDENT)
+            p = lex_end(src, p, token.TK_IDENT)
             p = lex_skip(src, p)
         }
 
         // Expect '{'
-        if lex_kind(src, p) != TK_LBRACE {
+        if lex_kind(src, p) != token.TK_LBRACE {
             return ParseResult { node_idx: -1, new_pos: p }
         }
-        p = lex_end(src, p, TK_LBRACE)
+        p = lex_end(src, p, token.TK_LBRACE)
         p = lex_skip(src, p)
 
         // Parse elements
@@ -2381,7 +2381,7 @@ fn parse_atom(src: string, pos: int, nodes: []AstNode) -> ParseResult {
 
         for {
             p = lex_skip(src, p)
-            if lex_kind(src, p) == TK_RBRACE {
+            if lex_kind(src, p) == token.TK_RBRACE {
                 break
             }
 
@@ -2400,8 +2400,8 @@ fn parse_atom(src: string, pos: int, nodes: []AstNode) -> ParseResult {
             p = lex_skip(src, p)
 
             // Check for comma
-            if lex_kind(src, p) == TK_COMMA {
-                p = lex_end(src, p, TK_COMMA)
+            if lex_kind(src, p) == token.TK_COMMA {
+                p = lex_end(src, p, token.TK_COMMA)
                 p = lex_skip(src, p)
             } else {
                 break
@@ -2409,20 +2409,20 @@ fn parse_atom(src: string, pos: int, nodes: []AstNode) -> ParseResult {
         }
 
         // Expect '}'
-        if lex_kind(src, p) != TK_RBRACE {
+        if lex_kind(src, p) != token.TK_RBRACE {
             return ParseResult { node_idx: -1, new_pos: p }
         }
-        p = lex_end(src, p, TK_RBRACE)
+        p = lex_end(src, p, token.TK_RBRACE)
 
         // Create array literal node
         array_node := AstNode {
-            tag: EXPR_ARRAY_LIT,
+            tag: ast.EXPR_ARRAY_LIT,
             int_val: elem_count,
             str_val: elem_type_name,  // element type
             left: -1,
             right: first_elem_idx,
             extra: -1,
-            type_tag: TYPE_UNKNOWN
+            type_tag: ast.TYPE_UNKNOWN
         }
         nodes = append(nodes, array_node)
         return ParseResult { node_idx: len(nodes) - 1, new_pos: p }
@@ -2436,7 +2436,7 @@ fn parse_unary(src: string, start_pos: int, nodes: []AstNode) -> ParseResult {
     pos := lex_skip(src, start_pos)
     kind := lex_kind(src, pos)
 
-    if kind == TK_MINUS {
+    if kind == token.TK_MINUS {
         new_pos := lex_end(src, pos, kind)
         operand_result := parse_unary(src, new_pos, nodes)
         if operand_result.node_idx < 0 {
@@ -2446,7 +2446,7 @@ fn parse_unary(src: string, start_pos: int, nodes: []AstNode) -> ParseResult {
         return ParseResult { node_idx: unary_idx, new_pos: operand_result.new_pos }
     }
 
-    if kind == TK_NOT {
+    if kind == token.TK_NOT {
         new_pos := lex_end(src, pos, kind)
         operand_result := parse_unary(src, new_pos, nodes)
         if operand_result.node_idx < 0 {
@@ -2456,7 +2456,7 @@ fn parse_unary(src: string, start_pos: int, nodes: []AstNode) -> ParseResult {
         return ParseResult { node_idx: unary_idx, new_pos: operand_result.new_pos }
     }
 
-    if kind == TK_AMPERSAND {
+    if kind == token.TK_AMPERSAND {
         new_pos := lex_end(src, pos, kind)
         operand_result := parse_unary(src, new_pos, nodes)
         if operand_result.node_idx < 0 {
@@ -2466,7 +2466,7 @@ fn parse_unary(src: string, start_pos: int, nodes: []AstNode) -> ParseResult {
         return ParseResult { node_idx: unary_idx, new_pos: operand_result.new_pos }
     }
 
-    if kind == TK_STAR {
+    if kind == token.TK_STAR {
         new_pos := lex_end(src, pos, kind)
         operand_result := parse_unary(src, new_pos, nodes)
         if operand_result.node_idx < 0 {
@@ -2492,7 +2492,7 @@ fn parse_multiplicative(src: string, start_pos: int, nodes: []AstNode) -> ParseR
     for {
         pos = lex_skip(src, pos)
         op := lex_kind(src, pos)
-        if op != TK_STAR && op != TK_SLASH && op != TK_PERCENT {
+        if op != token.TK_STAR && op != token.TK_SLASH && op != token.TK_PERCENT {
             break
         }
 
@@ -2522,7 +2522,7 @@ fn parse_additive(src: string, start_pos: int, nodes: []AstNode) -> ParseResult 
     for {
         pos = lex_skip(src, pos)
         op := lex_kind(src, pos)
-        if op != TK_PLUS && op != TK_MINUS {
+        if op != token.TK_PLUS && op != token.TK_MINUS {
             break
         }
 
@@ -2551,7 +2551,7 @@ fn parse_comparison(src: string, start_pos: int, nodes: []AstNode) -> ParseResul
 
     pos = lex_skip(src, pos)
     op := lex_kind(src, pos)
-    if op == TK_DOTDOT {
+    if op == token.TK_DOTDOT {
         pos = lex_end(src, pos, op)
         right_result := parse_additive(src, pos, nodes)
         if right_result.node_idx >= 0 {
@@ -2560,8 +2560,8 @@ fn parse_comparison(src: string, start_pos: int, nodes: []AstNode) -> ParseResul
         }
         return ParseResult { node_idx: left, new_pos: pos }
     }
-    if op == TK_LT || op == TK_GT || op == TK_LE || op == TK_GE ||
-       op == TK_EQ || op == TK_NE {
+    if op == token.TK_LT || op == token.TK_GT || op == token.TK_LE || op == token.TK_GE ||
+       op == token.TK_EQ || op == token.TK_NE {
         pos = lex_end(src, pos, op)
         right_result := parse_additive(src, pos, nodes)
         if right_result.node_idx >= 0 {
@@ -2586,7 +2586,7 @@ fn parse_bitand(src: string, start_pos: int, nodes: []AstNode) -> ParseResult {
     for {
         pos = lex_skip(src, pos)
         op := lex_kind(src, pos)
-        if op != TK_AMPERSAND {
+        if op != token.TK_AMPERSAND {
             break
         }
 
@@ -2616,7 +2616,7 @@ fn parse_xor(src: string, start_pos: int, nodes: []AstNode) -> ParseResult {
     for {
         pos = lex_skip(src, pos)
         op := lex_kind(src, pos)
-        if op != TK_CARET {
+        if op != token.TK_CARET {
             break
         }
 
@@ -2646,7 +2646,7 @@ fn parse_bitor(src: string, start_pos: int, nodes: []AstNode) -> ParseResult {
     for {
         pos = lex_skip(src, pos)
         op := lex_kind(src, pos)
-        if op != TK_PIPE {
+        if op != token.TK_PIPE {
             break
         }
 
@@ -2676,7 +2676,7 @@ fn parse_logical_and(src: string, start_pos: int, nodes: []AstNode) -> ParseResu
     for {
         pos = lex_skip(src, pos)
         op := lex_kind(src, pos)
-        if op != TK_AND {
+        if op != token.TK_AND {
             break
         }
 
@@ -2706,7 +2706,7 @@ fn parse_expr_with_pos(src: string, start_pos: int, nodes: []AstNode) -> ParseRe
     for {
         pos = lex_skip(src, pos)
         op := lex_kind(src, pos)
-        if op != TK_OR {
+        if op != token.TK_OR {
             break
         }
 
@@ -2730,7 +2730,7 @@ fn parse_primary_expr(src: string, pos: int, nodes: []AstNode) -> ParseResult {
     kind := lex_kind(src, p)
 
     // Check for parenthesized expression first
-    if kind == TK_LPAREN {
+    if kind == token.TK_LPAREN {
         p = lex_end(src, p, kind)  // Skip '('
         // Recursively parse the full expression inside parentheses
         expr_result := parse_expr_with_pos(src, p, nodes)
@@ -2740,7 +2740,7 @@ fn parse_primary_expr(src: string, pos: int, nodes: []AstNode) -> ParseResult {
         p = expr_result.new_pos
         p = lex_skip(src, p)
         rparen := lex_kind(src, p)
-        if rparen != TK_RPAREN {
+        if rparen != token.TK_RPAREN {
             return ParseResult { node_idx: -1, new_pos: p }
         }
         p = lex_end(src, p, rparen)  // Skip ')'
@@ -2761,7 +2761,7 @@ fn parse_primary_expr(src: string, pos: int, nodes: []AstNode) -> ParseResult {
         p = lex_skip(src, p)
         next_kind := lex_kind(src, p)
 
-        if next_kind == TK_LPAREN {
+        if next_kind == token.TK_LPAREN {
             // It's a function call
             call_pos := p
             func_name_node := current_node
@@ -2773,7 +2773,7 @@ fn parse_primary_expr(src: string, pos: int, nodes: []AstNode) -> ParseResult {
             arg_indices := []int{}
 
             // Check if there are any arguments
-            if lex_kind(src, p) != TK_RPAREN {
+            if lex_kind(src, p) != token.TK_RPAREN {
                 for {
                     arg_result := parse_expr_with_pos(src, p, nodes)
                     if arg_result.node_idx < 0 {
@@ -2789,8 +2789,8 @@ fn parse_primary_expr(src: string, pos: int, nodes: []AstNode) -> ParseResult {
                     p = lex_skip(src, p)
 
                     // Check for comma
-                    if lex_kind(src, p) == TK_COMMA {
-                        p = lex_end(src, p, TK_COMMA)
+                    if lex_kind(src, p) == token.TK_COMMA {
+                        p = lex_end(src, p, token.TK_COMMA)
                         p = lex_skip(src, p)
                     } else {
                         break
@@ -2800,29 +2800,29 @@ fn parse_primary_expr(src: string, pos: int, nodes: []AstNode) -> ParseResult {
 
             // Expect ')'
             p = lex_skip(src, p)
-            if lex_kind(src, p) != TK_RPAREN {
+            if lex_kind(src, p) != token.TK_RPAREN {
                 return ParseResult { node_idx: -1, new_pos: p }
             }
-            p = lex_end(src, p, TK_RPAREN)
+            p = lex_end(src, p, token.TK_RPAREN)
 
             // Create call expression node
             // left = function name node, right = first argument, int_val = arg count
-            // If func_name_node is EXPR_FIELD with EXPR_IDENT base, construct qualified name (e.g. "os.ReadFile")
+            // If func_name_node is ast.EXPR_FIELD with ast.EXPR_IDENT base, construct qualified name (e.g. "os.ReadFile")
             func_name := nodes[func_name_node].str_val
-            if nodes[func_name_node].tag == EXPR_FIELD {
+            if nodes[func_name_node].tag == ast.EXPR_FIELD {
                 base_idx := nodes[func_name_node].left
-                if base_idx >= 0 && nodes[base_idx].tag == EXPR_IDENT {
+                if base_idx >= 0 && nodes[base_idx].tag == ast.EXPR_IDENT {
                     func_name = nodes[base_idx].str_val + "." + func_name
                 }
             }
             call_node := AstNode {
-                tag: EXPR_CALL,
+                tag: ast.EXPR_CALL,
                 int_val: len(arg_indices),
                 str_val: func_name,
                 left: func_name_node,
                 right: first_arg,
                 extra: count_line_at(src, call_pos),
-                type_tag: TYPE_UNKNOWN
+                type_tag: ast.TYPE_UNKNOWN
             }
             nodes = append(nodes, call_node)
             current_node = len(nodes) - 1
@@ -2834,7 +2834,7 @@ fn parse_primary_expr(src: string, pos: int, nodes: []AstNode) -> ParseResult {
             // Note: Struct literals (StructName { field: value }) are currently NOT parsed
             // as postfix operators due to ambiguity with statement blocks. For now, struct
             // literals must be parsed as primary expressions or handled separately.
-            if next_kind == TK_LBRACE && nodes[current_node].tag == EXPR_IDENT {
+            if next_kind == token.TK_LBRACE && nodes[current_node].tag == ast.EXPR_IDENT {
                 // Struct literal: StructName { field1: value1, field2: value2 }
                 // Only parse if identifier starts with uppercase (struct names are capitalized)
                 struct_name_node := current_node
@@ -2859,12 +2859,12 @@ fn parse_primary_expr(src: string, pos: int, nodes: []AstNode) -> ParseResult {
                 la_p := lex_end(src, p, next_kind)  // Skip '{'
                 la_p = lex_skip(src, la_p)
                 looks_like_struct := 0
-                if lex_kind(src, la_p) == TK_RBRACE {
+                if lex_kind(src, la_p) == token.TK_RBRACE {
                     looks_like_struct = 1
-                } else if lex_kind(src, la_p) == TK_IDENT {
-                    la_ident_end := lex_end(src, la_p, TK_IDENT)
+                } else if lex_kind(src, la_p) == token.TK_IDENT {
+                    la_ident_end := lex_end(src, la_p, token.TK_IDENT)
                     la_after := lex_skip(src, la_ident_end)
-                    if lex_kind(src, la_after) == TK_COLON {
+                    if lex_kind(src, la_after) == token.TK_COLON {
                         looks_like_struct = 1
                     }
                 }
@@ -2881,23 +2881,23 @@ fn parse_primary_expr(src: string, pos: int, nodes: []AstNode) -> ParseResult {
 
                 for {
                     p = lex_skip(src, p)
-                    if lex_kind(src, p) == TK_RBRACE {
+                    if lex_kind(src, p) == token.TK_RBRACE {
                         break
                     }
 
                     // Parse field name
-                    if lex_kind(src, p) != TK_IDENT {
+                    if lex_kind(src, p) != token.TK_IDENT {
                         break
                     }
-                    field_name := lex_string_value(src, p, TK_IDENT)
-                    p = lex_end(src, p, TK_IDENT)
+                    field_name := lex_string_value(src, p, token.TK_IDENT)
+                    p = lex_end(src, p, token.TK_IDENT)
                     p = lex_skip(src, p)
 
                     // Expect ':'
-                    if lex_kind(src, p) != TK_COLON {
+                    if lex_kind(src, p) != token.TK_COLON {
                         break
                     }
-                    p = lex_end(src, p, TK_COLON)
+                    p = lex_end(src, p, token.TK_COLON)
                     p = lex_skip(src, p)
 
                     // Parse field value expression
@@ -2915,8 +2915,8 @@ fn parse_primary_expr(src: string, pos: int, nodes: []AstNode) -> ParseResult {
                     p = lex_skip(src, p)
 
                     // Check for comma
-                    if lex_kind(src, p) == TK_COMMA {
-                        p = lex_end(src, p, TK_COMMA)
+                    if lex_kind(src, p) == token.TK_COMMA {
+                        p = lex_end(src, p, token.TK_COMMA)
                         p = lex_skip(src, p)
                     } else {
                         break
@@ -2924,20 +2924,20 @@ fn parse_primary_expr(src: string, pos: int, nodes: []AstNode) -> ParseResult {
                 }
 
                 // Expect '}'
-                if lex_kind(src, p) != TK_RBRACE {
+                if lex_kind(src, p) != token.TK_RBRACE {
                     return ParseResult { node_idx: -1, new_pos: p }
                 }
-                p = lex_end(src, p, TK_RBRACE)
+                p = lex_end(src, p, token.TK_RBRACE)
 
                 // Create struct literal node
                 struct_lit_node := AstNode {
-                    tag: EXPR_STRUCT_LIT,
+                    tag: ast.EXPR_STRUCT_LIT,
                     int_val: len(field_value_indices),
                     str_val: struct_name,
                     left: struct_name_node,
                     right: first_field_idx,
                     extra: -1,
-                    type_tag: TYPE_UNKNOWN
+                    type_tag: ast.TYPE_UNKNOWN
                 }
                 nodes = append(nodes, struct_lit_node)
                 current_node = len(nodes) - 1
@@ -2946,11 +2946,11 @@ fn parse_primary_expr(src: string, pos: int, nodes: []AstNode) -> ParseResult {
                 store_struct_fields(current_node, field_value_indices)
                 // Continue to check for more postfix operators
             } else {
-                if next_kind == TK_LBRACKET {
+                if next_kind == token.TK_LBRACKET {
                     // Check if this is generic type args (Name[Type]{ or Name[Type]()
                     // vs array indexing (arr[idx])
                     is_generic_args := 0
-                    if nodes[current_node].tag == EXPR_IDENT || nodes[current_node].tag == EXPR_FIELD {
+                    if nodes[current_node].tag == ast.EXPR_IDENT || nodes[current_node].tag == ast.EXPR_FIELD {
                         gen_name := nodes[current_node].str_val
                         if len(gen_name) > 0 {
                             // Look ahead past [...] to see { or (
@@ -2958,13 +2958,13 @@ fn parse_primary_expr(src: string, pos: int, nodes: []AstNode) -> ParseResult {
                             gen_p = lex_skip(src, gen_p)
                             gen_after := lex_kind(src, gen_p)
                             gen_fc := str_char_at(gen_name, 0)
-                            if gen_after == TK_LPAREN {
+                            if gen_after == token.TK_LPAREN {
                                 // name[Type](args) — generic function call
                                 gen_line := count_line_at(src, p)
                                 record_type_args(src, p, gen_name, gen_line)
                                 p = gen_p
                                 is_generic_args = 1
-                            } else if gen_after == TK_LBRACE && gen_fc >= 65 && gen_fc <= 90 {
+                            } else if gen_after == token.TK_LBRACE && gen_fc >= 65 && gen_fc <= 90 {
                                 // Name[Type]{ fields } — generic struct literal
                                 gen_line := count_line_at(src, p)
                                 record_type_args(src, p, gen_name, gen_line)
@@ -2980,12 +2980,12 @@ fn parse_primary_expr(src: string, pos: int, nodes: []AstNode) -> ParseResult {
                     p = lex_skip(src, p)
 
                     // Check for [:end] or [:] — colon before any expression
-                    if lex_kind(src, p) == TK_COLON {
+                    if lex_kind(src, p) == token.TK_COLON {
                         // Slice with default start
-                        p = lex_end(src, p, TK_COLON)
+                        p = lex_end(src, p, token.TK_COLON)
                         p = lex_skip(src, p)
                         end_node := -1
-                        if lex_kind(src, p) != TK_RBRACKET {
+                        if lex_kind(src, p) != token.TK_RBRACKET {
                             // [:end]
                             end_result := parse_expr_with_pos(src, p, nodes)
                             if end_result.node_idx < 0 {
@@ -2996,18 +2996,18 @@ fn parse_primary_expr(src: string, pos: int, nodes: []AstNode) -> ParseResult {
                             p = lex_skip(src, p)
                         }
                         // Expect ']'
-                        if lex_kind(src, p) != TK_RBRACKET {
+                        if lex_kind(src, p) != token.TK_RBRACKET {
                             return ParseResult { node_idx: -1, new_pos: p }
                         }
-                        p = lex_end(src, p, TK_RBRACKET)
+                        p = lex_end(src, p, token.TK_RBRACKET)
                         slice_node := AstNode {
-                            tag: EXPR_SLICE,
+                            tag: ast.EXPR_SLICE,
                             int_val: 0,
                             str_val: "",
                             left: array_node,
                             right: -1,
                             extra: end_node,
-                            type_tag: TYPE_UNKNOWN
+                            type_tag: ast.TYPE_UNKNOWN
                         }
                         nodes = append(nodes, slice_node)
                         current_node = len(nodes) - 1
@@ -3020,12 +3020,12 @@ fn parse_primary_expr(src: string, pos: int, nodes: []AstNode) -> ParseResult {
                         p = index_result.new_pos
                         p = lex_skip(src, p)
 
-                        if lex_kind(src, p) == TK_COLON {
+                        if lex_kind(src, p) == token.TK_COLON {
                             // Slice: arr[start:end] or arr[start:]
-                            p = lex_end(src, p, TK_COLON)
+                            p = lex_end(src, p, token.TK_COLON)
                             p = lex_skip(src, p)
                             end_node := -1
-                            if lex_kind(src, p) != TK_RBRACKET {
+                            if lex_kind(src, p) != token.TK_RBRACKET {
                                 // arr[start:end]
                                 end_result := parse_expr_with_pos(src, p, nodes)
                                 if end_result.node_idx < 0 {
@@ -3036,35 +3036,35 @@ fn parse_primary_expr(src: string, pos: int, nodes: []AstNode) -> ParseResult {
                                 p = lex_skip(src, p)
                             }
                             // Expect ']'
-                            if lex_kind(src, p) != TK_RBRACKET {
+                            if lex_kind(src, p) != token.TK_RBRACKET {
                                 return ParseResult { node_idx: -1, new_pos: p }
                             }
-                            p = lex_end(src, p, TK_RBRACKET)
+                            p = lex_end(src, p, token.TK_RBRACKET)
                             slice_node := AstNode {
-                                tag: EXPR_SLICE,
+                                tag: ast.EXPR_SLICE,
                                 int_val: 0,
                                 str_val: "",
                                 left: array_node,
                                 right: index_result.node_idx,
                                 extra: end_node,
-                                type_tag: TYPE_UNKNOWN
+                                type_tag: ast.TYPE_UNKNOWN
                             }
                             nodes = append(nodes, slice_node)
                             current_node = len(nodes) - 1
                         } else {
                             // Regular index access: arr[idx]
-                            if lex_kind(src, p) != TK_RBRACKET {
+                            if lex_kind(src, p) != token.TK_RBRACKET {
                                 return ParseResult { node_idx: -1, new_pos: p }
                             }
-                            p = lex_end(src, p, TK_RBRACKET)
+                            p = lex_end(src, p, token.TK_RBRACKET)
                             index_node := AstNode {
-                                tag: EXPR_INDEX,
+                                tag: ast.EXPR_INDEX,
                                 int_val: 0,
                                 str_val: "",
                                 left: array_node,
                                 right: index_result.node_idx,
                                 extra: -1,
-                                type_tag: TYPE_UNKNOWN
+                                type_tag: ast.TYPE_UNKNOWN
                             }
                             nodes = append(nodes, index_node)
                             current_node = len(nodes) - 1
@@ -3072,7 +3072,7 @@ fn parse_primary_expr(src: string, pos: int, nodes: []AstNode) -> ParseResult {
                     }
                     }
                 } else {
-                    if next_kind == TK_DOT {
+                    if next_kind == token.TK_DOT {
                         // Field access
                         base_node := current_node
                         p = lex_end(src, p, next_kind)  // Skip '.'
@@ -3080,7 +3080,7 @@ fn parse_primary_expr(src: string, pos: int, nodes: []AstNode) -> ParseResult {
 
                         // Parse field name
                         field_kind := lex_kind(src, p)
-                        if field_kind != TK_IDENT {
+                        if field_kind != token.TK_IDENT {
                             return ParseResult { node_idx: -1, new_pos: p }
                         }
                         field_name := lex_string_value(src, p, field_kind)
@@ -3089,28 +3089,28 @@ fn parse_primary_expr(src: string, pos: int, nodes: []AstNode) -> ParseResult {
                         // Create field access node
                         // left = base expression, str_val = field name
                         field_node := AstNode {
-                            tag: EXPR_FIELD,
+                            tag: ast.EXPR_FIELD,
                             int_val: 0,
                             str_val: field_name,
                             left: base_node,
                             right: -1,
                             extra: -1,
-                            type_tag: TYPE_UNKNOWN
+                            type_tag: ast.TYPE_UNKNOWN
                         }
                         nodes = append(nodes, field_node)
                         current_node = len(nodes) - 1
                         // Continue to check for more postfix operators
-                    } else if next_kind == TK_QUESTION {
+                    } else if next_kind == token.TK_QUESTION {
                         // Try operator: expr?
                         p = lex_end(src, p, next_kind)
                         try_node := AstNode {
-                            tag: EXPR_TRY,
+                            tag: ast.EXPR_TRY,
                             int_val: 0,
                             str_val: "",
                             left: current_node,
                             right: -1,
                             extra: -1,
-                            type_tag: TYPE_UNKNOWN
+                            type_tag: ast.TYPE_UNKNOWN
                         }
                         nodes = append(nodes, try_node)
                         current_node = len(nodes) - 1
@@ -3152,71 +3152,71 @@ fn parse_extern_fn_decl(src: string, pos: int, nodes: []AstNode) -> ParseResult 
     p := pos
 
     // Skip 'extern'
-    p = lex_end(src, p, TK_EXTERN)
+    p = lex_end(src, p, token.TK_EXTERN)
     p = lex_skip(src, p)
 
     // Expect 'fn'
-    if lex_kind(src, p) != TK_FN {
+    if lex_kind(src, p) != token.TK_FN {
         return ParseResult { node_idx: -1, new_pos: p }
     }
-    p = lex_end(src, p, TK_FN)
+    p = lex_end(src, p, token.TK_FN)
     p = lex_skip(src, p)
 
     // Parse function name
-    if lex_kind(src, p) != TK_IDENT {
+    if lex_kind(src, p) != token.TK_IDENT {
         return ParseResult { node_idx: -1, new_pos: p }
     }
-    func_name := lex_string_value(src, p, TK_IDENT)
-    p = lex_end(src, p, TK_IDENT)
+    func_name := lex_string_value(src, p, token.TK_IDENT)
+    p = lex_end(src, p, token.TK_IDENT)
     p = lex_skip(src, p)
 
     // Expect '('
-    if lex_kind(src, p) != TK_LPAREN {
+    if lex_kind(src, p) != token.TK_LPAREN {
         return ParseResult { node_idx: -1, new_pos: p }
     }
-    p = lex_end(src, p, TK_LPAREN)
+    p = lex_end(src, p, token.TK_LPAREN)
     p = lex_skip(src, p)
 
     // Parse parameters: name: type, ...
     param_types := []int{}
-    for lex_kind(src, p) != TK_RPAREN {
+    for lex_kind(src, p) != token.TK_RPAREN {
         if len(param_types) > 0 {
             // Expect comma
-            if lex_kind(src, p) == TK_COMMA {
-                p = lex_end(src, p, TK_COMMA)
+            if lex_kind(src, p) == token.TK_COMMA {
+                p = lex_end(src, p, token.TK_COMMA)
                 p = lex_skip(src, p)
             }
         }
         // Parse param name
-        if lex_kind(src, p) != TK_IDENT {
+        if lex_kind(src, p) != token.TK_IDENT {
             return ParseResult { node_idx: -1, new_pos: p }
         }
-        p = lex_end(src, p, TK_IDENT)
+        p = lex_end(src, p, token.TK_IDENT)
         p = lex_skip(src, p)
         // Expect ':'
-        if lex_kind(src, p) != TK_COLON {
+        if lex_kind(src, p) != token.TK_COLON {
             return ParseResult { node_idx: -1, new_pos: p }
         }
-        p = lex_end(src, p, TK_COLON)
+        p = lex_end(src, p, token.TK_COLON)
         p = lex_skip(src, p)
         // Parse type name (i32, i64, ptr)
-        type_name := lex_string_value(src, p, TK_IDENT)
-        p = lex_end(src, p, TK_IDENT)
+        type_name := lex_string_value(src, p, token.TK_IDENT)
+        p = lex_end(src, p, token.TK_IDENT)
         p = lex_skip(src, p)
         param_types = append(param_types, extern_type_from_name(type_name))
     }
 
     // Skip ')'
-    p = lex_end(src, p, TK_RPAREN)
+    p = lex_end(src, p, token.TK_RPAREN)
     p = lex_skip(src, p)
 
     // Parse return type (optional: -> type)
     ret_type := EXTERN_VOID
-    if lex_kind(src, p) == TK_ARROW {
-        p = lex_end(src, p, TK_ARROW)
+    if lex_kind(src, p) == token.TK_ARROW {
+        p = lex_end(src, p, token.TK_ARROW)
         p = lex_skip(src, p)
-        ret_name := lex_string_value(src, p, TK_IDENT)
-        p = lex_end(src, p, TK_IDENT)
+        ret_name := lex_string_value(src, p, token.TK_IDENT)
+        p = lex_end(src, p, token.TK_IDENT)
         p = lex_skip(src, p)
         ret_type = extern_type_from_name(ret_name)
     }
@@ -3232,15 +3232,15 @@ fn parse_extern_fn_decl(src: string, pos: int, nodes: []AstNode) -> ParseResult 
     }
     g_extern_decl_ret_types = append(g_extern_decl_ret_types, ret_type)
 
-    // Create a DECL_FUNC node with right = -1 (no body)
+    // Create a ast.DECL_FUNC node with right = -1 (no body)
     func_node := AstNode {
-        tag: DECL_FUNC,
+        tag: ast.DECL_FUNC,
         int_val: 0,
         str_val: func_name,
         left: -1,
         right: -1,
         extra: -1,
-        type_tag: TYPE_UNKNOWN
+        type_tag: ast.TYPE_UNKNOWN
     }
     nodes = append(nodes, func_node)
     return ParseResult { node_idx: len(nodes) - 1, new_pos: p }

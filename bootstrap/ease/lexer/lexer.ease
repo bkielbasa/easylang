@@ -63,16 +63,16 @@ fn lex_classify_number(src: string, pos: int, src_len: int) -> int {
     }
     if end < src_len && lex_peek(src, end) == 46 {
         if end + 1 < src_len && is_digit(lex_peek(src, end + 1)) {
-            return TK_FLOAT
+            return token.TK_FLOAT
         }
     }
-    return TK_INT
+    return token.TK_INT
 }
 
 fn lex_kind(src: string, pos: int) -> int {
     src_len := len(src)
     if pos >= src_len {
-        return TK_EOF
+        return token.TK_EOF
     }
 
     ch := lex_peek(src, pos)
@@ -82,42 +82,42 @@ fn lex_kind(src: string, pos: int) -> int {
     }
 
     // Two-character tokens
-    if ch == 45 && next == 62 { return TK_ARROW }      // ->
-    if ch == 60 && next == 61 { return TK_LE }         // <=
-    if ch == 62 && next == 61 { return TK_GE }         // >=
-    if ch == 61 && next == 61 { return TK_EQ }         // ==
-    if ch == 33 && next == 61 { return TK_NE }         // !=
-    if ch == 38 && next == 38 { return TK_AND }        // &&
-    if ch == 124 && next == 124 { return TK_OR }       // ||
-    if ch == 46 && next == 46 { return TK_DOTDOT }     // ..
-    if ch == 58 && next == 58 { return TK_COLONCOLON }  // ::
-    if ch == 61 && next == 62 { return TK_FATARROW }    // =>
+    if ch == 45 && next == 62 { return token.TK_ARROW }      // ->
+    if ch == 60 && next == 61 { return token.TK_LE }         // <=
+    if ch == 62 && next == 61 { return token.TK_GE }         // >=
+    if ch == 61 && next == 61 { return token.TK_EQ }         // ==
+    if ch == 33 && next == 61 { return token.TK_NE }         // !=
+    if ch == 38 && next == 38 { return token.TK_AND }        // &&
+    if ch == 124 && next == 124 { return token.TK_OR }       // ||
+    if ch == 46 && next == 46 { return token.TK_DOTDOT }     // ..
+    if ch == 58 && next == 58 { return token.TK_COLONCOLON }  // ::
+    if ch == 61 && next == 62 { return token.TK_FATARROW }    // =>
 
     // Single-char tokens
-    if ch == 40 { return TK_LPAREN }    // (
-    if ch == 41 { return TK_RPAREN }    // )
-    if ch == 123 { return TK_LBRACE }   // {
-    if ch == 125 { return TK_RBRACE }   // }
-    if ch == 91 { return TK_LBRACKET }  // [
-    if ch == 93 { return TK_RBRACKET }  // ]
-    if ch == 44 { return TK_COMMA }     // ,
-    if ch == 58 && next == 61 { return TK_COLONEQUAL }  // :=
-    if ch == 58 { return TK_COLON }     // :
-    if ch == 59 { return TK_SEMI }      // ;
-    if ch == 46 { return TK_DOT }       // .
-    if ch == 43 { return TK_PLUS }      // +
-    if ch == 45 { return TK_MINUS }     // -
-    if ch == 42 { return TK_STAR }      // *
-    if ch == 47 { return TK_SLASH }     // /
-    if ch == 37 { return TK_PERCENT }   // %
-    if ch == 94 { return TK_CARET }     // ^ (XOR)
-    if ch == 38 { return TK_AMPERSAND } // & (bitwise AND, after && check)
-    if ch == 124 { return TK_PIPE }     // | (bitwise OR, after || check)
-    if ch == 60 { return TK_LT }        // <
-    if ch == 62 { return TK_GT }        // >
-    if ch == 61 { return TK_ASSIGN }    // =
-    if ch == 33 { return TK_NOT }       // !
-    if ch == 63 { return TK_QUESTION }  // ?
+    if ch == 40 { return token.TK_LPAREN }    // (
+    if ch == 41 { return token.TK_RPAREN }    // )
+    if ch == 123 { return token.TK_LBRACE }   // {
+    if ch == 125 { return token.TK_RBRACE }   // }
+    if ch == 91 { return token.TK_LBRACKET }  // [
+    if ch == 93 { return token.TK_RBRACKET }  // ]
+    if ch == 44 { return token.TK_COMMA }     // ,
+    if ch == 58 && next == 61 { return token.TK_COLONEQUAL }  // :=
+    if ch == 58 { return token.TK_COLON }     // :
+    if ch == 59 { return token.TK_SEMI }      // ;
+    if ch == 46 { return token.TK_DOT }       // .
+    if ch == 43 { return token.TK_PLUS }      // +
+    if ch == 45 { return token.TK_MINUS }     // -
+    if ch == 42 { return token.TK_STAR }      // *
+    if ch == 47 { return token.TK_SLASH }     // /
+    if ch == 37 { return token.TK_PERCENT }   // %
+    if ch == 94 { return token.TK_CARET }     // ^ (XOR)
+    if ch == 38 { return token.TK_AMPERSAND } // & (bitwise AND, after && check)
+    if ch == 124 { return token.TK_PIPE }     // | (bitwise OR, after || check)
+    if ch == 60 { return token.TK_LT }        // <
+    if ch == 62 { return token.TK_GT }        // >
+    if ch == 61 { return token.TK_ASSIGN }    // =
+    if ch == 33 { return token.TK_NOT }       // !
+    if ch == 63 { return token.TK_QUESTION }  // ?
 
     // Numbers (check for float: digit followed eventually by '.' then digit)
     if is_digit(ch) {
@@ -126,7 +126,7 @@ fn lex_kind(src: string, pos: int) -> int {
 
     // String literals
     if ch == 34 {  // " character
-        return TK_STRING
+        return token.TK_STRING
     }
 
     // Identifiers and keywords
@@ -136,52 +136,52 @@ fn lex_kind(src: string, pos: int) -> int {
             end = end + 1
         }
         word := str_substring(src, pos, end)
-        if word == "fn" { return TK_FN }
-        if word == "if" { return TK_IF }
-        if word == "else" { return TK_ELSE }
-        if word == "for" { return TK_FOR }
-        if word == "in" { return TK_IN }
-        if word == "return" { return TK_RETURN }
-        if word == "break" { return TK_BREAK }
-        if word == "struct" { return TK_STRUCT }
-        if word == "enum" { return TK_ENUM }
-        if word == "match" { return TK_MATCH }
-        if word == "true" { return TK_TRUE }
-        if word == "false" { return TK_FALSE }
-        if word == "import" { return TK_IMPORT }
-        if word == "package" { return TK_PACKAGE }
-        if word == "const" { return TK_CONST }
-        if word == "interface" { return TK_INTERFACE }
-        if word == "map" { return TK_MAP }
-        if word == "extern" { return TK_EXTERN }
-        return TK_IDENT
+        if word == "fn" { return token.TK_FN }
+        if word == "if" { return token.TK_IF }
+        if word == "else" { return token.TK_ELSE }
+        if word == "for" { return token.TK_FOR }
+        if word == "in" { return token.TK_IN }
+        if word == "return" { return token.TK_RETURN }
+        if word == "break" { return token.TK_BREAK }
+        if word == "struct" { return token.TK_STRUCT }
+        if word == "enum" { return token.TK_ENUM }
+        if word == "match" { return token.TK_MATCH }
+        if word == "true" { return token.TK_TRUE }
+        if word == "false" { return token.TK_FALSE }
+        if word == "import" { return token.TK_IMPORT }
+        if word == "package" { return token.TK_PACKAGE }
+        if word == "const" { return token.TK_CONST }
+        if word == "interface" { return token.TK_INTERFACE }
+        if word == "map" { return token.TK_MAP }
+        if word == "extern" { return token.TK_EXTERN }
+        return token.TK_IDENT
     }
 
-    return TK_EOF
+    return token.TK_EOF
 }
 
 fn lex_end(src: string, pos: int, kind: int) -> int {
-    if kind == TK_EOF { return pos }
+    if kind == token.TK_EOF { return pos }
 
     // Two-character tokens
-    if kind == TK_ARROW || kind == TK_LE || kind == TK_GE ||
-       kind == TK_EQ || kind == TK_NE || kind == TK_AND ||
-       kind == TK_OR || kind == TK_DOTDOT || kind == TK_COLONEQUAL ||
-       kind == TK_COLONCOLON || kind == TK_FATARROW {
+    if kind == token.TK_ARROW || kind == token.TK_LE || kind == token.TK_GE ||
+       kind == token.TK_EQ || kind == token.TK_NE || kind == token.TK_AND ||
+       kind == token.TK_OR || kind == token.TK_DOTDOT || kind == token.TK_COLONEQUAL ||
+       kind == token.TK_COLONCOLON || kind == token.TK_FATARROW {
         return pos + 2
     }
 
     // Single-character tokens
-    if kind == TK_LPAREN || kind == TK_RPAREN || kind == TK_LBRACE ||
-       kind == TK_RBRACE || kind == TK_LBRACKET || kind == TK_RBRACKET ||
-       kind == TK_COMMA || kind == TK_COLON || kind == TK_SEMI || kind == TK_DOT ||
-       kind == TK_PLUS || kind == TK_MINUS || kind == TK_STAR || kind == TK_SLASH ||
-       kind == TK_PERCENT || kind == TK_CARET || kind == TK_AMPERSAND || kind == TK_PIPE || kind == TK_LT || kind == TK_GT || kind == TK_ASSIGN || kind == TK_NOT || kind == TK_QUESTION {
+    if kind == token.TK_LPAREN || kind == token.TK_RPAREN || kind == token.TK_LBRACE ||
+       kind == token.TK_RBRACE || kind == token.TK_LBRACKET || kind == token.TK_RBRACKET ||
+       kind == token.TK_COMMA || kind == token.TK_COLON || kind == token.TK_SEMI || kind == token.TK_DOT ||
+       kind == token.TK_PLUS || kind == token.TK_MINUS || kind == token.TK_STAR || kind == token.TK_SLASH ||
+       kind == token.TK_PERCENT || kind == token.TK_CARET || kind == token.TK_AMPERSAND || kind == token.TK_PIPE || kind == token.TK_LT || kind == token.TK_GT || kind == token.TK_ASSIGN || kind == token.TK_NOT || kind == token.TK_QUESTION {
         return pos + 1
     }
 
     // Numbers (decimal and hexadecimal)
-    if kind == TK_INT {
+    if kind == token.TK_INT {
         end := pos
         // Check for hex literal: 0x...
         if end + 1 < len(src) && lex_peek(src, end) == 48 && lex_peek(src, end + 1) == 120 {  // '0' and 'x'
@@ -199,7 +199,7 @@ fn lex_end(src: string, pos: int, kind: int) -> int {
     }
 
     // Float literals: digits, '.', digits
-    if kind == TK_FLOAT {
+    if kind == token.TK_FLOAT {
         end := pos
         for end < len(src) && is_digit(lex_peek(src, end)) {
             end = end + 1
@@ -214,7 +214,7 @@ fn lex_end(src: string, pos: int, kind: int) -> int {
     }
 
     // String literals
-    if kind == TK_STRING {
+    if kind == token.TK_STRING {
         end := pos + 1  // Skip opening quote
         for end < len(src) {
             ch := lex_peek(src, end)
@@ -231,12 +231,12 @@ fn lex_end(src: string, pos: int, kind: int) -> int {
     }
 
     // Identifiers and keywords
-    if kind == TK_IDENT || kind == TK_FN ||
-       kind == TK_IF || kind == TK_ELSE || kind == TK_FOR || kind == TK_IN ||
-       kind == TK_RETURN || kind == TK_BREAK || kind == TK_STRUCT ||
-       kind == TK_TRUE || kind == TK_FALSE || kind == TK_IMPORT ||
-       kind == TK_PACKAGE || kind == TK_ENUM || kind == TK_MATCH ||
-       kind == TK_CONST || kind == TK_INTERFACE || kind == TK_MAP || kind == TK_EXTERN {
+    if kind == token.TK_IDENT || kind == token.TK_FN ||
+       kind == token.TK_IF || kind == token.TK_ELSE || kind == token.TK_FOR || kind == token.TK_IN ||
+       kind == token.TK_RETURN || kind == token.TK_BREAK || kind == token.TK_STRUCT ||
+       kind == token.TK_TRUE || kind == token.TK_FALSE || kind == token.TK_IMPORT ||
+       kind == token.TK_PACKAGE || kind == token.TK_ENUM || kind == token.TK_MATCH ||
+       kind == token.TK_CONST || kind == token.TK_INTERFACE || kind == token.TK_MAP || kind == token.TK_EXTERN {
         end := pos
         for end < len(src) && (is_alpha(lex_peek(src, end)) || is_digit(lex_peek(src, end))) {
             end = end + 1
@@ -245,10 +245,10 @@ fn lex_end(src: string, pos: int, kind: int) -> int {
     }
 
     // Two-character operators
-    if kind == TK_ARROW || kind == TK_LE || kind == TK_GE ||
-       kind == TK_EQ || kind == TK_NE || kind == TK_AND ||
-       kind == TK_OR || kind == TK_DOTDOT || kind == TK_COLONEQUAL ||
-       kind == TK_COLONCOLON || kind == TK_FATARROW {
+    if kind == token.TK_ARROW || kind == token.TK_LE || kind == token.TK_GE ||
+       kind == token.TK_EQ || kind == token.TK_NE || kind == token.TK_AND ||
+       kind == token.TK_OR || kind == token.TK_DOTDOT || kind == token.TK_COLONEQUAL ||
+       kind == token.TK_COLONCOLON || kind == token.TK_FATARROW {
         return pos + 2
     }
 
@@ -256,16 +256,16 @@ fn lex_end(src: string, pos: int, kind: int) -> int {
 }
 
 fn lex_string_value(src: string, pos: int, kind: int) -> string {
-    if kind == TK_IDENT || kind == TK_FN ||
-       kind == TK_IF || kind == TK_ELSE || kind == TK_FOR || kind == TK_IN ||
-       kind == TK_RETURN || kind == TK_BREAK || kind == TK_STRUCT ||
-       kind == TK_TRUE || kind == TK_FALSE || kind == TK_IMPORT ||
-       kind == TK_PACKAGE || kind == TK_ENUM || kind == TK_MATCH ||
-       kind == TK_CONST || kind == TK_INTERFACE || kind == TK_MAP || kind == TK_EXTERN {
+    if kind == token.TK_IDENT || kind == token.TK_FN ||
+       kind == token.TK_IF || kind == token.TK_ELSE || kind == token.TK_FOR || kind == token.TK_IN ||
+       kind == token.TK_RETURN || kind == token.TK_BREAK || kind == token.TK_STRUCT ||
+       kind == token.TK_TRUE || kind == token.TK_FALSE || kind == token.TK_IMPORT ||
+       kind == token.TK_PACKAGE || kind == token.TK_ENUM || kind == token.TK_MATCH ||
+       kind == token.TK_CONST || kind == token.TK_INTERFACE || kind == token.TK_MAP || kind == token.TK_EXTERN {
         end := lex_end(src, pos, kind)
         return str_substring(src, pos, end)
     }
-    if kind == TK_STRING {
+    if kind == token.TK_STRING {
         // Extract string content without quotes, decode escape sequences
         end := lex_end(src, pos, kind)
         raw := str_substring(src, pos + 1, end - 1)
@@ -293,12 +293,12 @@ fn lex_string_value(src: string, pos: int, kind: int) -> string {
 }
 
 fn lex_float_string_value(src: string, pos: int) -> string {
-    end := lex_end(src, pos, TK_FLOAT)
+    end := lex_end(src, pos, token.TK_FLOAT)
     return str_substring(src, pos, end)
 }
 
 fn lex_int_value(src: string, pos: int) -> int {
-    end := lex_end(src, pos, TK_INT)
+    end := lex_end(src, pos, token.TK_INT)
     s := str_substring(src, pos, end)
     val := 0
     i := 0

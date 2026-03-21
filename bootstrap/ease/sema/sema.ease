@@ -208,7 +208,7 @@ fn lookup_field_type(name: string) -> int {
         }
         i = i + 1
     }
-    return TYPE_UNKNOWN
+    return ast.TYPE_UNKNOWN
 }
 
 fn lookup_field_is_array(name: string) -> int {
@@ -235,11 +235,11 @@ g_func_ret_tuple_starts := []int{}
 g_func_ret_tuple_counts := []int{}
 
 fn parse_type_name_to_tag(t: string) -> int {
-    if t == "int" { return TYPE_INT }
-    if t == "string" { return TYPE_STRING }
-    if t == "bool" { return TYPE_BOOL }
-    if t == "float" { return TYPE_FLOAT }
-    return TYPE_UNKNOWN
+    if t == "int" { return ast.TYPE_INT }
+    if t == "string" { return ast.TYPE_STRING }
+    if t == "bool" { return ast.TYPE_BOOL }
+    if t == "float" { return ast.TYPE_FLOAT }
+    return ast.TYPE_UNKNOWN
 }
 
 fn register_func_return_type(name: string, ret_type: int, is_array: int, struct_name: string) {
@@ -304,7 +304,7 @@ fn lookup_func_return_tuple_type(name: string, elem_idx: int) -> int {
         }
         i = i - 1
     }
-    return TYPE_UNKNOWN
+    return ast.TYPE_UNKNOWN
 }
 
 fn IsFunctionDefined(name: string) -> int {
@@ -324,7 +324,7 @@ fn lookup_func_return_type(name: string) -> int {
         }
         i = i - 1
     }
-    return TYPE_UNKNOWN
+    return ast.TYPE_UNKNOWN
 }
 
 fn lookup_func_return_is_array(name: string) -> int {
@@ -467,16 +467,16 @@ fn register_const(nodes: []AstNode, const_idx: int) {
         return
     }
     init := nodes[init_idx]
-    if init.tag == EXPR_INT {
+    if init.tag == ast.EXPR_INT {
         g_const_int_values = append(g_const_int_values, init.int_val)
         g_const_str_values = append(g_const_str_values, "")
-    } else if init.tag == EXPR_BOOL {
+    } else if init.tag == ast.EXPR_BOOL {
         g_const_int_values = append(g_const_int_values, init.int_val)
         g_const_str_values = append(g_const_str_values, "")
-    } else if init.tag == EXPR_STRING {
+    } else if init.tag == ast.EXPR_STRING {
         g_const_int_values = append(g_const_int_values, 0)
         g_const_str_values = append(g_const_str_values, init.str_val)
-    } else if init.tag == EXPR_UNARY {
+    } else if init.tag == ast.EXPR_UNARY {
         // Negative int: -N => 0 - N (need to evaluate the child)
         if init.left >= 0 {
             child := nodes[init.left]
@@ -485,7 +485,7 @@ fn register_const(nodes: []AstNode, const_idx: int) {
             g_const_int_values = append(g_const_int_values, 0)
         }
         g_const_str_values = append(g_const_str_values, "")
-    } else if init.tag == EXPR_FLOAT {
+    } else if init.tag == ast.EXPR_FLOAT {
         g_const_int_values = append(g_const_int_values, 0)
         g_const_str_values = append(g_const_str_values, init.str_val)
     } else {
@@ -506,7 +506,7 @@ fn ConstType(i: int) -> int {
     if i < len(g_const_types) {
         return g_const_types[i]
     }
-    return TYPE_UNKNOWN
+    return ast.TYPE_UNKNOWN
 }
 
 fn ConstIntValue(i: int) -> int {
@@ -708,7 +708,7 @@ fn count_func_params(nodes: []AstNode, func_idx: int) -> int {
     pi := node.left
     nodes_len := len(nodes)
     for pi < nodes_len {
-        if nodes[pi].tag == DECL_PARAM {
+        if nodes[pi].tag == ast.DECL_PARAM {
             count = count + 1
         } else {
             break
@@ -719,19 +719,19 @@ fn count_func_params(nodes: []AstNode, func_idx: int) -> int {
 }
 
 fn infer_init_type(nodes: []AstNode, init_idx: int) -> int {
-    if init_idx < 0 { return TYPE_UNKNOWN }
+    if init_idx < 0 { return ast.TYPE_UNKNOWN }
     init_node := nodes[init_idx]
-    if init_node.tag == EXPR_INT { return TYPE_INT }
-    if init_node.tag == EXPR_UNARY { return TYPE_INT }
-    if init_node.tag == EXPR_STRING { return TYPE_STRING }
-    if init_node.tag == EXPR_BOOL { return TYPE_BOOL }
-    if init_node.tag == EXPR_FLOAT { return TYPE_FLOAT }
-    if init_node.tag == EXPR_ARRAY_LIT {
-        if init_node.str_val == "string" { return TYPE_STRING_ARRAY }
-        return TYPE_INT_ARRAY
+    if init_node.tag == ast.EXPR_INT { return ast.TYPE_INT }
+    if init_node.tag == ast.EXPR_UNARY { return ast.TYPE_INT }
+    if init_node.tag == ast.EXPR_STRING { return ast.TYPE_STRING }
+    if init_node.tag == ast.EXPR_BOOL { return ast.TYPE_BOOL }
+    if init_node.tag == ast.EXPR_FLOAT { return ast.TYPE_FLOAT }
+    if init_node.tag == ast.EXPR_ARRAY_LIT {
+        if init_node.str_val == "string" { return ast.TYPE_STRING_ARRAY }
+        return ast.TYPE_INT_ARRAY
     }
-    if init_node.tag == EXPR_CLOSURE { return TYPE_CLOSURE }
-    return TYPE_UNKNOWN
+    if init_node.tag == ast.EXPR_CLOSURE { return ast.TYPE_CLOSURE }
+    return ast.TYPE_UNKNOWN
 }
 
 // Extract doc comment lines preceding a declaration at position dpos.
