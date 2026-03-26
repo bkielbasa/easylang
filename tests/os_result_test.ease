@@ -61,3 +61,36 @@ fn TestGetErrno(t: testing.T) {
     e := os.get_errno()
     if e != 2 { t.Fatal("expected errno 2 (ENOENT) after opening nonexistent file") }
 }
+
+fn TestGetenv(t: testing.T) {
+    home := os.Getenv("HOME")
+    if home == "" {
+        t.Fatal("expected HOME to be non-empty")
+    }
+}
+
+fn TestGetenvMissing(t: testing.T) {
+    val := os.Getenv("EASE_TEST_NONEXISTENT_VAR_12345")
+    if val != "" {
+        t.Fatal("expected empty string for missing env var")
+    }
+}
+
+fn TestSetenvUnsetenv(t: testing.T) {
+    r1 := os.Setenv("EASE_TEST_VAR", "hello")
+    if os.IsOk(r1) != 1 {
+        t.Fatal("Setenv failed")
+    }
+    val := os.Getenv("EASE_TEST_VAR")
+    if val != "hello" {
+        t.Fatal("expected 'hello', got: " + val)
+    }
+    r2 := os.Unsetenv("EASE_TEST_VAR")
+    if os.IsOk(r2) != 1 {
+        t.Fatal("Unsetenv failed")
+    }
+    val2 := os.Getenv("EASE_TEST_VAR")
+    if val2 != "" {
+        t.Fatal("expected empty after unset, got: " + val2)
+    }
+}

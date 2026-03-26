@@ -49,10 +49,32 @@ fn make_error() -> OsResult {
     return OsResult::Err { message: msg }
 }
 
+extern fn getenv(name: ptr) -> ptr
+extern fn setenv(name: ptr, value: ptr, overwrite: i32) -> i32
+extern fn unsetenv(name: ptr) -> i32
+
 extern fn system(cmd: ptr) -> i32
 
 fn System(cmd: string) -> int {
     return system(cmd)
+}
+
+fn Getenv(name: string) -> string {
+    result := getenv(name)
+    if result == 0 { return "" }
+    return result
+}
+
+fn Setenv(name: string, value: string) -> OsResult {
+    rc := setenv(name, value, 1)
+    if rc != 0 { return make_error() }
+    return OsResult::Ok { value: 0 }
+}
+
+fn Unsetenv(name: string) -> OsResult {
+    rc := unsetenv(name)
+    if rc != 0 { return make_error() }
+    return OsResult::Ok { value: 0 }
 }
 
 fn ReadFile(path: string) -> string {
