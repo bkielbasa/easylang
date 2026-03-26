@@ -1,0 +1,63 @@
+package main
+
+import (
+    "testing"
+    "os"
+)
+
+fn TestOsResultOk(t: testing.T) {
+    r := OsResult::Ok { value: 42 }
+    if os.IsOk(r) != 1 { t.Fatal("expected IsOk == 1 for Ok") }
+}
+
+fn TestOsResultNotExist(t: testing.T) {
+    r := OsResult::NotExist
+    if os.IsOk(r) != 0 { t.Fatal("expected IsOk == 0 for NotExist") }
+}
+
+fn TestOsResultPermission(t: testing.T) {
+    r := OsResult::Permission
+    if os.IsOk(r) != 0 { t.Fatal("expected IsOk == 0 for Permission") }
+}
+
+fn TestOsResultAlreadyExists(t: testing.T) {
+    r := OsResult::AlreadyExists
+    if os.IsOk(r) != 0 { t.Fatal("expected IsOk == 0 for AlreadyExists") }
+}
+
+fn TestOsResultIsDirectory(t: testing.T) {
+    r := OsResult::IsDirectory
+    if os.IsOk(r) != 0 { t.Fatal("expected IsOk == 0 for IsDirectory") }
+}
+
+fn TestOsResultNotDirectory(t: testing.T) {
+    r := OsResult::NotDirectory
+    if os.IsOk(r) != 0 { t.Fatal("expected IsOk == 0 for NotDirectory") }
+}
+
+fn TestOsResultErr(t: testing.T) {
+    r := OsResult::Err { message: "something failed" }
+    if os.IsOk(r) != 0 { t.Fatal("expected IsOk == 0 for Err") }
+}
+
+fn TestMakeErrorFromErrno(t: testing.T) {
+    // Open a file that doesn't exist to trigger ENOENT (errno 2)
+    fd := syscall.open("/tmp/__easylang_nonexistent_file_12345__", 0, 0)
+    if fd >= 0 {
+        syscall.close(fd)
+        t.Fatal("expected open to fail")
+    }
+    r := os.make_error()
+    if os.IsOk(r) != 0 { t.Fatal("expected error result from make_error after failed open") }
+}
+
+fn TestGetErrno(t: testing.T) {
+    // Open a file that doesn't exist to set errno to ENOENT (2)
+    fd := syscall.open("/tmp/__easylang_nonexistent_file_12345__", 0, 0)
+    if fd >= 0 {
+        syscall.close(fd)
+        t.Fatal("expected open to fail")
+    }
+    e := os.get_errno()
+    if e != 2 { t.Fatal("expected errno 2 (ENOENT) after opening nonexistent file") }
+}

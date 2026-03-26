@@ -2,6 +2,53 @@ package os
 
 // OS functions for the Ease bootstrap compiler
 
+// OsResult enum for structured error handling
+enum OsResult {
+    Ok { value: int },
+    NotExist,
+    Permission,
+    AlreadyExists,
+    IsDirectory,
+    NotDirectory,
+    Err { message: string },
+}
+
+// IsOk returns 1 if r is Ok, 0 otherwise
+fn IsOk(r: OsResult) -> int {
+    result := match r {
+        OsResult::Ok { value } => 1,
+        OsResult::NotExist => 0,
+        OsResult::Permission => 0,
+        OsResult::AlreadyExists => 0,
+        OsResult::IsDirectory => 0,
+        OsResult::NotDirectory => 0,
+        OsResult::Err { message } => 0,
+    }
+    return result
+}
+
+// Errno helpers
+extern fn __error() -> ptr
+extern fn strerror(errnum: i32) -> ptr
+
+// get_errno reads the current errno value
+fn get_errno() -> int {
+    errptr := __error()
+    return peek(errptr)
+}
+
+// make_error maps errno to an OsResult variant
+fn make_error() -> OsResult {
+    e := get_errno()
+    if e == 2 { return OsResult::NotExist }
+    if e == 13 { return OsResult::Permission }
+    if e == 17 { return OsResult::AlreadyExists }
+    if e == 21 { return OsResult::IsDirectory }
+    if e == 20 { return OsResult::NotDirectory }
+    msg := strerror(e)
+    return OsResult::Err { message: msg }
+}
+
 extern fn system(cmd: ptr) -> i32
 
 fn System(cmd: string) -> int {
