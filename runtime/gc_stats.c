@@ -4,7 +4,6 @@
 #include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include <time.h>
 #include <unistd.h>
 
@@ -27,6 +26,12 @@ void gc_stats_record_alloc(size_t bytes) {
 }
 
 void gc_stats_record_free(size_t bytes) {
+    // Clamp against the live total — a miscount in a future collector
+    // would otherwise underflow the unsigned counter and permanently
+    // corrupt peak_live_bytes.
+    if (bytes > g_gc_stats.bytes_allocated_live) {
+        bytes = g_gc_stats.bytes_allocated_live;
+    }
     g_gc_stats.bytes_freed_total    += bytes;
     g_gc_stats.bytes_allocated_live -= bytes;
 }
@@ -68,8 +73,12 @@ void gc_print_stats(int fd) {
         g_gc_stats.bytes_freed_total,
         elapsed);
     if (n > 0) {
-        ssize_t w = write(fd, buf, (size_t)n);
-        (void)w;
+        size_t off = 0;
+        while (off < (size_t)n) {
+            ssize_t w = write(fd, buf + off, (size_t)n - off);
+            if (w < 0) break;
+            off += (size_t)w;
+        }
     }
 }
 
@@ -80,5 +89,9 @@ static void gc_stats_atexit_handler(void) {
 }
 
 void gc_stats_install_atexit(void) {
+    // Idempotent — guards against double-init from a future impl or test.
+    static int installed = 0;
+    if (installed) return;
+    installed = 1;
     atexit(gc_stats_atexit_handler);
 }

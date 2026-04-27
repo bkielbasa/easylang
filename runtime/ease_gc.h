@@ -12,7 +12,14 @@
 extern "C" {
 #endif
 
-// Lifecycle
+// Lifecycle.
+//
+// gc_init's `stack_bottom` argument must be a stable address whose value is
+// numerically larger (on down-growing stacks) than any local that the
+// collector may later need to scan. The conventional way to satisfy this is
+// to call gc_init from main() with the address of a freshly-declared local;
+// every subsequent stack frame then sits below that address and is covered
+// by the [stack_top, stack_bottom] range scan.
 void  gc_init(void *stack_bottom);
 void  gc_shutdown(void);
 

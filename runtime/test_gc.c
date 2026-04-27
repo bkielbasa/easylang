@@ -4,6 +4,7 @@
 // Run:    EASE_GC_STATS=1 ./tmp/test_gc
 #include "ease_gc.h"
 
+#include <inttypes.h>
 #include <stdio.h>
 
 int main(void) {
@@ -18,13 +19,13 @@ int main(void) {
     gc_get_stats(&s);
 
     if (s.allocations_total != 2) {
-        fprintf(stderr, "FAIL: expected 2 allocations, got %llu\n",
-                (unsigned long long)s.allocations_total);
+        fprintf(stderr, "FAIL: expected 2 allocations, got %" PRIu64 "\n",
+                s.allocations_total);
         return 1;
     }
     if (s.bytes_allocated_total != 64 + 128) {
-        fprintf(stderr, "FAIL: expected 192 bytes, got %llu\n",
-                (unsigned long long)s.bytes_allocated_total);
+        fprintf(stderr, "FAIL: expected 192 bytes, got %" PRIu64 "\n",
+                s.bytes_allocated_total);
         return 1;
     }
 
@@ -32,8 +33,8 @@ int main(void) {
     gc_get_stats(&s);
     // gc_none doesn't actually collect, so live bytes unchanged
     if (s.bytes_allocated_live != 64 + 128) {
-        fprintf(stderr, "FAIL: gc_none should not free; live=%llu\n",
-                (unsigned long long)s.bytes_allocated_live);
+        fprintf(stderr, "FAIL: gc_none should not free; live=%" PRIu64 "\n",
+                s.bytes_allocated_live);
         return 1;
     }
 

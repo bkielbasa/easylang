@@ -21,6 +21,8 @@ void gc_shutdown(void) {
 }
 
 void *gc_alloc(size_t bytes) {
+    // Promote zero-byte requests to 1 so callers always get a unique
+    // non-null pointer; stats record the actual byte count we allocated.
     if (bytes == 0) bytes = 1;
     void *p = malloc(bytes);
     if (!p) {
