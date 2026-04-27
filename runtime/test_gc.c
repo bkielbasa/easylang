@@ -3,7 +3,6 @@
 // Build:  cc -I runtime runtime/test_gc.c runtime/gc_stats.c runtime/gc_none.c -o tmp/test_gc
 // Run:    EASE_GC_STATS=1 ./tmp/test_gc
 #include "ease_gc.h"
-#include "gc_stats.h"
 
 #include <stdio.h>
 
