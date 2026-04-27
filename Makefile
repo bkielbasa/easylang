@@ -10,13 +10,12 @@
 #   make update-seed
 #
 # Pick a GC implementation at build time:
-#   make GC=none verify         # passthrough baseline (current default)
-#   make GC=conservative verify # stop-the-world conservative mark-sweep
-# The default flips to `conservative` once runtime/gc_conservative.c lands.
+#   make GC=conservative verify # stop-the-world conservative mark-sweep (default)
+#   make GC=none verify         # passthrough baseline; useful for benchmarking GC overhead
 
 CC      ?= clang
 CFLAGS  := -O1
-GC      ?= none
+GC      ?= conservative
 
 SEED    := bootstrap/seed.ll
 COMPILER_SRC := bootstrap/compiler.ease
