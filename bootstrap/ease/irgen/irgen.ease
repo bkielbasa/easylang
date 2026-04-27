@@ -1557,6 +1557,352 @@ fn gen_ir_match(node: AstNode, nodes: []AstNode, instrs: []IRInstr, st_n: []stri
     return result_vreg
 }
 
+fn gen_ir_to_string(node: AstNode, nodes: []AstNode, instrs: []IRInstr, symtab_names: []string, symtab_vregs: []int) -> int {
+    inner_vreg := gen_ir_from_ast_with_symtab(node.left, nodes, instrs, symtab_names, symtab_vregs)
+    inner_type := get_vreg_type(inner_vreg)
+    if inner_type == ast.TYPE_STRING {
+        return inner_vreg
+    }
+    vreg := len(instrs)
+    if inner_type == ast.TYPE_FLOAT {
+        instrs = append(instrs, IRInstr { op: ir.OP_FLOAT_TO_STR, dest: vreg, arg1: inner_vreg, arg2: 0, arg3: 0, str_val: "" })
+    } else {
+        if inner_type == ast.TYPE_BOOL {
+            instrs = append(instrs, IRInstr { op: ir.OP_BOOL_TO_STR, dest: vreg, arg1: inner_vreg, arg2: 0, arg3: 0, str_val: "" })
+        } else {
+            instrs = append(instrs, IRInstr { op: ir.OP_INT_TO_STR, dest: vreg, arg1: inner_vreg, arg2: 0, arg3: 0, str_val: "" })
+        }
+    }
+    set_vreg_type(vreg, ast.TYPE_STRING)
+    return vreg
+}
+
+fn gen_ir_unary(node: AstNode, nodes: []AstNode, instrs: []IRInstr, symtab_names: []string, symtab_vregs: []int) -> int {
+    operand := gen_ir_from_ast_with_symtab(node.left, nodes, instrs, symtab_names, symtab_vregs)
+    if node.int_val == token.TK_MINUS {
+        if get_vreg_type(operand) == ast.TYPE_FLOAT {
+            // Float unary minus: 0.0 - operand
+            zero_vreg := len(instrs)
+            instrs = append(instrs, IRInstr { op: ir.OP_LOADFLOAT, dest: zero_vreg, arg1: 0, arg2: 0, arg3: 0, str_val: "0.0" })
+            set_vreg_type(zero_vreg, ast.TYPE_FLOAT)
+            result_vreg := len(instrs)
+            instrs = append(instrs, IRInstr { op: ir.OP_FSUB, dest: result_vreg, arg1: zero_vreg, arg2: operand, arg3: 0, str_val: "" })
+            set_vreg_type(result_vreg, ast.TYPE_FLOAT)
+            return result_vreg
+        }
+        // Int unary minus: 0 - operand
+        zero_vreg := len(instrs)
+        instrs = append(instrs, IRInstr { op: ir.OP_LOADCONST, dest: zero_vreg, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
+        result_vreg := len(instrs)
+        instrs = append(instrs, IRInstr { op: ir.OP_SUB, dest: result_vreg, arg1: zero_vreg, arg2: operand, arg3: 0, str_val: "" })
+        set_vreg_type(result_vreg, ast.TYPE_INT)
+        return result_vreg
+    }
+    if node.int_val == token.TK_NOT {
+        // Logical NOT: operand == 0
+        zero_vreg := len(instrs)
+        instrs = append(instrs, IRInstr { op: ir.OP_LOADCONST, dest: zero_vreg, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
+        result_vreg := len(instrs)
+        instrs = append(instrs, IRInstr { op: ir.OP_CMP_EQ, dest: result_vreg, arg1: operand, arg2: zero_vreg, arg3: 0, str_val: "" })
+        set_vreg_type(result_vreg, ast.TYPE_BOOL)
+        return result_vreg
+    }
+    if node.int_val == token.TK_AMPERSAND {
+        // Address-of: structs are already pointers, identity op
+        set_vreg_struct_name(operand, get_vreg_struct_name(operand))
+        return operand
+    }
+    if node.int_val == token.TK_STAR {
+        // Dereference: structs are already pointers, identity op
+        return operand
+    }
+    return operand
+}
+
+fn gen_ir_map_lit(node: AstNode, instrs: []IRInstr) -> int {
+    map_type := node.str_val
+    kt_code := map_key_type_code(map_type)
+    result_vreg := len(instrs)
+    instrs = append(instrs, IRInstr { op: ir.OP_MAP_NEW, dest: result_vreg, arg1: kt_code, arg2: 0, arg3: 0, str_val: "" })
+    set_vreg_type(result_vreg, ast.TYPE_MAP)
+    set_vreg_struct_name(result_vreg, map_type)
+    return result_vreg
+}
+
+fn gen_ir_stmt_break(instrs: []IRInstr) -> int {
+    if g_break_label >= 0 {
+        instrs = append(instrs, IRInstr { op: ir.OP_JUMP, dest: g_break_label, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
+    }
+    return 0
+}
+
+fn gen_ir_call_test_fail(instrs: []IRInstr) -> int {
+    instrs = append(instrs, IRInstr { op: ir.OP_TEST_FAIL, dest: -1, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
+    return -1
+}
+
+fn gen_ir_call_time_wallclock(instrs: []IRInstr) -> int {
+    dest := len(instrs)
+    instrs = append(instrs, IRInstr { op: ir.OP_TIME_WALLCLOCK, dest: dest, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
+    set_vreg_type(dest, ast.TYPE_INT)
+    return dest
+}
+
+fn gen_ir_call_runtime_gc(instrs: []IRInstr) -> int {
+    // No args, no result — just emit the opcode and return -1 (no vreg).
+    instrs = append(instrs, IRInstr { op: ir.OP_GC_COLLECT, dest: -1, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
+    return -1
+}
+
+fn gen_ir_call_strconv_float_to_str(ast_idx: int, nodes: []AstNode, instrs: []IRInstr, symtab_names: []string, symtab_vregs: []int) -> int {
+    arg_vregs := gen_ir_eval_args(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
+    dest := len(instrs)
+    instrs = append(instrs, IRInstr { op: ir.OP_FLOAT_TO_STR, dest: dest, arg1: arg_vregs[0], arg2: 0, arg3: 0, str_val: "" })
+    set_vreg_type(dest, ast.TYPE_STRING)
+    return dest
+}
+
+fn gen_ir_call_strconv_int_to_float(ast_idx: int, nodes: []AstNode, instrs: []IRInstr, symtab_names: []string, symtab_vregs: []int) -> int {
+    arg_vregs := gen_ir_eval_args(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
+    dest := len(instrs)
+    instrs = append(instrs, IRInstr { op: ir.OP_INT_TO_FLOAT, dest: dest, arg1: arg_vregs[0], arg2: 0, arg3: 0, str_val: "" })
+    set_vreg_type(dest, ast.TYPE_FLOAT)
+    return dest
+}
+
+fn gen_ir_call_strconv_float_to_int(ast_idx: int, nodes: []AstNode, instrs: []IRInstr, symtab_names: []string, symtab_vregs: []int) -> int {
+    arg_vregs := gen_ir_eval_args(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
+    dest := len(instrs)
+    instrs = append(instrs, IRInstr { op: ir.OP_FLOAT_TO_INT, dest: dest, arg1: arg_vregs[0], arg2: 0, arg3: 0, str_val: "" })
+    set_vreg_type(dest, ast.TYPE_INT)
+    return dest
+}
+
+fn gen_ir_call_reflect_num_field(ast_idx: int, nodes: []AstNode, instrs: []IRInstr, symtab_names: []string, symtab_vregs: []int) -> int {
+    arg_vregs := gen_ir_eval_args(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
+    sname := get_vreg_struct_name(arg_vregs[0])
+    result_vreg := len(instrs)
+    instrs = append(instrs, IRInstr { op: ir.OP_REFLECT_NUM_FIELD, dest: result_vreg, arg1: arg_vregs[0], arg2: 0, arg3: 0, str_val: sname })
+    set_vreg_type(result_vreg, ast.TYPE_INT)
+    return result_vreg
+}
+
+fn gen_ir_call_reflect_field_name(ast_idx: int, nodes: []AstNode, instrs: []IRInstr, symtab_names: []string, symtab_vregs: []int) -> int {
+    arg_vregs := gen_ir_eval_args(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
+    sname := get_vreg_struct_name(arg_vregs[0])
+    result_vreg := len(instrs)
+    instrs = append(instrs, IRInstr { op: ir.OP_REFLECT_FIELD_NAME, dest: result_vreg, arg1: arg_vregs[0], arg2: arg_vregs[1], arg3: 0, str_val: sname })
+    set_vreg_type(result_vreg, ast.TYPE_STRING)
+    return result_vreg
+}
+
+fn gen_ir_call_reflect_field_type(ast_idx: int, nodes: []AstNode, instrs: []IRInstr, symtab_names: []string, symtab_vregs: []int) -> int {
+    arg_vregs := gen_ir_eval_args(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
+    sname := get_vreg_struct_name(arg_vregs[0])
+    result_vreg := len(instrs)
+    instrs = append(instrs, IRInstr { op: ir.OP_REFLECT_FIELD_TYPE, dest: result_vreg, arg1: arg_vregs[0], arg2: arg_vregs[1], arg3: 0, str_val: sname })
+    set_vreg_type(result_vreg, ast.TYPE_INT)
+    return result_vreg
+}
+
+fn gen_ir_call_reflect_field_value(ast_idx: int, nodes: []AstNode, instrs: []IRInstr, symtab_names: []string, symtab_vregs: []int) -> int {
+    arg_vregs := gen_ir_eval_args(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
+    sname := get_vreg_struct_name(arg_vregs[0])
+    result_vreg := len(instrs)
+    instrs = append(instrs, IRInstr { op: ir.OP_REFLECT_FIELD_VALUE, dest: result_vreg, arg1: arg_vregs[0], arg2: arg_vregs[1], arg3: 0, str_val: sname })
+    set_vreg_type(result_vreg, ast.TYPE_INT)
+    return result_vreg
+}
+
+fn gen_ir_call_reflect_set_field_value(ast_idx: int, nodes: []AstNode, instrs: []IRInstr, symtab_names: []string, symtab_vregs: []int) -> int {
+    arg_vregs := gen_ir_eval_args(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
+    sname := get_vreg_struct_name(arg_vregs[0])
+    result_vreg := len(instrs)
+    instrs = append(instrs, IRInstr { op: ir.OP_REFLECT_SET_FIELD_VALUE, dest: result_vreg, arg1: arg_vregs[0], arg2: arg_vregs[1], arg3: arg_vregs[2], str_val: sname })
+    set_vreg_type(result_vreg, ast.TYPE_INT)
+    return result_vreg
+}
+
+fn gen_ir_call_json_marshal(ast_idx: int, nodes: []AstNode, instrs: []IRInstr, symtab_names: []string, symtab_vregs: []int) -> int {
+    arg_vregs := gen_ir_eval_args(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
+    sname := get_vreg_struct_name(arg_vregs[0])
+    result_vreg := len(instrs)
+    instrs = append(instrs, IRInstr { op: ir.OP_JSON_MARSHAL, dest: result_vreg, arg1: arg_vregs[0], arg2: 0, arg3: 0, str_val: sname })
+    set_vreg_type(result_vreg, ast.TYPE_STRING)
+    return result_vreg
+}
+
+fn gen_ir_call_json_unmarshal(ast_idx: int, nodes: []AstNode, instrs: []IRInstr, symtab_names: []string, symtab_vregs: []int) -> int {
+    arg_vregs := gen_ir_eval_args(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
+    sname := sema.LookupTypeInstantiation("Unmarshal", 0)
+    result_vreg := len(instrs)
+    instrs = append(instrs, IRInstr { op: ir.OP_JSON_UNMARSHAL, dest: result_vreg, arg1: arg_vregs[0], arg2: 0, arg3: 0, str_val: sname })
+    set_vreg_type(result_vreg, ast.TYPE_STRUCT)
+    set_vreg_struct_name(result_vreg, sname)
+    return result_vreg
+}
+
+fn gen_ir_call(node: AstNode, ast_idx: int, nodes: []AstNode, instrs: []IRInstr, symtab_names: []string, symtab_vregs: []int) -> int {
+    func_name := lookup_rename(node.str_val)
+    // Check if callee is a local variable (closure or closure-as-int)
+    cl_vreg := symtab_lookup_linear(symtab_names, symtab_vregs, func_name)
+    if cl_vreg >= 0 {
+        cl_type := get_vreg_type(cl_vreg)
+        if cl_type == ast.TYPE_CLOSURE || cl_type == ast.TYPE_INT {
+            return gen_ir_closure_call(cl_vreg, ast_idx, nodes, instrs, symtab_names, symtab_vregs)
+        }
+    }
+    if func_name == "len" { return gen_ir_call_len(ast_idx, nodes, instrs, symtab_names, symtab_vregs) }
+    if func_name == "append" { return gen_ir_call_push(ast_idx, nodes, instrs, symtab_names, symtab_vregs) }
+    if func_name == "poke" { return gen_ir_call_poke(ast_idx, nodes, instrs, symtab_names, symtab_vregs) }
+    if func_name == "peek" { return gen_ir_call_peek(ast_idx, nodes, instrs, symtab_names, symtab_vregs) }
+    if func_name == "peek64" { return gen_ir_call_peek64(ast_idx, nodes, instrs, symtab_names, symtab_vregs) }
+    if func_name == "poke64" { return gen_ir_call_poke64(ast_idx, nodes, instrs, symtab_names, symtab_vregs) }
+    if func_name == "delete" { return gen_ir_call_delete(ast_idx, nodes, instrs, symtab_names, symtab_vregs) }
+    if func_name == "heap_alloc" { return gen_ir_call_heap_alloc(ast_idx, nodes, instrs, symtab_names, symtab_vregs) }
+    if func_name == "os.Argc" { return gen_ir_call_argc(ast_idx, nodes, instrs, symtab_names, symtab_vregs) }
+    if func_name == "os.Argv" { return gen_ir_call_argv(ast_idx, nodes, instrs, symtab_names, symtab_vregs) }
+    if func_name == "str_char_at" { return gen_ir_call_str_char_at(ast_idx, nodes, instrs, symtab_names, symtab_vregs) }
+    if func_name == "syscall.open" { return gen_ir_call_syscall_open(ast_idx, nodes, instrs, symtab_names, symtab_vregs) }
+    if func_name == "syscall.write" { return gen_ir_call_syscall_write(ast_idx, nodes, instrs, symtab_names, symtab_vregs) }
+    if func_name == "syscall.close" { return gen_ir_call_syscall_close(ast_idx, nodes, instrs, symtab_names, symtab_vregs) }
+    if func_name == "syscall.read" { return gen_ir_call_syscall_read(ast_idx, nodes, instrs, symtab_names, symtab_vregs) }
+    if func_name == "os.IsDir" { return gen_ir_call_is_dir(ast_idx, nodes, instrs, symtab_names, symtab_vregs) }
+    if func_name == "os.ListDir" { return gen_ir_call_list_dir(ast_idx, nodes, instrs, symtab_names, symtab_vregs) }
+    if func_name == "test_fail" { return gen_ir_call_test_fail(instrs) }
+    if func_name == "time_wallclock_nanos" { return gen_ir_call_time_wallclock(instrs) }
+    if func_name == "runtime.GC" { return gen_ir_call_runtime_gc(instrs) }
+    if func_name == "strconv.FloatToStr" { return gen_ir_call_strconv_float_to_str(ast_idx, nodes, instrs, symtab_names, symtab_vregs) }
+    if func_name == "strconv.IntToFloat" { return gen_ir_call_strconv_int_to_float(ast_idx, nodes, instrs, symtab_names, symtab_vregs) }
+    if func_name == "strconv.FloatToInt" { return gen_ir_call_strconv_float_to_int(ast_idx, nodes, instrs, symtab_names, symtab_vregs) }
+    if func_name == "reflect.NumField" { return gen_ir_call_reflect_num_field(ast_idx, nodes, instrs, symtab_names, symtab_vregs) }
+    if func_name == "reflect.FieldName" { return gen_ir_call_reflect_field_name(ast_idx, nodes, instrs, symtab_names, symtab_vregs) }
+    if func_name == "reflect.FieldType" { return gen_ir_call_reflect_field_type(ast_idx, nodes, instrs, symtab_names, symtab_vregs) }
+    if func_name == "reflect.FieldValue" { return gen_ir_call_reflect_field_value(ast_idx, nodes, instrs, symtab_names, symtab_vregs) }
+    if func_name == "reflect.SetFieldValue" { return gen_ir_call_reflect_set_field_value(ast_idx, nodes, instrs, symtab_names, symtab_vregs) }
+    if func_name == "json.Marshal" { return gen_ir_call_json_marshal(ast_idx, nodes, instrs, symtab_names, symtab_vregs) }
+    if func_name == "json.Unmarshal" { return gen_ir_call_json_unmarshal(ast_idx, nodes, instrs, symtab_names, symtab_vregs) }
+    return gen_ir_call_method(func_name, node, ast_idx, nodes, instrs, symtab_names, symtab_vregs)
+}
+
+fn gen_ir_call_method(func_name: string, node: AstNode, ast_idx: int, nodes: []AstNode, instrs: []IRInstr, symtab_names: []string, symtab_vregs: []int) -> int {
+    dot_pos := find_dot(func_name)
+    if dot_pos > 0 {
+        receiver_name := str_substring(func_name, 0, dot_pos)
+        method_name := str_substring(func_name, dot_pos + 1, len(func_name))
+        // Check if receiver is a local variable in the symbol table
+        recv_vreg := -1
+        rsi := len(symtab_names) - 1
+        for rsi >= 0 {
+            if symtab_names[rsi] == receiver_name {
+                recv_vreg = symtab_vregs[rsi]
+                break
+            }
+            rsi = rsi - 1
+        }
+        if recv_vreg >= 0 && recv_vreg > -1000 {
+            struct_name := get_vreg_struct_name(recv_vreg)
+            if struct_name != "" {
+                // Check if receiver is an interface type
+                if is_interface(struct_name) == 1 {
+                    vtable_idx := iface_method_index(struct_name, method_name)
+                    if vtable_idx >= 0 {
+                        // Evaluate args first (may contain nested calls)
+                        ic_args := gen_ir_eval_args(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
+                        // Then emit ir.OP_ARG for interface value + remaining args
+                        instrs = append(instrs, IRInstr { op: ir.OP_ARG, dest: 0, arg1: recv_vreg, arg2: -1, arg3: 0, str_val: "" })
+                        ic_ai := 0
+                        for ic_ai < len(ic_args) {
+                            instrs = append(instrs, IRInstr { op: ir.OP_ARG, dest: ic_ai + 1, arg1: ic_args[ic_ai], arg2: -1, arg3: 0, str_val: "" })
+                            ic_ai = ic_ai + 1
+                        }
+                        ic_total_args := len(ic_args) + 1
+                        ic_res := len(instrs)
+                        instrs = append(instrs, IRInstr { op: ir.OP_IFACE_CALL, dest: ic_res, arg1: vtable_idx, arg2: ic_total_args, arg3: 0, str_val: struct_name })
+                        // Set return type from interface method signature
+                        ic_ret := iface_method_ret_type(struct_name, vtable_idx)
+                        ic_ret_arr := iface_method_ret_is_array(struct_name, vtable_idx)
+                        set_vreg_type(ic_res, make_type(ic_ret, ic_ret_arr))
+                        return ic_res
+                    }
+                }
+                internal_name := lookup_method(struct_name, method_name)
+                if internal_name != "" {
+                    actual_name := lookup_rename(internal_name)
+                    return gen_ir_method_call(recv_vreg, actual_name, ast_idx, nodes, instrs, symtab_names, symtab_vregs)
+                }
+            }
+        }
+    }
+    return gen_ir_call_user(node, ast_idx, nodes, instrs, symtab_names, symtab_vregs)
+}
+
+fn gen_ir_decl_func(node: AstNode, nodes: []AstNode, instrs: []IRInstr, symtab_names: []string, symtab_vregs: []int) -> int {
+    // Generate function with parameters
+    // node.left = first parameter index (or -1 if no parameters)
+    // node.right = body node
+
+    // Add all parameters to symbol table.
+    // Use 90000+ offset for parameter vregs to avoid collision with instruction-based vregs.
+    // Parameters are stored consecutively in nodes array starting at node.left
+    if node.left >= 0 {
+        // Iterate through consecutive parameter nodes
+        param_idx := node.left
+        param_reg := 90000  // 90000, 90001, 90002, etc.
+
+        // Find how many consecutive ast.DECL_PARAM nodes there are
+        param_i := node.left
+        nodes_len2 := len(nodes)
+        for param_i < nodes_len2 {
+            param_node := nodes[param_i]
+            if param_node.tag == ast.DECL_PARAM {
+                // Add parameter to symbol table
+                symtab_names = append(symtab_names, param_node.str_val)
+                symtab_vregs = append(symtab_vregs, param_reg)
+                ptype := make_type(param_node.type_tag, param_node.int_val)
+                set_vreg_type(param_reg, ptype)
+                // Set struct name for struct/map-typed params
+                if param_node.type_tag == ast.TYPE_STRUCT || param_node.type_tag == ast.TYPE_MAP {
+                    param_sname := lookup_type_name(param_i)
+                    set_vreg_struct_name(param_reg, param_sname)
+                }
+                param_reg = param_reg + 1
+            } else {
+                // Stop when we hit a non-parameter node
+                break
+            }
+            param_i = param_i + 1
+        }
+    }
+
+    // If this is a closure function, load captures from env (param 0 = __env)
+    if strings.HasPrefix(node.str_val, "__closure_") {
+        cap_count := sema.ClosureCaptureCount(node.str_val)
+        if cap_count > 0 {
+            env_reg := 90000  // __env is always param 0
+            cap_i := 0
+            for cap_i < cap_count {
+                cap_name := sema.ClosureCaptureName(node.str_val, cap_i)
+                addr_vreg := len(instrs)
+                instrs = append(instrs, IRInstr { op: ir.OP_INDEXADDR, dest: addr_vreg, arg1: env_reg, arg2: cap_i * 8, arg3: 0, str_val: "" })
+                set_vreg_type(addr_vreg, ast.TYPE_INT)
+                val_vreg := len(instrs)
+                instrs = append(instrs, IRInstr { op: ir.OP_LOAD, dest: val_vreg, arg1: addr_vreg, arg2: 0, arg3: 0, str_val: "" })
+                set_vreg_type(val_vreg, ast.TYPE_INT)
+                symtab_names = append(symtab_names, cap_name)
+                symtab_vregs = append(symtab_vregs, val_vreg)
+                cap_i = cap_i + 1
+            }
+        }
+    }
+
+    // Generate body
+    if node.right >= 0 {
+        return gen_ir_from_ast_with_symtab(node.right, nodes, instrs, symtab_names, symtab_vregs)
+    }
+    return 0
+}
+
 fn gen_ir_from_ast_with_symtab(ast_idx: int, nodes: []AstNode, instrs: []IRInstr, symtab_names: []string, symtab_vregs: []int) -> int {
     if ast_idx < 0 {
         return -1
@@ -1570,65 +1916,11 @@ fn gen_ir_from_ast_with_symtab(ast_idx: int, nodes: []AstNode, instrs: []IRInstr
     }
 
     if node.tag == ast.EXPR_TO_STRING {
-        inner_vreg := gen_ir_from_ast_with_symtab(node.left, nodes, instrs, symtab_names, symtab_vregs)
-        inner_type := get_vreg_type(inner_vreg)
-        if inner_type == ast.TYPE_STRING {
-            return inner_vreg
-        }
-        vreg := len(instrs)
-        if inner_type == ast.TYPE_FLOAT {
-            instrs = append(instrs, IRInstr { op: ir.OP_FLOAT_TO_STR, dest: vreg, arg1: inner_vreg, arg2: 0, arg3: 0, str_val: "" })
-        } else {
-            if inner_type == ast.TYPE_BOOL {
-                instrs = append(instrs, IRInstr { op: ir.OP_BOOL_TO_STR, dest: vreg, arg1: inner_vreg, arg2: 0, arg3: 0, str_val: "" })
-            } else {
-                instrs = append(instrs, IRInstr { op: ir.OP_INT_TO_STR, dest: vreg, arg1: inner_vreg, arg2: 0, arg3: 0, str_val: "" })
-            }
-        }
-        set_vreg_type(vreg, ast.TYPE_STRING)
-        return vreg
+        return gen_ir_to_string(node, nodes, instrs, symtab_names, symtab_vregs)
     }
 
     if node.tag == ast.EXPR_UNARY {
-        operand := gen_ir_from_ast_with_symtab(node.left, nodes, instrs, symtab_names, symtab_vregs)
-        if node.int_val == token.TK_MINUS {
-            if get_vreg_type(operand) == ast.TYPE_FLOAT {
-                // Float unary minus: 0.0 - operand
-                zero_vreg := len(instrs)
-                instrs = append(instrs, IRInstr { op: ir.OP_LOADFLOAT, dest: zero_vreg, arg1: 0, arg2: 0, arg3: 0, str_val: "0.0" })
-                set_vreg_type(zero_vreg, ast.TYPE_FLOAT)
-                result_vreg := len(instrs)
-                instrs = append(instrs, IRInstr { op: ir.OP_FSUB, dest: result_vreg, arg1: zero_vreg, arg2: operand, arg3: 0, str_val: "" })
-                set_vreg_type(result_vreg, ast.TYPE_FLOAT)
-                return result_vreg
-            }
-            // Int unary minus: 0 - operand
-            zero_vreg := len(instrs)
-            instrs = append(instrs, IRInstr { op: ir.OP_LOADCONST, dest: zero_vreg, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
-            result_vreg := len(instrs)
-            instrs = append(instrs, IRInstr { op: ir.OP_SUB, dest: result_vreg, arg1: zero_vreg, arg2: operand, arg3: 0, str_val: "" })
-            set_vreg_type(result_vreg, ast.TYPE_INT)
-            return result_vreg
-        }
-        if node.int_val == token.TK_NOT {
-            // Logical NOT: operand == 0
-            zero_vreg := len(instrs)
-            instrs = append(instrs, IRInstr { op: ir.OP_LOADCONST, dest: zero_vreg, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
-            result_vreg := len(instrs)
-            instrs = append(instrs, IRInstr { op: ir.OP_CMP_EQ, dest: result_vreg, arg1: operand, arg2: zero_vreg, arg3: 0, str_val: "" })
-            set_vreg_type(result_vreg, ast.TYPE_BOOL)
-            return result_vreg
-        }
-        if node.int_val == token.TK_AMPERSAND {
-            // Address-of: structs are already pointers, identity op
-            set_vreg_struct_name(operand, get_vreg_struct_name(operand))
-            return operand
-        }
-        if node.int_val == token.TK_STAR {
-            // Dereference: structs are already pointers, identity op
-            return operand
-        }
-        return operand
+        return gen_ir_unary(node, nodes, instrs, symtab_names, symtab_vregs)
     }
 
     if node.tag == ast.EXPR_BINARY {
@@ -1636,226 +1928,11 @@ fn gen_ir_from_ast_with_symtab(ast_idx: int, nodes: []AstNode, instrs: []IRInstr
     }
 
     if node.tag == ast.EXPR_CALL {
-        func_name := lookup_rename(node.str_val)
-        // Check if callee is a local variable (closure or closure-as-int)
-        cl_vreg := symtab_lookup_linear(symtab_names, symtab_vregs, func_name)
-        if cl_vreg >= 0 {
-            cl_type := get_vreg_type(cl_vreg)
-            if cl_type == ast.TYPE_CLOSURE || cl_type == ast.TYPE_INT {
-                return gen_ir_closure_call(cl_vreg, ast_idx, nodes, instrs, symtab_names, symtab_vregs)
-            }
-        }
-        if func_name == "len" {
-            return gen_ir_call_len(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
-        }
-        if func_name == "append" {
-            return gen_ir_call_push(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
-        }
-        if func_name == "poke" {
-            return gen_ir_call_poke(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
-        }
-        if func_name == "peek" {
-            return gen_ir_call_peek(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
-        }
-        if func_name == "peek64" {
-            return gen_ir_call_peek64(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
-        }
-        if func_name == "poke64" {
-            return gen_ir_call_poke64(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
-        }
-        if func_name == "delete" {
-            return gen_ir_call_delete(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
-        }
-        if func_name == "heap_alloc" {
-            return gen_ir_call_heap_alloc(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
-        }
-        if func_name == "os.Argc" {
-            return gen_ir_call_argc(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
-        }
-        if func_name == "os.Argv" {
-            return gen_ir_call_argv(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
-        }
-        if func_name == "str_char_at" {
-            return gen_ir_call_str_char_at(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
-        }
-        if func_name == "syscall.open" {
-            return gen_ir_call_syscall_open(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
-        }
-        if func_name == "syscall.write" {
-            return gen_ir_call_syscall_write(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
-        }
-        if func_name == "syscall.close" {
-            return gen_ir_call_syscall_close(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
-        }
-        if func_name == "syscall.read" {
-            return gen_ir_call_syscall_read(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
-        }
-        if func_name == "os.IsDir" {
-            return gen_ir_call_is_dir(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
-        }
-        if func_name == "os.ListDir" {
-            return gen_ir_call_list_dir(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
-        }
-        if func_name == "test_fail" {
-            instrs = append(instrs, IRInstr { op: ir.OP_TEST_FAIL, dest: -1, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
-            return -1
-        }
-        if func_name == "time_wallclock_nanos" {
-            dest := len(instrs)
-            instrs = append(instrs, IRInstr { op: ir.OP_TIME_WALLCLOCK, dest: dest, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
-            set_vreg_type(dest, ast.TYPE_INT)
-            return dest
-        }
-        if func_name == "runtime.GC" {
-            // No args, no result — just emit the opcode and return -1 (no vreg).
-            instrs = append(instrs, IRInstr { op: ir.OP_GC_COLLECT, dest: -1, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
-            return -1
-        }
-        if func_name == "strconv.FloatToStr" {
-            arg_vregs := gen_ir_eval_args(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
-            dest := len(instrs)
-            instrs = append(instrs, IRInstr { op: ir.OP_FLOAT_TO_STR, dest: dest, arg1: arg_vregs[0], arg2: 0, arg3: 0, str_val: "" })
-            set_vreg_type(dest, ast.TYPE_STRING)
-            return dest
-        }
-        if func_name == "strconv.IntToFloat" {
-            arg_vregs := gen_ir_eval_args(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
-            dest := len(instrs)
-            instrs = append(instrs, IRInstr { op: ir.OP_INT_TO_FLOAT, dest: dest, arg1: arg_vregs[0], arg2: 0, arg3: 0, str_val: "" })
-            set_vreg_type(dest, ast.TYPE_FLOAT)
-            return dest
-        }
-        if func_name == "strconv.FloatToInt" {
-            arg_vregs := gen_ir_eval_args(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
-            dest := len(instrs)
-            instrs = append(instrs, IRInstr { op: ir.OP_FLOAT_TO_INT, dest: dest, arg1: arg_vregs[0], arg2: 0, arg3: 0, str_val: "" })
-            set_vreg_type(dest, ast.TYPE_INT)
-            return dest
-        }
-        if func_name == "reflect.NumField" {
-            arg_vregs := gen_ir_eval_args(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
-            sname := get_vreg_struct_name(arg_vregs[0])
-            result_vreg := len(instrs)
-            instrs = append(instrs, IRInstr { op: ir.OP_REFLECT_NUM_FIELD, dest: result_vreg, arg1: arg_vregs[0], arg2: 0, arg3: 0, str_val: sname })
-            set_vreg_type(result_vreg, ast.TYPE_INT)
-            return result_vreg
-        }
-
-        if func_name == "reflect.FieldName" {
-            arg_vregs := gen_ir_eval_args(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
-            sname := get_vreg_struct_name(arg_vregs[0])
-            result_vreg := len(instrs)
-            instrs = append(instrs, IRInstr { op: ir.OP_REFLECT_FIELD_NAME, dest: result_vreg, arg1: arg_vregs[0], arg2: arg_vregs[1], arg3: 0, str_val: sname })
-            set_vreg_type(result_vreg, ast.TYPE_STRING)
-            return result_vreg
-        }
-
-        if func_name == "reflect.FieldType" {
-            arg_vregs := gen_ir_eval_args(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
-            sname := get_vreg_struct_name(arg_vregs[0])
-            result_vreg := len(instrs)
-            instrs = append(instrs, IRInstr { op: ir.OP_REFLECT_FIELD_TYPE, dest: result_vreg, arg1: arg_vregs[0], arg2: arg_vregs[1], arg3: 0, str_val: sname })
-            set_vreg_type(result_vreg, ast.TYPE_INT)
-            return result_vreg
-        }
-
-        if func_name == "reflect.FieldValue" {
-            arg_vregs := gen_ir_eval_args(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
-            sname := get_vreg_struct_name(arg_vregs[0])
-            result_vreg := len(instrs)
-            instrs = append(instrs, IRInstr { op: ir.OP_REFLECT_FIELD_VALUE, dest: result_vreg, arg1: arg_vregs[0], arg2: arg_vregs[1], arg3: 0, str_val: sname })
-            set_vreg_type(result_vreg, ast.TYPE_INT)
-            return result_vreg
-        }
-
-        if func_name == "reflect.SetFieldValue" {
-            arg_vregs := gen_ir_eval_args(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
-            sname := get_vreg_struct_name(arg_vregs[0])
-            result_vreg := len(instrs)
-            instrs = append(instrs, IRInstr { op: ir.OP_REFLECT_SET_FIELD_VALUE, dest: result_vreg, arg1: arg_vregs[0], arg2: arg_vregs[1], arg3: arg_vregs[2], str_val: sname })
-            set_vreg_type(result_vreg, ast.TYPE_INT)
-            return result_vreg
-        }
-
-        if func_name == "json.Marshal" {
-            arg_vregs := gen_ir_eval_args(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
-            sname := get_vreg_struct_name(arg_vregs[0])
-            result_vreg := len(instrs)
-            instrs = append(instrs, IRInstr { op: ir.OP_JSON_MARSHAL, dest: result_vreg, arg1: arg_vregs[0], arg2: 0, arg3: 0, str_val: sname })
-            set_vreg_type(result_vreg, ast.TYPE_STRING)
-            return result_vreg
-        }
-
-        if func_name == "json.Unmarshal" {
-            arg_vregs := gen_ir_eval_args(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
-            sname := sema.LookupTypeInstantiation("Unmarshal", 0)
-            result_vreg := len(instrs)
-            instrs = append(instrs, IRInstr { op: ir.OP_JSON_UNMARSHAL, dest: result_vreg, arg1: arg_vregs[0], arg2: 0, arg3: 0, str_val: sname })
-            set_vreg_type(result_vreg, ast.TYPE_STRUCT)
-            set_vreg_struct_name(result_vreg, sname)
-            return result_vreg
-        }
-
-        // Check for method call: "varname.MethodName"
-        dot_pos := find_dot(func_name)
-        if dot_pos > 0 {
-            receiver_name := str_substring(func_name, 0, dot_pos)
-            method_name := str_substring(func_name, dot_pos + 1, len(func_name))
-            // Check if receiver is a local variable in the symbol table
-            recv_vreg := -1
-            rsi := len(symtab_names) - 1
-            for rsi >= 0 {
-                if symtab_names[rsi] == receiver_name {
-                    recv_vreg = symtab_vregs[rsi]
-                    break
-                }
-                rsi = rsi - 1
-            }
-            if recv_vreg >= 0 && recv_vreg > -1000 {
-                struct_name := get_vreg_struct_name(recv_vreg)
-                if struct_name != "" {
-                    // Check if receiver is an interface type
-                    if is_interface(struct_name) == 1 {
-                        vtable_idx := iface_method_index(struct_name, method_name)
-                        if vtable_idx >= 0 {
-                            // Evaluate args first (may contain nested calls)
-                            ic_args := gen_ir_eval_args(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
-                            // Then emit ir.OP_ARG for interface value + remaining args
-                            instrs = append(instrs, IRInstr { op: ir.OP_ARG, dest: 0, arg1: recv_vreg, arg2: -1, arg3: 0, str_val: "" })
-                            ic_ai := 0
-                            for ic_ai < len(ic_args) {
-                                instrs = append(instrs, IRInstr { op: ir.OP_ARG, dest: ic_ai + 1, arg1: ic_args[ic_ai], arg2: -1, arg3: 0, str_val: "" })
-                                ic_ai = ic_ai + 1
-                            }
-                            ic_total_args := len(ic_args) + 1
-                            ic_res := len(instrs)
-                            instrs = append(instrs, IRInstr { op: ir.OP_IFACE_CALL, dest: ic_res, arg1: vtable_idx, arg2: ic_total_args, arg3: 0, str_val: struct_name })
-                            // Set return type from interface method signature
-                            ic_ret := iface_method_ret_type(struct_name, vtable_idx)
-                            ic_ret_arr := iface_method_ret_is_array(struct_name, vtable_idx)
-                            set_vreg_type(ic_res, make_type(ic_ret, ic_ret_arr))
-                            return ic_res
-                        }
-                    }
-                    internal_name := lookup_method(struct_name, method_name)
-                    if internal_name != "" {
-                        actual_name := lookup_rename(internal_name)
-                        return gen_ir_method_call(recv_vreg, actual_name, ast_idx, nodes, instrs, symtab_names, symtab_vregs)
-                    }
-                }
-            }
-        }
-        return gen_ir_call_user(node, ast_idx, nodes, instrs, symtab_names, symtab_vregs)
+        return gen_ir_call(node, ast_idx, nodes, instrs, symtab_names, symtab_vregs)
     }
 
     if node.tag == ast.EXPR_MAP_LIT {
-        map_type := node.str_val
-        kt_code := map_key_type_code(map_type)
-        result_vreg := len(instrs)
-        instrs = append(instrs, IRInstr { op: ir.OP_MAP_NEW, dest: result_vreg, arg1: kt_code, arg2: 0, arg3: 0, str_val: "" })
-        set_vreg_type(result_vreg, ast.TYPE_MAP)
-        set_vreg_struct_name(result_vreg, map_type)
-        return result_vreg
+        return gen_ir_map_lit(node, instrs)
     }
 
     if node.tag == ast.EXPR_ARRAY_LIT {
@@ -1934,76 +2011,11 @@ fn gen_ir_from_ast_with_symtab(ast_idx: int, nodes: []AstNode, instrs: []IRInstr
     }
 
     if node.tag == ast.STMT_BREAK {
-        // Use global break label (set by gen_ir_stmt_for with save/restore)
-        if g_break_label >= 0 {
-            instrs = append(instrs, IRInstr { op: ir.OP_JUMP, dest: g_break_label, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
-        }
-        return 0
+        return gen_ir_stmt_break(instrs)
     }
 
     if node.tag == ast.DECL_FUNC {
-        // Generate function with parameters
-        // node.left = first parameter index (or -1 if no parameters)
-        // node.right = body node
-
-        // Add all parameters to symbol table.
-        // Use 90000+ offset for parameter vregs to avoid collision with instruction-based vregs.
-        // Parameters are stored consecutively in nodes array starting at node.left
-        if node.left >= 0 {
-            // Iterate through consecutive parameter nodes
-            param_idx := node.left
-            param_reg := 90000  // 90000, 90001, 90002, etc.
-
-            // Find how many consecutive ast.DECL_PARAM nodes there are
-            param_i := node.left
-            nodes_len2 := len(nodes)
-            for param_i < nodes_len2 {
-                param_node := nodes[param_i]
-                if param_node.tag == ast.DECL_PARAM {
-                    // Add parameter to symbol table
-                    symtab_names = append(symtab_names, param_node.str_val)
-                    symtab_vregs = append(symtab_vregs, param_reg)
-                    ptype := make_type(param_node.type_tag, param_node.int_val)
-                    set_vreg_type(param_reg, ptype)
-                    // Set struct name for struct/map-typed params
-                    if param_node.type_tag == ast.TYPE_STRUCT || param_node.type_tag == ast.TYPE_MAP {
-                        param_sname := lookup_type_name(param_i)
-                        set_vreg_struct_name(param_reg, param_sname)
-                    }
-                    param_reg = param_reg + 1
-                } else {
-                    // Stop when we hit a non-parameter node
-                    break
-                }
-                param_i = param_i + 1
-            }
-        }
-
-        // If this is a closure function, load captures from env (param 0 = __env)
-        if strings.HasPrefix(node.str_val, "__closure_") {
-            cap_count := sema.ClosureCaptureCount(node.str_val)
-            if cap_count > 0 {
-                env_reg := 90000  // __env is always param 0
-                cap_i := 0
-                for cap_i < cap_count {
-                    cap_name := sema.ClosureCaptureName(node.str_val, cap_i)
-                    addr_vreg := len(instrs)
-                    instrs = append(instrs, IRInstr { op: ir.OP_INDEXADDR, dest: addr_vreg, arg1: env_reg, arg2: cap_i * 8, arg3: 0, str_val: "" })
-                    set_vreg_type(addr_vreg, ast.TYPE_INT)
-                    val_vreg := len(instrs)
-                    instrs = append(instrs, IRInstr { op: ir.OP_LOAD, dest: val_vreg, arg1: addr_vreg, arg2: 0, arg3: 0, str_val: "" })
-                    set_vreg_type(val_vreg, ast.TYPE_INT)
-                    symtab_names = append(symtab_names, cap_name)
-                    symtab_vregs = append(symtab_vregs, val_vreg)
-                    cap_i = cap_i + 1
-                }
-            }
-        }
-
-        // Generate body
-        if node.right >= 0 {
-            return gen_ir_from_ast_with_symtab(node.right, nodes, instrs, symtab_names, symtab_vregs)
-        }
+        return gen_ir_decl_func(node, nodes, instrs, symtab_names, symtab_vregs)
     }
 
     if node.tag == ast.EXPR_CLOSURE {
