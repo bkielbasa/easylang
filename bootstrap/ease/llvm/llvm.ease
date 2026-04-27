@@ -632,6 +632,8 @@ fn emit_llvm_ir(instrs: []IRInstr, output_path: string) -> int {
         write_str(fd, "\n")
     }
 
+    emit_gc_globals(fd, global_names)
+
     // Emit vtable globals
     vti := 0
     for vti < VtableCount() {
@@ -830,6 +832,37 @@ fn emit_llvm_main_wrapper(fd: int) {
     write_str(fd, "  %r32 = trunc i64 %r to i32\n")
     write_str(fd, "  ret i32 %r32\n")
     write_str(fd, "}\n\n")
+}
+
+fn emit_gc_globals(fd: int, global_names: []string) {
+    // Collect address-of-i64-word entries. Scalar globals contribute one
+    // entry; 24-byte fat-pointer globals contribute three (word offsets 0, 8, 16).
+    // Always include @g_argv at the end.
+    entries := []string{}
+    gi := 0
+    for gi < len(global_names) {
+        gname := global_names[gi]
+        if is_scalar_global(gname) == 1 {
+            entries = append(entries, "ptr @" + gname)
+        } else {
+            entries = append(entries, "ptr @" + gname)
+            entries = append(entries, "ptr getelementptr (i8, ptr @" + gname + ", i64 8)")
+            entries = append(entries, "ptr getelementptr (i8, ptr @" + gname + ", i64 16)")
+        }
+        gi = gi + 1
+    }
+    entries = append(entries, "ptr @g_argv")
+
+    n := len(entries)
+    write_str(fd, "@gc_globals_count = global i64 " + strconv.Itoa(n) + "\n")
+    write_str(fd, "@gc_globals = global [" + strconv.Itoa(n) + " x ptr] [")
+    ei := 0
+    for ei < n {
+        if ei > 0 { write_str(fd, ", ") }
+        write_str(fd, entries[ei])
+        ei = ei + 1
+    }
+    write_str(fd, "]\n\n")
 }
 
 fn find_string_index(dest: int, string_dests: []int) -> int {
