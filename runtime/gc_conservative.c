@@ -113,7 +113,7 @@ static void mark_all_roots(void) {
     //    Cast to void: we use setjmp purely for the register-flush side
     //    effect; longjmp is never aimed back at this site.
     jmp_buf reg_buf;
-    (void)setjmp(reg_buf);
+    (void)setjmp(reg_buf); // NOLINT(bugprone-unused-return-value)
     void *stack_top;
     void *stack_top_addr = &stack_top;
     scan_range(stack_top_addr, g_state.stack_bottom);
