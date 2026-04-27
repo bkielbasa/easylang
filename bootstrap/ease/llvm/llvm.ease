@@ -462,7 +462,7 @@ fn emit_json_unmarshal(fd: int, instr: IRInstr, ti: int) {
     struct_size := count * 8
     if struct_size == 0 { struct_size = 8 }
     sptr := "%ju.sp." + tis
-    write_str(fd, "  " + sptr + " = call ptr @malloc(i64 " + strconv.Itoa(struct_size) + ")\n")
+    write_str(fd, "  " + sptr + " = call ptr @gc_alloc(i64 " + strconv.Itoa(struct_size) + ")\n")
 
     // For each field: GetField(doc_id, field_name, json_type_tag) and store
     fi := 0
@@ -723,12 +723,12 @@ fn emit_llvm_helpers(fd: int) {
     write_str(fd, "  %dnull = icmp eq ptr %d, null\n")
     write_str(fd, "  br i1 %dnull, label %ld.empty, label %ld.loop\n")
     write_str(fd, "ld.empty:\n")
-    write_str(fd, "  %empty = call ptr @malloc(i64 1)\n")
+    write_str(fd, "  %empty = call ptr @gc_alloc(i64 1)\n")
     write_str(fd, "  store i8 0, ptr %empty\n")
     write_str(fd, "  ret ptr %empty\n")
     write_str(fd, "ld.loop:\n")
     // Accumulate result string - start with empty
-    write_str(fd, "  %res0 = call ptr @malloc(i64 1)\n")
+    write_str(fd, "  %res0 = call ptr @gc_alloc(i64 1)\n")
     write_str(fd, "  store i8 0, ptr %res0\n")
     write_str(fd, "  br label %ld.next\n")
     write_str(fd, "ld.next:\n")
@@ -765,7 +765,7 @@ fn emit_llvm_helpers(fd: int) {
     write_str(fd, "  %nlen = call i64 @strlen(ptr %rname)\n")
     write_str(fd, "  %tlen = add i64 %rlen, %nlen\n")
     write_str(fd, "  %tlen2 = add i64 %tlen, 2\n")
-    write_str(fd, "  %newres = call ptr @malloc(i64 %tlen2)\n")
+    write_str(fd, "  %newres = call ptr @gc_alloc(i64 %tlen2)\n")
     write_str(fd, "  call ptr @memcpy(ptr %newres, ptr %res, i64 %rlen)\n")
     write_str(fd, "  %ndst = getelementptr i8, ptr %newres, i64 %rlen\n")
     write_str(fd, "  call ptr @memcpy(ptr %ndst, ptr %rname, i64 %nlen)\n")
@@ -948,7 +948,7 @@ fn emit_op_copy(fd: int, instr: IRInstr, ti: int) {
 fn emit_op_alloca(fd: int, instr: IRInstr, ti: int) {
     size := strconv.Itoa(instr.arg1)
     p := tmp_name(ti, 0)
-    write_str(fd, "  " + p + " = call ptr @malloc(i64 " + size + ")\n")
+    write_str(fd, "  " + p + " = call ptr @gc_alloc(i64 " + size + ")\n")
     z := tmp_name(ti, 1)
     write_str(fd, "  " + z + " = call ptr @memset(ptr " + p + ", i32 0, i64 " + size + ")\n")
     emit_ptrtoint_store(fd, instr.dest, p, ti, 2)
@@ -1003,7 +1003,7 @@ fn emit_op_array_slice(fd: int, instr: IRInstr, ti: int) {
     new_cap := "%sl.nc." + tis
     write_str(fd, "  " + new_cap + " = sub i64 " + old_cap + ", " + start + "\n")
     new_fp := "%sl.fp." + tis
-    write_str(fd, "  " + new_fp + " = call ptr @malloc(i64 24)\n")
+    write_str(fd, "  " + new_fp + " = call ptr @gc_alloc(i64 24)\n")
     write_str(fd, "  store i64 " + new_dp + ", ptr " + new_fp + "\n")
     len_ptr := "%sl.lp." + tis
     write_str(fd, "  " + len_ptr + " = getelementptr i8, ptr " + new_fp + ", i64 8\n")
@@ -1043,7 +1043,7 @@ fn emit_op_array_push(fd: int, instr: IRInstr, ti: int) {
     alloc_size := "%ap.as." + tis
     write_str(fd, "  " + alloc_size + " = mul i64 " + new_cap + ", 8\n")
     new_ptr := "%ap.np." + tis
-    write_str(fd, "  " + new_ptr + " = call ptr @malloc(i64 " + alloc_size + ")\n")
+    write_str(fd, "  " + new_ptr + " = call ptr @gc_alloc(i64 " + alloc_size + ")\n")
     old_ptr := "%ap.op." + tis
     write_str(fd, "  " + old_ptr + " = inttoptr i64 " + ptr_val + " to ptr\n")
     copy_size := "%ap.cs." + tis
@@ -1152,7 +1152,7 @@ fn emit_op_peek(fd: int, instr: IRInstr, ti: int) {
 fn emit_op_heap_alloc(fd: int, instr: IRInstr, ti: int) {
     size := emit_load_vreg(fd, instr.arg1, ti, 0)
     p := tmp_name(ti, 1)
-    write_str(fd, "  " + p + " = call ptr @malloc(i64 " + size + ")\n")
+    write_str(fd, "  " + p + " = call ptr @gc_alloc(i64 " + size + ")\n")
     ms := tmp_name(ti, 2)
     write_str(fd, "  " + ms + " = call ptr @memset(ptr " + p + ", i32 0, i64 " + size + ")\n")
     emit_ptrtoint_store(fd, instr.dest, p, ti, 3)
@@ -1178,7 +1178,7 @@ fn emit_op_argv(fd: int, instr: IRInstr, ti: int) {
 fn emit_op_int_to_str(fd: int, instr: IRInstr, ti: int) {
     val := emit_load_vreg(fd, instr.arg1, ti, 0)
     buf := tmp_name(ti, 1)
-    write_str(fd, "  " + buf + " = call ptr @malloc(i64 21)\n")
+    write_str(fd, "  " + buf + " = call ptr @gc_alloc(i64 21)\n")
     write_str(fd, "  call i32 (ptr, i64, ptr, ...) @snprintf(ptr " + buf + ", i64 21, ptr @.fmt.ld, i64 " + val + ")\n")
     emit_ptrtoint_store(fd, instr.dest, buf, ti, 2)
 }
@@ -1229,7 +1229,7 @@ fn emit_op_str_concat(fd: int, instr: IRInstr, ti: int) {
     total1 := "%sc.tot1." + tis
     write_str(fd, "  " + total1 + " = add i64 " + total + ", 1\n")
     buf := "%sc.buf." + tis
-    write_str(fd, "  " + buf + " = call ptr @malloc(i64 " + total1 + ")\n")
+    write_str(fd, "  " + buf + " = call ptr @gc_alloc(i64 " + total1 + ")\n")
     write_str(fd, "  call ptr @memcpy(ptr " + buf + ", ptr " + a + ", i64 " + la + ")\n")
     dst := "%sc.dst." + tis
     write_str(fd, "  " + dst + " = getelementptr i8, ptr " + buf + ", i64 " + la + "\n")
@@ -1407,7 +1407,7 @@ fn emit_op_float_to_str(fd: int, instr: IRInstr, ti: int) {
     dbl := tmp_name(ti, 1)
     write_str(fd, "  " + dbl + " = bitcast i64 " + val + " to double\n")
     buf := tmp_name(ti, 2)
-    write_str(fd, "  " + buf + " = call ptr @malloc(i64 32)\n")
+    write_str(fd, "  " + buf + " = call ptr @gc_alloc(i64 32)\n")
     write_str(fd, "  call i32 (ptr, i64, ptr, ...) @snprintf(ptr " + buf + ", i64 32, ptr @.fmt.g, double " + dbl + ")\n")
     emit_ptrtoint_store(fd, instr.dest, buf, ti, 3)
 }
@@ -1443,7 +1443,7 @@ fn emit_op_map_set(fd: int, instr: IRInstr, ti: int) {
 
 fn emit_op_iface_wrap(fd: int, instr: IRInstr, ti: int) {
     iw_ptr := "%iw.ptr." + strconv.Itoa(ti)
-    write_str(fd, "  " + iw_ptr + " = call ptr @malloc(i64 16)\n")
+    write_str(fd, "  " + iw_ptr + " = call ptr @gc_alloc(i64 16)\n")
     iw_concrete := emit_load_vreg(fd, instr.arg1, ti, 0)
     iw_concrete_ptr := "%iw.cptr." + strconv.Itoa(ti)
     write_str(fd, "  " + iw_concrete_ptr + " = inttoptr i64 " + iw_concrete + " to ptr\n")
@@ -1460,7 +1460,7 @@ fn emit_op_iface_wrap(fd: int, instr: IRInstr, ti: int) {
 
 fn emit_op_closure_new(fd: int, instr: IRInstr, ti: int) {
     cl_ptr := "%cl.ptr." + strconv.Itoa(ti)
-    write_str(fd, "  " + cl_ptr + " = call ptr @malloc(i64 16)\n")
+    write_str(fd, "  " + cl_ptr + " = call ptr @gc_alloc(i64 16)\n")
     cl_fp := "%cl.fp." + strconv.Itoa(ti)
     write_str(fd, "  " + cl_fp + " = ptrtoint ptr @" + llvm_func_name(instr.str_val) + " to i64\n")
     write_str(fd, "  store i64 " + cl_fp + ", ptr " + cl_ptr + "\n")
