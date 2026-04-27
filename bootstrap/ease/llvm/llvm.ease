@@ -835,10 +835,641 @@ fn find_string_index(dest: int, string_dests: []int) -> int {
     return -1
 }
 
-fn emit_llvm_function(fd: int, instrs: []IRInstr, start: int, end_pos: int, func_name: string, param_count: int, string_table: []string, string_dests: []int) {
-    lname := llvm_func_name(func_name)
+// === Per-opcode emitters ===
+// Each helper emits the LLVM IR for a single bootstrap-IR opcode.
+// Self-contained ones take (fd, instr, ti); call/iface/closure helpers also
+// take call_args. Terminator and ARG opcodes stay inline in emit_llvm_function
+// because they mutate the per-iteration `terminated` / `call_args` state.
 
-    // Build parameter list
+fn emit_op_loadconst(fd: int, instr: IRInstr, ti: int, string_dests: []int) {
+    if instr.str_val != "" {
+        str_idx := find_string_index(instr.dest, string_dests)
+        if str_idx >= 0 {
+            t := tmp_name(ti, 0)
+            write_str(fd, "  " + t + " = ptrtoint ptr @.str." + strconv.Itoa(str_idx) + " to i64\n")
+            emit_store_vreg(fd, instr.dest, t)
+        }
+    } else {
+        emit_store_vreg(fd, instr.dest, strconv.Itoa(instr.arg1))
+    }
+}
+
+fn emit_op_load_global(fd: int, instr: IRInstr, ti: int) {
+    t := tmp_name(ti, 0)
+    write_str(fd, "  " + t + " = ptrtoint ptr @" + instr.str_val + " to i64\n")
+    emit_store_vreg(fd, instr.dest, t)
+}
+
+fn emit_op_add(fd: int, instr: IRInstr, ti: int) {
+    if instr.arg2 == -1 {
+        v := emit_load_vreg(fd, instr.arg1, ti, 0)
+        emit_store_vreg(fd, instr.dest, v)
+    } else {
+        emit_llvm_binop(fd, instr, "add", ti)
+    }
+}
+
+fn emit_op_not(fd: int, instr: IRInstr, ti: int) {
+    v := emit_load_vreg(fd, instr.arg1, ti, 0)
+    r := tmp_name(ti, 1)
+    write_str(fd, "  " + r + " = xor i64 " + v + ", 1\n")
+    emit_store_vreg(fd, instr.dest, r)
+}
+
+fn emit_op_load(fd: int, instr: IRInstr, ti: int) {
+    base := emit_load_vreg(fd, instr.arg1, ti, 0)
+    addr_val := ""
+    if instr.str_val == "array_index" {
+        fp := tmp_name(ti, 1)
+        write_str(fd, "  " + fp + " = inttoptr i64 " + base + " to ptr\n")
+        dp := tmp_name(ti, 2)
+        write_str(fd, "  " + dp + " = load i64, ptr " + fp + "\n")
+        idx := emit_load_vreg(fd, instr.arg2, ti, 3)
+        scaled := tmp_name(ti, 4)
+        write_str(fd, "  " + scaled + " = mul i64 " + idx + ", 8\n")
+        a := tmp_name(ti, 5)
+        write_str(fd, "  " + a + " = add i64 " + dp + ", " + scaled + "\n")
+        addr_val = a
+    } else {
+        if instr.arg2 == 0 {
+            addr_val = base
+        } else {
+            a := tmp_name(ti, 2)
+            write_str(fd, "  " + a + " = add i64 " + base + ", " + strconv.Itoa(instr.arg2) + "\n")
+            addr_val = a
+        }
+    }
+    ptr := tmp_name(ti, 6)
+    write_str(fd, "  " + ptr + " = inttoptr i64 " + addr_val + " to ptr\n")
+    val := tmp_name(ti, 7)
+    write_str(fd, "  " + val + " = load i64, ptr " + ptr + "\n")
+    emit_store_vreg(fd, instr.dest, val)
+}
+
+fn emit_op_store(fd: int, instr: IRInstr, ti: int) {
+    addr := emit_load_vreg(fd, instr.arg1, ti, 0)
+    val := emit_load_vreg(fd, instr.arg2, ti, 1)
+    ptr := tmp_name(ti, 2)
+    write_str(fd, "  " + ptr + " = inttoptr i64 " + addr + " to ptr\n")
+    write_str(fd, "  store i64 " + val + ", ptr " + ptr + "\n")
+}
+
+fn emit_op_store_index(fd: int, instr: IRInstr, ti: int) {
+    arr := emit_load_vreg(fd, instr.arg1, ti, 0)
+    tis := strconv.Itoa(ti)
+    si_fp := "%si.fp." + tis
+    write_str(fd, "  " + si_fp + " = inttoptr i64 " + arr + " to ptr\n")
+    si_dp := "%si.dp." + tis
+    write_str(fd, "  " + si_dp + " = load i64, ptr " + si_fp + "\n")
+    idx := emit_load_vreg(fd, instr.arg2, ti, 1)
+    si_scaled := "%si.sc." + tis
+    write_str(fd, "  " + si_scaled + " = mul i64 " + idx + ", 8\n")
+    si_addr := "%si.addr." + tis
+    write_str(fd, "  " + si_addr + " = add i64 " + si_dp + ", " + si_scaled + "\n")
+    si_ptr := "%si.ptr." + tis
+    write_str(fd, "  " + si_ptr + " = inttoptr i64 " + si_addr + " to ptr\n")
+    val := emit_load_vreg(fd, instr.arg3, ti, 2)
+    write_str(fd, "  store i64 " + val + ", ptr " + si_ptr + "\n")
+}
+
+fn emit_op_copy(fd: int, instr: IRInstr, ti: int) {
+    val := emit_load_vreg(fd, instr.arg1, ti, 0)
+    emit_store_vreg(fd, instr.dest, val)
+}
+
+fn emit_op_alloca(fd: int, instr: IRInstr, ti: int) {
+    size := strconv.Itoa(instr.arg1)
+    p := tmp_name(ti, 0)
+    write_str(fd, "  " + p + " = call ptr @malloc(i64 " + size + ")\n")
+    z := tmp_name(ti, 1)
+    write_str(fd, "  " + z + " = call ptr @memset(ptr " + p + ", i32 0, i64 " + size + ")\n")
+    emit_ptrtoint_store(fd, instr.dest, p, ti, 2)
+}
+
+fn emit_op_indexaddr(fd: int, instr: IRInstr, ti: int) {
+    base := emit_load_vreg(fd, instr.arg1, ti, 0)
+    if instr.arg2 == 0 {
+        emit_store_vreg(fd, instr.dest, base)
+    } else {
+        r := tmp_name(ti, 1)
+        write_str(fd, "  " + r + " = add i64 " + base + ", " + strconv.Itoa(instr.arg2) + "\n")
+        emit_store_vreg(fd, instr.dest, r)
+    }
+}
+
+fn emit_op_memcopy(fd: int, instr: IRInstr, ti: int) {
+    src := emit_load_ptr(fd, instr.arg1, ti, 0, 1)
+    dst := emit_load_ptr(fd, instr.arg2, ti, 2, 3)
+    size := emit_load_vreg(fd, instr.arg3, ti, 4)
+    write_str(fd, "  call ptr @memcpy(ptr " + dst + ", ptr " + src + ", i64 " + size + ")\n")
+}
+
+fn emit_op_array_len(fd: int, instr: IRInstr, ti: int) {
+    base := emit_load_vreg(fd, instr.arg1, ti, 0)
+    addr := tmp_name(ti, 1)
+    write_str(fd, "  " + addr + " = add i64 " + base + ", 8\n")
+    ptr := tmp_name(ti, 2)
+    write_str(fd, "  " + ptr + " = inttoptr i64 " + addr + " to ptr\n")
+    val := tmp_name(ti, 3)
+    write_str(fd, "  " + val + " = load i64, ptr " + ptr + "\n")
+    emit_store_vreg(fd, instr.dest, val)
+}
+
+fn emit_op_array_slice(fd: int, instr: IRInstr, ti: int) {
+    tis := strconv.Itoa(ti)
+    fp := emit_load_ptr(fd, instr.arg1, ti, 0, 1)
+    dp := "%sl.dp." + tis
+    write_str(fd, "  " + dp + " = load i64, ptr " + fp + "\n")
+    cap_addr := "%sl.ca." + tis
+    write_str(fd, "  " + cap_addr + " = getelementptr i8, ptr " + fp + ", i64 16\n")
+    old_cap := "%sl.oc." + tis
+    write_str(fd, "  " + old_cap + " = load i64, ptr " + cap_addr + "\n")
+    start := emit_load_vreg(fd, instr.arg2, ti, 2)
+    end := emit_load_vreg(fd, instr.arg3, ti, 3)
+    scaled := "%sl.sc." + tis
+    write_str(fd, "  " + scaled + " = mul i64 " + start + ", 8\n")
+    new_dp := "%sl.nd." + tis
+    write_str(fd, "  " + new_dp + " = add i64 " + dp + ", " + scaled + "\n")
+    new_len := "%sl.nl." + tis
+    write_str(fd, "  " + new_len + " = sub i64 " + end + ", " + start + "\n")
+    new_cap := "%sl.nc." + tis
+    write_str(fd, "  " + new_cap + " = sub i64 " + old_cap + ", " + start + "\n")
+    new_fp := "%sl.fp." + tis
+    write_str(fd, "  " + new_fp + " = call ptr @malloc(i64 24)\n")
+    write_str(fd, "  store i64 " + new_dp + ", ptr " + new_fp + "\n")
+    len_ptr := "%sl.lp." + tis
+    write_str(fd, "  " + len_ptr + " = getelementptr i8, ptr " + new_fp + ", i64 8\n")
+    write_str(fd, "  store i64 " + new_len + ", ptr " + len_ptr + "\n")
+    cap_ptr := "%sl.cp." + tis
+    write_str(fd, "  " + cap_ptr + " = getelementptr i8, ptr " + new_fp + ", i64 16\n")
+    write_str(fd, "  store i64 " + new_cap + ", ptr " + cap_ptr + "\n")
+    result := "%sl.r." + tis
+    write_str(fd, "  " + result + " = ptrtoint ptr " + new_fp + " to i64\n")
+    emit_store_vreg(fd, instr.dest, result)
+}
+
+fn emit_op_array_push(fd: int, instr: IRInstr, ti: int) {
+    fp := emit_load_ptr(fd, instr.arg1, ti, 0, 1)
+    elem := emit_load_vreg(fd, instr.arg2, ti, 2)
+    tis := strconv.Itoa(ti)
+    ptr_val := "%ap.ptr." + tis
+    write_str(fd, "  " + ptr_val + " = load i64, ptr " + fp + "\n")
+    len_addr := "%ap.la." + tis
+    write_str(fd, "  " + len_addr + " = getelementptr i8, ptr " + fp + ", i64 8\n")
+    len_val := "%ap.len." + tis
+    write_str(fd, "  " + len_val + " = load i64, ptr " + len_addr + "\n")
+    cap_addr := "%ap.ca." + tis
+    write_str(fd, "  " + cap_addr + " = getelementptr i8, ptr " + fp + ", i64 16\n")
+    cap_val := "%ap.cap." + tis
+    write_str(fd, "  " + cap_val + " = load i64, ptr " + cap_addr + "\n")
+    needs_grow := "%ap.ng." + tis
+    write_str(fd, "  " + needs_grow + " = icmp sge i64 " + len_val + ", " + cap_val + "\n")
+    write_str(fd, "  br i1 " + needs_grow + ", label %ap.grow." + tis + ", label %ap.do." + tis + "\n")
+    write_str(fd, "ap.grow." + tis + ":\n")
+    cap_is_zero := "%ap.cz." + tis
+    write_str(fd, "  " + cap_is_zero + " = icmp eq i64 " + cap_val + ", 0\n")
+    cap_double := "%ap.cd." + tis
+    write_str(fd, "  " + cap_double + " = mul i64 " + cap_val + ", 2\n")
+    new_cap := "%ap.nc." + tis
+    write_str(fd, "  " + new_cap + " = select i1 " + cap_is_zero + ", i64 4, i64 " + cap_double + "\n")
+    alloc_size := "%ap.as." + tis
+    write_str(fd, "  " + alloc_size + " = mul i64 " + new_cap + ", 8\n")
+    new_ptr := "%ap.np." + tis
+    write_str(fd, "  " + new_ptr + " = call ptr @malloc(i64 " + alloc_size + ")\n")
+    old_ptr := "%ap.op." + tis
+    write_str(fd, "  " + old_ptr + " = inttoptr i64 " + ptr_val + " to ptr\n")
+    copy_size := "%ap.cs." + tis
+    write_str(fd, "  " + copy_size + " = mul i64 " + len_val + ", 8\n")
+    write_str(fd, "  call ptr @memcpy(ptr " + new_ptr + ", ptr " + old_ptr + ", i64 " + copy_size + ")\n")
+    new_ptr_int := "%ap.ni." + tis
+    write_str(fd, "  " + new_ptr_int + " = ptrtoint ptr " + new_ptr + " to i64\n")
+    write_str(fd, "  store i64 " + new_ptr_int + ", ptr " + fp + "\n")
+    write_str(fd, "  store i64 " + new_cap + ", ptr " + cap_addr + "\n")
+    write_str(fd, "  br label %ap.do." + tis + "\n")
+    write_str(fd, "ap.do." + tis + ":\n")
+    cur_ptr := "%ap.cp." + tis
+    write_str(fd, "  " + cur_ptr + " = load i64, ptr " + fp + "\n")
+    elem_offset := "%ap.eo." + tis
+    write_str(fd, "  " + elem_offset + " = mul i64 " + len_val + ", 8\n")
+    elem_addr := "%ap.ea." + tis
+    write_str(fd, "  " + elem_addr + " = add i64 " + cur_ptr + ", " + elem_offset + "\n")
+    elem_ptr := "%ap.ep." + tis
+    write_str(fd, "  " + elem_ptr + " = inttoptr i64 " + elem_addr + " to ptr\n")
+    write_str(fd, "  store i64 " + elem + ", ptr " + elem_ptr + "\n")
+    new_len := "%ap.nl." + tis
+    write_str(fd, "  " + new_len + " = add i64 " + len_val + ", 1\n")
+    write_str(fd, "  store i64 " + new_len + ", ptr " + len_addr + "\n")
+}
+
+fn emit_op_reflect_num_field(fd: int, instr: IRInstr, ti: int) {
+    sname := instr.str_val
+    val := tmp_name(ti, 1)
+    write_str(fd, "  " + val + " = load i64, ptr @reflect." + sname + ".count\n")
+    emit_store_vreg(fd, instr.dest, val)
+}
+
+fn emit_op_reflect_field_name(fd: int, instr: IRInstr, ti: int) {
+    sname := instr.str_val
+    idx := emit_load_vreg(fd, instr.arg2, ti, 0)
+    gep := tmp_name(ti, 1)
+    write_str(fd, "  " + gep + " = getelementptr [0 x ptr], ptr @reflect." + sname + ".names, i64 0, i64 " + idx + "\n")
+    cstr := tmp_name(ti, 2)
+    write_str(fd, "  " + cstr + " = load ptr, ptr " + gep + "\n")
+    str_val := tmp_name(ti, 3)
+    write_str(fd, "  " + str_val + " = ptrtoint ptr " + cstr + " to i64\n")
+    emit_store_vreg(fd, instr.dest, str_val)
+}
+
+fn emit_op_reflect_field_type(fd: int, instr: IRInstr, ti: int) {
+    sname := instr.str_val
+    idx := emit_load_vreg(fd, instr.arg2, ti, 0)
+    gep := tmp_name(ti, 1)
+    write_str(fd, "  " + gep + " = getelementptr [0 x i64], ptr @reflect." + sname + ".types, i64 0, i64 " + idx + "\n")
+    val := tmp_name(ti, 2)
+    write_str(fd, "  " + val + " = load i64, ptr " + gep + "\n")
+    emit_store_vreg(fd, instr.dest, val)
+}
+
+fn emit_op_reflect_field_value(fd: int, instr: IRInstr, ti: int) {
+    base := emit_load_vreg(fd, instr.arg1, ti, 0)
+    idx := emit_load_vreg(fd, instr.arg2, ti, 1)
+    offset := tmp_name(ti, 2)
+    write_str(fd, "  " + offset + " = mul i64 " + idx + ", 8\n")
+    addr := tmp_name(ti, 3)
+    write_str(fd, "  " + addr + " = add i64 " + base + ", " + offset + "\n")
+    ptr := tmp_name(ti, 4)
+    write_str(fd, "  " + ptr + " = inttoptr i64 " + addr + " to ptr\n")
+    val := tmp_name(ti, 5)
+    write_str(fd, "  " + val + " = load i64, ptr " + ptr + "\n")
+    emit_store_vreg(fd, instr.dest, val)
+}
+
+fn emit_op_reflect_set_field_value(fd: int, instr: IRInstr, ti: int) {
+    base := emit_load_vreg(fd, instr.arg1, ti, 0)
+    idx := emit_load_vreg(fd, instr.arg2, ti, 1)
+    val := emit_load_vreg(fd, instr.arg3, ti, 2)
+    offset := tmp_name(ti, 3)
+    write_str(fd, "  " + offset + " = mul i64 " + idx + ", 8\n")
+    addr := tmp_name(ti, 4)
+    write_str(fd, "  " + addr + " = add i64 " + base + ", " + offset + "\n")
+    ptr := tmp_name(ti, 5)
+    write_str(fd, "  " + ptr + " = inttoptr i64 " + addr + " to ptr\n")
+    write_str(fd, "  store i64 " + val + ", ptr " + ptr + "\n")
+}
+
+fn emit_op_str_len(fd: int, instr: IRInstr, ti: int) {
+    str_ptr := emit_load_safe_str(fd, instr.arg1, ti, 0, 1, 0)
+    result := tmp_name(ti, 2)
+    write_str(fd, "  " + result + " = call i64 @strlen(ptr " + str_ptr + ")\n")
+    emit_store_vreg(fd, instr.dest, result)
+}
+
+fn emit_op_poke(fd: int, instr: IRInstr, ti: int) {
+    addr := emit_load_ptr(fd, instr.arg1, ti, 0, 1)
+    val := emit_load_vreg(fd, instr.arg2, ti, 2)
+    t := tmp_name(ti, 3)
+    write_str(fd, "  " + t + " = trunc i64 " + val + " to i8\n")
+    write_str(fd, "  store i8 " + t + ", ptr " + addr + "\n")
+}
+
+fn emit_op_peek(fd: int, instr: IRInstr, ti: int) {
+    addr := emit_load_ptr(fd, instr.arg1, ti, 0, 1)
+    b := tmp_name(ti, 2)
+    write_str(fd, "  " + b + " = load i8, ptr " + addr + "\n")
+    r := tmp_name(ti, 3)
+    write_str(fd, "  " + r + " = zext i8 " + b + " to i64\n")
+    emit_store_vreg(fd, instr.dest, r)
+}
+
+fn emit_op_heap_alloc(fd: int, instr: IRInstr, ti: int) {
+    size := emit_load_vreg(fd, instr.arg1, ti, 0)
+    p := tmp_name(ti, 1)
+    write_str(fd, "  " + p + " = call ptr @malloc(i64 " + size + ")\n")
+    ms := tmp_name(ti, 2)
+    write_str(fd, "  " + ms + " = call ptr @memset(ptr " + p + ", i32 0, i64 " + size + ")\n")
+    emit_ptrtoint_store(fd, instr.dest, p, ti, 3)
+}
+
+fn emit_op_argc(fd: int, instr: IRInstr, ti: int) {
+    r := tmp_name(ti, 0)
+    write_str(fd, "  " + r + " = load i64, ptr @g_argc\n")
+    emit_store_vreg(fd, instr.dest, r)
+}
+
+fn emit_op_argv(fd: int, instr: IRInstr, ti: int) {
+    idx := emit_load_vreg(fd, instr.arg1, ti, 0)
+    argv_ptr := tmp_name(ti, 1)
+    write_str(fd, "  " + argv_ptr + " = load ptr, ptr @g_argv\n")
+    elem_ptr := tmp_name(ti, 2)
+    write_str(fd, "  " + elem_ptr + " = getelementptr ptr, ptr " + argv_ptr + ", i64 " + idx + "\n")
+    p := tmp_name(ti, 3)
+    write_str(fd, "  " + p + " = load ptr, ptr " + elem_ptr + "\n")
+    emit_ptrtoint_store(fd, instr.dest, p, ti, 4)
+}
+
+fn emit_op_int_to_str(fd: int, instr: IRInstr, ti: int) {
+    val := emit_load_vreg(fd, instr.arg1, ti, 0)
+    buf := tmp_name(ti, 1)
+    write_str(fd, "  " + buf + " = call ptr @malloc(i64 21)\n")
+    write_str(fd, "  call i32 (ptr, i64, ptr, ...) @snprintf(ptr " + buf + ", i64 21, ptr @.fmt.ld, i64 " + val + ")\n")
+    emit_ptrtoint_store(fd, instr.dest, buf, ti, 2)
+}
+
+fn emit_op_bool_to_str(fd: int, instr: IRInstr, ti: int) {
+    val := emit_load_vreg(fd, instr.arg1, ti, 0)
+    cmp := tmp_name(ti, 1)
+    write_str(fd, "  " + cmp + " = icmp ne i64 " + val + ", 0\n")
+    result := tmp_name(ti, 2)
+    write_str(fd, "  " + result + " = select i1 " + cmp + ", ptr @.str.true, ptr @.str.false\n")
+    emit_ptrtoint_store(fd, instr.dest, result, ti, 3)
+}
+
+fn emit_op_str_eq(fd: int, instr: IRInstr, ti: int) {
+    a := emit_load_safe_str(fd, instr.arg1, ti, 0, 1, 0)
+    b := emit_load_safe_str(fd, instr.arg2, ti, 2, 3, 1)
+    cmp := tmp_name(ti, 4)
+    write_str(fd, "  " + cmp + " = call i32 @strcmp(ptr " + a + ", ptr " + b + ")\n")
+    eq := tmp_name(ti, 5)
+    write_str(fd, "  " + eq + " = icmp eq i32 " + cmp + ", 0\n")
+    r := tmp_name(ti, 6)
+    write_str(fd, "  " + r + " = zext i1 " + eq + " to i64\n")
+    emit_store_vreg(fd, instr.dest, r)
+}
+
+fn emit_op_str_ne(fd: int, instr: IRInstr, ti: int) {
+    a := emit_load_safe_str(fd, instr.arg1, ti, 0, 1, 0)
+    b := emit_load_safe_str(fd, instr.arg2, ti, 2, 3, 1)
+    cmp := tmp_name(ti, 4)
+    write_str(fd, "  " + cmp + " = call i32 @strcmp(ptr " + a + ", ptr " + b + ")\n")
+    ne := tmp_name(ti, 5)
+    write_str(fd, "  " + ne + " = icmp ne i32 " + cmp + ", 0\n")
+    r := tmp_name(ti, 6)
+    write_str(fd, "  " + r + " = zext i1 " + ne + " to i64\n")
+    emit_store_vreg(fd, instr.dest, r)
+}
+
+fn emit_op_str_concat(fd: int, instr: IRInstr, ti: int) {
+    a := emit_load_safe_str(fd, instr.arg1, ti, 0, 1, 0)
+    b := emit_load_safe_str(fd, instr.arg2, ti, 2, 3, 1)
+    tis := strconv.Itoa(ti)
+    la := "%sc.la." + tis
+    write_str(fd, "  " + la + " = call i64 @strlen(ptr " + a + ")\n")
+    lb := "%sc.lb." + tis
+    write_str(fd, "  " + lb + " = call i64 @strlen(ptr " + b + ")\n")
+    total := "%sc.tot." + tis
+    write_str(fd, "  " + total + " = add i64 " + la + ", " + lb + "\n")
+    total1 := "%sc.tot1." + tis
+    write_str(fd, "  " + total1 + " = add i64 " + total + ", 1\n")
+    buf := "%sc.buf." + tis
+    write_str(fd, "  " + buf + " = call ptr @malloc(i64 " + total1 + ")\n")
+    write_str(fd, "  call ptr @memcpy(ptr " + buf + ", ptr " + a + ", i64 " + la + ")\n")
+    dst := "%sc.dst." + tis
+    write_str(fd, "  " + dst + " = getelementptr i8, ptr " + buf + ", i64 " + la + "\n")
+    write_str(fd, "  call ptr @memcpy(ptr " + dst + ", ptr " + b + ", i64 " + lb + ")\n")
+    term := "%sc.trm." + tis
+    write_str(fd, "  " + term + " = getelementptr i8, ptr " + buf + ", i64 " + total + "\n")
+    write_str(fd, "  store i8 0, ptr " + term + "\n")
+    emit_ptrtoint_store(fd, instr.dest, buf, ti, 4)
+}
+
+fn emit_op_str_char_at(fd: int, instr: IRInstr, ti: int) {
+    s := emit_load_safe_str(fd, instr.arg1, ti, 0, 1, 0)
+    idx := emit_load_vreg(fd, instr.arg2, ti, 2)
+    gep := tmp_name(ti, 3)
+    write_str(fd, "  " + gep + " = getelementptr i8, ptr " + s + ", i64 " + idx + "\n")
+    b := tmp_name(ti, 4)
+    write_str(fd, "  " + b + " = load i8, ptr " + gep + "\n")
+    r := tmp_name(ti, 5)
+    write_str(fd, "  " + r + " = zext i8 " + b + " to i64\n")
+    emit_store_vreg(fd, instr.dest, r)
+}
+
+fn emit_op_syscall_open(fd: int, instr: IRInstr, ti: int) {
+    path := emit_load_ptr(fd, instr.arg1, ti, 0, 1)
+    flags := emit_load_vreg(fd, instr.arg2, ti, 2)
+    mode := emit_load_vreg(fd, instr.arg3, ti, 3)
+    f32 := tmp_name(ti, 4)
+    write_str(fd, "  " + f32 + " = trunc i64 " + flags + " to i32\n")
+    m32 := tmp_name(ti, 5)
+    write_str(fd, "  " + m32 + " = trunc i64 " + mode + " to i32\n")
+    r32 := tmp_name(ti, 6)
+    write_str(fd, "  " + r32 + " = call i32 (ptr, i32, ...) @open(ptr " + path + ", i32 " + f32 + ", i32 " + m32 + ")\n")
+    r := tmp_name(ti, 7)
+    write_str(fd, "  " + r + " = sext i32 " + r32 + " to i64\n")
+    emit_store_vreg(fd, instr.dest, r)
+}
+
+fn emit_op_syscall_write(fd: int, instr: IRInstr, ti: int) {
+    sfd := emit_load_vreg(fd, instr.arg1, ti, 0)
+    buf := emit_load_ptr(fd, instr.arg2, ti, 1, 2)
+    size := emit_load_vreg(fd, instr.arg3, ti, 3)
+    fd32 := tmp_name(ti, 4)
+    write_str(fd, "  " + fd32 + " = trunc i64 " + sfd + " to i32\n")
+    r := tmp_name(ti, 5)
+    write_str(fd, "  " + r + " = call i64 @write(i32 " + fd32 + ", ptr " + buf + ", i64 " + size + ")\n")
+    emit_store_vreg(fd, instr.dest, r)
+}
+
+fn emit_op_syscall_close(fd: int, instr: IRInstr, ti: int) {
+    sfd := emit_load_vreg(fd, instr.arg1, ti, 0)
+    fd32 := tmp_name(ti, 1)
+    write_str(fd, "  " + fd32 + " = trunc i64 " + sfd + " to i32\n")
+    r32 := tmp_name(ti, 2)
+    write_str(fd, "  " + r32 + " = call i32 @close(i32 " + fd32 + ")\n")
+    r := tmp_name(ti, 3)
+    write_str(fd, "  " + r + " = sext i32 " + r32 + " to i64\n")
+    emit_store_vreg(fd, instr.dest, r)
+}
+
+fn emit_op_syscall_read(fd: int, instr: IRInstr, ti: int) {
+    sfd := emit_load_vreg(fd, instr.arg1, ti, 0)
+    buf := emit_load_ptr(fd, instr.arg2, ti, 1, 2)
+    size := emit_load_vreg(fd, instr.arg3, ti, 3)
+    fd32 := tmp_name(ti, 4)
+    write_str(fd, "  " + fd32 + " = trunc i64 " + sfd + " to i32\n")
+    r := tmp_name(ti, 5)
+    write_str(fd, "  " + r + " = call i64 @read(i32 " + fd32 + ", ptr " + buf + ", i64 " + size + ")\n")
+    emit_store_vreg(fd, instr.dest, r)
+}
+
+fn emit_op_is_dir(fd: int, instr: IRInstr, ti: int) {
+    path := emit_load_ptr(fd, instr.arg1, ti, 0, 1)
+    r := tmp_name(ti, 2)
+    write_str(fd, "  " + r + " = call i64 @ease_is_dir(ptr " + path + ")\n")
+    emit_store_vreg(fd, instr.dest, r)
+}
+
+fn emit_op_list_dir(fd: int, instr: IRInstr, ti: int) {
+    path := emit_load_ptr(fd, instr.arg1, ti, 0, 1)
+    r := tmp_name(ti, 2)
+    write_str(fd, "  " + r + " = call ptr @ease_list_dir(ptr " + path + ")\n")
+    emit_ptrtoint_store(fd, instr.dest, r, ti, 3)
+}
+
+fn emit_op_setjmp(fd: int, instr: IRInstr, ti: int) {
+    r32 := tmp_name(ti, 0)
+    write_str(fd, "  " + r32 + " = call i32 @setjmp(ptr @ease_test_jmp_buf) #0\n")
+    r := tmp_name(ti, 1)
+    write_str(fd, "  " + r + " = sext i32 " + r32 + " to i64\n")
+    emit_store_vreg(fd, instr.dest, r)
+}
+
+fn emit_op_clock_gettime(fd: int, instr: IRInstr, ti: int, clock_id: string) {
+    ts := tmp_name(ti, 0)
+    write_str(fd, "  " + ts + " = alloca [16 x i8]\n")
+    write_str(fd, "  call i32 @clock_gettime(i32 " + clock_id + ", ptr " + ts + ")\n")
+    sec := tmp_name(ti, 1)
+    write_str(fd, "  " + sec + " = load i64, ptr " + ts + "\n")
+    nsec_ptr := tmp_name(ti, 2)
+    write_str(fd, "  " + nsec_ptr + " = getelementptr i8, ptr " + ts + ", i64 8\n")
+    nsec := tmp_name(ti, 3)
+    write_str(fd, "  " + nsec + " = load i64, ptr " + nsec_ptr + "\n")
+    sec_ns := tmp_name(ti, 4)
+    write_str(fd, "  " + sec_ns + " = mul i64 " + sec + ", 1000000000\n")
+    r := tmp_name(ti, 5)
+    write_str(fd, "  " + r + " = add i64 " + sec_ns + ", " + nsec + "\n")
+    emit_store_vreg(fd, instr.dest, r)
+}
+
+fn emit_op_loadfloat(fd: int, instr: IRInstr, ti: int) {
+    r := tmp_name(ti, 0)
+    write_str(fd, "  " + r + " = bitcast double " + instr.str_val + " to i64\n")
+    emit_store_vreg(fd, instr.dest, r)
+}
+
+fn emit_op_fbinop(fd: int, instr: IRInstr, ti: int) {
+    lhs := emit_load_vreg(fd, instr.arg1, ti, 0)
+    rhs := emit_load_vreg(fd, instr.arg2, ti, 1)
+    ld := tmp_name(ti, 2)
+    write_str(fd, "  " + ld + " = bitcast i64 " + lhs + " to double\n")
+    rd := tmp_name(ti, 3)
+    write_str(fd, "  " + rd + " = bitcast i64 " + rhs + " to double\n")
+    fop_name := "fadd"
+    if instr.op == ir.OP_FSUB { fop_name = "fsub" }
+    if instr.op == ir.OP_FMUL { fop_name = "fmul" }
+    if instr.op == ir.OP_FDIV { fop_name = "fdiv" }
+    if instr.op == ir.OP_FMOD { fop_name = "frem" }
+    res_d := tmp_name(ti, 4)
+    write_str(fd, "  " + res_d + " = " + fop_name + " double " + ld + ", " + rd + "\n")
+    res_i := tmp_name(ti, 5)
+    write_str(fd, "  " + res_i + " = bitcast double " + res_d + " to i64\n")
+    emit_store_vreg(fd, instr.dest, res_i)
+}
+
+fn emit_op_fcmp(fd: int, instr: IRInstr, ti: int) {
+    lhs := emit_load_vreg(fd, instr.arg1, ti, 0)
+    rhs := emit_load_vreg(fd, instr.arg2, ti, 1)
+    ld := tmp_name(ti, 2)
+    write_str(fd, "  " + ld + " = bitcast i64 " + lhs + " to double\n")
+    rd := tmp_name(ti, 3)
+    write_str(fd, "  " + rd + " = bitcast i64 " + rhs + " to double\n")
+    pred := "olt"
+    if instr.op == ir.OP_FCMP_GT { pred = "ogt" }
+    if instr.op == ir.OP_FCMP_LE { pred = "ole" }
+    if instr.op == ir.OP_FCMP_GE { pred = "oge" }
+    if instr.op == ir.OP_FCMP_EQ { pred = "oeq" }
+    if instr.op == ir.OP_FCMP_NE { pred = "une" }
+    cmp := tmp_name(ti, 4)
+    write_str(fd, "  " + cmp + " = fcmp " + pred + " double " + ld + ", " + rd + "\n")
+    ext := tmp_name(ti, 5)
+    write_str(fd, "  " + ext + " = zext i1 " + cmp + " to i64\n")
+    emit_store_vreg(fd, instr.dest, ext)
+}
+
+fn emit_op_int_to_float(fd: int, instr: IRInstr, ti: int) {
+    val := emit_load_vreg(fd, instr.arg1, ti, 0)
+    dbl := tmp_name(ti, 1)
+    write_str(fd, "  " + dbl + " = sitofp i64 " + val + " to double\n")
+    r := tmp_name(ti, 2)
+    write_str(fd, "  " + r + " = bitcast double " + dbl + " to i64\n")
+    emit_store_vreg(fd, instr.dest, r)
+}
+
+fn emit_op_float_to_int(fd: int, instr: IRInstr, ti: int) {
+    val := emit_load_vreg(fd, instr.arg1, ti, 0)
+    dbl := tmp_name(ti, 1)
+    write_str(fd, "  " + dbl + " = bitcast i64 " + val + " to double\n")
+    r := tmp_name(ti, 2)
+    write_str(fd, "  " + r + " = fptosi double " + dbl + " to i64\n")
+    emit_store_vreg(fd, instr.dest, r)
+}
+
+fn emit_op_float_to_str(fd: int, instr: IRInstr, ti: int) {
+    val := emit_load_vreg(fd, instr.arg1, ti, 0)
+    dbl := tmp_name(ti, 1)
+    write_str(fd, "  " + dbl + " = bitcast i64 " + val + " to double\n")
+    buf := tmp_name(ti, 2)
+    write_str(fd, "  " + buf + " = call ptr @malloc(i64 32)\n")
+    write_str(fd, "  call i32 (ptr, i64, ptr, ...) @snprintf(ptr " + buf + ", i64 32, ptr @.fmt.g, double " + dbl + ")\n")
+    emit_ptrtoint_store(fd, instr.dest, buf, ti, 3)
+}
+
+fn emit_op_map_call(fd: int, instr: IRInstr, ti: int, fname: string, two_args: int) {
+    m := emit_load_vreg(fd, instr.arg1, ti, 0)
+    if two_args == 1 {
+        k := emit_load_vreg(fd, instr.arg2, ti, 1)
+        r := tmp_name(ti, 2)
+        write_str(fd, "  " + r + " = call i64 @" + fname + "(i64 " + m + ", i64 " + k + ")\n")
+        emit_store_vreg(fd, instr.dest, r)
+    } else {
+        r := tmp_name(ti, 1)
+        write_str(fd, "  " + r + " = call i64 @" + fname + "(i64 " + m + ")\n")
+        emit_store_vreg(fd, instr.dest, r)
+    }
+}
+
+fn emit_op_map_new(fd: int, instr: IRInstr, ti: int) {
+    r := tmp_name(ti, 0)
+    write_str(fd, "  " + r + " = call i64 @maps_New(i64 " + strconv.Itoa(instr.arg1) + ")\n")
+    emit_store_vreg(fd, instr.dest, r)
+}
+
+fn emit_op_map_set(fd: int, instr: IRInstr, ti: int) {
+    m := emit_load_vreg(fd, instr.arg1, ti, 0)
+    k := emit_load_vreg(fd, instr.arg2, ti, 1)
+    v := emit_load_vreg(fd, instr.arg3, ti, 2)
+    r := tmp_name(ti, 3)
+    write_str(fd, "  " + r + " = call i64 @maps_Set(i64 " + m + ", i64 " + k + ", i64 " + v + ")\n")
+    emit_store_vreg(fd, instr.dest, r)
+}
+
+fn emit_op_iface_wrap(fd: int, instr: IRInstr, ti: int) {
+    iw_ptr := "%iw.ptr." + strconv.Itoa(ti)
+    write_str(fd, "  " + iw_ptr + " = call ptr @malloc(i64 16)\n")
+    iw_concrete := emit_load_vreg(fd, instr.arg1, ti, 0)
+    iw_concrete_ptr := "%iw.cptr." + strconv.Itoa(ti)
+    write_str(fd, "  " + iw_concrete_ptr + " = inttoptr i64 " + iw_concrete + " to ptr\n")
+    write_str(fd, "  store i64 " + iw_concrete + ", ptr " + iw_ptr + "\n")
+    iw_vt := "%iw.vt." + strconv.Itoa(ti)
+    write_str(fd, "  " + iw_vt + " = ptrtoint ptr @vtable." + llvm_mangle(instr.str_val) + " to i64\n")
+    iw_slot1 := "%iw.slot1." + strconv.Itoa(ti)
+    write_str(fd, "  " + iw_slot1 + " = getelementptr i8, ptr " + iw_ptr + ", i64 8\n")
+    write_str(fd, "  store i64 " + iw_vt + ", ptr " + iw_slot1 + "\n")
+    iw_result := "%iw.result." + strconv.Itoa(ti)
+    write_str(fd, "  " + iw_result + " = ptrtoint ptr " + iw_ptr + " to i64\n")
+    emit_store_vreg(fd, instr.dest, iw_result)
+}
+
+fn emit_op_closure_new(fd: int, instr: IRInstr, ti: int) {
+    cl_ptr := "%cl.ptr." + strconv.Itoa(ti)
+    write_str(fd, "  " + cl_ptr + " = call ptr @malloc(i64 16)\n")
+    cl_fp := "%cl.fp." + strconv.Itoa(ti)
+    write_str(fd, "  " + cl_fp + " = ptrtoint ptr @" + llvm_func_name(instr.str_val) + " to i64\n")
+    write_str(fd, "  store i64 " + cl_fp + ", ptr " + cl_ptr + "\n")
+    cl_env_slot := "%cl.env.slot." + strconv.Itoa(ti)
+    write_str(fd, "  " + cl_env_slot + " = getelementptr i8, ptr " + cl_ptr + ", i64 8\n")
+    if instr.arg1 >= 0 {
+        cl_env_val := emit_load_vreg(fd, instr.arg1, ti, 0)
+        write_str(fd, "  store i64 " + cl_env_val + ", ptr " + cl_env_slot + "\n")
+    } else {
+        write_str(fd, "  store i64 0, ptr " + cl_env_slot + "\n")
+    }
+    cl_result := "%cl.result." + strconv.Itoa(ti)
+    write_str(fd, "  " + cl_result + " = ptrtoint ptr " + cl_ptr + " to i64\n")
+    emit_store_vreg(fd, instr.dest, cl_result)
+}
+
+fn emit_function_prelude(fd: int, lname: string, param_count: int, vregs: []int) {
     params := ""
     pi := 0
     for pi < param_count {
@@ -846,29 +1477,129 @@ fn emit_llvm_function(fd: int, instrs: []IRInstr, start: int, end_pos: int, func
         params = params + "i64 %param." + strconv.Itoa(pi)
         pi = pi + 1
     }
-
     write_str(fd, "define i64 @" + lname + "(" + params + ") {\n")
-
-    // Collect all vregs used
-    vregs := collect_vregs(instrs, start, end_pos, param_count)
-
-    // Emit allocas for all vregs
     vi := 0
     for vi < len(vregs) {
         write_str(fd, "  %v." + strconv.Itoa(vregs[vi]) + " = alloca i64\n")
         vi = vi + 1
     }
-
-    // Store parameters into vreg slots (params use 90000+ offset vregs)
     pi = 0
     for pi < param_count {
         write_str(fd, "  store i64 %param." + strconv.Itoa(pi) + ", ptr %v." + strconv.Itoa(90000 + pi) + "\n")
         pi = pi + 1
     }
-
-    // Branch to body
     write_str(fd, "  br label %B.body\n")
     write_str(fd, "B.body:\n")
+}
+
+fn emit_op_terminator(fd: int, instr: IRInstr, ti: int) -> int {
+    if instr.op == ir.OP_RET {
+        if instr.dest >= 0 {
+            v := emit_load_vreg(fd, instr.dest, ti, 0)
+            write_str(fd, "  ret i64 " + v + "\n")
+        } else {
+            write_str(fd, "  ret i64 0\n")
+        }
+        return 1
+    }
+    if instr.op == ir.OP_JUMP {
+        write_str(fd, "  br label %L." + strconv.Itoa(instr.dest) + "\n")
+        return 1
+    }
+    if instr.op == ir.OP_BRANCH {
+        cond := emit_load_vreg(fd, instr.dest, ti, 0)
+        cmp := tmp_name(ti, 1)
+        write_str(fd, "  " + cmp + " = icmp eq i64 " + cond + ", 0\n")
+        fall_label := "L.fall." + strconv.Itoa(ti)
+        write_str(fd, "  br i1 " + cmp + ", label %L." + strconv.Itoa(instr.arg1) + ", label %" + fall_label + "\n")
+        write_str(fd, fall_label + ":\n")
+        return 0
+    }
+    if instr.op == ir.OP_TEST_FAIL {
+        write_str(fd, "  call void @longjmp(ptr @ease_test_jmp_buf, i32 1)\n")
+        write_str(fd, "  unreachable\n")
+        return 1
+    }
+    return 0
+}
+
+fn emit_op_call(fd: int, instr: IRInstr, ti: int, call_args: []int) {
+    callee := llvm_func_name(instr.str_val)
+    args_str := ""
+    ai := 0
+    for ai < len(call_args) {
+        if ai > 0 { args_str = args_str + ", " }
+        arg_val := emit_load_vreg(fd, call_args[ai], ti, ai)
+        args_str = args_str + "i64 " + arg_val
+        ai = ai + 1
+    }
+    if instr.dest >= 0 {
+        r := tmp_name(ti, 9)
+        write_str(fd, "  " + r + " = call i64 @" + callee + "(" + args_str + ")\n")
+        emit_store_vreg(fd, instr.dest, r)
+    } else {
+        write_str(fd, "  call i64 @" + callee + "(" + args_str + ")\n")
+    }
+}
+
+fn emit_op_iface_call(fd: int, instr: IRInstr, ti: int, call_args: []int) {
+    ic_iface := "%ic.iface." + strconv.Itoa(ti)
+    ic_iface_val := emit_load_vreg(fd, call_args[0], ti, 0)
+    write_str(fd, "  " + ic_iface + " = inttoptr i64 " + ic_iface_val + " to ptr\n")
+    ic_concrete := "%ic.concrete." + strconv.Itoa(ti)
+    write_str(fd, "  " + ic_concrete + " = load i64, ptr " + ic_iface + "\n")
+    ic_vt_slot := "%ic.vt.slot." + strconv.Itoa(ti)
+    write_str(fd, "  " + ic_vt_slot + " = getelementptr i8, ptr " + ic_iface + ", i64 8\n")
+    ic_vt := "%ic.vt." + strconv.Itoa(ti)
+    write_str(fd, "  " + ic_vt + " = load i64, ptr " + ic_vt_slot + "\n")
+    ic_vt_ptr := "%ic.vt.ptr." + strconv.Itoa(ti)
+    write_str(fd, "  " + ic_vt_ptr + " = inttoptr i64 " + ic_vt + " to ptr\n")
+    ic_fp_offset := instr.arg1 * 8
+    ic_fp_slot := "%ic.fp.slot." + strconv.Itoa(ti)
+    write_str(fd, "  " + ic_fp_slot + " = getelementptr i8, ptr " + ic_vt_ptr + ", i64 " + strconv.Itoa(ic_fp_offset) + "\n")
+    ic_fp := "%ic.fp." + strconv.Itoa(ti)
+    write_str(fd, "  " + ic_fp + " = load i64, ptr " + ic_fp_slot + "\n")
+    ic_fn := "%ic.fn." + strconv.Itoa(ti)
+    write_str(fd, "  " + ic_fn + " = inttoptr i64 " + ic_fp + " to ptr\n")
+    ic_args_str := "i64 " + ic_concrete
+    ic_ai := 1
+    for ic_ai < len(call_args) {
+        ic_arg_val := emit_load_vreg(fd, call_args[ic_ai], ti, ic_ai)
+        ic_args_str = ic_args_str + ", i64 " + ic_arg_val
+        ic_ai = ic_ai + 1
+    }
+    ic_result := "%ic.result." + strconv.Itoa(ti)
+    write_str(fd, "  " + ic_result + " = call i64 " + ic_fn + "(" + ic_args_str + ")\n")
+    emit_store_vreg(fd, instr.dest, ic_result)
+}
+
+fn emit_op_closure_call(fd: int, instr: IRInstr, ti: int, call_args: []int) {
+    cc_obj := "%cc.obj." + strconv.Itoa(ti)
+    cc_obj_val := emit_load_vreg(fd, instr.arg1, ti, 0)
+    write_str(fd, "  " + cc_obj + " = inttoptr i64 " + cc_obj_val + " to ptr\n")
+    cc_fp := "%cc.fp." + strconv.Itoa(ti)
+    write_str(fd, "  " + cc_fp + " = load i64, ptr " + cc_obj + "\n")
+    cc_fn := "%cc.fn." + strconv.Itoa(ti)
+    write_str(fd, "  " + cc_fn + " = inttoptr i64 " + cc_fp + " to ptr\n")
+    cc_env_slot := "%cc.env.slot." + strconv.Itoa(ti)
+    write_str(fd, "  " + cc_env_slot + " = getelementptr i8, ptr " + cc_obj + ", i64 8\n")
+    cc_env := "%cc.env." + strconv.Itoa(ti)
+    write_str(fd, "  " + cc_env + " = load i64, ptr " + cc_env_slot + "\n")
+    cc_args_str := "i64 " + cc_env
+    cc_ai := 0
+    for cc_ai < len(call_args) {
+        cc_arg_val := emit_load_vreg(fd, call_args[cc_ai], ti, cc_ai + 1)
+        cc_args_str = cc_args_str + ", i64 " + cc_arg_val
+        cc_ai = cc_ai + 1
+    }
+    cc_result := "%cc.result." + strconv.Itoa(ti)
+    write_str(fd, "  " + cc_result + " = call i64 " + cc_fn + "(" + cc_args_str + ")\n")
+    emit_store_vreg(fd, instr.dest, cc_result)
+}
+
+fn emit_llvm_function(fd: int, instrs: []IRInstr, start: int, end_pos: int, func_name: string, param_count: int, string_table: []string, string_dests: []int) {
+    vregs := collect_vregs(instrs, start, end_pos, param_count)
+    emit_function_prelude(fd, llvm_func_name(func_name), param_count, vregs)
 
     // Emit instructions
     terminated := 0
@@ -887,37 +1618,9 @@ fn emit_llvm_function(fd: int, instrs: []IRInstr, start: int, end_pos: int, func
             terminated = 0
         }
 
-        if terminated == 0 && instr.op == ir.OP_LOADCONST {
-            if instr.str_val != "" {
-                // String constant
-                str_idx := find_string_index(instr.dest, string_dests)
-                if str_idx >= 0 {
-                    t := tmp_name(ti, 0)
-                    write_str(fd, "  " + t + " = ptrtoint ptr @.str." + strconv.Itoa(str_idx) + " to i64\n")
-                    emit_store_vreg(fd, instr.dest, t)
-                }
-            } else {
-                // Integer constant
-                emit_store_vreg(fd, instr.dest, strconv.Itoa(instr.arg1))
-            }
-        }
-
-        if terminated == 0 && instr.op == ir.OP_LOAD_GLOBAL {
-            // Load address of a global variable: ptrtoint ptr @name to i64
-            t := tmp_name(ti, 0)
-            write_str(fd, "  " + t + " = ptrtoint ptr @" + instr.str_val + " to i64\n")
-            emit_store_vreg(fd, instr.dest, t)
-        }
-
-        if terminated == 0 && instr.op == ir.OP_ADD {
-            if instr.arg2 == -1 {
-                // Copy (MOV variant)
-                v := emit_load_vreg(fd, instr.arg1, ti, 0)
-                emit_store_vreg(fd, instr.dest, v)
-            } else {
-                emit_llvm_binop(fd, instr, "add", ti)
-            }
-        }
+        if terminated == 0 && instr.op == ir.OP_LOADCONST { emit_op_loadconst(fd, instr, ti, string_dests) }
+        if terminated == 0 && instr.op == ir.OP_LOAD_GLOBAL { emit_op_load_global(fd, instr, ti) }
+        if terminated == 0 && instr.op == ir.OP_ADD { emit_op_add(fd, instr, ti) }
         if terminated == 0 && instr.op == ir.OP_SUB { emit_llvm_binop(fd, instr, "sub", ti) }
         if terminated == 0 && instr.op == ir.OP_MUL { emit_llvm_binop(fd, instr, "mul", ti) }
         if terminated == 0 && instr.op == ir.OP_DIV { emit_llvm_binop(fd, instr, "sdiv", ti) }
@@ -928,12 +1631,7 @@ fn emit_llvm_function(fd: int, instrs: []IRInstr, start: int, end_pos: int, func
         if terminated == 0 && instr.op == ir.OP_BITAND { emit_llvm_binop(fd, instr, "and", ti) }
         if terminated == 0 && instr.op == ir.OP_BITOR { emit_llvm_binop(fd, instr, "or", ti) }
 
-        if terminated == 0 && instr.op == ir.OP_NOT {
-            v := emit_load_vreg(fd, instr.arg1, ti, 0)
-            r := tmp_name(ti, 1)
-            write_str(fd, "  " + r + " = xor i64 " + v + ", 1\n")
-            emit_store_vreg(fd, instr.dest, r)
-        }
+        if terminated == 0 && instr.op == ir.OP_NOT { emit_op_not(fd, instr, ti) }
 
         if terminated == 0 && instr.op == ir.OP_CMP_EQ { emit_llvm_cmp(fd, instr, "eq", ti) }
         if terminated == 0 && instr.op == ir.OP_CMP_NE { emit_llvm_cmp(fd, instr, "ne", ti) }
@@ -942,533 +1640,47 @@ fn emit_llvm_function(fd: int, instrs: []IRInstr, start: int, end_pos: int, func
         if terminated == 0 && instr.op == ir.OP_CMP_GT { emit_llvm_cmp(fd, instr, "sgt", ti) }
         if terminated == 0 && instr.op == ir.OP_CMP_GE { emit_llvm_cmp(fd, instr, "sge", ti) }
 
-        if terminated == 0 && instr.op == ir.OP_LOAD {
-            base := emit_load_vreg(fd, instr.arg1, ti, 0)
-            // arg2: if str_val is "array_index", arg2 is a vreg; otherwise immediate offset
-            addr_val := ""
-            if instr.str_val == "array_index" {
-                // Array indexing: base is fat pointer address, arg2 is index vreg
-                // 1. Extract data pointer from fat pointer (offset 0)
-                fp := tmp_name(ti, 1)
-                write_str(fd, "  " + fp + " = inttoptr i64 " + base + " to ptr\n")
-                dp := tmp_name(ti, 2)
-                write_str(fd, "  " + dp + " = load i64, ptr " + fp + "\n")
-                // 2. Scale index by element size (8 bytes for pointer-based storage)
-                idx := emit_load_vreg(fd, instr.arg2, ti, 3)
-                scaled := tmp_name(ti, 4)
-                write_str(fd, "  " + scaled + " = mul i64 " + idx + ", 8\n")
-                // 3. Calculate element address
-                a := tmp_name(ti, 5)
-                write_str(fd, "  " + a + " = add i64 " + dp + ", " + scaled + "\n")
-                addr_val = a
-            } else {
-                if instr.arg2 == 0 {
-                    addr_val = base
-                } else {
-                    a := tmp_name(ti, 2)
-                    write_str(fd, "  " + a + " = add i64 " + base + ", " + strconv.Itoa(instr.arg2) + "\n")
-                    addr_val = a
-                }
-            }
-            ptr := tmp_name(ti, 6)
-            write_str(fd, "  " + ptr + " = inttoptr i64 " + addr_val + " to ptr\n")
-            val := tmp_name(ti, 7)
-            write_str(fd, "  " + val + " = load i64, ptr " + ptr + "\n")
-            emit_store_vreg(fd, instr.dest, val)
-        }
+        if terminated == 0 && instr.op == ir.OP_LOAD { emit_op_load(fd, instr, ti) }
+        if terminated == 0 && instr.op == ir.OP_STORE { emit_op_store(fd, instr, ti) }
+        if terminated == 0 && instr.op == ir.OP_STORE_INDEX { emit_op_store_index(fd, instr, ti) }
+        if terminated == 0 && instr.op == ir.OP_COPY { emit_op_copy(fd, instr, ti) }
+        if terminated == 0 && instr.op == ir.OP_ALLOCA { emit_op_alloca(fd, instr, ti) }
+        if terminated == 0 && instr.op == ir.OP_INDEXADDR { emit_op_indexaddr(fd, instr, ti) }
+        if terminated == 0 && instr.op == ir.OP_MEMCOPY { emit_op_memcopy(fd, instr, ti) }
+        if terminated == 0 && instr.op == ir.OP_ARRAY_LEN { emit_op_array_len(fd, instr, ti) }
 
-        if terminated == 0 && instr.op == ir.OP_STORE {
-            addr := emit_load_vreg(fd, instr.arg1, ti, 0)
-            val := emit_load_vreg(fd, instr.arg2, ti, 1)
-            ptr := tmp_name(ti, 2)
-            write_str(fd, "  " + ptr + " = inttoptr i64 " + addr + " to ptr\n")
-            write_str(fd, "  store i64 " + val + ", ptr " + ptr + "\n")
-        }
+        if terminated == 0 && instr.op == ir.OP_ARRAY_SLICE { emit_op_array_slice(fd, instr, ti) }
+        if terminated == 0 && instr.op == ir.OP_REFLECT_NUM_FIELD { emit_op_reflect_num_field(fd, instr, ti) }
+        if terminated == 0 && instr.op == ir.OP_REFLECT_FIELD_NAME { emit_op_reflect_field_name(fd, instr, ti) }
+        if terminated == 0 && instr.op == ir.OP_REFLECT_FIELD_TYPE { emit_op_reflect_field_type(fd, instr, ti) }
+        if terminated == 0 && instr.op == ir.OP_REFLECT_FIELD_VALUE { emit_op_reflect_field_value(fd, instr, ti) }
+        if terminated == 0 && instr.op == ir.OP_REFLECT_SET_FIELD_VALUE { emit_op_reflect_set_field_value(fd, instr, ti) }
+        if terminated == 0 && instr.op == ir.OP_JSON_MARSHAL { emit_json_marshal(fd, instr, ti) }
+        if terminated == 0 && instr.op == ir.OP_JSON_UNMARSHAL { emit_json_unmarshal(fd, instr, ti) }
+        if terminated == 0 && instr.op == ir.OP_STR_LEN { emit_op_str_len(fd, instr, ti) }
 
-        if terminated == 0 && instr.op == ir.OP_STORE_INDEX {
-            // arr=arg1, idx=arg2, val=arg3
-            arr := emit_load_vreg(fd, instr.arg1, ti, 0)
-            si_fp := "%si.fp." + strconv.Itoa(ti)
-            write_str(fd, "  " + si_fp + " = inttoptr i64 " + arr + " to ptr\n")
-            si_dp := "%si.dp." + strconv.Itoa(ti)
-            write_str(fd, "  " + si_dp + " = load i64, ptr " + si_fp + "\n")
-            idx := emit_load_vreg(fd, instr.arg2, ti, 1)
-            si_scaled := "%si.sc." + strconv.Itoa(ti)
-            write_str(fd, "  " + si_scaled + " = mul i64 " + idx + ", 8\n")
-            si_addr := "%si.addr." + strconv.Itoa(ti)
-            write_str(fd, "  " + si_addr + " = add i64 " + si_dp + ", " + si_scaled + "\n")
-            si_ptr := "%si.ptr." + strconv.Itoa(ti)
-            write_str(fd, "  " + si_ptr + " = inttoptr i64 " + si_addr + " to ptr\n")
-            val := emit_load_vreg(fd, instr.arg3, ti, 2)
-            write_str(fd, "  store i64 " + val + ", ptr " + si_ptr + "\n")
-        }
+        if terminated == 0 && instr.op == ir.OP_ARRAY_PUSH { emit_op_array_push(fd, instr, ti) }
+        if terminated == 0 && instr.op == ir.OP_POKE { emit_op_poke(fd, instr, ti) }
+        if terminated == 0 && instr.op == ir.OP_PEEK { emit_op_peek(fd, instr, ti) }
+        if terminated == 0 && instr.op == ir.OP_HEAP_ALLOC { emit_op_heap_alloc(fd, instr, ti) }
+        if terminated == 0 && instr.op == ir.OP_ARGC { emit_op_argc(fd, instr, ti) }
+        if terminated == 0 && instr.op == ir.OP_ARGV { emit_op_argv(fd, instr, ti) }
+        if terminated == 0 && instr.op == ir.OP_INT_TO_STR { emit_op_int_to_str(fd, instr, ti) }
+        if terminated == 0 && instr.op == ir.OP_BOOL_TO_STR { emit_op_bool_to_str(fd, instr, ti) }
+        if terminated == 0 && instr.op == ir.OP_STR_EQ { emit_op_str_eq(fd, instr, ti) }
+        if terminated == 0 && instr.op == ir.OP_STR_NE { emit_op_str_ne(fd, instr, ti) }
 
-        if terminated == 0 && instr.op == ir.OP_COPY {
-            // Copy value from source vreg (arg1) to dest vreg
-            val := emit_load_vreg(fd, instr.arg1, ti, 0)
-            emit_store_vreg(fd, instr.dest, val)
-        }
-
-        if terminated == 0 && instr.op == ir.OP_ALLOCA {
-            // Allocate with malloc (survives function returns)
-            size := strconv.Itoa(instr.arg1)
-            p := tmp_name(ti, 0)
-            write_str(fd, "  " + p + " = call ptr @malloc(i64 " + size + ")\n")
-            z := tmp_name(ti, 1)
-            write_str(fd, "  " + z + " = call ptr @memset(ptr " + p + ", i32 0, i64 " + size + ")\n")
-            emit_ptrtoint_store(fd, instr.dest, p, ti, 2)
-        }
-
-        if terminated == 0 && instr.op == ir.OP_INDEXADDR {
-            base := emit_load_vreg(fd, instr.arg1, ti, 0)
-            if instr.arg2 == 0 {
-                emit_store_vreg(fd, instr.dest, base)
-            } else {
-                r := tmp_name(ti, 1)
-                write_str(fd, "  " + r + " = add i64 " + base + ", " + strconv.Itoa(instr.arg2) + "\n")
-                emit_store_vreg(fd, instr.dest, r)
-            }
-        }
-
-        if terminated == 0 && instr.op == ir.OP_MEMCOPY {
-            // arg1=src, arg2=dest, arg3=size
-            src := emit_load_ptr(fd, instr.arg1, ti, 0, 1)
-            dst := emit_load_ptr(fd, instr.arg2, ti, 2, 3)
-            size := emit_load_vreg(fd, instr.arg3, ti, 4)
-            write_str(fd, "  call ptr @memcpy(ptr " + dst + ", ptr " + src + ", i64 " + size + ")\n")
-        }
-
-        if terminated == 0 && instr.op == ir.OP_ARRAY_LEN {
-            // Fat pointer: [ptr, len, cap]. len is at offset 8
-            base := emit_load_vreg(fd, instr.arg1, ti, 0)
-            addr := tmp_name(ti, 1)
-            write_str(fd, "  " + addr + " = add i64 " + base + ", 8\n")
-            ptr := tmp_name(ti, 2)
-            write_str(fd, "  " + ptr + " = inttoptr i64 " + addr + " to ptr\n")
-            val := tmp_name(ti, 3)
-            write_str(fd, "  " + val + " = load i64, ptr " + ptr + "\n")
-            emit_store_vreg(fd, instr.dest, val)
-        }
-
-        if terminated == 0 && instr.op == ir.OP_ARRAY_SLICE {
-            // Slice: create new fat pointer sharing underlying data
-            // arg1=array fat ptr, arg2=start vreg, arg3=end vreg
-            tis := strconv.Itoa(ti)
-            // Load fat pointer fields
-            fp := emit_load_ptr(fd, instr.arg1, ti, 0, 1)
-            dp := "%sl.dp." + tis
-            write_str(fd, "  " + dp + " = load i64, ptr " + fp + "\n")
-            cap_addr := "%sl.ca." + tis
-            write_str(fd, "  " + cap_addr + " = getelementptr i8, ptr " + fp + ", i64 16\n")
-            old_cap := "%sl.oc." + tis
-            write_str(fd, "  " + old_cap + " = load i64, ptr " + cap_addr + "\n")
-            // Load start and end
-            start := emit_load_vreg(fd, instr.arg2, ti, 2)
-            end := emit_load_vreg(fd, instr.arg3, ti, 3)
-            // new_data = data_ptr + start * 8
-            scaled := "%sl.sc." + tis
-            write_str(fd, "  " + scaled + " = mul i64 " + start + ", 8\n")
-            new_dp := "%sl.nd." + tis
-            write_str(fd, "  " + new_dp + " = add i64 " + dp + ", " + scaled + "\n")
-            // new_len = end - start
-            new_len := "%sl.nl." + tis
-            write_str(fd, "  " + new_len + " = sub i64 " + end + ", " + start + "\n")
-            // new_cap = old_cap - start
-            new_cap := "%sl.nc." + tis
-            write_str(fd, "  " + new_cap + " = sub i64 " + old_cap + ", " + start + "\n")
-            // Allocate new 24-byte fat pointer
-            new_fp := "%sl.fp." + tis
-            write_str(fd, "  " + new_fp + " = call ptr @malloc(i64 24)\n")
-            // Store data_ptr, len, cap
-            write_str(fd, "  store i64 " + new_dp + ", ptr " + new_fp + "\n")
-            len_ptr := "%sl.lp." + tis
-            write_str(fd, "  " + len_ptr + " = getelementptr i8, ptr " + new_fp + ", i64 8\n")
-            write_str(fd, "  store i64 " + new_len + ", ptr " + len_ptr + "\n")
-            cap_ptr := "%sl.cp." + tis
-            write_str(fd, "  " + cap_ptr + " = getelementptr i8, ptr " + new_fp + ", i64 16\n")
-            write_str(fd, "  store i64 " + new_cap + ", ptr " + cap_ptr + "\n")
-            // Result = fat pointer as i64
-            result := "%sl.r." + tis
-            write_str(fd, "  " + result + " = ptrtoint ptr " + new_fp + " to i64\n")
-            emit_store_vreg(fd, instr.dest, result)
-        }
-
-        if terminated == 0 && instr.op == ir.OP_REFLECT_NUM_FIELD {
-            sname := instr.str_val
-            val := tmp_name(ti, 1)
-            write_str(fd, "  " + val + " = load i64, ptr @reflect." + sname + ".count\n")
-            emit_store_vreg(fd, instr.dest, val)
-        }
-
-        if terminated == 0 && instr.op == ir.OP_REFLECT_FIELD_NAME {
-            sname := instr.str_val
-            idx := emit_load_vreg(fd, instr.arg2, ti, 0)
-            gep := tmp_name(ti, 1)
-            write_str(fd, "  " + gep + " = getelementptr [0 x ptr], ptr @reflect." + sname + ".names, i64 0, i64 " + idx + "\n")
-            cstr := tmp_name(ti, 2)
-            write_str(fd, "  " + cstr + " = load ptr, ptr " + gep + "\n")
-            str_val := tmp_name(ti, 3)
-            write_str(fd, "  " + str_val + " = ptrtoint ptr " + cstr + " to i64\n")
-            emit_store_vreg(fd, instr.dest, str_val)
-        }
-
-        if terminated == 0 && instr.op == ir.OP_REFLECT_FIELD_TYPE {
-            sname := instr.str_val
-            idx := emit_load_vreg(fd, instr.arg2, ti, 0)
-            gep := tmp_name(ti, 1)
-            write_str(fd, "  " + gep + " = getelementptr [0 x i64], ptr @reflect." + sname + ".types, i64 0, i64 " + idx + "\n")
-            val := tmp_name(ti, 2)
-            write_str(fd, "  " + val + " = load i64, ptr " + gep + "\n")
-            emit_store_vreg(fd, instr.dest, val)
-        }
-
-        if terminated == 0 && instr.op == ir.OP_REFLECT_FIELD_VALUE {
-            base := emit_load_vreg(fd, instr.arg1, ti, 0)
-            idx := emit_load_vreg(fd, instr.arg2, ti, 1)
-            offset := tmp_name(ti, 2)
-            write_str(fd, "  " + offset + " = mul i64 " + idx + ", 8\n")
-            addr := tmp_name(ti, 3)
-            write_str(fd, "  " + addr + " = add i64 " + base + ", " + offset + "\n")
-            ptr := tmp_name(ti, 4)
-            write_str(fd, "  " + ptr + " = inttoptr i64 " + addr + " to ptr\n")
-            val := tmp_name(ti, 5)
-            write_str(fd, "  " + val + " = load i64, ptr " + ptr + "\n")
-            emit_store_vreg(fd, instr.dest, val)
-        }
-
-        if terminated == 0 && instr.op == ir.OP_REFLECT_SET_FIELD_VALUE {
-            base := emit_load_vreg(fd, instr.arg1, ti, 0)
-            idx := emit_load_vreg(fd, instr.arg2, ti, 1)
-            val := emit_load_vreg(fd, instr.arg3, ti, 2)
-            offset := tmp_name(ti, 3)
-            write_str(fd, "  " + offset + " = mul i64 " + idx + ", 8\n")
-            addr := tmp_name(ti, 4)
-            write_str(fd, "  " + addr + " = add i64 " + base + ", " + offset + "\n")
-            ptr := tmp_name(ti, 5)
-            write_str(fd, "  " + ptr + " = inttoptr i64 " + addr + " to ptr\n")
-            write_str(fd, "  store i64 " + val + ", ptr " + ptr + "\n")
-        }
-
-        if terminated == 0 && instr.op == ir.OP_JSON_MARSHAL {
-            emit_json_marshal(fd, instr, ti)
-        }
-
-        if terminated == 0 && instr.op == ir.OP_JSON_UNMARSHAL {
-            emit_json_unmarshal(fd, instr, ti)
-        }
-
-        if terminated == 0 && instr.op == ir.OP_STR_LEN {
-            // Direct libc: i64 @strlen(ptr) with null guard
-            str_ptr := emit_load_safe_str(fd, instr.arg1, ti, 0, 1, 0)
-            result := tmp_name(ti, 2)
-            write_str(fd, "  " + result + " = call i64 @strlen(ptr " + str_ptr + ")\n")
-            emit_store_vreg(fd, instr.dest, result)
-        }
-
-        if terminated == 0 && instr.op == ir.OP_ARRAY_PUSH {
-            // Inline array push with grow logic
-            // arg1=fat ptr vreg, arg2=element vreg
-            fp := emit_load_ptr(fd, instr.arg1, ti, 0, 1)
-            elem := emit_load_vreg(fd, instr.arg2, ti, 2)
-            tis := strconv.Itoa(ti)
-            // Load ptr/len/cap from fat pointer
-            ptr_val := "%ap.ptr." + tis
-            write_str(fd, "  " + ptr_val + " = load i64, ptr " + fp + "\n")
-            len_addr := "%ap.la." + tis
-            write_str(fd, "  " + len_addr + " = getelementptr i8, ptr " + fp + ", i64 8\n")
-            len_val := "%ap.len." + tis
-            write_str(fd, "  " + len_val + " = load i64, ptr " + len_addr + "\n")
-            cap_addr := "%ap.ca." + tis
-            write_str(fd, "  " + cap_addr + " = getelementptr i8, ptr " + fp + ", i64 16\n")
-            cap_val := "%ap.cap." + tis
-            write_str(fd, "  " + cap_val + " = load i64, ptr " + cap_addr + "\n")
-            // Check if needs grow
-            needs_grow := "%ap.ng." + tis
-            write_str(fd, "  " + needs_grow + " = icmp sge i64 " + len_val + ", " + cap_val + "\n")
-            write_str(fd, "  br i1 " + needs_grow + ", label %ap.grow." + tis + ", label %ap.do." + tis + "\n")
-            // Grow block
-            write_str(fd, "ap.grow." + tis + ":\n")
-            cap_is_zero := "%ap.cz." + tis
-            write_str(fd, "  " + cap_is_zero + " = icmp eq i64 " + cap_val + ", 0\n")
-            cap_double := "%ap.cd." + tis
-            write_str(fd, "  " + cap_double + " = mul i64 " + cap_val + ", 2\n")
-            new_cap := "%ap.nc." + tis
-            write_str(fd, "  " + new_cap + " = select i1 " + cap_is_zero + ", i64 4, i64 " + cap_double + "\n")
-            alloc_size := "%ap.as." + tis
-            write_str(fd, "  " + alloc_size + " = mul i64 " + new_cap + ", 8\n")
-            new_ptr := "%ap.np." + tis
-            write_str(fd, "  " + new_ptr + " = call ptr @malloc(i64 " + alloc_size + ")\n")
-            old_ptr := "%ap.op." + tis
-            write_str(fd, "  " + old_ptr + " = inttoptr i64 " + ptr_val + " to ptr\n")
-            copy_size := "%ap.cs." + tis
-            write_str(fd, "  " + copy_size + " = mul i64 " + len_val + ", 8\n")
-            write_str(fd, "  call ptr @memcpy(ptr " + new_ptr + ", ptr " + old_ptr + ", i64 " + copy_size + ")\n")
-            new_ptr_int := "%ap.ni." + tis
-            write_str(fd, "  " + new_ptr_int + " = ptrtoint ptr " + new_ptr + " to i64\n")
-            write_str(fd, "  store i64 " + new_ptr_int + ", ptr " + fp + "\n")
-            write_str(fd, "  store i64 " + new_cap + ", ptr " + cap_addr + "\n")
-            write_str(fd, "  br label %ap.do." + tis + "\n")
-            // Do block: store element and increment len
-            write_str(fd, "ap.do." + tis + ":\n")
-            cur_ptr := "%ap.cp." + tis
-            write_str(fd, "  " + cur_ptr + " = load i64, ptr " + fp + "\n")
-            elem_offset := "%ap.eo." + tis
-            write_str(fd, "  " + elem_offset + " = mul i64 " + len_val + ", 8\n")
-            elem_addr := "%ap.ea." + tis
-            write_str(fd, "  " + elem_addr + " = add i64 " + cur_ptr + ", " + elem_offset + "\n")
-            elem_ptr := "%ap.ep." + tis
-            write_str(fd, "  " + elem_ptr + " = inttoptr i64 " + elem_addr + " to ptr\n")
-            write_str(fd, "  store i64 " + elem + ", ptr " + elem_ptr + "\n")
-            new_len := "%ap.nl." + tis
-            write_str(fd, "  " + new_len + " = add i64 " + len_val + ", 1\n")
-            write_str(fd, "  store i64 " + new_len + ", ptr " + len_addr + "\n")
-        }
-
-        if terminated == 0 && instr.op == ir.OP_POKE {
-            // Inline: trunc i64 to i8, store i8 to ptr
-            addr := emit_load_ptr(fd, instr.arg1, ti, 0, 1)
-            val := emit_load_vreg(fd, instr.arg2, ti, 2)
-            t := tmp_name(ti, 3)
-            write_str(fd, "  " + t + " = trunc i64 " + val + " to i8\n")
-            write_str(fd, "  store i8 " + t + ", ptr " + addr + "\n")
-        }
-
-        if terminated == 0 && instr.op == ir.OP_PEEK {
-            // Inline: load i8, zext to i64
-            addr := emit_load_ptr(fd, instr.arg1, ti, 0, 1)
-            b := tmp_name(ti, 2)
-            write_str(fd, "  " + b + " = load i8, ptr " + addr + "\n")
-            r := tmp_name(ti, 3)
-            write_str(fd, "  " + r + " = zext i8 " + b + " to i64\n")
-            emit_store_vreg(fd, instr.dest, r)
-        }
-
-        if terminated == 0 && instr.op == ir.OP_HEAP_ALLOC {
-            size := emit_load_vreg(fd, instr.arg1, ti, 0)
-            p := tmp_name(ti, 1)
-            write_str(fd, "  " + p + " = call ptr @malloc(i64 " + size + ")\n")
-            ms := tmp_name(ti, 2)
-            write_str(fd, "  " + ms + " = call ptr @memset(ptr " + p + ", i32 0, i64 " + size + ")\n")
-            emit_ptrtoint_store(fd, instr.dest, p, ti, 3)
-        }
-
-        if terminated == 0 && instr.op == ir.OP_ARGC {
-            // Load from global @g_argc
-            r := tmp_name(ti, 0)
-            write_str(fd, "  " + r + " = load i64, ptr @g_argc\n")
-            emit_store_vreg(fd, instr.dest, r)
-        }
-
-        if terminated == 0 && instr.op == ir.OP_ARGV {
-            // Load argv[index] from global @g_argv
-            idx := emit_load_vreg(fd, instr.arg1, ti, 0)
-            argv_ptr := tmp_name(ti, 1)
-            write_str(fd, "  " + argv_ptr + " = load ptr, ptr @g_argv\n")
-            elem_ptr := tmp_name(ti, 2)
-            write_str(fd, "  " + elem_ptr + " = getelementptr ptr, ptr " + argv_ptr + ", i64 " + idx + "\n")
-            p := tmp_name(ti, 3)
-            write_str(fd, "  " + p + " = load ptr, ptr " + elem_ptr + "\n")
-            emit_ptrtoint_store(fd, instr.dest, p, ti, 4)
-        }
-
-        if terminated == 0 && instr.op == ir.OP_INT_TO_STR {
-            // Inline: malloc(21) + snprintf(buf, 21, "%ld", val)
-            val := emit_load_vreg(fd, instr.arg1, ti, 0)
-            buf := tmp_name(ti, 1)
-            write_str(fd, "  " + buf + " = call ptr @malloc(i64 21)\n")
-            write_str(fd, "  call i32 (ptr, i64, ptr, ...) @snprintf(ptr " + buf + ", i64 21, ptr @.fmt.ld, i64 " + val + ")\n")
-            emit_ptrtoint_store(fd, instr.dest, buf, ti, 2)
-        }
-
-        if terminated == 0 && instr.op == ir.OP_BOOL_TO_STR {
-            val := emit_load_vreg(fd, instr.arg1, ti, 0)
-            cmp := tmp_name(ti, 1)
-            write_str(fd, "  " + cmp + " = icmp ne i64 " + val + ", 0\n")
-            result := tmp_name(ti, 2)
-            write_str(fd, "  " + result + " = select i1 " + cmp + ", ptr @.str.true, ptr @.str.false\n")
-            emit_ptrtoint_store(fd, instr.dest, result, ti, 3)
-        }
-
-        if terminated == 0 && instr.op == ir.OP_STR_EQ {
-            // strcmp + icmp eq 0 (null-safe)
-            a := emit_load_safe_str(fd, instr.arg1, ti, 0, 1, 0)
-            b := emit_load_safe_str(fd, instr.arg2, ti, 2, 3, 1)
-            cmp := tmp_name(ti, 4)
-            write_str(fd, "  " + cmp + " = call i32 @strcmp(ptr " + a + ", ptr " + b + ")\n")
-            eq := tmp_name(ti, 5)
-            write_str(fd, "  " + eq + " = icmp eq i32 " + cmp + ", 0\n")
-            r := tmp_name(ti, 6)
-            write_str(fd, "  " + r + " = zext i1 " + eq + " to i64\n")
-            emit_store_vreg(fd, instr.dest, r)
-        }
-
-        if terminated == 0 && instr.op == ir.OP_STR_NE {
-            // strcmp + icmp ne 0 (null-safe)
-            a := emit_load_safe_str(fd, instr.arg1, ti, 0, 1, 0)
-            b := emit_load_safe_str(fd, instr.arg2, ti, 2, 3, 1)
-            cmp := tmp_name(ti, 4)
-            write_str(fd, "  " + cmp + " = call i32 @strcmp(ptr " + a + ", ptr " + b + ")\n")
-            ne := tmp_name(ti, 5)
-            write_str(fd, "  " + ne + " = icmp ne i32 " + cmp + ", 0\n")
-            r := tmp_name(ti, 6)
-            write_str(fd, "  " + r + " = zext i1 " + ne + " to i64\n")
-            emit_store_vreg(fd, instr.dest, r)
-        }
-
-        if terminated == 0 && instr.op == ir.OP_STR_CONCAT {
-            // Inline: strlen(a) + strlen(b) + malloc + memcpy + memcpy + null terminator (null-safe)
-            a := emit_load_safe_str(fd, instr.arg1, ti, 0, 1, 0)
-            b := emit_load_safe_str(fd, instr.arg2, ti, 2, 3, 1)
-            tis := strconv.Itoa(ti)
-            la := "%sc.la." + tis
-            write_str(fd, "  " + la + " = call i64 @strlen(ptr " + a + ")\n")
-            lb := "%sc.lb." + tis
-            write_str(fd, "  " + lb + " = call i64 @strlen(ptr " + b + ")\n")
-            total := "%sc.tot." + tis
-            write_str(fd, "  " + total + " = add i64 " + la + ", " + lb + "\n")
-            total1 := "%sc.tot1." + tis
-            write_str(fd, "  " + total1 + " = add i64 " + total + ", 1\n")
-            buf := "%sc.buf." + tis
-            write_str(fd, "  " + buf + " = call ptr @malloc(i64 " + total1 + ")\n")
-            write_str(fd, "  call ptr @memcpy(ptr " + buf + ", ptr " + a + ", i64 " + la + ")\n")
-            dst := "%sc.dst." + tis
-            write_str(fd, "  " + dst + " = getelementptr i8, ptr " + buf + ", i64 " + la + "\n")
-            write_str(fd, "  call ptr @memcpy(ptr " + dst + ", ptr " + b + ", i64 " + lb + ")\n")
-            term := "%sc.trm." + tis
-            write_str(fd, "  " + term + " = getelementptr i8, ptr " + buf + ", i64 " + total + "\n")
-            write_str(fd, "  store i8 0, ptr " + term + "\n")
-            emit_ptrtoint_store(fd, instr.dest, buf, ti, 4)
-        }
-
-        if terminated == 0 && instr.op == ir.OP_STR_CHAR_AT {
-            // Inline: getelementptr + load i8 + zext (null-safe)
-            s := emit_load_safe_str(fd, instr.arg1, ti, 0, 1, 0)
-            idx := emit_load_vreg(fd, instr.arg2, ti, 2)
-            gep := tmp_name(ti, 3)
-            write_str(fd, "  " + gep + " = getelementptr i8, ptr " + s + ", i64 " + idx + "\n")
-            b := tmp_name(ti, 4)
-            write_str(fd, "  " + b + " = load i8, ptr " + gep + "\n")
-            r := tmp_name(ti, 5)
-            write_str(fd, "  " + r + " = zext i8 " + b + " to i64\n")
-            emit_store_vreg(fd, instr.dest, r)
-        }
-
-        if terminated == 0 && instr.op == ir.OP_SYSCALL_OPEN {
-            // Direct libc: i32 @open(ptr, i32, ...)
-            path := emit_load_ptr(fd, instr.arg1, ti, 0, 1)
-            flags := emit_load_vreg(fd, instr.arg2, ti, 2)
-            mode := emit_load_vreg(fd, instr.arg3, ti, 3)
-            f32 := tmp_name(ti, 4)
-            write_str(fd, "  " + f32 + " = trunc i64 " + flags + " to i32\n")
-            m32 := tmp_name(ti, 5)
-            write_str(fd, "  " + m32 + " = trunc i64 " + mode + " to i32\n")
-            r32 := tmp_name(ti, 6)
-            write_str(fd, "  " + r32 + " = call i32 (ptr, i32, ...) @open(ptr " + path + ", i32 " + f32 + ", i32 " + m32 + ")\n")
-            r := tmp_name(ti, 7)
-            write_str(fd, "  " + r + " = sext i32 " + r32 + " to i64\n")
-            emit_store_vreg(fd, instr.dest, r)
-        }
-
-        if terminated == 0 && instr.op == ir.OP_SYSCALL_WRITE {
-            // Direct libc: i64 @write(i32, ptr, i64)
-            sfd := emit_load_vreg(fd, instr.arg1, ti, 0)
-            buf := emit_load_ptr(fd, instr.arg2, ti, 1, 2)
-            size := emit_load_vreg(fd, instr.arg3, ti, 3)
-            fd32 := tmp_name(ti, 4)
-            write_str(fd, "  " + fd32 + " = trunc i64 " + sfd + " to i32\n")
-            r := tmp_name(ti, 5)
-            write_str(fd, "  " + r + " = call i64 @write(i32 " + fd32 + ", ptr " + buf + ", i64 " + size + ")\n")
-            emit_store_vreg(fd, instr.dest, r)
-        }
-
-        if terminated == 0 && instr.op == ir.OP_SYSCALL_CLOSE {
-            // Direct libc: i32 @close(i32)
-            sfd := emit_load_vreg(fd, instr.arg1, ti, 0)
-            fd32 := tmp_name(ti, 1)
-            write_str(fd, "  " + fd32 + " = trunc i64 " + sfd + " to i32\n")
-            r32 := tmp_name(ti, 2)
-            write_str(fd, "  " + r32 + " = call i32 @close(i32 " + fd32 + ")\n")
-            r := tmp_name(ti, 3)
-            write_str(fd, "  " + r + " = sext i32 " + r32 + " to i64\n")
-            emit_store_vreg(fd, instr.dest, r)
-        }
-
-        if terminated == 0 && instr.op == ir.OP_SYSCALL_READ {
-            // Direct libc: i64 @read(i32, ptr, i64)
-            sfd := emit_load_vreg(fd, instr.arg1, ti, 0)
-            buf := emit_load_ptr(fd, instr.arg2, ti, 1, 2)
-            size := emit_load_vreg(fd, instr.arg3, ti, 3)
-            fd32 := tmp_name(ti, 4)
-            write_str(fd, "  " + fd32 + " = trunc i64 " + sfd + " to i32\n")
-            r := tmp_name(ti, 5)
-            write_str(fd, "  " + r + " = call i64 @read(i32 " + fd32 + ", ptr " + buf + ", i64 " + size + ")\n")
-            emit_store_vreg(fd, instr.dest, r)
-        }
-
-        if terminated == 0 && instr.op == ir.OP_IS_DIR {
-            path := emit_load_ptr(fd, instr.arg1, ti, 0, 1)
-            r := tmp_name(ti, 2)
-            write_str(fd, "  " + r + " = call i64 @ease_is_dir(ptr " + path + ")\n")
-            emit_store_vreg(fd, instr.dest, r)
-        }
-
-        if terminated == 0 && instr.op == ir.OP_LIST_DIR {
-            path := emit_load_ptr(fd, instr.arg1, ti, 0, 1)
-            r := tmp_name(ti, 2)
-            write_str(fd, "  " + r + " = call ptr @ease_list_dir(ptr " + path + ")\n")
-            emit_ptrtoint_store(fd, instr.dest, r, ti, 3)
-        }
-
-        if terminated == 0 && instr.op == ir.OP_SETJMP {
-            r32 := tmp_name(ti, 0)
-            write_str(fd, "  " + r32 + " = call i32 @setjmp(ptr @ease_test_jmp_buf) #0\n")
-            r := tmp_name(ti, 1)
-            write_str(fd, "  " + r + " = sext i32 " + r32 + " to i64\n")
-            emit_store_vreg(fd, instr.dest, r)
-        }
-
-        if terminated == 0 && instr.op == ir.OP_TEST_FAIL {
-            // Inline: longjmp(ease_test_jmp_buf, 1)
-            write_str(fd, "  call void @longjmp(ptr @ease_test_jmp_buf, i32 1)\n")
-            write_str(fd, "  unreachable\n")
-            terminated = 1
-        }
-
-        if terminated == 0 && instr.op == ir.OP_TIME_NANOS {
-            // Inline: clock_gettime(CLOCK_MONOTONIC=6, &ts) + sec*1e9 + nsec
-            ts := tmp_name(ti, 0)
-            write_str(fd, "  " + ts + " = alloca [16 x i8]\n")
-            write_str(fd, "  call i32 @clock_gettime(i32 6, ptr " + ts + ")\n")
-            sec := tmp_name(ti, 1)
-            write_str(fd, "  " + sec + " = load i64, ptr " + ts + "\n")
-            nsec_ptr := tmp_name(ti, 2)
-            write_str(fd, "  " + nsec_ptr + " = getelementptr i8, ptr " + ts + ", i64 8\n")
-            nsec := tmp_name(ti, 3)
-            write_str(fd, "  " + nsec + " = load i64, ptr " + nsec_ptr + "\n")
-            sec_ns := tmp_name(ti, 4)
-            write_str(fd, "  " + sec_ns + " = mul i64 " + sec + ", 1000000000\n")
-            r := tmp_name(ti, 5)
-            write_str(fd, "  " + r + " = add i64 " + sec_ns + ", " + nsec + "\n")
-            emit_store_vreg(fd, instr.dest, r)
-        }
-
-        if terminated == 0 && instr.op == ir.OP_TIME_WALLCLOCK {
-            // Inline: clock_gettime(CLOCK_REALTIME=0, &ts) + sec*1e9 + nsec
-            ts := tmp_name(ti, 0)
-            write_str(fd, "  " + ts + " = alloca [16 x i8]\n")
-            write_str(fd, "  call i32 @clock_gettime(i32 0, ptr " + ts + ")\n")
-            sec := tmp_name(ti, 1)
-            write_str(fd, "  " + sec + " = load i64, ptr " + ts + "\n")
-            nsec_ptr := tmp_name(ti, 2)
-            write_str(fd, "  " + nsec_ptr + " = getelementptr i8, ptr " + ts + ", i64 8\n")
-            nsec := tmp_name(ti, 3)
-            write_str(fd, "  " + nsec + " = load i64, ptr " + nsec_ptr + "\n")
-            sec_ns := tmp_name(ti, 4)
-            write_str(fd, "  " + sec_ns + " = mul i64 " + sec + ", 1000000000\n")
-            r := tmp_name(ti, 5)
-            write_str(fd, "  " + r + " = add i64 " + sec_ns + ", " + nsec + "\n")
-            emit_store_vreg(fd, instr.dest, r)
-        }
+        if terminated == 0 && instr.op == ir.OP_STR_CONCAT { emit_op_str_concat(fd, instr, ti) }
+        if terminated == 0 && instr.op == ir.OP_STR_CHAR_AT { emit_op_str_char_at(fd, instr, ti) }
+        if terminated == 0 && instr.op == ir.OP_SYSCALL_OPEN { emit_op_syscall_open(fd, instr, ti) }
+        if terminated == 0 && instr.op == ir.OP_SYSCALL_WRITE { emit_op_syscall_write(fd, instr, ti) }
+        if terminated == 0 && instr.op == ir.OP_SYSCALL_CLOSE { emit_op_syscall_close(fd, instr, ti) }
+        if terminated == 0 && instr.op == ir.OP_SYSCALL_READ { emit_op_syscall_read(fd, instr, ti) }
+        if terminated == 0 && instr.op == ir.OP_IS_DIR { emit_op_is_dir(fd, instr, ti) }
+        if terminated == 0 && instr.op == ir.OP_LIST_DIR { emit_op_list_dir(fd, instr, ti) }
+        if terminated == 0 && instr.op == ir.OP_SETJMP { emit_op_setjmp(fd, instr, ti) }
+        if terminated == 0 && instr.op == ir.OP_TIME_NANOS { emit_op_clock_gettime(fd, instr, ti, "6") }
+        if terminated == 0 && instr.op == ir.OP_TIME_WALLCLOCK { emit_op_clock_gettime(fd, instr, ti, "0") }
 
         if terminated == 0 && instr.op == ir.OP_ARG {
             // Collect argument for next call
@@ -1476,291 +1688,35 @@ fn emit_llvm_function(fd: int, instrs: []IRInstr, start: int, end_pos: int, func
         }
 
         if terminated == 0 && instr.op == ir.OP_CALL {
-            callee := llvm_func_name(instr.str_val)
-            // Build argument string
-            args_str := ""
-            ai := 0
-            for ai < len(call_args) {
-                if ai > 0 { args_str = args_str + ", " }
-                arg_val := emit_load_vreg(fd, call_args[ai], ti, ai)
-                args_str = args_str + "i64 " + arg_val
-                ai = ai + 1
-            }
-            // Emit call
-            if instr.dest >= 0 {
-                r := tmp_name(ti, 9)
-                write_str(fd, "  " + r + " = call i64 @" + callee + "(" + args_str + ")\n")
-                emit_store_vreg(fd, instr.dest, r)
-            } else {
-                write_str(fd, "  call i64 @" + callee + "(" + args_str + ")\n")
-            }
-            // Reset call args
+            emit_op_call(fd, instr, ti, call_args)
             call_args = []int{}
         }
-
-        if terminated == 0 && instr.op == ir.OP_IFACE_WRAP {
-            // Allocate 16 bytes for interface value [concrete_ptr, vtable_ptr]
-            iw_ptr := "%iw.ptr." + strconv.Itoa(ti)
-            write_str(fd, "  " + iw_ptr + " = call ptr @malloc(i64 16)\n")
-            // Store concrete ptr at offset 0
-            iw_concrete := emit_load_vreg(fd, instr.arg1, ti, 0)
-            iw_concrete_ptr := "%iw.cptr." + strconv.Itoa(ti)
-            write_str(fd, "  " + iw_concrete_ptr + " = inttoptr i64 " + iw_concrete + " to ptr\n")
-            write_str(fd, "  store i64 " + iw_concrete + ", ptr " + iw_ptr + "\n")
-            // Store vtable ptr at offset 8
-            iw_vt := "%iw.vt." + strconv.Itoa(ti)
-            write_str(fd, "  " + iw_vt + " = ptrtoint ptr @vtable." + llvm_mangle(instr.str_val) + " to i64\n")
-            iw_slot1 := "%iw.slot1." + strconv.Itoa(ti)
-            write_str(fd, "  " + iw_slot1 + " = getelementptr i8, ptr " + iw_ptr + ", i64 8\n")
-            write_str(fd, "  store i64 " + iw_vt + ", ptr " + iw_slot1 + "\n")
-            // Result = interface value as i64
-            iw_result := "%iw.result." + strconv.Itoa(ti)
-            write_str(fd, "  " + iw_result + " = ptrtoint ptr " + iw_ptr + " to i64\n")
-            emit_store_vreg(fd, instr.dest, iw_result)
-        }
-
+        if terminated == 0 && instr.op == ir.OP_IFACE_WRAP { emit_op_iface_wrap(fd, instr, ti) }
         if terminated == 0 && instr.op == ir.OP_IFACE_CALL {
-            // Indirect call through interface vtable
-            // call_args[0] = interface value, rest = user args
-            // instr.arg1 = vtable method index, instr.arg2 = total arg count
-            ic_iface := "%ic.iface." + strconv.Itoa(ti)
-            ic_iface_val := emit_load_vreg(fd, call_args[0], ti, 0)
-            write_str(fd, "  " + ic_iface + " = inttoptr i64 " + ic_iface_val + " to ptr\n")
-            // Load concrete_ptr at offset 0
-            ic_concrete := "%ic.concrete." + strconv.Itoa(ti)
-            write_str(fd, "  " + ic_concrete + " = load i64, ptr " + ic_iface + "\n")
-            // Load vtable_ptr at offset 8
-            ic_vt_slot := "%ic.vt.slot." + strconv.Itoa(ti)
-            write_str(fd, "  " + ic_vt_slot + " = getelementptr i8, ptr " + ic_iface + ", i64 8\n")
-            ic_vt := "%ic.vt." + strconv.Itoa(ti)
-            write_str(fd, "  " + ic_vt + " = load i64, ptr " + ic_vt_slot + "\n")
-            ic_vt_ptr := "%ic.vt.ptr." + strconv.Itoa(ti)
-            write_str(fd, "  " + ic_vt_ptr + " = inttoptr i64 " + ic_vt + " to ptr\n")
-            // Load function pointer at vtable_idx * 8
-            ic_fp_offset := instr.arg1 * 8
-            ic_fp_slot := "%ic.fp.slot." + strconv.Itoa(ti)
-            write_str(fd, "  " + ic_fp_slot + " = getelementptr i8, ptr " + ic_vt_ptr + ", i64 " + strconv.Itoa(ic_fp_offset) + "\n")
-            ic_fp := "%ic.fp." + strconv.Itoa(ti)
-            write_str(fd, "  " + ic_fp + " = load i64, ptr " + ic_fp_slot + "\n")
-            ic_fn := "%ic.fn." + strconv.Itoa(ti)
-            write_str(fd, "  " + ic_fn + " = inttoptr i64 " + ic_fp + " to ptr\n")
-            // Build argument string: concrete_ptr as first arg, then remaining args
-            ic_args_str := "i64 " + ic_concrete
-            ic_ai := 1
-            for ic_ai < len(call_args) {
-                ic_arg_val := emit_load_vreg(fd, call_args[ic_ai], ti, ic_ai)
-                ic_args_str = ic_args_str + ", i64 " + ic_arg_val
-                ic_ai = ic_ai + 1
-            }
-            // Emit indirect call
-            ic_result := "%ic.result." + strconv.Itoa(ti)
-            write_str(fd, "  " + ic_result + " = call i64 " + ic_fn + "(" + ic_args_str + ")\n")
-            emit_store_vreg(fd, instr.dest, ic_result)
-            // Reset call args
+            emit_op_iface_call(fd, instr, ti, call_args)
             call_args = []int{}
         }
-
-        if terminated == 0 && instr.op == ir.OP_CLOSURE_NEW {
-            // Allocate 16 bytes for closure [func_ptr, env_ptr]
-            cl_ptr := "%cl.ptr." + strconv.Itoa(ti)
-            write_str(fd, "  " + cl_ptr + " = call ptr @malloc(i64 16)\n")
-            // Store function pointer at offset 0
-            cl_fp := "%cl.fp." + strconv.Itoa(ti)
-            write_str(fd, "  " + cl_fp + " = ptrtoint ptr @" + llvm_func_name(instr.str_val) + " to i64\n")
-            write_str(fd, "  store i64 " + cl_fp + ", ptr " + cl_ptr + "\n")
-            // Store env pointer at offset 8
-            cl_env_slot := "%cl.env.slot." + strconv.Itoa(ti)
-            write_str(fd, "  " + cl_env_slot + " = getelementptr i8, ptr " + cl_ptr + ", i64 8\n")
-            if instr.arg1 >= 0 {
-                cl_env_val := emit_load_vreg(fd, instr.arg1, ti, 0)
-                write_str(fd, "  store i64 " + cl_env_val + ", ptr " + cl_env_slot + "\n")
-            } else {
-                write_str(fd, "  store i64 0, ptr " + cl_env_slot + "\n")
-            }
-            // Result = closure as i64
-            cl_result := "%cl.result." + strconv.Itoa(ti)
-            write_str(fd, "  " + cl_result + " = ptrtoint ptr " + cl_ptr + " to i64\n")
-            emit_store_vreg(fd, instr.dest, cl_result)
-        }
-
+        if terminated == 0 && instr.op == ir.OP_CLOSURE_NEW { emit_op_closure_new(fd, instr, ti) }
         if terminated == 0 && instr.op == ir.OP_CLOSURE_CALL {
-            // Indirect call through closure object
-            // instr.arg1 = closure vreg, instr.arg2 = user arg count
-            cc_obj := "%cc.obj." + strconv.Itoa(ti)
-            cc_obj_val := emit_load_vreg(fd, instr.arg1, ti, 0)
-            write_str(fd, "  " + cc_obj + " = inttoptr i64 " + cc_obj_val + " to ptr\n")
-            // Load func_ptr at offset 0
-            cc_fp := "%cc.fp." + strconv.Itoa(ti)
-            write_str(fd, "  " + cc_fp + " = load i64, ptr " + cc_obj + "\n")
-            cc_fn := "%cc.fn." + strconv.Itoa(ti)
-            write_str(fd, "  " + cc_fn + " = inttoptr i64 " + cc_fp + " to ptr\n")
-            // Load env_ptr at offset 8
-            cc_env_slot := "%cc.env.slot." + strconv.Itoa(ti)
-            write_str(fd, "  " + cc_env_slot + " = getelementptr i8, ptr " + cc_obj + ", i64 8\n")
-            cc_env := "%cc.env." + strconv.Itoa(ti)
-            write_str(fd, "  " + cc_env + " = load i64, ptr " + cc_env_slot + "\n")
-            // Build argument string: env_ptr as first arg, then user args
-            cc_args_str := "i64 " + cc_env
-            cc_ai := 0
-            for cc_ai < len(call_args) {
-                cc_arg_val := emit_load_vreg(fd, call_args[cc_ai], ti, cc_ai + 1)
-                cc_args_str = cc_args_str + ", i64 " + cc_arg_val
-                cc_ai = cc_ai + 1
-            }
-            // Emit indirect call
-            cc_result := "%cc.result." + strconv.Itoa(ti)
-            write_str(fd, "  " + cc_result + " = call i64 " + cc_fn + "(" + cc_args_str + ")\n")
-            emit_store_vreg(fd, instr.dest, cc_result)
-            // Reset call args
+            emit_op_closure_call(fd, instr, ti, call_args)
             call_args = []int{}
         }
 
-        if terminated == 0 && instr.op == ir.OP_MAP_NEW {
-            r := tmp_name(ti, 0)
-            write_str(fd, "  " + r + " = call i64 @maps_New(i64 " + strconv.Itoa(instr.arg1) + ")\n")
-            emit_store_vreg(fd, instr.dest, r)
-        }
+        if terminated == 0 && instr.op == ir.OP_MAP_NEW { emit_op_map_new(fd, instr, ti) }
+        if terminated == 0 && instr.op == ir.OP_MAP_GET { emit_op_map_call(fd, instr, ti, "maps_Get", 1) }
+        if terminated == 0 && instr.op == ir.OP_MAP_SET { emit_op_map_set(fd, instr, ti) }
+        if terminated == 0 && instr.op == ir.OP_MAP_DELETE { emit_op_map_call(fd, instr, ti, "maps_Delete", 1) }
+        if terminated == 0 && instr.op == ir.OP_MAP_LEN { emit_op_map_call(fd, instr, ti, "maps_Len", 0) }
+        if terminated == 0 && instr.op == ir.OP_MAP_HAS { emit_op_map_call(fd, instr, ti, "maps_Has", 1) }
+        if terminated == 0 && instr.op == ir.OP_LOADFLOAT { emit_op_loadfloat(fd, instr, ti) }
+        if terminated == 0 && (instr.op == ir.OP_FADD || instr.op == ir.OP_FSUB || instr.op == ir.OP_FMUL || instr.op == ir.OP_FDIV || instr.op == ir.OP_FMOD) { emit_op_fbinop(fd, instr, ti) }
+        if terminated == 0 && (instr.op == ir.OP_FCMP_LT || instr.op == ir.OP_FCMP_GT || instr.op == ir.OP_FCMP_LE || instr.op == ir.OP_FCMP_GE || instr.op == ir.OP_FCMP_EQ || instr.op == ir.OP_FCMP_NE) { emit_op_fcmp(fd, instr, ti) }
+        if terminated == 0 && instr.op == ir.OP_INT_TO_FLOAT { emit_op_int_to_float(fd, instr, ti) }
+        if terminated == 0 && instr.op == ir.OP_FLOAT_TO_INT { emit_op_float_to_int(fd, instr, ti) }
+        if terminated == 0 && instr.op == ir.OP_FLOAT_TO_STR { emit_op_float_to_str(fd, instr, ti) }
 
-        if terminated == 0 && instr.op == ir.OP_MAP_GET {
-            m := emit_load_vreg(fd, instr.arg1, ti, 0)
-            k := emit_load_vreg(fd, instr.arg2, ti, 1)
-            r := tmp_name(ti, 2)
-            write_str(fd, "  " + r + " = call i64 @maps_Get(i64 " + m + ", i64 " + k + ")\n")
-            emit_store_vreg(fd, instr.dest, r)
-        }
-
-        if terminated == 0 && instr.op == ir.OP_MAP_SET {
-            m := emit_load_vreg(fd, instr.arg1, ti, 0)
-            k := emit_load_vreg(fd, instr.arg2, ti, 1)
-            v := emit_load_vreg(fd, instr.arg3, ti, 2)
-            r := tmp_name(ti, 3)
-            write_str(fd, "  " + r + " = call i64 @maps_Set(i64 " + m + ", i64 " + k + ", i64 " + v + ")\n")
-            emit_store_vreg(fd, instr.dest, r)
-        }
-
-        if terminated == 0 && instr.op == ir.OP_MAP_DELETE {
-            m := emit_load_vreg(fd, instr.arg1, ti, 0)
-            k := emit_load_vreg(fd, instr.arg2, ti, 1)
-            r := tmp_name(ti, 2)
-            write_str(fd, "  " + r + " = call i64 @maps_Delete(i64 " + m + ", i64 " + k + ")\n")
-            emit_store_vreg(fd, instr.dest, r)
-        }
-
-        if terminated == 0 && instr.op == ir.OP_MAP_LEN {
-            m := emit_load_vreg(fd, instr.arg1, ti, 0)
-            r := tmp_name(ti, 1)
-            write_str(fd, "  " + r + " = call i64 @maps_Len(i64 " + m + ")\n")
-            emit_store_vreg(fd, instr.dest, r)
-        }
-
-        if terminated == 0 && instr.op == ir.OP_MAP_HAS {
-            m := emit_load_vreg(fd, instr.arg1, ti, 0)
-            k := emit_load_vreg(fd, instr.arg2, ti, 1)
-            r := tmp_name(ti, 2)
-            write_str(fd, "  " + r + " = call i64 @maps_Has(i64 " + m + ", i64 " + k + ")\n")
-            emit_store_vreg(fd, instr.dest, r)
-        }
-
-        // Float operations
-        if terminated == 0 && instr.op == ir.OP_LOADFLOAT {
-            // bitcast double <literal> to i64
-            r := tmp_name(ti, 0)
-            write_str(fd, "  " + r + " = bitcast double " + instr.str_val + " to i64\n")
-            emit_store_vreg(fd, instr.dest, r)
-        }
-
-        if terminated == 0 && (instr.op == ir.OP_FADD || instr.op == ir.OP_FSUB || instr.op == ir.OP_FMUL || instr.op == ir.OP_FDIV || instr.op == ir.OP_FMOD) {
-            // bitcast i64→double, float op, bitcast back
-            lhs := emit_load_vreg(fd, instr.arg1, ti, 0)
-            rhs := emit_load_vreg(fd, instr.arg2, ti, 1)
-            ld := tmp_name(ti, 2)
-            write_str(fd, "  " + ld + " = bitcast i64 " + lhs + " to double\n")
-            rd := tmp_name(ti, 3)
-            write_str(fd, "  " + rd + " = bitcast i64 " + rhs + " to double\n")
-            fop_name := "fadd"
-            if instr.op == ir.OP_FSUB { fop_name = "fsub" }
-            if instr.op == ir.OP_FMUL { fop_name = "fmul" }
-            if instr.op == ir.OP_FDIV { fop_name = "fdiv" }
-            if instr.op == ir.OP_FMOD { fop_name = "frem" }
-            res_d := tmp_name(ti, 4)
-            write_str(fd, "  " + res_d + " = " + fop_name + " double " + ld + ", " + rd + "\n")
-            res_i := tmp_name(ti, 5)
-            write_str(fd, "  " + res_i + " = bitcast double " + res_d + " to i64\n")
-            emit_store_vreg(fd, instr.dest, res_i)
-        }
-
-        if terminated == 0 && (instr.op == ir.OP_FCMP_LT || instr.op == ir.OP_FCMP_GT || instr.op == ir.OP_FCMP_LE || instr.op == ir.OP_FCMP_GE || instr.op == ir.OP_FCMP_EQ || instr.op == ir.OP_FCMP_NE) {
-            lhs := emit_load_vreg(fd, instr.arg1, ti, 0)
-            rhs := emit_load_vreg(fd, instr.arg2, ti, 1)
-            ld := tmp_name(ti, 2)
-            write_str(fd, "  " + ld + " = bitcast i64 " + lhs + " to double\n")
-            rd := tmp_name(ti, 3)
-            write_str(fd, "  " + rd + " = bitcast i64 " + rhs + " to double\n")
-            pred := "olt"
-            if instr.op == ir.OP_FCMP_GT { pred = "ogt" }
-            if instr.op == ir.OP_FCMP_LE { pred = "ole" }
-            if instr.op == ir.OP_FCMP_GE { pred = "oge" }
-            if instr.op == ir.OP_FCMP_EQ { pred = "oeq" }
-            if instr.op == ir.OP_FCMP_NE { pred = "une" }
-            cmp := tmp_name(ti, 4)
-            write_str(fd, "  " + cmp + " = fcmp " + pred + " double " + ld + ", " + rd + "\n")
-            ext := tmp_name(ti, 5)
-            write_str(fd, "  " + ext + " = zext i1 " + cmp + " to i64\n")
-            emit_store_vreg(fd, instr.dest, ext)
-        }
-
-        if terminated == 0 && instr.op == ir.OP_INT_TO_FLOAT {
-            val := emit_load_vreg(fd, instr.arg1, ti, 0)
-            dbl := tmp_name(ti, 1)
-            write_str(fd, "  " + dbl + " = sitofp i64 " + val + " to double\n")
-            r := tmp_name(ti, 2)
-            write_str(fd, "  " + r + " = bitcast double " + dbl + " to i64\n")
-            emit_store_vreg(fd, instr.dest, r)
-        }
-
-        if terminated == 0 && instr.op == ir.OP_FLOAT_TO_INT {
-            val := emit_load_vreg(fd, instr.arg1, ti, 0)
-            dbl := tmp_name(ti, 1)
-            write_str(fd, "  " + dbl + " = bitcast i64 " + val + " to double\n")
-            r := tmp_name(ti, 2)
-            write_str(fd, "  " + r + " = fptosi double " + dbl + " to i64\n")
-            emit_store_vreg(fd, instr.dest, r)
-        }
-
-        if terminated == 0 && instr.op == ir.OP_FLOAT_TO_STR {
-            val := emit_load_vreg(fd, instr.arg1, ti, 0)
-            dbl := tmp_name(ti, 1)
-            write_str(fd, "  " + dbl + " = bitcast i64 " + val + " to double\n")
-            buf := tmp_name(ti, 2)
-            write_str(fd, "  " + buf + " = call ptr @malloc(i64 32)\n")
-            write_str(fd, "  call i32 (ptr, i64, ptr, ...) @snprintf(ptr " + buf + ", i64 32, ptr @.fmt.g, double " + dbl + ")\n")
-            emit_ptrtoint_store(fd, instr.dest, buf, ti, 3)
-        }
-
-        if terminated == 0 && instr.op == ir.OP_RET {
-            if instr.dest >= 0 {
-                v := emit_load_vreg(fd, instr.dest, ti, 0)
-                write_str(fd, "  ret i64 " + v + "\n")
-            } else {
-                write_str(fd, "  ret i64 0\n")
-            }
-            terminated = 1
-        }
-
-        if terminated == 0 && instr.op == ir.OP_JUMP {
-            write_str(fd, "  br label %L." + strconv.Itoa(instr.dest) + "\n")
-            terminated = 1
-        }
-
-        if terminated == 0 && instr.op == ir.OP_BRANCH {
-            // Branch to arg1 if dest is ZERO (CBZ semantics)
-            cond := emit_load_vreg(fd, instr.dest, ti, 0)
-            cmp := tmp_name(ti, 1)
-            write_str(fd, "  " + cmp + " = icmp eq i64 " + cond + ", 0\n")
-            fall_label := "L.fall." + strconv.Itoa(ti)
-            write_str(fd, "  br i1 " + cmp + ", label %L." + strconv.Itoa(instr.arg1) + ", label %" + fall_label + "\n")
-            write_str(fd, fall_label + ":\n")
-            terminated = 0
+        if terminated == 0 && (instr.op == ir.OP_RET || instr.op == ir.OP_JUMP || instr.op == ir.OP_BRANCH || instr.op == ir.OP_TEST_FAIL) {
+            terminated = emit_op_terminator(fd, instr, ti)
         }
 
         ii = ii + 1
