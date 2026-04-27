@@ -4,7 +4,6 @@
 #include "ease_gc.h"
 #include "gc_stats.h"
 
-#include <setjmp.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
