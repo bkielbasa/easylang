@@ -35,10 +35,9 @@ RUNTIME_OBJS := $(GC_OBJ) $(STATS_OBJ)
 all: $(EASE)
 
 # Build the compiler from the seed LLVM IR.
-# The seed predates the GC; it doesn't reference any gc_* symbol so it
-# does not need the runtime objects linked in.
-$(EASE): $(SEED) | $(BUILD_DIR)
-	$(CC) $(CFLAGS) $(SEED) -o $@
+# Now links with runtime objects since the compiler emits gc_init calls.
+$(EASE): $(SEED) $(RUNTIME_OBJS) | $(BUILD_DIR)
+	$(CC) $(CFLAGS) $(SEED) $(RUNTIME_OBJS) -o $@
 
 $(BUILD_DIR):
 	mkdir -p $(BUILD_DIR)

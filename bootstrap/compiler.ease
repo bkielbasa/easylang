@@ -1434,7 +1434,7 @@ fn run_test_mode(test_path: string, run_bench: int) -> int {
     }
 
     // Compile LLVM IR to executable
-    compile_rc := os.System("clang -O0 ./tmp/output.ll -o ./tmp/test_bin")
+    compile_rc := os.System("clang -O0 ./tmp/output.ll ./tmp/gc_none.o ./tmp/gc_stats.o -o ./tmp/test_bin")
     if compile_rc != 0 {
         print("Failed to compile test binary\n")
         return 1

@@ -183,6 +183,12 @@ fn emit_llvm_decls(fd: int) {
     write_str(fd, "@.str.lbrace = private unnamed_addr constant [2 x i8] c\"{\\00\"\n")
     write_str(fd, "@.str.rbrace = private unnamed_addr constant [2 x i8] c\"}\\00\"\n")
     write_str(fd, "@.str.comma = private unnamed_addr constant [2 x i8] c\",\\00\"\n")
+    // GC runtime ABI (defined in runtime/gc_*.c)
+    write_str(fd, "declare ptr @gc_alloc(i64)\n")
+    write_str(fd, "declare void @gc_init(ptr)\n")
+    write_str(fd, "declare void @gc_collect()\n")
+    write_str(fd, "declare void @gc_get_stats(ptr)\n")
+    write_str(fd, "declare void @gc_print_stats(i32)\n")
     write_str(fd, "attributes #0 = { returns_twice }\n")
     write_str(fd, "\n")
 }
@@ -812,6 +818,8 @@ fn emit_llvm_vtable_init(fd: int) {
 
 fn emit_llvm_main_wrapper(fd: int) {
     write_str(fd, "define i32 @main(i32 %argc, ptr %argv) {\n")
+    write_str(fd, "  %frame = alloca i64\n")
+    write_str(fd, "  call void @gc_init(ptr %frame)\n")
     write_str(fd, "  %argc.ext = sext i32 %argc to i64\n")
     write_str(fd, "  store i64 %argc.ext, ptr @g_argc\n")
     write_str(fd, "  store ptr %argv, ptr @g_argv\n")
