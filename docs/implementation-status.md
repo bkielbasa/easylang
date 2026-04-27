@@ -26,6 +26,7 @@ The Ease compiler is written in Ease and compiles itself with byte-identical con
 - **Generics** — Go-style bracket syntax `[T]` with type erasure; works on structs, enums, functions, methods, interfaces; type parameters are compile-time annotations erased during parsing
 - **`extern fn` FFI** — declare C functions directly in stdlib modules (e.g., `extern fn system(cmd: ptr) -> i32`), auto-generates LLVM IR wrappers with type conversion
 - **Bare imports** — `import "testing"` resolves to `bootstrap/ease/testing` (no `./` prefix needed for stdlib)
+- **Garbage collector** — conservative mark-sweep with pluggable ABI; selectable at build time (`make GC=conservative` or `make GC=none`); `runtime.GC()` builtin; stats via `EASE_GC_STATS=1` env var; bench harness in `tools/gc-bench`
 
 **Compiler Components** (all in `bootstrap/ease/`):
 - [x] Lexer with comment handling (// comments)

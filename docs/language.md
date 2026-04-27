@@ -2,7 +2,7 @@
 
 ## Core Design
 - **Type System**: Static with inference
-- **Memory**: Garbage collected
+- **Memory**: Garbage collected (see [Memory and Garbage Collection](#memory-and-garbage-collection))
 - **Targets**: Native (macOS ARM64/x86_64 via LLVM) + WebAssembly (future)
 - **Syntax**: Go-like (braces, no semicolons required)
 
@@ -333,3 +333,51 @@ Closures are represented as heap-allocated `[func_ptr, env_ptr]` pairs. Captured
 - **Goroutines**: `go expression`
 - **Channels**: `chan<T>()`, `ch <- value`, `<-ch`
 - **Select**: for multiple channel operations
+
+## Memory and Garbage Collection
+
+Ease is garbage collected. Every heap allocation (struct, array, string, closure, interface value, map) is tracked by the runtime and reclaimed when no live reference remains.
+
+### Pluggable implementations
+
+The GC is selectable at build time:
+
+```bash
+make GC=conservative   # default (after the impl lands): stop-the-world conservative mark-sweep
+make GC=none           # passthrough: no collection, useful as a baseline
+```
+
+Adding a new implementation means dropping a `runtime/gc_<name>.c` that satisfies the ABI in `runtime/ease_gc.h`, then `make GC=<name>`.
+
+### Manual collection
+
+`runtime.GC()` triggers a collection cycle explicitly. Useful in tests; rarely needed in normal code.
+
+```ease
+runtime.GC()
+```
+
+### Statistics
+
+Set `EASE_GC_STATS=1` in the environment to print GC counters to stderr at exit:
+
+```bash
+EASE_GC_STATS=1 ./myprogram
+```
+
+Output is stable key=value lines (`gc_impl=…`, `gc_alloc_total_bytes=…`, `gc_collections=…`, `gc_pause_ns_total=…`, etc.) intended for parsing.
+
+### Benchmarking
+
+`tools/gc-bench` runs every workload in `benchmarks/workloads.txt` under every GC implementation and prints a comparison table.
+
+```bash
+tools/gc-bench              # quick: one run per cell
+tools/gc-bench --rigorous   # 5 runs per cell, reports min
+```
+
+### Limitations of the conservative GC
+
+- Integer values that happen to numerically match a heap address pin that allocation alive (false positive). Acceptable in practice; flagged by the harness if a workload's `gc_live_bytes_final` does not return to baseline.
+- Cannot relocate objects (no compaction). Future precise/moving implementations would address this.
+- Single-threaded; no concurrent or incremental modes.
