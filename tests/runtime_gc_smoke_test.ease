@@ -1,0 +1,25 @@
+package main
+
+import ("testing")
+
+// Smoke test: runtime.GC() must compile, link, and run without crashing.
+// With GC=none this is a no-op; with real GC it triggers a cycle.
+
+fn TestRuntimeGCSmoke(t: testing.T) {
+    runtime.GC()
+    runtime.GC()
+    runtime.GC()
+    // If we got here without crashing, success.
+}
+
+fn TestRuntimeGCAllocBeforeAndAfter(t: testing.T) {
+    // Allocate something; collection should not corrupt live data.
+    arr := []int{1, 2, 3, 4, 5}
+    runtime.GC()
+    if arr[0] != 1 { t.Fatal("arr[0] should be 1 after GC") }
+    if arr[4] != 5 { t.Fatal("arr[4] should be 5 after GC") }
+
+    s := "hello"
+    runtime.GC()
+    if s != "hello" { t.Fatal("string should survive GC") }
+}

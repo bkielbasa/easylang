@@ -325,7 +325,7 @@ fn collect_vregs(instrs: []IRInstr, start: int, end_pos: int, param_count: int) 
             if instr.arg1 >= 0 { add_unique(vregs, instr.arg1) }
         }
         // arg1 is vreg for most ops (not LOADCONST, ALLOCA, LABEL, JUMP, BRANCH, ARGC, CALL)
-        if op != ir.OP_LOADCONST && op != ir.OP_LOAD_GLOBAL && op != ir.OP_ALLOCA && op != ir.OP_LABEL && op != ir.OP_JUMP && op != ir.OP_BRANCH && op != ir.OP_ARGC && op != ir.OP_TIME_NANOS && op != ir.OP_TIME_WALLCLOCK && op != ir.OP_CALL && op != ir.OP_IFACE_CALL && op != ir.OP_CLOSURE_CALL && op != ir.OP_MAP_NEW && op != ir.OP_LOADFLOAT {
+        if op != ir.OP_LOADCONST && op != ir.OP_LOAD_GLOBAL && op != ir.OP_ALLOCA && op != ir.OP_LABEL && op != ir.OP_JUMP && op != ir.OP_BRANCH && op != ir.OP_ARGC && op != ir.OP_TIME_NANOS && op != ir.OP_TIME_WALLCLOCK && op != ir.OP_CALL && op != ir.OP_IFACE_CALL && op != ir.OP_CLOSURE_CALL && op != ir.OP_MAP_NEW && op != ir.OP_LOADFLOAT && op != ir.OP_GC_COLLECT {
             if instr.arg1 >= 0 { add_unique(vregs, instr.arg1) }
         }
         // arg2 is vreg for binary ops, STORE, ARRAY_PUSH, POKE, STR_EQ/NE, STR_CHAR_AT, etc
@@ -1372,6 +1372,10 @@ fn emit_op_clock_gettime(fd: int, instr: IRInstr, ti: int, clock_id: string) {
     emit_store_vreg(fd, instr.dest, r)
 }
 
+fn emit_op_gc_collect(fd: int, instr: IRInstr, ti: int) {
+    write_str(fd, "  call void @gc_collect()\n")
+}
+
 fn emit_op_loadfloat(fd: int, instr: IRInstr, ti: int) {
     r := tmp_name(ti, 0)
     write_str(fd, "  " + r + " = bitcast double " + instr.str_val + " to i64\n")
@@ -1722,6 +1726,7 @@ fn emit_llvm_function(fd: int, instrs: []IRInstr, start: int, end_pos: int, func
         if terminated == 0 && instr.op == ir.OP_SETJMP { emit_op_setjmp(fd, instr, ti) }
         if terminated == 0 && instr.op == ir.OP_TIME_NANOS { emit_op_clock_gettime(fd, instr, ti, "6") }
         if terminated == 0 && instr.op == ir.OP_TIME_WALLCLOCK { emit_op_clock_gettime(fd, instr, ti, "0") }
+        if terminated == 0 && instr.op == ir.OP_GC_COLLECT { emit_op_gc_collect(fd, instr, ti) }
 
         if terminated == 0 && instr.op == ir.OP_ARG {
             // Collect argument for next call

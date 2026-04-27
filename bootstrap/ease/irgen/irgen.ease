@@ -1706,6 +1706,11 @@ fn gen_ir_from_ast_with_symtab(ast_idx: int, nodes: []AstNode, instrs: []IRInstr
             set_vreg_type(dest, ast.TYPE_INT)
             return dest
         }
+        if func_name == "runtime.GC" {
+            // No args, no result — just emit the opcode and return -1 (no vreg).
+            instrs = append(instrs, IRInstr { op: ir.OP_GC_COLLECT, dest: -1, arg1: 0, arg2: 0, arg3: 0, str_val: "" })
+            return -1
+        }
         if func_name == "strconv.FloatToStr" {
             arg_vregs := gen_ir_eval_args(ast_idx, nodes, instrs, symtab_names, symtab_vregs)
             dest := len(instrs)
