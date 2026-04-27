@@ -1,0 +1,202 @@
+package main
+
+import (
+    "testing"
+)
+
+import ("strconv")
+
+// Safety-net tests for IR -> LLVM IR emission.
+// Targets opcodes and codegen pathways that lack focused coverage elsewhere,
+// so functional regressions surface quickly during emit_llvm_function refactors.
+
+// ---- Bitwise: OP_BITAND, OP_BITOR, OP_XOR ----
+
+fn TestBitwiseAnd(t: testing.T) {
+    if (12 & 10) != 8 { t.Fatal("12 & 10 should be 8") }
+    if (15 & 0) != 0 { t.Fatal("15 & 0 should be 0") }
+    if (255 & 255) != 255 { t.Fatal("255 & 255 should be 255") }
+    if (0xFF & 0x0F) != 15 { t.Fatal("0xFF & 0x0F should be 15") }
+}
+
+fn TestBitwiseOr(t: testing.T) {
+    if (12 | 10) != 14 { t.Fatal("12 | 10 should be 14") }
+    if (0 | 0) != 0 { t.Fatal("0 | 0 should be 0") }
+    if (1 | 2 | 4) != 7 { t.Fatal("1|2|4 should be 7") }
+}
+
+fn TestBitwiseXor(t: testing.T) {
+    if (12 ^ 10) != 6 { t.Fatal("12 ^ 10 should be 6") }
+    if (5 ^ 5) != 0 { t.Fatal("5 ^ 5 should be 0") }
+    if (0 ^ 7) != 7 { t.Fatal("0 ^ 7 should be 7") }
+}
+
+// ---- OP_NOT ----
+
+fn TestLogicalNot(t: testing.T) {
+    a := true
+    b := false
+    hit := 0
+    if !a { hit = 1 }
+    if hit != 0 { t.Fatal("!true should be false") }
+    if !b { hit = 2 }
+    if hit != 2 { t.Fatal("!false should be true") }
+    if !!a { hit = 3 }
+    if hit != 3 { t.Fatal("!!true should be true") }
+}
+
+// ---- OP_CMP_*: signed comparisons at zero boundary ----
+
+fn TestSignedComparisonsNegative(t: testing.T) {
+    a := 0 - 5
+    b := 3
+    if !(a < b) { t.Fatal("-5 < 3 should hold") }
+    if a > b { t.Fatal("-5 > 3 should not hold") }
+    if a >= b { t.Fatal("-5 >= 3 should not hold") }
+    if !(a <= b) { t.Fatal("-5 <= 3 should hold") }
+    if a == b { t.Fatal("-5 == 3 should not hold") }
+    if !(a != b) { t.Fatal("-5 != 3 should hold") }
+}
+
+fn TestComparisonAtZero(t: testing.T) {
+    x := 0
+    if !(x <= 0) { t.Fatal("0 <= 0 should hold") }
+    if !(x >= 0) { t.Fatal("0 >= 0 should hold") }
+    if x < 0 { t.Fatal("0 < 0 should not hold") }
+    if x > 0 { t.Fatal("0 > 0 should not hold") }
+    if !(x == 0) { t.Fatal("0 == 0 should hold") }
+}
+
+// ---- OP_MOD ----
+
+fn TestModulo(t: testing.T) {
+    if 10 % 3 != 1 { t.Fatal("10 % 3 should be 1") }
+    if 9 % 3 != 0 { t.Fatal("9 % 3 should be 0") }
+    if 7 % 1 != 0 { t.Fatal("7 % 1 should be 0") }
+    if 100 % 7 != 2 { t.Fatal("100 % 7 should be 2") }
+}
+
+// ---- OP_INT_TO_FLOAT, OP_FLOAT_TO_INT ----
+
+fn TestIntToFloat(t: testing.T) {
+    n := 42
+    f := strconv.IntToFloat(n)
+    if f < 41.9 { t.Fatal("IntToFloat(42) should be ~42.0") }
+    if f > 42.1 { t.Fatal("IntToFloat(42) should be ~42.0") }
+}
+
+fn TestFloatToInt(t: testing.T) {
+    f := 3.7
+    n := strconv.FloatToInt(f)
+    if n != 3 { t.Fatal("FloatToInt(3.7) should truncate to 3") }
+    g := 0.0 - 2.9
+    m := strconv.FloatToInt(g)
+    if m != 0 - 2 { t.Fatal("FloatToInt(-2.9) should truncate toward zero to -2") }
+}
+
+// ---- OP_LABEL, OP_JUMP, OP_BRANCH, OP_RET: control-flow corners ----
+
+fn classify(n: int) -> int {
+    if n < 0 { return 0 - 1 }
+    if n == 0 { return 0 }
+    if n < 10 { return 1 }
+    return 2
+}
+
+fn TestEarlyReturn(t: testing.T) {
+    if classify(0 - 5) != 0 - 1 { t.Fatal("classify(-5) should be -1") }
+    if classify(0) != 0 { t.Fatal("classify(0) should be 0") }
+    if classify(7) != 1 { t.Fatal("classify(7) should be 1") }
+    if classify(99) != 2 { t.Fatal("classify(99) should be 2") }
+}
+
+fn TestNestedIfElse(t: testing.T) {
+    bucket := |n: int| -> int {
+        if n > 0 {
+            if n < 10 {
+                return 1
+            } else {
+                return 2
+            }
+        } else {
+            if n == 0 { return 0 } else { return 0 - 1 }
+        }
+    }
+    if bucket(5) != 1 { t.Fatal("bucket(5) should be 1") }
+    if bucket(15) != 2 { t.Fatal("bucket(15) should be 2") }
+    if bucket(0) != 0 { t.Fatal("bucket(0) should be 0") }
+    if bucket(0 - 4) != 0 - 1 { t.Fatal("bucket(-4) should be -1") }
+}
+
+// ---- OP_STORE / OP_STORE_INDEX: in-place mutation roundtrip ----
+
+struct LlvmTestBox {
+    a: int,
+    b: int,
+}
+
+fn TestStructFieldStoreRoundtrip(t: testing.T) {
+    box := LlvmTestBox { a: 1, b: 2 }
+    box.a = 10
+    box.b = 20
+    if box.a != 10 { t.Fatal("box.a after store should be 10") }
+    if box.b != 20 { t.Fatal("box.b after store should be 20") }
+}
+
+fn TestArrayElementStoreRoundtrip(t: testing.T) {
+    arr := []int{1, 2, 3, 4, 5}
+    arr[0] = 100
+    arr[2] = 99
+    arr[4] = 88
+    if arr[0] != 100 { t.Fatal("arr[0] should be 100") }
+    if arr[1] != 2 { t.Fatal("arr[1] should be 2") }
+    if arr[2] != 99 { t.Fatal("arr[2] should be 99") }
+    if arr[4] != 88 { t.Fatal("arr[4] should be 88") }
+}
+
+// ---- Vreg pressure: deeply nested expression mixing many opcodes ----
+
+fn TestDeepMixedExpression(t: testing.T) {
+    a := 1
+    b := 2
+    c := 3
+    d := 4
+    // Mix +, -, *, |, &, %, == in one expression
+    result := ((a + b) * (c + d)) - (a * b * c * d) + (a | b) + (c & d) + (10 % 3)
+    expected := 21 - 24 + 3 + 0 + 1
+    if result != expected {
+        t.Fatal("deep expression got " + strconv.Itoa(result) + ", want " + strconv.Itoa(expected))
+    }
+}
+
+// ---- Loop interaction with mutation (exercises labels + branches + STORE in body) ----
+
+fn TestLoopAccumulator(t: testing.T) {
+    sum := 0
+    for i in 0..10 {
+        sum = sum + i
+    }
+    if sum != 45 { t.Fatal("sum 0..9 should be 45, got " + strconv.Itoa(sum)) }
+}
+
+fn TestNestedLoops(t: testing.T) {
+    total := 0
+    for i in 1..4 {
+        for j in 1..4 {
+            total = total + (i * j)
+        }
+    }
+    // (1+2+3)*(1+2+3) = 36
+    if total != 36 { t.Fatal("nested loop total should be 36, got " + strconv.Itoa(total)) }
+}
+
+fn TestLoopWithEarlyBreak(t: testing.T) {
+    found := 0 - 1
+    for i in 0..100 {
+        if i * i > 50 {
+            found = i
+            break
+        }
+    }
+    if found != 8 { t.Fatal("first i with i*i>50 should be 8, got " + strconv.Itoa(found)) }
+}
