@@ -10,8 +10,9 @@
 #   make update-seed
 #
 # Pick a GC implementation at build time:
-#   make GC=none verify         # passthrough baseline
-#   make GC=conservative verify # mark-sweep (default)
+#   make GC=none verify         # passthrough baseline (current default)
+#   make GC=conservative verify # stop-the-world conservative mark-sweep
+# The default flips to `conservative` once runtime/gc_conservative.c lands.
 
 CC      ?= clang
 CFLAGS  := -O1
