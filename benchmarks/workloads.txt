@@ -1,0 +1,4 @@
+# One workload per line. Lines starting with # are ignored.
+# Format: <label> <command-args-after-tmp/ease>
+compile_self bootstrap/compiler.ease
+run_tests test tests/

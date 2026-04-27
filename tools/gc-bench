@@ -1,0 +1,91 @@
+#!/usr/bin/env bash
+# tools/gc-bench — Run each workload under each GC impl, compare results.
+#
+# Usage:
+#   tools/gc-bench                 # one run per workload-impl pair
+#   tools/gc-bench --rigorous      # 5 runs each, reports min
+#
+# Reads:  benchmarks/workloads.txt
+# Writes: stdout (comparison table)
+
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+cd "$ROOT"
+
+WORKLOADS_FILE="benchmarks/workloads.txt"
+IMPLS=("none" "conservative")
+RUNS=1
+if [ "${1:-}" = "--rigorous" ]; then
+    RUNS=5
+fi
+
+if [ ! -f "$WORKLOADS_FILE" ]; then
+    echo "error: $WORKLOADS_FILE not found" >&2
+    exit 1
+fi
+
+# Parse workloads (label + command), skipping comments and blank lines.
+WORKLOAD_LABELS=()
+WORKLOAD_CMDS=()
+while IFS= read -r line; do
+    case "$line" in
+        ''|'#'*) continue ;;
+    esac
+    label="${line%% *}"
+    cmd="${line#* }"
+    WORKLOAD_LABELS+=("$label")
+    WORKLOAD_CMDS+=("$cmd")
+done < "$WORKLOADS_FILE"
+
+echo "=== Building each impl ==="
+for impl in "${IMPLS[@]}"; do
+    echo "--- $impl"
+    make GC="$impl" verify >/dev/null 2>&1 || {
+        echo "error: build failed for GC=$impl" >&2
+        exit 1
+    }
+done
+
+# Header
+printf "\n%-20s" "workload"
+for impl in "${IMPLS[@]}"; do
+    printf " %-26s" "$impl"
+done
+echo
+
+# Body — one row per workload, cells per impl
+for i in "${!WORKLOAD_LABELS[@]}"; do
+    label="${WORKLOAD_LABELS[$i]}"
+    cmd="${WORKLOAD_CMDS[$i]}"
+    printf "%-20s" "$label"
+    for impl in "${IMPLS[@]}"; do
+        # Rebuild this impl's binary (cheap; mostly cached)
+        make GC="$impl" verify >/dev/null 2>&1
+        peak_min=""
+        pause_min=""
+        elapsed_min=""
+        for r in $(seq 1 "$RUNS"); do
+            stats=$(EASE_GC_STATS=1 tmp/ease_gen1 $cmd 2>&1 1>/dev/null) || true
+            # Take last occurrence of each stat (in case test suite prints multiple)
+            peak=$(echo "$stats"   | awk -F= '/^gc_live_bytes_peak=/ {peak=$2} END {print peak}')
+            pause=$(echo "$stats"  | awk -F= '/^gc_pause_ns_total=/ {pause=$2} END {print pause}')
+            elapsed=$(echo "$stats"| awk -F= '/^elapsed_ns=/ {elapsed=$2} END {print elapsed}')
+            peak=${peak:-0}
+            pause=${pause:-0}
+            elapsed=${elapsed:-0}
+            peak_min=$(awk -v a="$peak_min" -v b="$peak" 'BEGIN{print (a==""||b<a)?b:a}')
+            pause_min=$(awk -v a="$pause_min" -v b="$pause" 'BEGIN{print (a==""||b<a)?b:a}')
+            elapsed_min=$(awk -v a="$elapsed_min" -v b="$elapsed" 'BEGIN{print (a==""||b<a)?b:a}')
+        done
+        cell=$(printf "peak=%dKB t=%dms p=%dms" \
+            $((peak_min / 1024)) \
+            $((elapsed_min / 1000000)) \
+            $((pause_min / 1000000)))
+        printf " %-26s" "$cell"
+    done
+    echo
+done
+
+echo
+echo "Legend: peak=peak live heap, t=wallclock elapsed, p=cumulative GC pause"
