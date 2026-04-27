@@ -183,7 +183,11 @@ static void mark_all_roots(void) {
         try_mark(*(uint64_t *)gc_globals[i]);
     }
 
-    // 3. test_jmp_buf — 37 i64s on macOS.
+    // 3. test_jmp_buf — the compiler reserves [37 x i64] (296 bytes), which
+    //    is over-provisioned but covers every common platform's jmp_buf
+    //    (macOS arm64 is 24 i64s, macOS x86_64 is 18, Linux glibc x86_64 is
+    //    25). Bytes past the actual jmp_buf size are zeroinitializer and
+    //    safe to scan conservatively.
     scan_range((void *)ease_test_jmp_buf,
                (void *)((char *)ease_test_jmp_buf + 37 * 8));
 }
