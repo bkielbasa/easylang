@@ -1,6 +1,10 @@
 // runtime/gc_conservative.c — Stop-the-world conservative mark-sweep GC.
 //
-// v2: mark phase (root scanning + tri-color worklist). sweep still a no-op.
+// Allocator threads a header inline before each block. gc_collect runs
+// mark (root scanning of stack + globals + ease_test_jmp_buf, tri-color
+// worklist trace) then sweep (free unmarked, reset marks). gc_alloc
+// auto-triggers collection when bytes_live + bytes > threshold; threshold
+// resizes after each cycle to max(1 MB, 2 * live_after).
 #include "ease_gc.h"
 #include "gc_stats.h"
 
@@ -71,17 +75,72 @@ static gc_header_t *worklist_pop(void) {
     return g_worklist.items[--g_worklist.len];
 }
 
-// Find the header that owns the candidate pointer, if any.
-// Linear scan over allocation list; O(N) per query.
-static gc_header_t *find_owner(uint64_t candidate) {
+// Sorted index of allocations for O(log N) find_owner. Rebuilt once at the
+// start of every gc_collect, then queried millions of times during mark.
+// Lives outside the GC heap (uses raw realloc/free), so collection cannot
+// recurse on itself.
+typedef struct {
+    uintptr_t    payload_start;
+    uintptr_t    payload_end;
+    gc_header_t *header;
+} alloc_index_t;
+
+static alloc_index_t *g_index_items = NULL;
+static size_t         g_index_cap   = 0;
+static size_t         g_index_len   = 0;
+
+static int alloc_index_cmp(const void *a, const void *b) {
+    uintptr_t pa = ((const alloc_index_t *)a)->payload_start;
+    uintptr_t pb = ((const alloc_index_t *)b)->payload_start;
+    if (pa < pb) return -1;
+    if (pa > pb) return 1;
+    return 0;
+}
+
+static void alloc_index_rebuild(void) {
+    size_t count = 0;
     gc_header_t *h = g_state.head;
+    while (h) { count++; h = h->next; }
+    if (count > g_index_cap) {
+        size_t new_cap = g_index_cap == 0 ? 64 : g_index_cap;
+        while (new_cap < count) new_cap *= 2;
+        alloc_index_t *new_items = (alloc_index_t *)realloc(
+            g_index_items, new_cap * sizeof(alloc_index_t));
+        if (!new_items) abort();
+        g_index_items = new_items;
+        g_index_cap   = new_cap;
+    }
+    h = g_state.head;
+    size_t i = 0;
     while (h) {
-        uintptr_t payload_start = (uintptr_t)header_to_payload(h);
-        uintptr_t payload_end   = payload_start + h->size;
-        if (candidate >= payload_start && candidate < payload_end) {
-            return h;
-        }
+        uintptr_t ps = (uintptr_t)header_to_payload(h);
+        g_index_items[i].payload_start = ps;
+        g_index_items[i].payload_end   = ps + h->size;
+        g_index_items[i].header        = h;
+        i++;
         h = h->next;
+    }
+    g_index_len = count;
+    qsort(g_index_items, count, sizeof(alloc_index_t), alloc_index_cmp);
+}
+
+// Binary search the sorted index. O(log N) per query.
+static gc_header_t *find_owner(uint64_t candidate) {
+    if (g_index_len == 0) return NULL;
+    // Find largest entry with payload_start <= candidate.
+    size_t lo = 0, hi = g_index_len;
+    while (lo < hi) {
+        size_t mid = (lo + hi) / 2;
+        if (g_index_items[mid].payload_start <= candidate) {
+            lo = mid + 1;
+        } else {
+            hi = mid;
+        }
+    }
+    if (lo == 0) return NULL;
+    alloc_index_t *e = &g_index_items[lo - 1];
+    if (candidate >= e->payload_start && candidate < e->payload_end) {
+        return e->header;
     }
     return NULL;
 }
@@ -137,6 +196,23 @@ static void trace(void) {
     }
 }
 
+static void sweep(void) {
+    gc_header_t **link = &g_state.head;
+    gc_header_t *h = g_state.head;
+    while (h) {
+        gc_header_t *next = h->next;
+        if (h->mark) {
+            h->mark = 0;
+            link = &h->next;
+        } else {
+            *link = next;
+            gc_stats_record_free(h->size);
+            free(h);
+        }
+        h = next;
+    }
+}
+
 void gc_init(void *stack_bottom) {
     g_state.head         = NULL;
     g_state.stack_bottom = stack_bottom;
@@ -159,6 +235,10 @@ void gc_shutdown(void) {
 
 void *gc_alloc(size_t bytes) {
     if (bytes == 0) bytes = 1;
+    if (g_gc_stats.bytes_allocated_live + bytes > g_state.threshold &&
+        !g_state.collecting) {
+        gc_collect();
+    }
     gc_header_t *h = (gc_header_t *)malloc(sizeof(gc_header_t) + bytes);
     if (!h) abort();
     h->next = g_state.head;
@@ -176,18 +256,21 @@ void gc_collect(void) {
     g_state.collecting = 1;
     uint64_t t0 = gc_now_ns();
 
-    // Mark phase
+    // Build the sorted owner-index once per cycle so find_owner is O(log N).
+    alloc_index_rebuild();
+
+    // Mark
     g_worklist.len = 0;
     mark_all_roots();
     trace();
 
-    // (Sweep phase added in next task.)
-    // For now, clear marks so subsequent collections start fresh.
-    gc_header_t *h = g_state.head;
-    while (h) {
-        h->mark = 0;
-        h = h->next;
-    }
+    // Sweep
+    sweep();
+
+    // Adjust threshold: max(1 MB, 2 * live_after).
+    size_t live_after = g_gc_stats.bytes_allocated_live;
+    size_t doubled    = live_after * 2;
+    g_state.threshold = doubled < (1u << 20) ? (1u << 20) : doubled;
 
     uint64_t pause = gc_now_ns() - t0;
     gc_stats_record_collection(pause);
