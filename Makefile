@@ -78,12 +78,12 @@ update-seed: verify
 # Usage: make test [DIR=path/to/dir] (default: tests/)
 DIR ?= tests
 test: $(EASE)
-	@$(EASE) test $(DIR)
+	@EASE_GC=$(GC) $(EASE) test $(DIR)
 
 # Run tests + benchmarks
 # Usage: make bench [DIR=path/to/dir] (default: tests/)
 bench: $(EASE)
-	@$(EASE) test $(DIR) --bench
+	@EASE_GC=$(GC) $(EASE) test $(DIR) --bench
 
 clean:
 	rm -f $(BUILD_DIR)/ease $(BUILD_DIR)/ease_gen1
