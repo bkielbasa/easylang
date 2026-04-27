@@ -523,7 +523,7 @@
 @.str.522 = private unnamed_addr constant [28 x i8] c"declare void @gc_init(ptr)\0A\00"
 @.str.523 = private unnamed_addr constant [28 x i8] c"declare void @gc_collect()\0A\00"
 @.str.524 = private unnamed_addr constant [33 x i8] c"declare void @gc_get_stats(ptr)\0A\00"
-@.str.525 = private unnamed_addr constant [35 x i8] c"declare void @gc_print_stats(i32)\0A\00"
+@.str.525 = private unnamed_addr constant [35 x i8] c"declare void @gc_print_stats(ptr)\0A\00"
 @.str.526 = private unnamed_addr constant [35 x i8] c"attributes #0 = { returns_twice }\0A\00"
 @.str.527 = private unnamed_addr constant [2 x i8] c"\0A\00"
 @.str.528 = private unnamed_addr constant [4 x i8] c"i32\00"
@@ -2052,7 +2052,7 @@ declare ptr @gc_alloc(i64)
 declare void @gc_init(ptr)
 declare void @gc_collect()
 declare void @gc_get_stats(ptr)
-declare void @gc_print_stats(i32)
+declare void @gc_print_stats(ptr)
 attributes #0 = { returns_twice }
 
 ; --- extern fn wrappers ---

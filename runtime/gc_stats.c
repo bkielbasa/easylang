@@ -5,7 +5,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
-#include <unistd.h>
 
 gc_stats_t g_gc_stats = {0};
 uint64_t   g_gc_init_ns = 0;
@@ -48,10 +47,9 @@ void gc_get_stats(gc_stats_t *out) {
     *out = g_gc_stats;
 }
 
-void gc_print_stats(int fd) {
+void gc_print_stats(FILE *out) {
     uint64_t elapsed = gc_now_ns() - g_gc_init_ns;
-    char buf[1024];
-    int n = snprintf(buf, sizeof(buf),
+    fprintf(out,
         "gc_impl=%s\n"
         "gc_alloc_total_bytes=%" PRIu64 "\n"
         "gc_alloc_total_count=%" PRIu64 "\n"
@@ -72,19 +70,11 @@ void gc_print_stats(int fd) {
         g_gc_stats.collection_ns_max,
         g_gc_stats.bytes_freed_total,
         elapsed);
-    if (n > 0) {
-        size_t off = 0;
-        while (off < (size_t)n) {
-            ssize_t w = write(fd, buf + off, (size_t)n - off);
-            if (w < 0) break;
-            off += (size_t)w;
-        }
-    }
 }
 
 static void gc_stats_atexit_handler(void) {
     if (getenv("EASE_GC_STATS")) {
-        gc_print_stats(2);  // stderr
+        gc_print_stats(stderr);
     }
 }
 

@@ -188,7 +188,7 @@ fn emit_llvm_decls(fd: int) {
     write_str(fd, "declare void @gc_init(ptr)\n")
     write_str(fd, "declare void @gc_collect()\n")
     write_str(fd, "declare void @gc_get_stats(ptr)\n")
-    write_str(fd, "declare void @gc_print_stats(i32)\n")
+    write_str(fd, "declare void @gc_print_stats(ptr)\n")
     write_str(fd, "attributes #0 = { returns_twice }\n")
     write_str(fd, "\n")
 }

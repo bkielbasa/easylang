@@ -7,6 +7,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <stdio.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -40,7 +41,7 @@ typedef struct {
 } gc_stats_t;
 
 void gc_get_stats(gc_stats_t *out);
-void gc_print_stats(int fd);
+void gc_print_stats(FILE *out);
 
 // Each impl defines this; gc_print_stats reads it.
 extern const char *gc_impl_name;
